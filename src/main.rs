@@ -250,10 +250,13 @@ fn main() {
             println!("   Compiling to WebAssembly...");
             let wasm_start = Instant::now();
             let compiler = Compiler::new();
-            let wasm_bytes = match compiler.compile_source(&source_code, BuildTarget::Client) {
-                Ok(bytes) => {
+            let (wasm_bytes, css_output) = match compiler.compile_source_with_css(&source_code, BuildTarget::Client) {
+                Ok((bytes, css)) => {
                     println!("   ✓ Generated WASM module ({} bytes)", bytes.len());
-                    bytes
+                    if !css.is_empty() {
+                        println!("   ✓ Generated CSS output ({} bytes)", css.len());
+                    }
+                    (bytes, css)
                 }
                 Err(e) => {
                     eprintln!("\n❌ Compilation failed:\n");
@@ -295,6 +298,16 @@ fn main() {
                 return;
             }
             println!("   ✓ {}", wasm_path.display());
+
+            // Write CSS output (Phase 7.5)
+            if !css_output.is_empty() {
+                let css_path = output_dir.join("styles.css");
+                if let Err(e) = fs::write(&css_path, css_output) {
+                    eprintln!("❌ Failed to write styles.css: {}", e);
+                    return;
+                }
+                println!("   ✓ {}", css_path.display());
+            }
 
             // Create index.html
             let html_content = generate_index_html();
@@ -1189,6 +1202,7 @@ fn generate_index_html() -> String {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RavensOne App</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

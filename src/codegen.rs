@@ -4,6 +4,7 @@ use crate::BuildTarget; // Import the BuildTarget enum
 use crate::token::TokenKind;
 use crate::vdom::VNode;
 use crate::semantic_analyzer::ResolvedType;
+use crate::css_generator; // CSS generation (Phase 7.5)
 use std::collections::HashMap;
 use wasm_encoder::{
     CodeSection, ExportKind, ExportSection, Function, FunctionSection, ImportSection, Instruction,
@@ -133,6 +134,8 @@ pub struct CodeGenerator {
     lambda_encounter_counter: usize,
     // Current lambda context (Some(lambda_index) when generating a lambda body, None otherwise)
     current_lambda_context: Option<usize>,
+    // CSS output (Phase 7.5)
+    css_output: String,
 }
 
 impl CodeGenerator {
@@ -150,7 +153,96 @@ impl CodeGenerator {
             target,
             lambda_encounter_counter: 0,
             current_lambda_context: None,
+            css_output: String::new(),
         }
+    }
+
+    /// Get the generated CSS output (Phase 7.5)
+    pub fn get_css_output(&self) -> &str {
+        &self.css_output
+    }
+
+    /// Extract CSS expressions from AST and generate scoped CSS (Phase 7.5)
+    fn extract_and_generate_css(&mut self, program: &Program) -> Result<(), CompileError> {
+        for stmt in &program.statements {
+            match stmt {
+                Statement::Function(func_def) => {
+                    // Search function body for CSS macros
+                    self.extract_css_from_statements(&func_def.body.statements, &func_def.name.value)?;
+                }
+                Statement::Component(comp_def) => {
+                    // Search component body for CSS macros
+                    self.extract_css_from_statements(&comp_def.body.statements, &comp_def.name.value)?;
+                }
+                Statement::Let(let_stmt) => {
+                    // Check if let binding has CSS macro
+                    self.extract_css_from_expression(&let_stmt.value, "App")?;
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
+    /// Recursively search statements for CSS macros
+    fn extract_css_from_statements(&mut self, stmts: &[Statement], component_name: &str) -> Result<(), CompileError> {
+        for stmt in stmts {
+            match stmt {
+                Statement::Let(let_stmt) => {
+                    self.extract_css_from_expression(&let_stmt.value, component_name)?;
+                }
+                Statement::Expression(expr) => {
+                    self.extract_css_from_expression(expr, component_name)?;
+                }
+                Statement::If(if_stmt) => {
+                    self.extract_css_from_statements(&if_stmt.then_branch.statements, component_name)?;
+                    if let Some(else_branch) = &if_stmt.else_branch {
+                        // Recursively handle else branch (could be another If or any statement)
+                        self.extract_css_from_statements(&[*else_branch.clone()], component_name)?;
+                    }
+                }
+                Statement::While(while_stmt) => {
+                    self.extract_css_from_statements(&while_stmt.body.statements, component_name)?;
+                }
+                Statement::For(for_stmt) => {
+                    self.extract_css_from_statements(&for_stmt.body.statements, component_name)?;
+                }
+                Statement::ForIn(for_in_stmt) => {
+                    self.extract_css_from_statements(&for_in_stmt.body.statements, component_name)?;
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
+    /// Recursively search expression for CSS macros
+    fn extract_css_from_expression(&mut self, expr: &Expression, component_name: &str) -> Result<(), CompileError> {
+        match expr {
+            Expression::CssMacro(css_expr) => {
+                // Found a CSS macro! Generate scoped CSS
+                let mut generator = css_generator::CssGenerator::new(component_name.to_string());
+                let css = generator.generate(css_expr);
+                self.css_output.push_str(&css);
+            }
+            Expression::IfExpression(if_expr) => {
+                self.extract_css_from_expression(&if_expr.condition, component_name)?;
+                self.extract_css_from_expression(&if_expr.then_expr, component_name)?;
+                if let Some(else_expr) = &if_expr.else_expr {
+                    self.extract_css_from_expression(else_expr, component_name)?;
+                }
+            }
+            Expression::Match(match_expr) => {
+                for arm in &match_expr.arms {
+                    self.extract_css_from_expression(&arm.body, component_name)?;
+                }
+            }
+            Expression::Block(block) => {
+                self.extract_css_from_statements(&block.statements, component_name)?;
+            }
+            _ => {}
+        }
+        Ok(())
     }
 
     /// The main entry point for generating a complete Wasm module from an AST.
@@ -181,6 +273,10 @@ impl CodeGenerator {
         // Walk the AST and collect all lambda expressions before generating code
         // This allows us to generate anonymous functions for them
         self.collect_lambdas_from_program(program);
+
+        // --- Pass 0.75: Extract and Generate CSS (Phase 7.5) ---
+        // Walk the AST and generate CSS from css! macro expressions
+        self.extract_and_generate_css(program)?;
 
         // --- First Pass: Signatures and Imports ---
         // This pass collects all function signatures and builds the import table.

@@ -2645,4 +2645,121 @@ mod tests {
         let result = compile_source(source);
         assert!(result.is_ok(), "nested if/else with return statements should compile");
     }
+
+    // ============================================================
+    // CSS Integration Tests (Phase 7.5)
+    // ============================================================
+
+    #[test]
+    fn test_css_macro_simple() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .button {
+                        background: blue;
+                    }
+                };
+                println!("CSS styles created");
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "simple css! macro should compile");
+    }
+
+    #[test]
+    fn test_css_multiple_rules() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .button {
+                        background: blue;
+                        color: white;
+                    }
+
+                    .header {
+                        color: red;
+                    }
+                };
+                println!("Multiple CSS rules created");
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "css! macro with multiple rules should compile");
+    }
+
+    #[test]
+    fn test_css_selector_types() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .button {
+                        background: blue;
+                    }
+
+                    #header {
+                        color: red;
+                    }
+
+                    div {
+                        color: green;
+                    }
+
+                    :hover {
+                        color: yellow;
+                    }
+                };
+                println!("Different CSS selector types created");
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "css! macro with different selector types should compile");
+    }
+
+    #[test]
+    fn test_css_in_function() {
+        let source = r#"
+            fn create_button_styles() {
+                let styles = css! {
+                    .primary {
+                        background: blue;
+                    }
+                    .secondary {
+                        background: gray;
+                    }
+                };
+            }
+
+            fn main() {
+                create_button_styles();
+                println!("Function with CSS executed");
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "CSS in function should compile");
+    }
+
+    #[test]
+    fn test_css_multiple_declarations() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .card {
+                        background: white;
+                        color: black;
+                        display: block;
+                        position: relative;
+                        float: left;
+                    }
+                };
+                println!("CSS with multiple declarations created");
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "CSS with multiple declarations should compile");
+    }
 }

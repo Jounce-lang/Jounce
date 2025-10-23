@@ -4,6 +4,7 @@ extern crate lazy_static;
 pub mod ast;
 pub mod borrow_checker;
 pub mod codegen;
+pub mod css_generator; // CSS generation (Phase 7.5)
 pub mod deployer; // Make sure deployer is a module
 pub mod errors;
 pub mod lexer;
@@ -150,6 +151,82 @@ impl Compiler {
         }
 
         Ok(wasm_bytes)
+    }
+
+    /// Compile source code and return both WASM bytes and CSS output (Phase 7.5)
+    pub fn compile_source_with_css(&self, source: &str, target: BuildTarget) -> Result<(Vec<u8>, String), CompileError> {
+        println!("   - Starting compilation for target: {:?}", target);
+
+        // --- Lexing, Parsing, Macro Expansion ---
+        let mut lexer = Lexer::new(source.to_string());
+        let mut parser = Parser::new(&mut lexer);
+        let initial_ast = parser.parse_program()?;
+
+        // This is a simplified macro expansion for now.
+        let mut needs_reparse = false;
+        for statement in &initial_ast.statements {
+            if let ast::Statement::MacroInvocation(_) = statement {
+                needs_reparse = true;
+                break;
+            }
+        }
+
+        // FIX: Rename the AST variable to avoid shadowing the `ast` module.
+        let mut program_ast = if needs_reparse {
+            // Placeholder for real expansion
+            initial_ast
+        } else {
+            initial_ast
+        };
+
+        // --- Module Import Resolution ---
+        // Merge imported module definitions into the AST
+        let mut module_loader = module_loader::ModuleLoader::new("aloha-shirts");
+        module_loader.merge_imports(&mut program_ast)?;
+
+        // --- Analysis Passes ---
+        let mut analyzer = SemanticAnalyzer::new();
+        analyzer.analyze_program(&program_ast)?;
+
+        // Type checking with inference
+        let mut type_checker = TypeChecker::new();
+        type_checker.check_program(&program_ast.statements)?;
+
+        // Re-enabled temporarily for debugging
+        let mut borrow_checker = BorrowChecker::new();
+        borrow_checker.check_program(&program_ast)?;
+
+        // --- Code Generation ---
+        // FIX: Pass the target down to the CodeGenerator.
+        let mut code_generator = CodeGenerator::new(target);
+        let mut wasm_bytes = code_generator.generate_program(&program_ast)?;
+
+        // Extract CSS output (Phase 7.5)
+        let css_output = code_generator.get_css_output().to_string();
+
+        // --- Optimization ---
+        if self.optimize {
+            let mut optimizer = WasmOptimizer::new();
+            wasm_bytes = optimizer.optimize(wasm_bytes);
+
+            // Print optimization statistics
+            let stats = optimizer.stats();
+            if stats.total_optimizations() > 0 {
+                println!("   - Optimizations applied: {} total", stats.total_optimizations());
+                if stats.functions_removed > 0 {
+                    println!("     • Dead functions removed: {}", stats.functions_removed);
+                }
+                if stats.constants_folded > 0 {
+                    println!("     • Constants folded: {}", stats.constants_folded);
+                }
+                if stats.functions_inlined > 0 {
+                    println!("     • Functions inlined: {}", stats.functions_inlined);
+                }
+                println!("     • Size reduction: {:.1}%", stats.size_reduction_percent());
+            }
+        }
+
+        Ok((wasm_bytes, css_output))
     }
 
     /// Display a compilation error with beautiful diagnostics
