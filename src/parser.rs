@@ -1909,12 +1909,14 @@ impl<'a> Parser<'a> {
         // Parse declarations and nested rules
         let mut declarations = Vec::new();
         let mut nested_rules = Vec::new();
+        let mut media_queries = Vec::new();
 
         while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
-            // Check if this is a nested rule or a declaration
-            // Nested rules start with a selector (.class, &, #id, etc.)
-            // Declarations start with a property name
-            if self.is_nested_rule_start() {
+            // Check if this is a nested rule, media query, or a declaration
+            if self.current_token().kind == TokenKind::CssMedia {
+                // Parse media query: @media (condition) { ... }
+                media_queries.push(self.parse_css_media_query()?);
+            } else if self.is_nested_rule_start() {
                 // Parse nested rule recursively
                 nested_rules.push(self.parse_css_rule()?);
             } else {
@@ -1933,6 +1935,7 @@ impl<'a> Parser<'a> {
             selector,
             declarations,
             nested_rules,
+            media_queries,
         })
     }
 
@@ -1960,9 +1963,12 @@ impl<'a> Parser<'a> {
                 } else if selector_str.starts_with('#') {
                     // ID selector: #main
                     Ok(CssSelector::Id(selector_str[1..].to_string()))
+                } else if selector_str.starts_with("::") {
+                    // Pseudo-element: ::before, ::after
+                    Ok(CssSelector::PseudoElement(selector_str[2..].to_string()))
                 } else if selector_str.starts_with(':') {
-                    // Pseudo selector: :hover
-                    Ok(CssSelector::Pseudo(selector_str[1..].to_string()))
+                    // Pseudo-class: :hover, :focus
+                    Ok(CssSelector::PseudoClass(selector_str[1..].to_string()))
                 } else if selector_str.starts_with('&') {
                     // Nested selector: & (Sprint 2)
                     Ok(CssSelector::Nested(selector_str.clone()))
@@ -1981,24 +1987,42 @@ impl<'a> Parser<'a> {
                 }
             }
             TokenKind::Colon => {
-                // Workaround: Lexer tokenizes :hover as Colon + something
-                // Manually construct the pseudo-selector
-                self.next_token(); // consume :
+                // Check for :: (pseudo-element) vs : (pseudo-class)
+                self.next_token(); // consume first :
+
+                // Check if next token is also a colon (::)
+                let is_pseudo_element = matches!(self.current_token().kind, TokenKind::Colon);
+                if is_pseudo_element {
+                    self.next_token(); // consume second :
+                }
+
+                // Now parse the name
                 let ident_token = self.current_token().clone();
                 match &ident_token.kind {
                     TokenKind::CssProperty(name) => {
                         self.next_token();
-                        Ok(CssSelector::Pseudo(name.clone()))
+                        if is_pseudo_element {
+                            Ok(CssSelector::PseudoElement(name.clone()))
+                        } else {
+                            Ok(CssSelector::PseudoClass(name.clone()))
+                        }
                     }
                     TokenKind::CssSelector(name) => {
-                        // Lexer generated CssSelector("hover") - extract the name
                         self.next_token();
-                        Ok(CssSelector::Pseudo(name.clone()))
+                        if is_pseudo_element {
+                            Ok(CssSelector::PseudoElement(name.clone()))
+                        } else {
+                            Ok(CssSelector::PseudoClass(name.clone()))
+                        }
                     }
                     TokenKind::Identifier => {
                         let name = ident_token.lexeme.clone();
                         self.next_token();
-                        Ok(CssSelector::Pseudo(name))
+                        if is_pseudo_element {
+                            Ok(CssSelector::PseudoElement(name))
+                        } else {
+                            Ok(CssSelector::PseudoClass(name))
+                        }
                     }
                     _ => Err(self.error(&format!("Expected identifier after ':', found {:?}", ident_token.kind)))
                 }
@@ -2059,13 +2083,79 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Parse CSS media query: @media (min-width: 768px) { ... }
+    fn parse_css_media_query(&mut self) -> Result<CssMediaQuery, CompileError> {
+        use crate::ast::CssMediaQuery;
+
+        // Expect @media token
+        self.expect_and_consume(&TokenKind::CssMedia)?;
+
+        // Expect opening parenthesis
+        self.expect_and_consume(&TokenKind::LParen)?;
+
+        // Read the condition as a string until we hit the closing paren
+        // Now that lexer properly tokenizes inside parens, we can read tokens normally
+        let mut condition = String::from("(");
+        let mut paren_depth = 1;
+
+        while paren_depth > 0 && self.current_token().kind != TokenKind::Eof {
+            let token = self.current_token().clone();
+
+            match &token.kind {
+                TokenKind::LParen => {
+                    condition.push('(');
+                    paren_depth += 1;
+                }
+                TokenKind::RParen => {
+                    paren_depth -= 1;
+                    if paren_depth > 0 {
+                        condition.push(')');
+                    }
+                }
+                _ => {
+                    // Add token lexeme with space
+                    if !condition.ends_with('(') {
+                        condition.push(' ');
+                    }
+                    condition.push_str(&token.lexeme);
+                }
+            }
+
+            self.next_token();
+        }
+
+        condition.push(')');
+
+        // Expect opening brace for media query block
+        self.expect_and_consume(&TokenKind::LBrace)?;
+
+        // Parse declarations within the media query
+        let mut declarations = Vec::new();
+
+        while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
+            declarations.push(self.parse_css_declaration()?);
+            self.consume_if_matches(&TokenKind::Semicolon);
+        }
+
+        // Expect closing brace
+        self.expect_and_consume(&TokenKind::RBrace)?;
+
+        Ok(CssMediaQuery {
+            condition,
+            declarations,
+        })
+    }
+
     /// Parse a compound selector from a string like ".button:hover" or ".button.primary"
     /// Returns a Compound variant containing the individual selectors
     fn parse_compound_selector_from_string(&self, selector_str: &str) -> Result<CssSelector, CompileError> {
         let mut selectors = Vec::new();
         let mut current = String::new();
 
-        for ch in selector_str.chars() {
+        let chars: Vec<char> = selector_str.chars().collect();
+        let mut i = 0;
+        while i < chars.len() {
+            let ch = chars[i];
             match ch {
                 '.' => {
                     // New class selector
@@ -2073,16 +2163,24 @@ impl<'a> Parser<'a> {
                         selectors.push(self.selector_from_string(&current)?);
                     }
                     current = String::from(".");
+                    i += 1;
                 }
                 ':' => {
-                    // New pseudo selector
+                    // Check if next char is also : (::)
                     if !current.is_empty() {
                         selectors.push(self.selector_from_string(&current)?);
                     }
-                    current = String::from(":");
+                    if i + 1 < chars.len() && chars[i + 1] == ':' {
+                        current = String::from("::");
+                        i += 2; // skip both colons
+                    } else {
+                        current = String::from(":");
+                        i += 1;
+                    }
                 }
                 _ => {
                     current.push(ch);
+                    i += 1;
                 }
             }
         }
@@ -2107,8 +2205,10 @@ impl<'a> Parser<'a> {
             Ok(CssSelector::Class(s[1..].to_string()))
         } else if s.starts_with('#') {
             Ok(CssSelector::Id(s[1..].to_string()))
+        } else if s.starts_with("::") {
+            Ok(CssSelector::PseudoElement(s[2..].to_string()))
         } else if s.starts_with(':') {
-            Ok(CssSelector::Pseudo(s[1..].to_string()))
+            Ok(CssSelector::PseudoClass(s[1..].to_string()))
         } else {
             Ok(CssSelector::Element(s.to_string()))
         }

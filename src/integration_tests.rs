@@ -2845,4 +2845,235 @@ mod tests {
         let result = compile_source(source);
         assert!(result.is_ok(), "CSS with mixed selector types should compile");
     }
+
+    #[test]
+    fn test_css_pseudo_element_before() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .icon::before {
+                        content: "→";
+                        color: blue;
+                    }
+                };
+                println!("Pseudo-element ::before");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS pseudo-element ::before should compile");
+    }
+
+    #[test]
+    fn test_css_pseudo_element_after() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .quote::after {
+                        content: "»";
+                        color: red;
+                    }
+                };
+                println!("Pseudo-element ::after");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS pseudo-element ::after should compile");
+    }
+
+    #[test]
+    fn test_css_pseudo_class_vs_pseudo_element() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .button:hover {
+                        background: blue;
+                    }
+                    .button::before {
+                        content: "→";
+                    }
+                    .input:focus {
+                        border: blue;
+                    }
+                    .input::placeholder {
+                        color: gray;
+                    }
+                };
+                println!("Mix of pseudo-classes and pseudo-elements");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with both pseudo-classes and pseudo-elements should compile");
+    }
+
+    #[test]
+    fn test_css_multiple_pseudo_classes() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .button:hover {
+                        background: darkblue;
+                    }
+                    .button:active {
+                        background: navy;
+                    }
+                    .input:focus {
+                        border: blue;
+                    }
+                    .input:disabled {
+                        opacity: 0.5;
+                    }
+                };
+                println!("Multiple pseudo-classes");
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "CSS with multiple pseudo-classes should compile");
+    }
+
+    #[test]
+    fn test_css_multiple_pseudo_elements() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .quote::before {
+                        content: "«";
+                    }
+                    .quote::after {
+                        content: "»";
+                    }
+                    .section::first-line {
+                        font-weight: bold;
+                    }
+                    .section::first-letter {
+                        color: blue;
+                    }
+                };
+                println!("Multiple pseudo-elements");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with multiple pseudo-elements should compile");
+    }
+
+    #[test]
+    fn test_css_media_query_simple() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .container {
+                        color: blue;
+
+                        @media (min-width: 768px) {
+                            color: red;
+                        }
+                    }
+                };
+                println!("Responsive container");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with media query should compile");
+    }
+
+    #[test]
+    fn test_css_media_query_multiple() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .grid {
+                        color: black;
+
+                        @media (min-width: 768px) {
+                            color: blue;
+                        }
+
+                        @media (min-width: 1024px) {
+                            color: green;
+                        }
+                    }
+                };
+                println!("Responsive grid");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with multiple media queries should compile");
+    }
+
+    #[test]
+    fn test_css_media_query_with_nesting() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .card {
+                        color: white;
+
+                        &:hover {
+                            color: gray;
+                        }
+
+                        @media (min-width: 768px) {
+                            background: blue;
+                        }
+                    }
+                };
+                println!("Card with media query and nesting");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with media query and nesting should compile");
+    }
+
+    #[test]
+    fn test_css_media_query_complex_condition() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .sidebar {
+                        color: gray;
+
+                        @media (min-width: 768px) and (max-width: 1024px) {
+                            color: black;
+                            background: white;
+                        }
+                    }
+                };
+                println!("Sidebar with complex media query");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with complex media query condition should compile");
+    }
 }

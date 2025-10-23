@@ -60,6 +60,39 @@ impl CssGenerator {
         for nested in &rule.nested_rules {
             self.generate_rule_with_parent(nested, Some(&scoped_selector));
         }
+
+        // Generate media queries for this rule
+        for media_query in &rule.media_queries {
+            self.generate_media_query(media_query, &scoped_selector);
+        }
+    }
+
+    /// Generate CSS for a media query
+    fn generate_media_query(&mut self, media_query: &CssMediaQuery, selector: &str) {
+        // Output @media condition
+        self.css_output.push_str("@media ");
+        self.css_output.push_str(&media_query.condition);
+        self.css_output.push_str(" {\n");
+
+        // Output selector block with media query declarations
+        self.css_output.push_str("  ");
+        self.css_output.push_str(selector);
+        self.css_output.push_str(" {\n");
+
+        // Generate declarations with extra indent
+        for decl in &media_query.declarations {
+            self.css_output.push_str("    "); // Extra indent for media query
+            self.css_output.push_str(&decl.property);
+            self.css_output.push_str(": ");
+            self.css_output.push_str(&self.generate_value(&decl.value));
+            self.css_output.push_str(";\n");
+        }
+
+        // Close selector block
+        self.css_output.push_str("  }\n");
+
+        // Close media query
+        self.css_output.push_str("}\n\n");
     }
 
     /// Generate a scoped selector from CssSelector (without parent)
@@ -83,11 +116,15 @@ impl CssGenerator {
                 // Element selectors are not scoped
                 element.clone()
             }
-            CssSelector::Pseudo(pseudo) => {
-                // Pseudo-selectors are not scoped
+            CssSelector::PseudoClass(pseudo_class) => {
+                // Pseudo-classes are not scoped (:hover, :focus, etc.)
                 // Note: These should typically be combined with other selectors
-                // For now, just output as-is
-                format!(":{}", pseudo)
+                format!(":{}", pseudo_class)
+            }
+            CssSelector::PseudoElement(pseudo_element) => {
+                // Pseudo-elements are not scoped (::before, ::after, etc.)
+                // Note: These should typically be combined with other selectors
+                format!("::{}", pseudo_element)
             }
             CssSelector::Nested(nested_selector) => {
                 // Handle & selector for nesting
@@ -262,6 +299,7 @@ mod tests {
                 },
             ],
             nested_rules: vec![],
+            media_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -288,6 +326,7 @@ mod tests {
                         },
                     ],
                     nested_rules: vec![],
+            media_queries: vec![],
                 },
                 CssRule {
                     selector: CssSelector::Class("footer".to_string()),
@@ -298,6 +337,7 @@ mod tests {
                         },
                     ],
                     nested_rules: vec![],
+            media_queries: vec![],
                 },
             ],
         };
@@ -318,7 +358,7 @@ mod tests {
         let rule = CssRule {
             selector: CssSelector::Compound(vec![
                 CssSelector::Class("button".to_string()),
-                CssSelector::Pseudo("hover".to_string()),
+                CssSelector::PseudoClass("hover".to_string()),
             ]),
             declarations: vec![
                 CssDeclaration {
@@ -327,6 +367,7 @@ mod tests {
                 },
             ],
             nested_rules: vec![],
+            media_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -354,6 +395,7 @@ mod tests {
                 },
             ],
             nested_rules: vec![],
+            media_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -378,6 +420,7 @@ mod tests {
                 },
             ],
             nested_rules: vec![],
+            media_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -403,6 +446,7 @@ mod tests {
                 },
             ],
             nested_rules: vec![],
+            media_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -453,8 +497,10 @@ mod tests {
                         },
                     ],
                     nested_rules: vec![],
+                    media_queries: vec![],
                 },
             ],
+            media_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -491,8 +537,10 @@ mod tests {
                         },
                     ],
                     nested_rules: vec![],
+                    media_queries: vec![],
                 },
             ],
+            media_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -538,10 +586,13 @@ mod tests {
                                 },
                             ],
                             nested_rules: vec![],
+                            media_queries: vec![],
                         },
                     ],
+                    media_queries: vec![],
                 },
             ],
+            media_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -554,5 +605,302 @@ mod tests {
         assert!(output.contains("height: 60px;"));
         assert!(output.contains(" .title"));
         assert!(output.contains("font-size: 20px;"));
+    }
+
+    #[test]
+    fn test_pseudo_class() {
+        let mut gen = CssGenerator::new("Button".to_string());
+
+        let rule = CssRule {
+            selector: CssSelector::Compound(vec![
+                CssSelector::Class("button".to_string()),
+                CssSelector::PseudoClass("hover".to_string()),
+            ]),
+            declarations: vec![
+                CssDeclaration {
+                    property: "background".to_string(),
+                    value: CssValue::Raw("blue".to_string()),
+                },
+            ],
+            nested_rules: vec![],
+            media_queries: vec![],
+        };
+
+        gen.generate_rule(&rule);
+        let output = gen.css_output;
+
+        // Should output scoped class + :hover (single colon)
+        assert!(output.contains("Button_button_"));
+        assert!(output.contains(":hover"));
+        assert!(!output.contains("::hover")); // Should NOT be double colon
+        assert!(output.contains("background: blue;"));
+    }
+
+    #[test]
+    fn test_pseudo_element() {
+        let mut gen = CssGenerator::new("Icon".to_string());
+
+        let rule = CssRule {
+            selector: CssSelector::Compound(vec![
+                CssSelector::Class("icon".to_string()),
+                CssSelector::PseudoElement("before".to_string()),
+            ]),
+            declarations: vec![
+                CssDeclaration {
+                    property: "content".to_string(),
+                    value: CssValue::String("→".to_string()),
+                },
+            ],
+            nested_rules: vec![],
+            media_queries: vec![],
+        };
+
+        gen.generate_rule(&rule);
+        let output = gen.css_output;
+
+        // Should output scoped class + ::before (double colon)
+        assert!(output.contains("Icon_icon_"));
+        assert!(output.contains("::before"));
+        assert!(!output.contains(":::before")); // Should NOT be triple colon
+        assert!(output.contains("content: \"→\";"));
+    }
+
+    #[test]
+    fn test_multiple_pseudo_classes() {
+        let mut gen1 = CssGenerator::new("Input".to_string());
+        let mut gen2 = CssGenerator::new("Input".to_string());
+
+        // Test :focus
+        let rule1 = CssRule {
+            selector: CssSelector::Compound(vec![
+                CssSelector::Class("input".to_string()),
+                CssSelector::PseudoClass("focus".to_string()),
+            ]),
+            declarations: vec![
+                CssDeclaration {
+                    property: "outline".to_string(),
+                    value: CssValue::Raw("2px solid blue".to_string()),
+                },
+            ],
+            nested_rules: vec![],
+            media_queries: vec![],
+        };
+
+        // Test :disabled
+        let rule2 = CssRule {
+            selector: CssSelector::Compound(vec![
+                CssSelector::Class("input".to_string()),
+                CssSelector::PseudoClass("disabled".to_string()),
+            ]),
+            declarations: vec![
+                CssDeclaration {
+                    property: "opacity".to_string(),
+                    value: CssValue::Raw("0.5".to_string()),
+                },
+            ],
+            nested_rules: vec![],
+            media_queries: vec![],
+        };
+
+        gen1.generate_rule(&rule1);
+        gen2.generate_rule(&rule2);
+
+        let output1 = gen1.css_output;
+        let output2 = gen2.css_output;
+
+        assert!(output1.contains(":focus"));
+        assert!(output1.contains("outline: 2px solid blue;"));
+
+        assert!(output2.contains(":disabled"));
+        assert!(output2.contains("opacity: 0.5;"));
+    }
+
+    #[test]
+    fn test_multiple_pseudo_elements() {
+        let mut gen1 = CssGenerator::new("Quote".to_string());
+        let mut gen2 = CssGenerator::new("Quote".to_string());
+
+        // Test ::before
+        let rule1 = CssRule {
+            selector: CssSelector::Compound(vec![
+                CssSelector::Class("quote".to_string()),
+                CssSelector::PseudoElement("before".to_string()),
+            ]),
+            declarations: vec![
+                CssDeclaration {
+                    property: "content".to_string(),
+                    value: CssValue::String("«".to_string()),
+                },
+            ],
+            nested_rules: vec![],
+            media_queries: vec![],
+        };
+
+        // Test ::after
+        let rule2 = CssRule {
+            selector: CssSelector::Compound(vec![
+                CssSelector::Class("quote".to_string()),
+                CssSelector::PseudoElement("after".to_string()),
+            ]),
+            declarations: vec![
+                CssDeclaration {
+                    property: "content".to_string(),
+                    value: CssValue::String("»".to_string()),
+                },
+            ],
+            nested_rules: vec![],
+            media_queries: vec![],
+        };
+
+        gen1.generate_rule(&rule1);
+        gen2.generate_rule(&rule2);
+
+        let output1 = gen1.css_output;
+        let output2 = gen2.css_output;
+
+        assert!(output1.contains("::before"));
+        assert!(output1.contains("content: \"«\";"));
+
+        assert!(output2.contains("::after"));
+        assert!(output2.contains("content: \"»\";"));
+    }
+
+    #[test]
+    fn test_media_query_simple() {
+        let mut gen = CssGenerator::new("Container".to_string());
+
+        let rule = CssRule {
+            selector: CssSelector::Class("container".to_string()),
+            declarations: vec![
+                CssDeclaration {
+                    property: "width".to_string(),
+                    value: CssValue::Raw("100%".to_string()),
+                },
+            ],
+            nested_rules: vec![],
+            media_queries: vec![
+                CssMediaQuery {
+                    condition: "(min-width: 768px)".to_string(),
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "width".to_string(),
+                            value: CssValue::Raw("750px".to_string()),
+                        },
+                    ],
+                },
+            ],
+        };
+
+        gen.generate_rule(&rule);
+        let output = gen.css_output;
+
+        // Should contain main rule
+        assert!(output.contains("Container_container_"));
+        assert!(output.contains("width: 100%;"));
+
+        // Should contain media query
+        assert!(output.contains("@media (min-width: 768px)"));
+        assert!(output.contains("width: 750px;"));
+    }
+
+    #[test]
+    fn test_media_query_multiple() {
+        let mut gen = CssGenerator::new("Grid".to_string());
+
+        let rule = CssRule {
+            selector: CssSelector::Class("grid".to_string()),
+            declarations: vec![
+                CssDeclaration {
+                    property: "display".to_string(),
+                    value: CssValue::Raw("grid".to_string()),
+                },
+            ],
+            nested_rules: vec![],
+            media_queries: vec![
+                CssMediaQuery {
+                    condition: "(min-width: 768px)".to_string(),
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "grid-template-columns".to_string(),
+                            value: CssValue::Raw("repeat(2, 1fr)".to_string()),
+                        },
+                    ],
+                },
+                CssMediaQuery {
+                    condition: "(min-width: 1024px)".to_string(),
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "grid-template-columns".to_string(),
+                            value: CssValue::Raw("repeat(3, 1fr)".to_string()),
+                        },
+                    ],
+                },
+            ],
+        };
+
+        gen.generate_rule(&rule);
+        let output = gen.css_output;
+
+        // Should contain main rule
+        assert!(output.contains("display: grid;"));
+
+        // Should contain both media queries
+        assert!(output.contains("@media (min-width: 768px)"));
+        assert!(output.contains("repeat(2, 1fr)"));
+        assert!(output.contains("@media (min-width: 1024px)"));
+        assert!(output.contains("repeat(3, 1fr)"));
+    }
+
+    #[test]
+    fn test_media_query_with_nesting() {
+        let mut gen = CssGenerator::new("Card".to_string());
+
+        let rule = CssRule {
+            selector: CssSelector::Class("card".to_string()),
+            declarations: vec![
+                CssDeclaration {
+                    property: "padding".to_string(),
+                    value: CssValue::Raw("16px".to_string()),
+                },
+            ],
+            nested_rules: vec![
+                CssRule {
+                    selector: CssSelector::Nested("&:hover".to_string()),
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "box-shadow".to_string(),
+                            value: CssValue::Raw("0 4px 8px rgba(0,0,0,0.1)".to_string()),
+                        },
+                    ],
+                    nested_rules: vec![],
+                    media_queries: vec![],
+                },
+            ],
+            media_queries: vec![
+                CssMediaQuery {
+                    condition: "(min-width: 768px)".to_string(),
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "padding".to_string(),
+                            value: CssValue::Raw("24px".to_string()),
+                        },
+                    ],
+                },
+            ],
+        };
+
+        gen.generate_rule(&rule);
+        let output = gen.css_output;
+
+        // Should contain main rule
+        assert!(output.contains("padding: 16px;"));
+
+        // Should contain nested hover rule
+        assert!(output.contains(":hover"));
+        assert!(output.contains("box-shadow"));
+
+        // Should contain media query
+        assert!(output.contains("@media (min-width: 768px)"));
+        assert!(output.contains("padding: 24px;"));
     }
 }

@@ -81,6 +81,7 @@ pub enum TokenKind {
     CssSelector(String),   // .button, #id, div, .button:hover, etc.
     CssProperty(String),   // background, padding, color, etc.
     CssValue(String),      // blue, 12px, "Arial", etc.
+    CssMedia,              // @media
 
     // Meta
     Eof,

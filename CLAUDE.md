@@ -2028,9 +2028,9 @@ note: required by trait bound in `print_all`
 
 **Last Updated**: 2025-10-23
 **Compiler Version**: 0.1.0-alpha (100% PRODUCTION READY - ALL features working!)
-**Status**: 🚀 **Phase 7.5 Sprint 2 IN PROGRESS** - Task 2.1 Complete (CSS Nesting with &)
-**Recent Achievement**: ✅ **Phase 7.5 Sprint 2 Task 2.1 COMPLETE!** Implemented CSS nesting with `&` selector: (1) Updated parser to recursively parse nested rules - added `is_nested_rule_start()` to distinguish nested rules from declarations, (2) Enhanced lexer to recognize `&` as valid CSS selector token, (3) Implemented `generate_rule_with_parent()` for recursive nested rule generation with parent selector resolution, (4) `&` in nested selectors replaced with parent at generation time (supports `&:hover`, `& .title`, deeply nested rules), (5) Added 3 unit tests for nesting patterns. All 443 tests passing (100%). **Task 2.1 complete in ~2 hours!** Files modified: 3, Lines added: ~190. CSS nesting fully functional!
-**Next Steps**: Sprint 2 Task 2.2 - Pseudo-elements (::before, ::after), Task 2.3 - Media queries, Task 2.4 - Dynamic CSS values, Task 2.6 - Animations. Then Sprint 3 (Utilities & Ecosystem).
+**Status**: 🚀 **Phase 7.5 Sprint 2 IN PROGRESS** - Task 2.3 Complete (Media Queries)
+**Recent Achievement**: ✅ **Phase 7.5 Sprint 2 Task 2.3 COMPLETE!** Implemented CSS media queries for responsive design: (1) Added `CssMediaQuery` struct and `media_queries` field to `CssRule`, (2) Added `css_paren_depth` tracking to lexer to prevent reading media query conditions as CSS values, (3) Implemented `parse_css_media_query()` method to parse `@media (condition) { declarations }`, (4) Implemented `generate_media_query()` method to output properly formatted `@media` blocks, (5) Added 7 tests (3 unit + 4 integration) covering simple, multiple, nested, and complex media queries. All tests passing (100%). **Task 2.3 complete in ~3 hours!** Files modified: 4 (ast.rs, lexer.rs, parser.rs, css_generator.rs, integration_tests.rs), Lines added: ~350. Media queries fully functional for responsive design!
+**Next Steps**: Sprint 2 Task 2.4 - Dynamic CSS values (Raven variables in CSS), Task 2.6 - Keyframe animations, Task 2.8 - Sprint 2 testing. Then Sprint 3 (Utilities & Ecosystem).
 
 
 ---
@@ -2366,15 +2366,101 @@ css! {
 
 ---
 
+### ✅ Task 2.3: Media Queries (@media) (COMPLETE)
+
+**Status**: ✅ **COMPLETE** (Completed 2025-10-23)
+**Actual Time**: ~3 hours
+**Priority**: HIGH - Responsive design essential
+
+#### What Was Accomplished
+
+**1. AST Enhancement** ✅
+- Added `CssMediaQuery` struct with `condition` and `declarations` fields
+- Added `media_queries: Vec<CssMediaQuery>` to `CssRule`
+- Updated all CssRule initializations across codebase
+
+**2. Lexer Enhancement** ✅
+- Added `CssMedia` token kind for `@media` keyword
+- Added `css_paren_depth` field to track parenthesis depth in CSS mode
+- Enhanced CSS mode to recognize `@media` token properly
+- Added `(` and `)` handling in CSS mode with depth tracking
+- **Critical Fix**: Prevent reading media query conditions as CSS values by checking `css_paren_depth > 0`
+
+**3. Parser Enhancement** ✅
+- Implemented `parse_css_media_query()` method
+- Reads condition tokens between `(` and `)`
+- Parses declarations within media query block
+- Integrates media queries into CSS rule parsing flow
+
+**4. CSS Generator Enhancement** ✅
+- Implemented `generate_media_query()` method
+- Outputs properly formatted `@media` blocks
+- Wraps scoped selectors inside media query blocks
+- Supports multiple media queries per rule
+
+**5. Comprehensive Testing** ✅
+- Added 3 unit tests in css_generator.rs:
+  - `test_media_query_simple` - Basic media query
+  - `test_media_query_multiple` - Multiple media queries
+  - `test_media_query_with_nesting` - Media queries with nested rules
+- Added 4 integration tests in integration_tests.rs:
+  - `test_css_media_query_simple`
+  - `test_css_media_query_multiple`
+  - `test_css_media_query_with_nesting`
+  - `test_css_media_query_complex_condition`
+
+#### Example Output
+
+**Input**:
+```raven
+css! {
+    .container {
+        color: blue;
+
+        @media (min-width: 768px) {
+            color: red;
+        }
+    }
+}
+```
+
+**Generated CSS**:
+```css
+.main_container_abc123 {
+  color: blue;
+}
+
+@media (min-width: 768px) {
+  .main_container_abc123 {
+    color: red;
+  }
+}
+```
+
+#### Technical Highlights
+
+**Root Cause of Initial Bug**: In CSS mode, the lexer was reading `test) { color: red` as a single `CssValue` token because it aggressively consumed everything until a delimiter. This prevented proper parenthesis matching in media query conditions.
+
+**Solution**: Added `css_paren_depth` tracking to the lexer. When `css_paren_depth > 0` (inside parentheses), the lexer reads identifiers and numbers normally instead of as CSS values. This allows proper token-by-token parsing of media query conditions while maintaining CSS value reading for actual CSS properties.
+
+#### Task 2.3 Statistics
+- **Files Modified**: 4 (ast.rs, lexer.rs, parser.rs, css_generator.rs, integration_tests.rs)
+- **Lines Added**: ~350
+- **Tests**: 459 passing (+7 from 452) - 3 unit tests + 4 integration tests
+- **Duration**: ~3 hours (including debugging)
+- **Deliverable**: Full media query support with responsive design capabilities
+
+---
+
 ### Remaining Sprint 2 Tasks
 
-**Task 2.2**: Pseudo-elements (::before, ::after) - 2h
-**Task 2.3**: Media queries (@media) - 2h
+**Task 2.2**: Pseudo-elements (::before, ::after) - ✅ COMPLETE
+**Task 2.3**: Media queries (@media) - ✅ COMPLETE
 **Task 2.4**: Dynamic CSS values (Raven variables) - 3h
 **Task 2.6**: Keyframe animations (@keyframes) - 2h
 **Task 2.8**: Sprint 2 testing & integration - 1h
 
-**Total Remaining**: ~10 hours
+**Total Remaining**: ~6 hours
 
 ---
 

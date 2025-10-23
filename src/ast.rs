@@ -160,7 +160,15 @@ pub struct CssExpression {
 pub struct CssRule {
     pub selector: CssSelector,
     pub declarations: Vec<CssDeclaration>,
-    pub nested_rules: Vec<CssRule>,  // For Sprint 2 nesting (not used yet)
+    pub nested_rules: Vec<CssRule>,  // For Sprint 2 nesting
+    pub media_queries: Vec<CssMediaQuery>,  // For Sprint 2 media queries
+}
+
+// CSS media query: @media (min-width: 768px) { ... }
+#[derive(Debug, Clone)]
+pub struct CssMediaQuery {
+    pub condition: String,  // "(min-width: 768px)"
+    pub declarations: Vec<CssDeclaration>,  // Declarations within this media query
 }
 
 // CSS selector: .button, #id, div, etc.
@@ -169,7 +177,8 @@ pub enum CssSelector {
     Class(String),           // .button
     Id(String),              // #main
     Element(String),         // div, button
-    Pseudo(String),          // :hover, :focus
+    PseudoClass(String),     // :hover, :focus, :active, :disabled
+    PseudoElement(String),   // ::before, ::after, ::first-line
     Nested(String),          // & for nesting (Sprint 2)
     Compound(Vec<CssSelector>), // .button:hover
 }

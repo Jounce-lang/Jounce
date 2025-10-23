@@ -16,6 +16,7 @@ pub struct Lexer {
     just_closed_jsx_expr: bool, // Track if we just emitted a JsxCloseBrace (allows delimiters as JSX text)
     css_mode: bool,           // Track if we're in CSS context
     css_depth: usize,         // Track brace nesting depth in CSS
+    css_paren_depth: usize,   // Track parenthesis depth in CSS (for media queries)
 }
 
 impl Lexer {
@@ -36,6 +37,7 @@ impl Lexer {
             just_closed_jsx_expr: false,
             css_mode: false,
             css_depth: 0,
+            css_paren_depth: 0,
         };
         lexer.read_char();
         lexer
@@ -117,13 +119,50 @@ impl Lexer {
                     self.read_char();
                     Token::new(TokenKind::Colon, ":".to_string(), self.line, start_col)
                 }
+                '(' => {
+                    self.css_paren_depth += 1;
+                    self.read_char();
+                    Token::new(TokenKind::LParen, "(".to_string(), self.line, start_col)
+                }
+                ')' => {
+                    if self.css_paren_depth > 0 {
+                        self.css_paren_depth -= 1;
+                    }
+                    self.read_char();
+                    Token::new(TokenKind::RParen, ")".to_string(), self.line, start_col)
+                }
                 '.' | '#' | '&' => {
                     // CSS selector (including & for nesting)
                     self.read_css_selector()
                 }
+                '@' => {
+                    // Check if this is @media
+                    if self.peek() == 'm' {
+                        let pos = self.position;
+                        self.read_char(); // consume '@'
+                        let ident_token = self.read_identifier();
+                        if ident_token.lexeme == "media" {
+                            return Token::new(TokenKind::CssMedia, "@media".to_string(), self.line, start_col);
+                        } else {
+                            // Not @media, reset
+                            self.position = pos;
+                            self.ch = '@';
+                            self.read_char();
+                            Token::new(TokenKind::At, "@".to_string(), self.line, start_col)
+                        }
+                    } else {
+                        self.read_char();
+                        Token::new(TokenKind::At, "@".to_string(), self.line, start_col)
+                    }
+                }
                 '\0' => Token::new(TokenKind::Eof, "".to_string(), self.line, start_col),
                 _ => {
                     if self.ch.is_alphabetic() || self.ch == '-' {
+                        // When inside parentheses (media query condition), read as identifier
+                        if self.css_paren_depth > 0 {
+                            return self.read_identifier();
+                        }
+
                         // Could be a property name or selector
                         // Peek ahead to determine which
                         let mut peek_pos = self.position;
@@ -149,6 +188,10 @@ impl Lexer {
                         // String value
                         self.read_string()
                     } else if self.ch.is_ascii_digit() {
+                        // When inside parentheses (media query condition), read as number
+                        if self.css_paren_depth > 0 {
+                            return self.read_number();
+                        }
                         // Numeric value - read as CSS value
                         let num_token = self.read_number();
                         // Convert to CSS value
@@ -334,7 +377,23 @@ impl Lexer {
                     Token::new(TokenKind::Minus, "-".to_string(), self.line, start_col)
                 }
             }
-            '@' => Token::new(TokenKind::At, "@".to_string(), self.line, start_col),
+            '@' => {
+                // Check if in CSS mode and if this is @media
+                if self.is_css_mode() && self.peek() == 'm' {
+                    // Try to read "media"
+                    let pos = self.position;
+                    self.read_char(); // consume '@'
+                    let ident_token = self.read_identifier();
+                    if ident_token.lexeme == "media" {
+                        return Token::new(TokenKind::CssMedia, "@media".to_string(), self.line, start_col);
+                    } else {
+                        // Not @media, reset and return @ token
+                        self.position = pos;
+                        self.ch = '@';
+                    }
+                }
+                Token::new(TokenKind::At, "@".to_string(), self.line, start_col)
+            }
             '\0' => Token::new(TokenKind::Eof, "".to_string(), self.line, start_col),
             '"' => return self.read_string(),
             '\'' => {
