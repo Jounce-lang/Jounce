@@ -1,0 +1,53 @@
+// examples/02-control-flow/09_match_simple.raven
+//
+// CONCEPT: Basic match expression
+// DIFFICULTY: Beginner
+// FEATURES: match expressions, pattern matching, wildcard (_) pattern
+//
+// This example demonstrates:
+// - Using match for pattern matching
+// - Matching against specific values
+// - Using the wildcard (_) for default cases
+// - Match as an expression that returns a value
+
+fn describe_number(x: i32) -> String {
+    match x {
+        0 => "zero",
+        1 => "one",
+        2 => "two",
+        3 => "three",
+        _ => "many"
+    }
+}
+
+fn main() {
+    println!("0 is: {}", describe_number(0));
+    println!("2 is: {}", describe_number(2));
+    println!("5 is: {}", describe_number(5));
+    println!("100 is: {}", describe_number(100));
+}
+
+// EXPECTED OUTPUT:
+// 0 is: zero
+// 2 is: two
+// 5 is: many
+// 100 is: many
+//
+// TRY IT:
+// raven compile examples/02-control-flow/09_match_simple.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - Match checks a value against multiple patterns
+// - Each arm has a pattern (left) and result (right)
+// - The => operator separates pattern from result
+// - _ is a wildcard that matches anything
+// - Match is exhaustive - all cases must be covered
+// - Match returns a value (like if/else expressions)
+//
+// COMPARISON WITH IF/ELSE:
+// Match is cleaner than:
+//   if x == 0 { "zero" }
+//   else if x == 1 { "one" }
+//   else if x == 2 { "two" }
+//   ...

@@ -1,0 +1,43 @@
+// examples/02-control-flow/06_for_loop_exclusive.raven
+//
+// CONCEPT: For loop with exclusive range (1..10)
+// DIFFICULTY: Beginner
+// FEATURES: for loops, exclusive ranges, println!
+//
+// This example demonstrates:
+// - Using for loops to iterate over a range
+// - Exclusive range syntax (1..10 means 1 to 9)
+// - The difference between .. and ..=
+
+fn main() {
+    println!("Counting from 1 to 9:");
+
+    for i in 1..10 {
+        println!("  {}", i);
+    }
+
+    println!("Done!");
+}
+
+// EXPECTED OUTPUT:
+// Counting from 1 to 9:
+//   1
+//   2
+//   3
+//   4
+//   5
+//   6
+//   7
+//   8
+//   9
+// Done!
+//
+// TRY IT:
+// raven compile examples/02-control-flow/06_for_loop_exclusive.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - For loops iterate over ranges
+// - The .. operator creates an exclusive range (end is NOT included)
+// - 1..10 means [1, 2, 3, 4, 5, 6, 7, 8, 9]
+// - The loop variable (i) is automatically created

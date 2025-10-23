@@ -1,0 +1,48 @@
+// examples/02-control-flow/07_for_loop_inclusive.raven
+//
+// CONCEPT: For loop with inclusive range (1..=10)
+// DIFFICULTY: Beginner
+// FEATURES: for loops, inclusive ranges, println!
+//
+// This example demonstrates:
+// - Using inclusive range syntax (..=)
+// - Including the end value in iteration
+// - The difference between .. and ..=
+
+fn main() {
+    println!("Counting from 1 to 10:");
+
+    for i in 1..=10 {
+        println!("  {}", i);
+    }
+
+    println!("Done!");
+}
+
+// EXPECTED OUTPUT:
+// Counting from 1 to 10:
+//   1
+//   2
+//   3
+//   4
+//   5
+//   6
+//   7
+//   8
+//   9
+//   10
+// Done!
+//
+// TRY IT:
+// raven compile examples/02-control-flow/07_for_loop_inclusive.raven
+// cd dist && node server.js
+//
+// COMPARISON WITH EXCLUSIVE RANGE:
+// - 1..10 iterates over [1, 2, 3, 4, 5, 6, 7, 8, 9]
+// - 1..=10 iterates over [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+//
+// WHAT YOU LEARNED:
+// - The ..= operator creates an inclusive range (end IS included)
+// - Use .. when you want to exclude the end
+// - Use ..= when you want to include the end
+// - This is the same syntax as Rust!

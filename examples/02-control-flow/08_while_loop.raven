@@ -1,0 +1,46 @@
+// examples/02-control-flow/08_while_loop.raven
+//
+// CONCEPT: While loop with counter
+// DIFFICULTY: Beginner
+// FEATURES: while loops, mutable variables, comparison operators
+//
+// This example demonstrates:
+// - Using while loops for conditional iteration
+// - Mutating a counter variable
+// - Loop continues while condition is true
+
+fn main() {
+    let mut count = 0;
+
+    println!("Counting to 5:");
+
+    while count < 5 {
+        count = count + 1;
+        println!("  Count: {}", count);
+    }
+
+    println!("Done!");
+}
+
+// EXPECTED OUTPUT:
+// Counting to 5:
+//   Count: 1
+//   Count: 2
+//   Count: 3
+//   Count: 4
+//   Count: 5
+// Done!
+//
+// TRY IT:
+// raven compile examples/02-control-flow/08_while_loop.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - While loops run as long as the condition is true
+// - The condition is checked BEFORE each iteration
+// - You must use 'mut' to modify the counter
+// - Be careful to avoid infinite loops!
+//
+// WHEN TO USE:
+// - Use 'for' when you know how many iterations
+// - Use 'while' when you have a condition to check

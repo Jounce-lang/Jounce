@@ -23,17 +23,20 @@ Start here if you're new to RavensOne! These examples introduce one concept at a
 10. **10_comments.raven** - Comment syntax and best practices
 
 ### 02-control-flow/ - Making Decisions
-**Difficulty**: Beginner-Intermediate | **Lines**: 20-40 per example
+**Difficulty**: Beginner-Intermediate | **Lines**: 20-40 per example | **Time**: 1-2 hours
 
 Learn how to control program flow with conditions and loops.
 
-- If/else expressions (1-level, 2-level, 3-level nesting)
-- For loops with ranges (inclusive and exclusive)
-- While loops
-- Match expressions
-- Pattern matching basics
-
-*(Coming in Sprint 2)*
+1. **01_simple_if.raven** - Simple if without else
+2. **02_if_else.raven** - If/else with both branches
+3. **03_if_else_expression.raven** - If/else as an expression
+4. **04_nested_if_2_levels.raven** - Two levels of nested if/else
+5. **05_nested_if_3_levels.raven** - Three levels of nested if/else
+6. **06_for_loop_exclusive.raven** - For loop with exclusive range (1..10)
+7. **07_for_loop_inclusive.raven** - For loop with inclusive range (1..=10)
+8. **08_while_loop.raven** - While loop with counter
+9. **09_match_simple.raven** - Basic match expression
+10. **10_arrays.raven** - Array creation and indexing
 
 ### 03-functions/ - Advanced Functions
 **Difficulty**: Intermediate | **Lines**: 30-50 per example
@@ -199,10 +202,13 @@ find examples -name "*.raven" -exec raven compile {} \;
 
 ## 📊 Statistics
 
-- **Total Examples**: 10 (Sprint 1 complete)
+- **Total Examples**: 20 (Sprint 1 + Sprint 2 complete)
+  - 01-basics: 10 examples ✅
+  - 02-control-flow: 10 examples ✅
 - **Total Planned**: ~60 examples across 8 categories
 - **Test Coverage**: 100% of examples compile successfully
 - **Difficulty Levels**: 3 (Beginner, Intermediate, Advanced)
+- **Progress**: 33% complete (20/60)
 
 ## 🤝 Contributing
 
@@ -231,6 +237,9 @@ Want to add examples? Follow these guidelines:
 
 ---
 
-**Sprint Status**: Phase 6 Sprint 1 Complete (10/10 examples)
-**Next Sprint**: Sprint 2 - Control Flow & Collections (10 examples)
+**Sprint Status**: Phase 6 Sprint 2 Complete (20/20 examples total)
+- Sprint 1 ✅ Complete: 01-basics (10 examples)
+- Sprint 2 ✅ Complete: 02-control-flow (10 examples)
+
+**Next Sprint**: Sprint 3 - Functions & Closures (8 examples)
 **Last Updated**: 2025-10-22

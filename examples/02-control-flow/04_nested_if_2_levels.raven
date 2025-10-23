@@ -1,0 +1,45 @@
+// examples/02-control-flow/04_nested_if_2_levels.raven
+//
+// CONCEPT: Two levels of nested if/else
+// DIFFICULTY: Intermediate
+// FEATURES: nested if/else, function return types, implicit returns
+//
+// This example demonstrates:
+// - Nesting if/else inside another if/else
+// - Making multi-level decisions
+// - Using nested conditionals to classify values
+
+fn classify_number(x: i32) -> String {
+    if x > 0 {
+        if x > 100 {
+            "large positive"
+        } else {
+            "small positive"
+        }
+    } else {
+        "non-positive"
+    }
+}
+
+fn main() {
+    println!("150 is: {}", classify_number(150));
+    println!("50 is: {}", classify_number(50));
+    println!("0 is: {}", classify_number(0));
+    println!("-10 is: {}", classify_number(-10));
+}
+
+// EXPECTED OUTPUT:
+// 150 is: large positive
+// 50 is: small positive
+// 0 is: non-positive
+// -10 is: non-positive
+//
+// TRY IT:
+// raven compile examples/02-control-flow/04_nested_if_2_levels.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - If/else can be nested to make complex decisions
+// - Each level adds another condition to check
+// - Two levels can create 3+ different outcomes
+// - Nested expressions work as function return values

@@ -1,0 +1,54 @@
+// examples/02-control-flow/10_arrays.raven
+//
+// CONCEPT: Array creation and indexing
+// DIFFICULTY: Beginner
+// FEATURES: arrays, indexing, for loops with ranges
+//
+// This example demonstrates:
+// - Creating arrays with literal syntax
+// - Accessing elements by index (zero-based)
+// - Iterating over arrays with for loops
+// - Combining arrays with ranges
+
+fn main() {
+    // Create an array with 5 elements
+    let numbers = [10, 20, 30, 40, 50];
+
+    // Access individual elements by index (zero-based!)
+    println!("First element: {}", numbers[0]);
+    println!("Third element: {}", numbers[2]);
+    println!("Last element: {}", numbers[4]);
+
+    // Iterate over all elements directly
+    println!("All numbers:");
+    for num in numbers {
+        println!("  {}", num);
+    }
+}
+
+// EXPECTED OUTPUT:
+// First element: 10
+// Third element: 30
+// Last element: 50
+// All numbers:
+//   10
+//   20
+//   30
+//   40
+//   50
+//
+// TRY IT:
+// raven compile examples/02-control-flow/10_arrays.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - Arrays store multiple values of the same type
+// - Use [value1, value2, ...] syntax to create arrays
+// - Indexing is zero-based (first element is [0])
+// - You can iterate over arrays directly using: for item in array
+// - Direct iteration is cleaner than using indices
+//
+// KEY POINT:
+// - Arrays are fixed-size collections
+// - All elements must be the same type
+// - Index out of bounds will cause a runtime error

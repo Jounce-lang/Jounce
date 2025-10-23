@@ -1,0 +1,33 @@
+// examples/02-control-flow/01_simple_if.raven
+//
+// CONCEPT: Simple if expression without else
+// DIFFICULTY: Beginner
+// FEATURES: if expression, comparison operators, println!
+//
+// This example demonstrates:
+// - Using if without an else branch
+// - Comparison operators (>)
+// - Conditional execution of code blocks
+
+fn main() {
+    let x = 10;
+
+    if x > 5 {
+        println!("x is greater than 5");
+    }
+
+    println!("Done!");
+}
+
+// EXPECTED OUTPUT:
+// x is greater than 5
+// Done!
+//
+// TRY IT:
+// raven compile examples/02-control-flow/01_simple_if.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - If expressions can exist without else branches
+// - Code inside the if block only executes when the condition is true
+// - The program continues after the if block regardless

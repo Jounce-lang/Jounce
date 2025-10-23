@@ -1,0 +1,35 @@
+// examples/02-control-flow/02_if_else.raven
+//
+// CONCEPT: If/else with both branches
+// DIFFICULTY: Beginner
+// FEATURES: if/else, comparison operators (>=), println!
+//
+// This example demonstrates:
+// - Using if/else with two branches
+// - Making binary decisions in code
+// - Only one branch executes
+
+fn main() {
+    let age = 18;
+
+    if age >= 18 {
+        println!("You are an adult");
+    } else {
+        println!("You are a minor");
+    }
+}
+
+// EXPECTED OUTPUT:
+// You are an adult
+//
+// TRY IT:
+// raven compile examples/02-control-flow/02_if_else.raven
+// cd dist && node server.js
+//
+// EXPERIMENT:
+// Change age to 15 and see the different output!
+//
+// WHAT YOU LEARNED:
+// - If/else provides two alternative execution paths
+// - Exactly one branch always executes
+// - The condition determines which branch runs

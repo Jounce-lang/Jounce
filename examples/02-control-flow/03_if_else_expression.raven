@@ -1,0 +1,42 @@
+// examples/02-control-flow/03_if_else_expression.raven
+//
+// CONCEPT: If/else as an expression (returns a value)
+// DIFFICULTY: Beginner
+// FEATURES: if/else expressions, else if chains, implicit returns
+//
+// This example demonstrates:
+// - Using if/else as an expression that returns a value
+// - Chaining multiple conditions with else if
+// - Assigning the result to a variable
+
+fn main() {
+    let temperature = 25;
+
+    let weather = if temperature > 30 {
+        "hot"
+    } else if temperature > 20 {
+        "warm"
+    } else if temperature > 10 {
+        "cool"
+    } else {
+        "cold"
+    };
+
+    println!("The weather is {}", weather);
+}
+
+// EXPECTED OUTPUT:
+// The weather is warm
+//
+// TRY IT:
+// raven compile examples/02-control-flow/03_if_else_expression.raven
+// cd dist && node server.js
+//
+// EXPERIMENT:
+// Try different temperature values: 35, 15, 5
+//
+// WHAT YOU LEARNED:
+// - If/else can be used as an expression (like Rust!)
+// - Each branch must return the same type
+// - No semicolons in branches means implicit return
+// - else if allows chaining multiple conditions

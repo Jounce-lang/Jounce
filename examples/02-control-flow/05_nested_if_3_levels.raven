@@ -1,0 +1,51 @@
+// examples/02-control-flow/05_nested_if_3_levels.raven
+//
+// CONCEPT: Three levels of nested if/else
+// DIFFICULTY: Intermediate
+// FEATURES: deeply nested if/else, function return types, implicit returns
+//
+// This example demonstrates:
+// - Nesting if/else three levels deep
+// - Creating fine-grained classifications
+// - RavensOne supports unlimited nesting depth!
+
+fn categorize(x: i32) -> String {
+    if x > 0 {
+        if x > 100 {
+            if x > 1000 {
+                "huge positive"
+            } else {
+                "large positive"
+            }
+        } else {
+            "small positive"
+        }
+    } else {
+        "non-positive"
+    }
+}
+
+fn main() {
+    println!("1500 is: {}", categorize(1500));
+    println!("500 is: {}", categorize(500));
+    println!("50 is: {}", categorize(50));
+    println!("0 is: {}", categorize(0));
+}
+
+// EXPECTED OUTPUT:
+// 1500 is: huge positive
+// 500 is: large positive
+// 50 is: small positive
+// 0 is: non-positive
+//
+// TRY IT:
+// raven compile examples/02-control-flow/05_nested_if_3_levels.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - RavensOne supports deeply nested if/else (unlimited depth!)
+// - Each level refines the classification
+// - Three levels can create 4+ different outcomes
+// - All branches implicitly return the same type (String)
+//
+// NOTE: RavensOne handles 2, 3, 4, 5+ level nesting perfectly!
