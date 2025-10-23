@@ -136,23 +136,25 @@ impl Lexer {
                     self.read_css_selector()
                 }
                 '@' => {
-                    // Check if this is @media
-                    if self.peek() == 'm' {
-                        let pos = self.position;
-                        self.read_char(); // consume '@'
-                        let ident_token = self.read_identifier();
-                        if ident_token.lexeme == "media" {
+                    // Check if this is @media or @keyframes
+                    let pos = self.position;
+                    self.read_char(); // consume '@'
+                    let ident_token = self.read_identifier();
+
+                    match ident_token.lexeme.as_str() {
+                        "media" => {
                             return Token::new(TokenKind::CssMedia, "@media".to_string(), self.line, start_col);
-                        } else {
-                            // Not @media, reset
+                        }
+                        "keyframes" => {
+                            return Token::new(TokenKind::CssKeyframes, "@keyframes".to_string(), self.line, start_col);
+                        }
+                        _ => {
+                            // Not a recognized @-rule, reset
                             self.position = pos;
                             self.ch = '@';
                             self.read_char();
                             Token::new(TokenKind::At, "@".to_string(), self.line, start_col)
                         }
-                    } else {
-                        self.read_char();
-                        Token::new(TokenKind::At, "@".to_string(), self.line, start_col)
                     }
                 }
                 '\0' => Token::new(TokenKind::Eof, "".to_string(), self.line, start_col),
@@ -378,18 +380,24 @@ impl Lexer {
                 }
             }
             '@' => {
-                // Check if in CSS mode and if this is @media
-                if self.is_css_mode() && self.peek() == 'm' {
-                    // Try to read "media"
+                // Check if in CSS mode and if this is @media or @keyframes
+                if self.is_css_mode() {
                     let pos = self.position;
                     self.read_char(); // consume '@'
                     let ident_token = self.read_identifier();
-                    if ident_token.lexeme == "media" {
-                        return Token::new(TokenKind::CssMedia, "@media".to_string(), self.line, start_col);
-                    } else {
-                        // Not @media, reset and return @ token
-                        self.position = pos;
-                        self.ch = '@';
+
+                    match ident_token.lexeme.as_str() {
+                        "media" => {
+                            return Token::new(TokenKind::CssMedia, "@media".to_string(), self.line, start_col);
+                        }
+                        "keyframes" => {
+                            return Token::new(TokenKind::CssKeyframes, "@keyframes".to_string(), self.line, start_col);
+                        }
+                        _ => {
+                            // Not a recognized @-rule, reset
+                            self.position = pos;
+                            self.ch = '@';
+                        }
                     }
                 }
                 Token::new(TokenKind::At, "@".to_string(), self.line, start_col)
@@ -644,6 +652,12 @@ impl Lexer {
     pub fn enter_css_mode(&mut self) {
         self.css_mode = true;
         self.css_depth = 1; // Start at depth 1 (first opening brace)
+    }
+
+    pub fn exit_css_mode(&mut self) {
+        self.css_mode = false;
+        self.css_depth = 0;
+        self.css_paren_depth = 0;
     }
 
     pub fn is_css_mode(&self) -> bool {

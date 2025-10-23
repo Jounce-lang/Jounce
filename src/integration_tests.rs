@@ -3076,4 +3076,258 @@ mod tests {
         }
         assert!(result.is_ok(), "CSS with complex media query condition should compile");
     }
+
+    #[test]
+    fn test_css_dynamic_value_simple() {
+        // Sprint 2 Task 2.4 - Dynamic CSS values
+        let source = r#"
+            fn main() {
+                let color = "blue";
+                let styles = css! {
+                    .button {
+                        background: {color};
+                        padding: 12px;
+                    }
+                };
+                println!("Button with dynamic color");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with dynamic value should compile");
+    }
+
+    #[test]
+    fn test_css_dynamic_value_expression() {
+        // Sprint 2 Task 2.4 - Dynamic CSS values with expressions
+        let source = r#"
+            fn main() {
+                let is_large = true;
+                let styles = css! {
+                    .button {
+                        padding: {is_large ? "16px" : "8px"};
+                        opacity: {is_large ? 1.0 : 0.5};
+                    }
+                };
+                println!("Button with dynamic sizing");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with dynamic expressions should compile");
+    }
+
+    #[test]
+    fn test_css_dynamic_and_static_mixed() {
+        // Sprint 2 Task 2.4 - Mix of static and dynamic values
+        let source = r#"
+            fn main() {
+                let theme_color = "blue";
+                let styles = css! {
+                    .card {
+                        background: {theme_color};
+                        color: white;
+                        padding: 20px;
+                        border-radius: {theme_color == "blue" ? "8px" : "4px"};
+                    }
+                };
+                println!("Card with mixed styles");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with mixed static and dynamic values should compile");
+    }
+
+    // Sprint 2 Task 2.6: Keyframe animations tests
+
+    #[test]
+    fn test_css_keyframes_simple_from_to() {
+        // Simple keyframes with from/to
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+
+                    .button {
+                        animation: fadeIn 0.3s ease-in;
+                    }
+                };
+                println!("Button with fade-in animation");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with simple keyframes should compile");
+    }
+
+    #[test]
+    fn test_css_keyframes_percentages() {
+        // Keyframes with percentage selectors
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    @keyframes slideIn {
+                        0% { transform: translateX(-100%); }
+                        50% { transform: translateX(-50%); }
+                        100% { transform: translateX(0); }
+                    }
+
+                    .panel {
+                        animation: slideIn 0.5s ease-out;
+                    }
+                };
+                println!("Panel with slide-in animation");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with percentage keyframes should compile");
+    }
+
+    #[test]
+    fn test_css_keyframes_multiple_properties() {
+        // Keyframes with multiple CSS properties
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    @keyframes pulse {
+                        from {
+                            opacity: 1;
+                            transform: scale(1);
+                        }
+                        to {
+                            opacity: 0.8;
+                            transform: scale(1.05);
+                        }
+                    }
+
+                    .logo {
+                        animation: pulse 1s infinite alternate;
+                    }
+                };
+                println!("Logo with pulse animation");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with multi-property keyframes should compile");
+    }
+
+    #[test]
+    fn test_css_multiple_keyframes() {
+        // Multiple keyframes in one css! block
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+
+                    @keyframes slideUp {
+                        from { transform: translateY(100%); }
+                        to { transform: translateY(0); }
+                    }
+
+                    .modal {
+                        animation: fadeIn 0.3s ease-in, slideUp 0.3s ease-out;
+                    }
+                };
+                println!("Modal with combined animations");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with multiple keyframes should compile");
+    }
+
+    #[test]
+    fn test_css_keyframes_with_rules() {
+        // Keyframes combined with regular CSS rules
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .button {
+                        background: blue;
+                        padding: 12px 24px;
+                        color: white;
+                    }
+
+                    .button:hover {
+                        background: darkblue;
+                    }
+
+                    @keyframes spin {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                    }
+
+                    .spinner {
+                        animation: spin 1s linear infinite;
+                    }
+                };
+                println!("Button with spinner");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with keyframes and rules should compile");
+    }
+
+    #[test]
+    fn test_css_complex_keyframes() {
+        // Complex animation with multiple steps
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    @keyframes bounce {
+                        0% { transform: translateY(0); }
+                        25% { transform: translateY(-20px); }
+                        50% { transform: translateY(0); }
+                        75% { transform: translateY(-10px); }
+                        100% { transform: translateY(0); }
+                    }
+
+                    .bouncing-ball {
+                        animation: bounce 0.8s ease-in-out infinite;
+                    }
+                };
+                println!("Ball with bounce animation");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS with complex multi-step keyframes should compile");
+    }
 }

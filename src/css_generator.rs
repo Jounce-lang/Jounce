@@ -13,6 +13,15 @@ pub struct CssGenerator {
     /// Map of original class names to scoped class names
     /// e.g., "button" -> "Button_button_a3f5c9"
     class_map: HashMap<String, String>,
+    /// Map of original keyframe names to scoped keyframe names
+    /// e.g., "fadeIn" -> "Button_fadeIn_a3f5c9"
+    /// Sprint 2 Task 2.6
+    keyframes_map: HashMap<String, String>,
+    /// Dynamic CSS declarations that need to become inline styles
+    /// Maps class name to vec of (property, expression) pairs
+    /// e.g., "button" -> [("background", props.color), ("opacity", props.disabled ? 0.5 : 1.0)]
+    /// Sprint 2 Task 2.4
+    dynamic_declarations: HashMap<String, Vec<(String, Expression)>>,
 }
 
 impl CssGenerator {
@@ -22,14 +31,23 @@ impl CssGenerator {
             component_name,
             css_output: String::new(),
             class_map: HashMap::new(),
+            keyframes_map: HashMap::new(),
+            dynamic_declarations: HashMap::new(),
         }
     }
 
     /// Generate CSS from a CssExpression
     pub fn generate(&mut self, css_expr: &CssExpression) -> String {
+        // Generate CSS rules
         for rule in &css_expr.rules {
             self.generate_rule(rule);
         }
+
+        // Generate keyframes (Sprint 2 Task 2.6)
+        for keyframes in &css_expr.keyframes {
+            self.generate_keyframes(keyframes);
+        }
+
         self.css_output.clone()
     }
 
@@ -48,8 +66,14 @@ impl CssGenerator {
             self.css_output.push_str(" {\n");
 
             // Generate declarations
+            // Extract class name if selector is a class (for dynamic declarations)
+            let class_name = match &rule.selector {
+                CssSelector::Class(name) => Some(name.clone()),
+                _ => None,
+            };
+
             for decl in &rule.declarations {
-                self.generate_declaration(decl);
+                self.generate_declaration(decl, class_name.as_deref());
             }
 
             // Close rule
@@ -93,6 +117,84 @@ impl CssGenerator {
 
         // Close media query
         self.css_output.push_str("}\n\n");
+    }
+
+    /// Generate CSS for keyframes animation (Sprint 2 Task 2.6)
+    /// Example output:
+    /// @keyframes Button_fadeIn_abc123 {
+    ///   from { opacity: 0; }
+    ///   to { opacity: 1; }
+    /// }
+    fn generate_keyframes(&mut self, keyframes: &CssKeyframes) {
+        // Generate scoped keyframe name
+        let scoped_name = self.generate_scoped_keyframe_name(&keyframes.name);
+
+        // Output @keyframes declaration
+        self.css_output.push_str("@keyframes ");
+        self.css_output.push_str(&scoped_name);
+        self.css_output.push_str(" {\n");
+
+        // Generate each keyframe rule
+        for frame in &keyframes.frames {
+            // Output keyframe selector (from, to, or percentage)
+            self.css_output.push_str("  ");
+            self.css_output.push_str(&self.generate_keyframe_selector(&frame.selector));
+            self.css_output.push_str(" {\n");
+
+            // Generate declarations
+            for decl in &frame.declarations {
+                self.css_output.push_str("    ");
+                self.css_output.push_str(&decl.property);
+                self.css_output.push_str(": ");
+                self.css_output.push_str(&self.generate_value(&decl.value));
+                self.css_output.push_str(";\n");
+            }
+
+            // Close keyframe
+            self.css_output.push_str("  }\n");
+        }
+
+        // Close @keyframes
+        self.css_output.push_str("}\n\n");
+    }
+
+    /// Generate keyframe selector (from, to, or percentage)
+    fn generate_keyframe_selector(&self, selector: &CssKeyframeSelector) -> String {
+        match selector {
+            CssKeyframeSelector::From => "from".to_string(),
+            CssKeyframeSelector::To => "to".to_string(),
+            CssKeyframeSelector::Percentage(p) => {
+                // Format percentage with proper precision
+                if p.fract() == 0.0 {
+                    format!("{}%", *p as i32)
+                } else {
+                    format!("{}%", p)
+                }
+            }
+        }
+    }
+
+    /// Generate a scoped keyframe name using hash-based approach
+    /// Format: {ComponentName}_{keyframeName}_{hash}
+    /// Example: "fadeIn" -> "Button_fadeIn_a3f5c9"
+    fn generate_scoped_keyframe_name(&mut self, keyframe_name: &str) -> String {
+        // Check if we've already generated this keyframe name
+        if let Some(scoped) = self.keyframes_map.get(keyframe_name) {
+            return scoped.clone();
+        }
+
+        // Generate hash from component name + keyframe name
+        let hash = self.generate_hash(&format!("{}{}", self.component_name, keyframe_name));
+        let scoped_name = format!("{}_{}_{}",
+            self.component_name,
+            keyframe_name,
+            &hash[0..6]  // Use first 6 chars of hash
+        );
+
+        // Store in map for reuse
+        self.keyframes_map.insert(keyframe_name.to_string(), scoped_name.clone());
+
+        scoped_name
     }
 
     /// Generate a scoped selector from CssSelector (without parent)
@@ -230,7 +332,21 @@ impl CssGenerator {
     }
 
     /// Generate a CSS declaration (property: value;)
-    fn generate_declaration(&mut self, decl: &CssDeclaration) {
+    fn generate_declaration(&mut self, decl: &CssDeclaration, class_name: Option<&str>) {
+        // Check if value is dynamic (Sprint 2 Task 2.4)
+        if let CssValue::Dynamic(ref expr) = decl.value {
+            // Store dynamic declaration for JS emitter
+            if let Some(class) = class_name {
+                self.dynamic_declarations
+                    .entry(class.to_string())
+                    .or_insert_with(Vec::new)
+                    .push((decl.property.clone(), *expr.clone()));
+            }
+            // Skip outputting dynamic declarations to static CSS
+            return;
+        }
+
+        // Generate static CSS declaration
         self.css_output.push_str("  "); // Indent
         self.css_output.push_str(&decl.property);
         self.css_output.push_str(": ");
@@ -253,12 +369,29 @@ impl CssGenerator {
                 format!("{}({})", name, arg_strs.join(", "))
             }
             CssValue::Raw(raw) => raw.clone(),
+            CssValue::Dynamic(_expr) => {
+                // Dynamic values are handled separately by the JS emitter
+                // They should not appear in the static CSS output
+                "/* dynamic */".to_string()
+            }
         }
     }
 
     /// Get the class name mapping (for JavaScript code generation)
     pub fn get_class_map(&self) -> &HashMap<String, String> {
         &self.class_map
+    }
+
+    /// Get the keyframe name mapping (for JavaScript code generation)
+    /// Sprint 2 Task 2.6
+    pub fn get_keyframes_map(&self) -> &HashMap<String, String> {
+        &self.keyframes_map
+    }
+
+    /// Get the dynamic declarations that need to become inline styles
+    /// Sprint 2 Task 2.4
+    pub fn get_dynamic_declarations(&self) -> &HashMap<String, Vec<(String, Expression)>> {
+        &self.dynamic_declarations
     }
 }
 
@@ -340,6 +473,7 @@ mod tests {
             media_queries: vec![],
                 },
             ],
+            keyframes: vec![],
         };
 
         let output = gen.generate(&css_expr);
@@ -902,5 +1036,175 @@ mod tests {
         // Should contain media query
         assert!(output.contains("@media (min-width: 768px)"));
         assert!(output.contains("padding: 24px;"));
+    }
+
+    // Sprint 2 Task 2.6: Keyframe animations tests
+
+    #[test]
+    fn test_keyframes_simple_from_to() {
+        let mut gen = CssGenerator::new("Button".to_string());
+
+        let keyframes = CssKeyframes {
+            name: "fadeIn".to_string(),
+            frames: vec![
+                CssKeyframeRule {
+                    selector: CssKeyframeSelector::From,
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "opacity".to_string(),
+                            value: CssValue::Raw("0".to_string()),
+                        },
+                    ],
+                },
+                CssKeyframeRule {
+                    selector: CssKeyframeSelector::To,
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "opacity".to_string(),
+                            value: CssValue::Raw("1".to_string()),
+                        },
+                    ],
+                },
+            ],
+        };
+
+        gen.generate_keyframes(&keyframes);
+        let output = gen.css_output;
+
+        // Should contain scoped keyframe name
+        assert!(output.contains("@keyframes Button_fadeIn_"));
+        // Should contain from and to
+        assert!(output.contains("from {"));
+        assert!(output.contains("to {"));
+        // Should contain declarations
+        assert!(output.contains("opacity: 0;"));
+        assert!(output.contains("opacity: 1;"));
+    }
+
+    #[test]
+    fn test_keyframes_percentages() {
+        let mut gen = CssGenerator::new("Slider".to_string());
+
+        let keyframes = CssKeyframes {
+            name: "slideIn".to_string(),
+            frames: vec![
+                CssKeyframeRule {
+                    selector: CssKeyframeSelector::Percentage(0.0),
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "transform".to_string(),
+                            value: CssValue::Raw("translateX(-100%)".to_string()),
+                        },
+                    ],
+                },
+                CssKeyframeRule {
+                    selector: CssKeyframeSelector::Percentage(50.0),
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "transform".to_string(),
+                            value: CssValue::Raw("translateX(-50%)".to_string()),
+                        },
+                    ],
+                },
+                CssKeyframeRule {
+                    selector: CssKeyframeSelector::Percentage(100.0),
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "transform".to_string(),
+                            value: CssValue::Raw("translateX(0)".to_string()),
+                        },
+                    ],
+                },
+            ],
+        };
+
+        gen.generate_keyframes(&keyframes);
+        let output = gen.css_output;
+
+        // Should contain scoped keyframe name
+        assert!(output.contains("@keyframes Slider_slideIn_"));
+        // Should contain percentages
+        assert!(output.contains("0% {"));
+        assert!(output.contains("50% {"));
+        assert!(output.contains("100% {"));
+        // Should contain transforms
+        assert!(output.contains("translateX(-100%)"));
+        assert!(output.contains("translateX(-50%)"));
+        assert!(output.contains("translateX(0)"));
+    }
+
+    #[test]
+    fn test_keyframes_scoped_name_consistency() {
+        let mut gen = CssGenerator::new("Component".to_string());
+
+        let scoped1 = gen.generate_scoped_keyframe_name("bounce");
+        let scoped2 = gen.generate_scoped_keyframe_name("bounce");
+
+        // Should return same scoped name for same keyframe
+        assert_eq!(scoped1, scoped2);
+        assert!(scoped1.starts_with("Component_bounce_"));
+    }
+
+    #[test]
+    fn test_get_keyframes_map() {
+        let mut gen = CssGenerator::new("App".to_string());
+
+        // Generate some scoped keyframe names
+        gen.generate_scoped_keyframe_name("fadeIn");
+        gen.generate_scoped_keyframe_name("slideOut");
+
+        let keyframes_map = gen.get_keyframes_map();
+
+        // Should have entries for both keyframes
+        assert!(keyframes_map.contains_key("fadeIn"));
+        assert!(keyframes_map.contains_key("slideOut"));
+        assert!(keyframes_map.get("fadeIn").unwrap().starts_with("App_fadeIn_"));
+        assert!(keyframes_map.get("slideOut").unwrap().starts_with("App_slideOut_"));
+    }
+
+    #[test]
+    fn test_keyframes_with_multiple_declarations() {
+        let mut gen = CssGenerator::new("Card".to_string());
+
+        let keyframes = CssKeyframes {
+            name: "pulse".to_string(),
+            frames: vec![
+                CssKeyframeRule {
+                    selector: CssKeyframeSelector::From,
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "opacity".to_string(),
+                            value: CssValue::Raw("1".to_string()),
+                        },
+                        CssDeclaration {
+                            property: "transform".to_string(),
+                            value: CssValue::Raw("scale(1)".to_string()),
+                        },
+                    ],
+                },
+                CssKeyframeRule {
+                    selector: CssKeyframeSelector::To,
+                    declarations: vec![
+                        CssDeclaration {
+                            property: "opacity".to_string(),
+                            value: CssValue::Raw("0.8".to_string()),
+                        },
+                        CssDeclaration {
+                            property: "transform".to_string(),
+                            value: CssValue::Raw("scale(1.05)".to_string()),
+                        },
+                    ],
+                },
+            ],
+        };
+
+        gen.generate_keyframes(&keyframes);
+        let output = gen.css_output;
+
+        // Should contain all declarations
+        assert!(output.contains("opacity: 1;"));
+        assert!(output.contains("transform: scale(1);"));
+        assert!(output.contains("opacity: 0.8;"));
+        assert!(output.contains("transform: scale(1.05);"));
     }
 }

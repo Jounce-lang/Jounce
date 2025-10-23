@@ -153,6 +153,7 @@ pub struct FunctionDeclaration {
 #[derive(Debug, Clone)]
 pub struct CssExpression {
     pub rules: Vec<CssRule>,
+    pub keyframes: Vec<CssKeyframes>,  // Sprint 2 Task 2.6
 }
 
 // CSS rule: .button { ... }
@@ -169,6 +170,27 @@ pub struct CssRule {
 pub struct CssMediaQuery {
     pub condition: String,  // "(min-width: 768px)"
     pub declarations: Vec<CssDeclaration>,  // Declarations within this media query
+}
+
+// CSS keyframes: @keyframes fadeIn { from { ... } to { ... } }
+// Sprint 2 Task 2.6
+#[derive(Debug, Clone)]
+pub struct CssKeyframes {
+    pub name: String,  // "fadeIn" (will be scoped to "Component_fadeIn_hash")
+    pub frames: Vec<CssKeyframeRule>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CssKeyframeRule {
+    pub selector: CssKeyframeSelector,  // from, to, 50%
+    pub declarations: Vec<CssDeclaration>,
+}
+
+#[derive(Debug, Clone)]
+pub enum CssKeyframeSelector {
+    From,
+    To,
+    Percentage(f64),  // 0%, 50%, 100%, etc.
 }
 
 // CSS selector: .button, #id, div, etc.
@@ -200,7 +222,7 @@ pub enum CssValue {
     Keyword(String),         // auto, none, inherit
     Function(String, Vec<CssValue>), // calc(100% - 20px)
     Raw(String),             // Unparsed value (for now - Sprint 1)
-    // Dynamic(Expression),     // {props.color} - Sprint 2 (commented out for now)
+    Dynamic(Box<Expression>), // {props.color} - Sprint 2 Task 2.4
 }
 
 #[derive(Debug, Clone)]

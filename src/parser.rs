@@ -1832,6 +1832,11 @@ impl<'a> Parser<'a> {
         self.peek = self.lexer.next_token();
     }
 
+    /// Refresh the peek token (needed after changing lexer modes)
+    fn refresh_peek_token(&mut self) {
+        self.peek = self.lexer.next_token();
+    }
+
     fn expect_and_consume(&mut self, expected: &TokenKind) -> Result<(), CompileError> {
         if &self.current_token().kind == expected {
             self.next_token();
@@ -1885,17 +1890,43 @@ impl<'a> Parser<'a> {
         // Consume the opening brace
         self.expect_and_consume(&TokenKind::LBrace)?;
 
-        // Parse CSS rules
-        // Now current should be the first CSS selector
+        // Parse CSS rules and keyframes
         let mut rules = Vec::new();
+        let mut keyframes = Vec::new();
+
         while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
-            rules.push(self.parse_css_rule()?);
+            match &self.current_token().kind {
+                TokenKind::CssKeyframes => {
+                    // Lexer recognized @keyframes as a single token
+                    self.next_token(); // consume @keyframes
+                    keyframes.push(self.parse_css_keyframes()?);
+                }
+                TokenKind::CssMedia | TokenKind::At => {
+                    // Check if it's @keyframes or @media by looking at the next token
+                    let next_token = self.peek_token().clone();
+                    if next_token.lexeme == "keyframes" {
+                        // It's @keyframes, consume @ and 'keyframes'
+                        self.next_token(); // consume @
+                        self.next_token(); // consume 'keyframes'
+                        keyframes.push(self.parse_css_keyframes()?);
+                    } else if next_token.lexeme == "media" {
+                        // It's @media, this should be handled by parse_css_rule
+                        // For now, fall through to parse_css_rule
+                        rules.push(self.parse_css_rule()?);
+                    } else {
+                        return Err(self.error(&format!("Unknown @-rule: @{}", next_token.lexeme)));
+                    }
+                }
+                _ => {
+                    rules.push(self.parse_css_rule()?);
+                }
+            }
         }
 
         // Expect closing brace (CSS mode will auto-exit when depth reaches 0)
         self.expect_and_consume(&TokenKind::RBrace)?;
 
-        Ok(Expression::CssMacro(CssExpression { rules }))
+        Ok(Expression::CssMacro(CssExpression { rules, keyframes }))
     }
 
     /// Parse a CSS rule: .button { property: value; } or with nesting
@@ -2057,6 +2088,19 @@ impl<'a> Parser<'a> {
         let token = self.current_token().clone();
 
         match &token.kind {
+            TokenKind::LBrace => {
+                // Dynamic CSS value: {props.color} or {some_expression}
+                // Sprint 2 Task 2.4
+                //
+                // NOTE: Due to lexer lookahead buffering, dynamic CSS values are
+                // not yet fully supported. The parser pre-fetches tokens which get
+                // lexed in CSS mode before we can switch modes.
+                //
+                // TODO: Implement proper lexer mode switching with token buffer management
+                //       or use alternative syntax like css_var("name")
+
+                return Err(self.error("Dynamic CSS values {expr} are not yet supported. Use static values for now."));
+            }
             TokenKind::CssValue(value_str) => {
                 self.next_token();
 
@@ -2144,6 +2188,135 @@ impl<'a> Parser<'a> {
             condition,
             declarations,
         })
+    }
+
+    /// Parse @keyframes animation: @keyframes fadeIn { from { ... } to { ... } }
+    /// Sprint 2 Task 2.6
+    /// Note: @ and 'keyframes' tokens should already be consumed by caller
+    fn parse_css_keyframes(&mut self) -> Result<CssKeyframes, CompileError> {
+        use crate::ast::{CssKeyframes, CssKeyframeRule, CssKeyframeSelector};
+
+        // Note: @keyframes token (or @ + keyframes) already consumed by dispatcher
+        // Current token should be the animation name
+
+        // Parse animation name (identifier or CSS selector)
+        let name_token = self.current_token().clone();
+        let name = match &name_token.kind {
+            TokenKind::Identifier => {
+                let n = name_token.lexeme.clone();
+                self.next_token();
+                n
+            }
+            TokenKind::CssSelector(sel) => {
+                // In CSS mode, animation name might be read as a selector
+                // Extract just the name (e.g., ".fadeIn" -> "fadeIn", "fadeIn" -> "fadeIn")
+                let n = if sel.starts_with('.') || sel.starts_with('#') {
+                    sel[1..].to_string()
+                } else {
+                    sel.clone()
+                };
+                self.next_token();
+                n
+            }
+            TokenKind::CssValue(val) => {
+                // Lexer might read as CSS value
+                self.next_token();
+                val.clone()
+            }
+            _ => return Err(self.error(&format!("Expected animation name after @keyframes, found {:?}", name_token.kind)))
+        };
+
+        // Expect opening brace
+        self.expect_and_consume(&TokenKind::LBrace)?;
+
+        // Parse keyframe rules (from, to, 0%, 50%, 100%, etc.)
+        let mut frames = Vec::new();
+
+        while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
+            let selector_token = self.current_token().clone();
+
+            // Parse keyframe selector: from, to, or percentage
+            let selector = match &selector_token.kind {
+                TokenKind::Identifier => {
+                    if selector_token.lexeme == "from" {
+                        self.next_token();
+                        CssKeyframeSelector::From
+                    } else if selector_token.lexeme == "to" {
+                        self.next_token();
+                        CssKeyframeSelector::To
+                    } else {
+                        return Err(self.error(&format!("Expected 'from' or 'to', found '{}'", selector_token.lexeme)));
+                    }
+                }
+                TokenKind::CssSelector(sel) => {
+                    // In CSS mode, from/to might be read as CSS selectors
+                    if sel == "from" {
+                        self.next_token();
+                        CssKeyframeSelector::From
+                    } else if sel == "to" {
+                        self.next_token();
+                        CssKeyframeSelector::To
+                    } else {
+                        return Err(self.error(&format!("Expected 'from' or 'to', found '{}'", sel)));
+                    }
+                }
+                TokenKind::CssValue(val) => {
+                    // Could be "50%" or just "0" (percentage without %)
+                    if val.ends_with('%') {
+                        // Parse percentage: "50%" -> 50.0
+                        self.next_token();
+                        let num_str = val.trim_end_matches('%');
+                        let percentage = num_str.parse::<f64>()
+                            .map_err(|_| self.error(&format!("Invalid percentage: {}", val)))?;
+                        CssKeyframeSelector::Percentage(percentage)
+                    } else {
+                        // Just a number, expect % next
+                        let num = val.parse::<f64>()
+                            .map_err(|_| self.error(&format!("Invalid number: {}", val)))?;
+                        self.next_token();
+                        // Optionally consume % if present
+                        if self.current_token().kind == TokenKind::Percent {
+                            self.next_token();
+                        }
+                        CssKeyframeSelector::Percentage(num)
+                    }
+                }
+                TokenKind::Integer(n) => {
+                    // Just a number like 0, 50, 100 (assume %)
+                    let num = *n as f64;
+                    self.next_token();
+                    // Expect % sign
+                    if self.current_token().kind == TokenKind::Percent {
+                        self.next_token();
+                    }
+                    CssKeyframeSelector::Percentage(num)
+                }
+                _ => return Err(self.error(&format!("Expected keyframe selector (from/to/percentage), found {:?}", selector_token.kind)))
+            };
+
+            // Expect opening brace for keyframe declarations
+            self.expect_and_consume(&TokenKind::LBrace)?;
+
+            // Parse declarations
+            let mut declarations = Vec::new();
+            while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
+                declarations.push(self.parse_css_declaration()?);
+                self.consume_if_matches(&TokenKind::Semicolon);
+            }
+
+            // Expect closing brace
+            self.expect_and_consume(&TokenKind::RBrace)?;
+
+            frames.push(CssKeyframeRule {
+                selector,
+                declarations,
+            });
+        }
+
+        // Expect closing brace for keyframes block
+        self.expect_and_consume(&TokenKind::RBrace)?;
+
+        Ok(CssKeyframes { name, frames })
     }
 
     /// Parse a compound selector from a string like ".button:hover" or ".button.primary"
