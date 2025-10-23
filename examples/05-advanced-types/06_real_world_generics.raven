@@ -1,0 +1,197 @@
+// examples/05-advanced-types/06_real_world_generics.raven
+//
+// CONCEPT: Real-world application of generics
+// DIFFICULTY: Advanced
+// FEATURES: generics, structs, data processing
+//
+// This example demonstrates how to use generics in a real-world scenario:
+// a game leaderboard system with generic data structures.
+
+// Generic container for collections
+struct Collection<T> {
+    items: [T; 5],
+    count: i32,
+}
+
+fn make_collection<T>(item1: T, item2: T, item3: T, item4: T, item5: T) -> Collection<T> {
+    Collection {
+        items: [item1, item2, item3, item4, item5],
+        count: 5,
+    }
+}
+
+// User score data
+struct Score {
+    player_name: String,
+    points: i32,
+    level: i32,
+}
+
+// Calculate total points from a collection
+fn calculate_total(scores: Collection<Score>) -> i32 {
+    let mut total = 0;
+    for score in scores.items {
+        total = total + score.points;
+    }
+    total
+}
+
+// Find highest score
+fn find_highest(scores: Collection<Score>) -> Score {
+    let mut highest = scores.items[0];
+    for score in scores.items {
+        if score.points > highest.points {
+            highest = score;
+        }
+    }
+    highest
+}
+
+// Calculate average
+fn calculate_average(scores: Collection<Score>) -> i32 {
+    let total = calculate_total(scores);
+    total / scores.count
+}
+
+// Generic pair for combining data
+struct Pair<T, U> {
+    first: T,
+    second: U,
+}
+
+fn pair<T, U>(first: T, second: U) -> Pair<T, U> {
+    Pair { first: first, second: second }
+}
+
+// Generic box container
+struct Box<T> {
+    value: T,
+    label: String,
+}
+
+fn make_box<T>(value: T, label: String) -> Box<T> {
+    Box { value: value, label: label }
+}
+
+fn main() {
+    println!("=== Game Score Processing System ===");
+    println!("");
+
+    // Create player scores
+    let alice_score = Score {
+        player_name: "Alice",
+        points: 1500,
+        level: 5,
+    };
+
+    let bob_score = Score {
+        player_name: "Bob",
+        points: 2300,
+        level: 7,
+    };
+
+    let charlie_score = Score {
+        player_name: "Charlie",
+        points: 1800,
+        level: 6,
+    };
+
+    let diana_score = Score {
+        player_name: "Diana",
+        points: 2100,
+        level: 7,
+    };
+
+    let eve_score = Score {
+        player_name: "Eve",
+        points: 1600,
+        level: 5,
+    };
+
+    // Create collection of scores
+    let scoreboard = make_collection(
+        alice_score,
+        bob_score,
+        charlie_score,
+        diana_score,
+        eve_score,
+    );
+
+    // Calculate statistics
+    let total = calculate_total(scoreboard);
+    println!("Total points: {}", total);
+
+    let scoreboard2 = make_collection(
+        Score { player_name: "Alice", points: 1500, level: 5 },
+        Score { player_name: "Bob", points: 2300, level: 7 },
+        Score { player_name: "Charlie", points: 1800, level: 6 },
+        Score { player_name: "Diana", points: 2100, level: 7 },
+        Score { player_name: "Eve", points: 1600, level: 5 },
+    );
+    let average = calculate_average(scoreboard2);
+    println!("Average score: {}", average);
+
+    println!("");
+
+    // Find highest score
+    let scoreboard3 = make_collection(
+        Score { player_name: "Alice", points: 1500, level: 5 },
+        Score { player_name: "Bob", points: 2300, level: 7 },
+        Score { player_name: "Charlie", points: 1800, level: 6 },
+        Score { player_name: "Diana", points: 2100, level: 7 },
+        Score { player_name: "Eve", points: 1600, level: 5 },
+    );
+    let winner = find_highest(scoreboard3);
+    println!("Top player: {} with {} points (level {})",
+        winner.player_name, winner.points, winner.level);
+
+    println!("");
+
+    // Use pairs to combine related data
+    let stats = pair("Total Players", 5);
+    println!("{}: {}", stats.first, stats.second);
+
+    let level_range = pair(5, 7);
+    println!("Level range: {}-{}", level_range.first, level_range.second);
+
+    println!("");
+
+    // Use generic boxes
+    let score_box = make_box(2300, "Bob's Score");
+    println!("{}: {}", score_box.label, score_box.value);
+
+    let name_box = make_box("Champion", "Title");
+    println!("{}: {}", name_box.label, name_box.value);
+}
+
+// EXPECTED OUTPUT:
+// === Game Score Processing System ===
+//
+// Total points: 9300
+// Average score: 1860
+//
+// Top player: Bob with 2300 points (level 7)
+//
+// Total Players: 5
+// Level range: 5-7
+//
+// Bob's Score: 2300
+// Title: Champion
+//
+// KEY CONCEPTS:
+// - Generics enable reusable Collection<T> pattern
+// - Generic structures work with custom types (Score)
+// - Generic algorithms (calculate, find) on domain objects
+// - Multiple generic containers (Collection, Pair, Box)
+// - Type safety prevents mixing incompatible data
+//
+// REAL-WORLD USES:
+// - Game leaderboards and statistics
+// - Data processing pipelines
+// - Configuration management
+// - API response handling
+// - Generic container patterns
+//
+// TRY IT:
+// raven compile examples/05-advanced-types/06_real_world_generics.raven
+// cd dist && node server.js

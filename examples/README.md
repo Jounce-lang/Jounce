@@ -53,28 +53,30 @@ Master function concepts including recursion and closures.
 8. **08_function_composition.raven** - Composing and chaining functions
 
 ### 04-patterns/ - Error Handling
-**Difficulty**: Intermediate | **Lines**: 40-60 per example
+**Difficulty**: Intermediate | **Lines**: 40-60 per example | **Time**: 2-3 hours
 
 Learn RavensOne's powerful pattern matching and error handling.
 
-- Option<T> with Some/None
-- Result<T, E> with Ok/Err
-- Try operator (?) for error propagation
-- Nested pattern matching
+1. **01_option_basic.raven** - Basic Option<T> with Some/None
+2. **02_option_pattern_match.raven** - Pattern matching on Option
+3. **03_result_basic.raven** - Result<T,E> for error handling
+4. **04_result_pattern_match.raven** - Pattern matching with Result
+5. **05_try_operator.raven** - Try operator (?) for error propagation
+6. **06_nested_patterns.raven** - Nested Option<Result<T,E>> patterns
+7. **07_combining_results.raven** - Combining multiple Result operations
+8. **08_real_world_errors.raven** - Real-world error handling pipeline
 
-*(Coming in Sprint 4)*
-
-### 05-advanced-types/ - Type System
-**Difficulty**: Advanced | **Lines**: 50-80 per example
+### 05-advanced-types/ - Type System ✅
+**Difficulty**: Advanced | **Lines**: 50-80 per example | **Time**: 2-3 hours
 
 Explore RavensOne's advanced type system features.
 
-- Generic functions with type parameters
-- Traits and trait implementations
-- Trait bounds
-- Sized arrays [T; N]
-
-*(Coming in Sprint 5)*
+1. **01_generic_functions.raven** - Generic functions with type parameters
+2. **02_generic_structs.raven** - Generic structs (Box, Pair, Container)
+3. **03_sized_arrays.raven** - Sized arrays [T; N] syntax
+4. **04_generic_algorithms.raven** - Generic algorithms (map, reduce, find)
+5. **05_generics_advanced.raven** - Advanced generics with higher-order functions
+6. **06_real_world_generics.raven** - Real-world leaderboard system
 
 ### 06-async/ - Asynchronous Programming
 **Difficulty**: Advanced | **Lines**: 60-100 per example
@@ -204,14 +206,16 @@ find examples -name "*.raven" -exec raven compile {} \;
 
 ## 📊 Statistics
 
-- **Total Examples**: 28 (Sprint 1 + Sprint 2 + Sprint 3 complete)
+- **Total Examples**: 42 (Sprint 1 + Sprint 2 + Sprint 3 + Sprint 4 + Sprint 5 complete)
   - 01-basics: 10 examples ✅
   - 02-control-flow: 10 examples ✅
   - 03-functions: 8 examples ✅
+  - 04-patterns: 8 examples ✅
+  - 05-advanced-types: 6 examples ✅
 - **Total Planned**: ~60 examples across 8 categories
 - **Test Coverage**: 100% of examples compile successfully
 - **Difficulty Levels**: 3 (Beginner, Intermediate, Advanced)
-- **Progress**: 47% complete (28/60)
+- **Progress**: 70% complete (42/60)
 
 ## 🤝 Contributing
 
@@ -240,10 +244,11 @@ Want to add examples? Follow these guidelines:
 
 ---
 
-**Sprint Status**: Phase 6 Sprint 3 Complete (28/28 examples total)
+**Sprint Status**: Phase 6 Sprint 4 Complete (36/36 examples total)
 - Sprint 1 ✅ Complete: 01-basics (10 examples)
 - Sprint 2 ✅ Complete: 02-control-flow (10 examples)
 - Sprint 3 ✅ Complete: 03-functions (8 examples)
+- Sprint 4 ✅ Complete: 04-patterns (8 examples)
 
-**Next Sprint**: Sprint 4 - Pattern Matching & Error Handling (8 examples)
+**Next Sprint**: Sprint 5 - Advanced Types (6 examples: generics, traits, trait bounds, sized arrays)
 **Last Updated**: 2025-10-22

@@ -1,0 +1,83 @@
+// examples/04-patterns/05_try_operator.raven
+//
+// CONCEPT: Try operator (?) for error propagation
+// DIFFICULTY: Intermediate
+// FEATURES: Result<T,E>, try operator (?), error propagation
+//
+// The try operator (?) is a shorthand for error propagation:
+// - If a Result is Ok(value), it extracts the value
+// - If a Result is Err(e), it returns the error immediately
+//
+// This makes error handling much more concise and readable!
+//
+// This example demonstrates:
+// - Using ? to propagate errors
+// - Chaining multiple operations that can fail
+// - Clean error handling in calling code
+
+fn divide_checked(a: i32, b: i32) -> Result<i32, String> {
+    // Safe division that returns an error for division by zero
+    if b == 0 {
+        Err("Division by zero")
+    } else {
+        Ok(a / b)
+    }
+}
+
+fn calculate(a: i32, b: i32, c: i32) -> Result<i32, String> {
+    // This function chains multiple divisions
+    // Using ? means: if any division fails, return the error immediately
+
+    let x = divide_checked(a, b)?;  // If this fails, return Err
+    let y = divide_checked(x, c)?;  // If this fails, return Err
+
+    Ok(y)  // Both succeeded, return the result
+}
+
+fn main() {
+    println!("Testing error propagation with ?:");
+    println!("");
+
+    // Test case 1: All operations succeed
+    println!("Test 1: calculate(100, 5, 2)");
+    match calculate(100, 5, 2) {
+        Ok(result) => println!("  Success: {}", result),
+        Err(e) => println!("  Error: {}", e),
+    }
+
+    // Test case 2: First operation fails
+    println!("");
+    println!("Test 2: calculate(100, 0, 2)");
+    match calculate(100, 0, 2) {
+        Ok(result) => println!("  Success: {}", result),
+        Err(e) => println!("  Error: {}", e),
+    }
+
+    // Test case 3: Second operation fails
+    println!("");
+    println!("Test 3: calculate(100, 5, 0)");
+    match calculate(100, 5, 0) {
+        Ok(result) => println!("  Success: {}", result),
+        Err(e) => println!("  Error: {}", e),
+    }
+}
+
+// EXPECTED OUTPUT:
+// Testing error propagation with ?:
+//
+// Test 1: calculate(100, 5, 2)
+//   Success: 10
+//
+// Test 2: calculate(100, 0, 2)
+//   Error: Division by zero
+//
+// Test 3: calculate(100, 5, 0)
+//   Error: Division by zero
+//
+// TRY IT:
+// raven compile examples/04-patterns/05_try_operator.raven
+// cd dist && node server.js
+//
+// KEY TAKEAWAY:
+// The ? operator makes error handling elegant and concise.
+// It automatically propagates errors up the call stack!

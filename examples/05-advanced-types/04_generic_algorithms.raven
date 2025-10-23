@@ -1,0 +1,156 @@
+// examples/05-advanced-types/04_generic_algorithms.raven
+//
+// CONCEPT: Generic algorithms and data processing
+// DIFFICULTY: Advanced
+// FEATURES: generics, algorithms, data transformations
+//
+// This example shows how to build reusable generic algorithms
+// that work with any type. These are the building blocks of
+// functional programming and data processing pipelines.
+
+// Find an element in an array (returns index or -1)
+fn find_index<T>(array: [T; 5], target: T) -> i32 {
+    for i in 0..5 {
+        // Note: We can't directly compare generic types without trait bounds
+        // This is a simplified example
+    }
+    -1
+}
+
+// Count positive numbers
+fn count_positive(numbers: [i32; 5]) -> i32 {
+    let mut count = 0;
+    for num in numbers {
+        if num > 0 {
+            count = count + 1;
+        }
+    }
+    count
+}
+
+// Map over array and transform
+fn map_double(numbers: [i32; 4]) -> [i32; 4] {
+    [
+        numbers[0] * 2,
+        numbers[1] * 2,
+        numbers[2] * 2,
+        numbers[3] * 2,
+    ]
+}
+
+// Reduce array to single value (sum)
+fn reduce_sum(numbers: [i32; 5]) -> i32 {
+    let mut total = 0;
+    for num in numbers {
+        total = total + num;
+    }
+    total
+}
+
+// Find maximum value
+fn find_max(numbers: [i32; 5]) -> i32 {
+    let mut max_val = numbers[0];
+    for num in numbers {
+        if num > max_val {
+            max_val = num;
+        }
+    }
+    max_val
+}
+
+// Find minimum value
+fn find_min(numbers: [i32; 5]) -> i32 {
+    let mut min_val = numbers[0];
+    for num in numbers {
+        if num < min_val {
+            min_val = num;
+        }
+    }
+    min_val
+}
+
+// Check if all elements satisfy a condition
+fn all_positive(numbers: [i32; 5]) -> bool {
+    for num in numbers {
+        if num <= 0 {
+            return false;
+        }
+    }
+    true
+}
+
+// Check if any element satisfies a condition
+fn any_negative(numbers: [i32; 5]) -> bool {
+    for num in numbers {
+        if num < 0 {
+            return true;
+        }
+    }
+    false
+}
+
+fn main() {
+    let numbers: [i32; 5] = [3, -1, 4, 1, 5];
+
+    // Count positive
+    let count = count_positive(numbers);
+    println!("Positive count from [3, -1, 4, 1, 5]: {}", count);
+
+    println!("");
+
+    // Map
+    let to_double: [i32; 4] = [1, 2, 3, 4];
+    let doubled = map_double(to_double);
+    println!("Doubled [1, 2, 3, 4]: [{}, {}, {}, {}]",
+        doubled[0], doubled[1], doubled[2], doubled[3]);
+
+    println!("");
+
+    // Reduce
+    let to_sum: [i32; 5] = [10, 20, 30, 40, 50];
+    println!("Sum of [10, 20, 30, 40, 50]: {}", reduce_sum(to_sum));
+
+    println!("");
+
+    // Find max/min
+    let data: [i32; 5] = [15, 3, 27, 8, 19];
+    println!("Max of [15, 3, 27, 8, 19]: {}", find_max(data));
+    println!("Min of [15, 3, 27, 8, 19]: {}", find_min(data));
+
+    println!("");
+
+    // All/Any predicates
+    let all_pos: [i32; 5] = [1, 2, 3, 4, 5];
+    let has_neg: [i32; 5] = [1, 2, -3, 4, 5];
+
+    println!("All positive [1, 2, 3, 4, 5]? {}", all_positive(all_pos));
+    println!("All positive [1, 2, -3, 4, 5]? {}", all_positive(has_neg));
+    println!("Any negative [1, 2, 3, 4, 5]? {}", any_negative(all_pos));
+    println!("Any negative [1, 2, -3, 4, 5]? {}", any_negative(has_neg));
+}
+
+// EXPECTED OUTPUT:
+// Positive count from [3, -1, 4, 1, 5]: 4
+//
+// Doubled [1, 2, 3, 4]: [2, 4, 6, 8]
+//
+// Sum of [10, 20, 30, 40, 50]: 150
+//
+// Max of [15, 3, 27, 8, 19]: 27
+// Min of [15, 3, 27, 8, 19]: 3
+//
+// All positive [1, 2, 3, 4, 5]? true
+// All positive [1, 2, -3, 4, 5]? false
+// Any negative [1, 2, 3, 4, 5]? false
+// Any negative [1, 2, -3, 4, 5]? true
+//
+// KEY CONCEPTS:
+// - Generic algorithms work with any type (with some limitations)
+// - Map, filter, reduce are fundamental functional patterns
+// - Find max/min are common array operations
+// - All/any predicates check conditions across collections
+// - These patterns are building blocks for complex operations
+//
+// TRY IT:
+// raven compile examples/05-advanced-types/04_generic_algorithms.raven
+// cd dist && node server.js

@@ -1,0 +1,75 @@
+// examples/04-patterns/06_nested_patterns.raven
+//
+// CONCEPT: Nested Option and Result patterns
+// DIFFICULTY: Advanced
+// FEATURES: Option<Result<T,E>>, nested pattern matching
+//
+// Sometimes you need to combine Option and Result:
+// - Option represents "presence" (found or not found)
+// - Result represents "validity" (valid or error)
+//
+// Combining them: Option<Result<T,E>>
+// - None: Item doesn't exist
+// - Some(Ok(value)): Item exists and is valid
+// - Some(Err(msg)): Item exists but is invalid
+//
+// This example demonstrates:
+// - Nesting Option and Result
+// - Pattern matching on nested types
+// - Real-world scenario: user lookup with validation
+
+fn get_user_age(user_id: i32) -> Option<Result<i32, String>> {
+    // First check: Does the user exist?
+    if user_id == 0 {
+        None  // User not found
+    } else if user_id < 0 {
+        // User ID is invalid format
+        Some(Err("Invalid user ID: must be positive"))
+    } else if user_id > 1000 {
+        // User ID out of range
+        Some(Err("Invalid user ID: too large"))
+    } else {
+        // User exists with valid age
+        Some(Ok(25))
+    }
+}
+
+fn main() {
+    println!("User Age Lookup System:");
+    println!("");
+
+    let ids = [0, -1, 500, 2000, 1];
+
+    for id in ids {
+        print!("  User {}: ", id);
+
+        // Nested pattern matching!
+        match get_user_age(id) {
+            None => println!("Not found"),
+            Some(Ok(age)) => println!("Age is {}", age),
+            Some(Err(e)) => println!("Error - {}", e),
+        }
+    }
+
+    println!("");
+    println!("Lookup complete!");
+}
+
+// EXPECTED OUTPUT:
+// User Age Lookup System:
+//
+//   User 0: Not found
+//   User -1: Error - Invalid user ID: must be positive
+//   User 500: Age is 25
+//   User 2000: Error - Invalid user ID: too large
+//   User 1: Age is 25
+//
+// Lookup complete!
+//
+// TRY IT:
+// raven compile examples/04-patterns/06_nested_patterns.raven
+// cd dist && node server.js
+//
+// KEY TAKEAWAY:
+// Nested patterns let you handle complex scenarios with
+// multiple layers of validation elegantly!

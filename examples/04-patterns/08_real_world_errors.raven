@@ -1,0 +1,109 @@
+// examples/04-patterns/08_real_world_errors.raven
+//
+// CONCEPT: Real-world error handling patterns
+// DIFFICULTY: Advanced
+// FEATURES: Result<T,E>, pattern matching, loops, data validation
+//
+// This example simulates a real-world data processing pipeline:
+// - Read multiple values
+// - Validate each value
+// - Process valid values
+// - Stop on first error
+//
+// This pattern is common in:
+// - Form validation
+// - API request handling
+// - Batch data processing
+// - File parsing
+//
+// Key concepts:
+// - Validation functions returning Result
+// - Early return on error
+// - Accumulating results from valid inputs
+
+fn process_data(value: i32) -> Result<i32, String> {
+    // Simulate data validation and processing
+    if value < 0 {
+        Err("Value must be positive")
+    } else if value == 0 {
+        Err("Value cannot be zero")
+    } else if value > 100 {
+        Err("Value too large (max 100)")
+    } else {
+        // Double the valid value
+        Ok(value * 2)
+    }
+}
+
+fn pipeline(values: [i32; 5]) -> Result<i32, String> {
+    // Process each value and accumulate the results
+    let mut total = 0;
+
+    for value in values {
+        match process_data(value) {
+            Ok(processed) => {
+                // Add the processed value to our total
+                total = total + processed;
+            }
+            Err(e) => {
+                // Stop processing and return the error
+                return Err(e);
+            }
+        }
+    }
+
+    Ok(total)
+}
+
+fn main() {
+    println!("Data Processing Pipeline:");
+    println!("");
+
+    // Test case 1: All valid values
+    println!("Test 1: [10, 20, 30, 40, 50]");
+    match pipeline([10, 20, 30, 40, 50]) {
+        Ok(result) => println!("  Success! Total: {}", result),
+        Err(e) => println!("  Failed: {}", e),
+    }
+
+    // Test case 2: Contains invalid value
+    println!("");
+    println!("Test 2: [10, 20, -5, 40, 50]");
+    match pipeline([10, 20, -5, 40, 50]) {
+        Ok(result) => println!("  Success! Total: {}", result),
+        Err(e) => println!("  Failed: {}", e),
+    }
+
+    // Test case 3: Contains zero
+    println!("");
+    println!("Test 3: [10, 20, 0, 40, 50]");
+    match pipeline([10, 20, 0, 40, 50]) {
+        Ok(result) => println!("  Success! Total: {}", result),
+        Err(e) => println!("  Failed: {}", e),
+    }
+
+    println!("");
+    println!("Pipeline complete!");
+}
+
+// EXPECTED OUTPUT:
+// Data Processing Pipeline:
+//
+// Test 1: [10, 20, 30, 40, 50]
+//   Success! Total: 300
+//
+// Test 2: [10, 20, -5, 40, 50]
+//   Failed: Value must be positive
+//
+// Test 3: [10, 20, 0, 40, 50]
+//   Failed: Value cannot be zero
+//
+// Pipeline complete!
+//
+// TRY IT:
+// raven compile examples/04-patterns/08_real_world_errors.raven
+// cd dist && node server.js
+//
+// KEY TAKEAWAY:
+// Result<T,E> with early returns makes it easy to build
+// robust data processing pipelines that fail fast on errors!

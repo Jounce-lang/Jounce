@@ -1,0 +1,69 @@
+// examples/04-patterns/03_result_basic.raven
+//
+// CONCEPT: Basic Result<T,E> for error handling
+// DIFFICULTY: Intermediate
+// FEATURES: Result<T,E>, Ok, Err, pattern matching, error messages
+//
+// Result<T,E> is like Option<T> but with error information:
+// - Ok(value): The operation succeeded with a value
+// - Err(error): The operation failed with an error message
+//
+// Result is better than Option when you need to explain WHY something failed.
+//
+// This example demonstrates:
+// - Returning Result<T,E> from a function
+// - Pattern matching on Ok/Err
+// - Providing meaningful error messages
+
+fn parse_positive(value: i32) -> Result<i32, String> {
+    // Validate that the number is positive
+    if value <= 0 {
+        Err("Number must be positive")
+    } else if value > 100 {
+        Err("Number too large (max 100)")
+    } else {
+        Ok(value)
+    }
+}
+
+fn main() {
+    println!("Testing number validation:");
+
+    // Test case 1: Valid number
+    let result1 = parse_positive(42);
+    match result1 {
+        Ok(value) => println!("  Valid: {}", value),
+        Err(error) => println!("  Error: {}", error),
+    }
+
+    // Test case 2: Negative number
+    let result2 = parse_positive(-5);
+    match result2 {
+        Ok(value) => println!("  Valid: {}", value),
+        Err(error) => println!("  Error: {}", error),
+    }
+
+    // Test case 3: Too large
+    let result3 = parse_positive(150);
+    match result3 {
+        Ok(value) => println!("  Valid: {}", value),
+        Err(error) => println!("  Error: {}", error),
+    }
+
+    println!("Done!");
+}
+
+// EXPECTED OUTPUT:
+// Testing number validation:
+//   Valid: 42
+//   Error: Number must be positive
+//   Error: Number too large (max 100)
+// Done!
+//
+// TRY IT:
+// raven compile examples/04-patterns/03_result_basic.raven
+// cd dist && node server.js
+//
+// KEY TAKEAWAY:
+// Result<T,E> provides rich error information, making it easier
+// to debug and provide helpful error messages to users.

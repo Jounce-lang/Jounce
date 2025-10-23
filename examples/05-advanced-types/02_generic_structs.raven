@@ -1,0 +1,122 @@
+// examples/05-advanced-types/02_generic_structs.raven
+//
+// CONCEPT: Generic structs with type parameters
+// DIFFICULTY: Advanced
+// FEATURES: generics, structs, type parameters
+//
+// Generic structs allow you to create data structures that work with any type.
+// Common examples include Box<T>, Option<T>, Result<T,E>, and Pair<T,U>.
+//
+// This is incredibly powerful for building reusable data structures without
+// sacrificing type safety.
+
+// A simple box that holds any type
+struct Box<T> {
+    value: T,
+}
+
+// A pair that holds two values (can be different types)
+struct Pair<T, U> {
+    first: T,
+    second: U,
+}
+
+// A generic container with multiple values
+struct Container<T> {
+    items: [T; 3],
+}
+
+// Functions that work with generic structs
+fn make_box<T>(value: T) -> Box<T> {
+    Box { value: value }
+}
+
+fn make_pair<T, U>(first: T, second: U) -> Pair<T, U> {
+    Pair { first: first, second: second }
+}
+
+fn make_container<T>(a: T, b: T, c: T) -> Container<T> {
+    Container { items: [a, b, c] }
+}
+
+// Extract value from a Box
+fn unbox<T>(b: Box<T>) -> T {
+    b.value
+}
+
+// Swap the values in a Pair
+fn swap_pair<T, U>(p: Pair<T, U>) -> Pair<U, T> {
+    Pair { first: p.second, second: p.first }
+}
+
+fn main() {
+    // Creating boxes with different types
+    let int_box = make_box(42);
+    println!("Box<i32> value: {}", int_box.value);
+
+    let str_box = make_box("hello");
+    println!("Box<String> value: {}", str_box.value);
+
+    let bool_box = make_box(true);
+    println!("Box<bool> value: {}", bool_box.value);
+
+    println!("");
+
+    // Unboxing values
+    let number = unbox(int_box);
+    println!("Unboxed number: {}", number);
+
+    println!("");
+
+    // Creating pairs with different type combinations
+    let int_pair = make_pair(10, 20);
+    println!("Pair<i32, i32>: ({}, {})", int_pair.first, int_pair.second);
+
+    let mixed_pair = make_pair(42, "answer");
+    println!("Pair<i32, String>: ({}, {})", mixed_pair.first, mixed_pair.second);
+
+    let bool_pair = make_pair(true, false);
+    println!("Pair<bool, bool>: ({}, {})", bool_pair.first, bool_pair.second);
+
+    println!("");
+
+    // Swapping pair values
+    let swapped = swap_pair(mixed_pair);
+    println!("After swap: ({}, {})", swapped.first, swapped.second);
+
+    println!("");
+
+    // Creating containers
+    let nums = make_container(1, 2, 3);
+    println!("Container<i32>: [{}, {}, {}]", nums.items[0], nums.items[1], nums.items[2]);
+
+    let words = make_container("one", "two", "three");
+    println!("Container<String>: [\"{}\", \"{}\", \"{}\"]", words.items[0], words.items[1], words.items[2]);
+}
+
+// EXPECTED OUTPUT:
+// Box<i32> value: 42
+// Box<String> value: hello
+// Box<bool> value: true
+//
+// Unboxed number: 42
+//
+// Pair<i32, i32>: (10, 20)
+// Pair<i32, String>: (42, answer)
+// Pair<bool, bool>: (true, false)
+//
+// After swap: (answer, 42)
+//
+// Container<i32>: [1, 2, 3]
+// Container<String>: ["one", "two", "three"]
+//
+// KEY CONCEPTS:
+// - Generic structs use <T> syntax just like generic functions
+// - Multiple type parameters (T, U) allow different types in one struct
+// - Generic structs maintain type safety at compile time
+// - Functions can take and return generic structs
+// - Each instance of a generic struct has a concrete type (e.g., Box<i32>)
+//
+// TRY IT:
+// raven compile examples/05-advanced-types/02_generic_structs.raven
+// cd dist && node server.js

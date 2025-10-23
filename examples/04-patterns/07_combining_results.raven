@@ -1,0 +1,87 @@
+// examples/04-patterns/07_combining_results.raven
+//
+// CONCEPT: Combining multiple Result operations
+// DIFFICULTY: Advanced
+// FEATURES: Result<T,E>, try operator (?), chaining operations
+//
+// Real applications often need to perform multiple operations,
+// each of which can fail. The try operator (?) makes this clean:
+// - Chain operations sequentially
+// - First error stops the chain and propagates
+// - All successes continue to the end
+//
+// This example demonstrates:
+// - Chaining multiple Result-returning functions
+// - Using ? to propagate errors early
+// - Building complex validation pipelines
+
+fn add_checked(a: i32, b: i32) -> Result<i32, String> {
+    // Addition with overflow checking
+    let result = a + b;
+
+    if result > 1000 {
+        Err("Sum too large (max 1000)")
+    } else if result < 0 {
+        Err("Sum is negative")
+    } else {
+        Ok(result)
+    }
+}
+
+fn calculate_total(nums: [i32; 3]) -> Result<i32, String> {
+    // Chain multiple additions using ?
+    // If any addition fails, the error propagates immediately
+
+    let sum1 = add_checked(nums[0], nums[1])?;
+    let sum2 = add_checked(sum1, nums[2])?;
+
+    Ok(sum2)
+}
+
+fn main() {
+    println!("Testing combined operations:");
+    println!("");
+
+    // Test case 1: All operations succeed
+    println!("Test 1: [10, 20, 30]");
+    match calculate_total([10, 20, 30]) {
+        Ok(total) => println!("  Total: {}", total),
+        Err(e) => println!("  Error: {}", e),
+    }
+
+    // Test case 2: Overflow on second addition
+    println!("");
+    println!("Test 2: [500, 400, 200]");
+    match calculate_total([500, 400, 200]) {
+        Ok(total) => println!("  Total: {}", total),
+        Err(e) => println!("  Error: {}", e),
+    }
+
+    // Test case 3: Small numbers
+    println!("");
+    println!("Test 3: [5, 15, 25]");
+    match calculate_total([5, 15, 25]) {
+        Ok(total) => println!("  Total: {}", total),
+        Err(e) => println!("  Error: {}", e),
+    }
+}
+
+// EXPECTED OUTPUT:
+// Testing combined operations:
+//
+// Test 1: [10, 20, 30]
+//   Total: 60
+//
+// Test 2: [500, 400, 200]
+//   Error: Sum too large (max 1000)
+//
+// Test 3: [5, 15, 25]
+//   Total: 45
+//
+// TRY IT:
+// raven compile examples/04-patterns/07_combining_results.raven
+// cd dist && node server.js
+//
+// KEY TAKEAWAY:
+// The ? operator makes it easy to chain operations and
+// handle errors at any point in the chain!

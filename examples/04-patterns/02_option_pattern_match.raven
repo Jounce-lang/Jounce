@@ -1,0 +1,61 @@
+// examples/04-patterns/02_option_pattern_match.raven
+//
+// CONCEPT: Advanced Option pattern matching
+// DIFFICULTY: Intermediate
+// FEATURES: Option<T>, pattern matching, arrays, loops
+//
+// This example shows how to work with multiple Option values
+// and pattern match on each one. This is a common pattern when
+// you have multiple operations that might fail.
+//
+// Key concepts:
+// - Functions returning Option for operations that might fail
+// - Pattern matching in loops
+// - Handling division by zero safely
+
+fn divide(a: i32, b: i32) -> Option<i32> {
+    // Division by zero is undefined - return None
+    if b == 0 {
+        None
+    } else {
+        Some(a / b)
+    }
+}
+
+fn main() {
+    println!("Testing safe division:");
+
+    // Create an array of Option results
+    let results = [
+        divide(10, 2),   // Should succeed: 5
+        divide(10, 0),   // Should fail: division by zero
+        divide(20, 4),   // Should succeed: 5
+        divide(15, 3),   // Should succeed: 5
+    ];
+
+    // Pattern match on each result
+    for result in results {
+        match result {
+            Some(value) => println!("  Result: {}", value),
+            None => println!("  Error: Cannot divide by zero"),
+        }
+    }
+
+    println!("Done!");
+}
+
+// EXPECTED OUTPUT:
+// Testing safe division:
+//   Result: 5
+//   Error: Cannot divide by zero
+//   Result: 5
+//   Result: 5
+// Done!
+//
+// TRY IT:
+// raven compile examples/04-patterns/02_option_pattern_match.raven
+// cd dist && node server.js
+//
+// KEY TAKEAWAY:
+// Option<T> works great with arrays and loops, allowing you to
+// handle multiple potentially-failing operations cleanly.

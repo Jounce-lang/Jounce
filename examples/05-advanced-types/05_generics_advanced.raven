@@ -1,0 +1,133 @@
+// examples/05-advanced-types/03_generics_advanced.raven
+//
+// CONCEPT: Advanced generics with multiple type parameters
+// DIFFICULTY: Advanced
+// FEATURES: generics, multiple type parameters, generic algorithms
+//
+// This example demonstrates more advanced generic programming patterns
+// including generic algorithms, generic data transformations, and
+// working with multiple type parameters simultaneously.
+
+// Generic function that maps over an array
+fn map_array<T, U>(array: [T; 3], transform: fn(T) -> U) -> [U; 3] {
+    let first = transform(array[0]);
+    let second = transform(array[1]);
+    let third = transform(array[2]);
+    [first, second, third]
+}
+
+// Generic struct with two type parameters
+struct Pair<T, U> {
+    left: T,
+    right: U,
+}
+
+// Generic function to create pairs
+fn make_pair<T, U>(left: T, right: U) -> Pair<T, U> {
+    Pair { left: left, right: right }
+}
+
+// Swap the elements of a pair
+fn swap<T, U>(pair: Pair<T, U>) -> Pair<U, T> {
+    Pair { left: pair.right, right: pair.left }
+}
+
+// Transform functions for mapping
+fn double(x: i32) -> i32 {
+    x * 2
+}
+
+fn to_string_num(x: i32) -> String {
+    x.to_string()
+}
+
+fn string_length(s: String) -> i32 {
+    s.len()
+}
+
+// Generic container
+struct Box<T> {
+    value: T,
+}
+
+fn box_value<T>(value: T) -> Box<T> {
+    Box { value: value }
+}
+
+fn unbox<T>(b: Box<T>) -> T {
+    b.value
+}
+
+fn main() {
+    // Map with same type
+    let numbers = [1, 2, 3];
+    let doubled = map_array(numbers, double);
+    println!("Original: [{}, {}, {}]", numbers[0], numbers[1], numbers[2]);
+    println!("Doubled:  [{}, {}, {}]", doubled[0], doubled[1], doubled[2]);
+
+    println!("");
+
+    // Map with type conversion
+    let nums2 = [10, 20, 30];
+    let strings = map_array(nums2, to_string_num);
+    println!("Numbers to strings:");
+    println!("  10 -> \"{}\"", strings[0]);
+    println!("  20 -> \"{}\"", strings[1]);
+    println!("  30 -> \"{}\"", strings[2]);
+
+    println!("");
+
+    // Pairs with different types
+    let pair1 = make_pair(42, "answer");
+    println!("Pair: ({}, {})", pair1.left, pair1.right);
+
+    let swapped = swap(pair1);
+    println!("Swapped: ({}, {})", swapped.left, swapped.right);
+
+    println!("");
+
+    // Boxing and unboxing
+    let boxed_num = box_value(100);
+    let boxed_str = box_value("hello");
+    let boxed_bool = box_value(true);
+
+    println!("Boxed values:");
+    println!("  Box<i32>: {}", boxed_num.value);
+    println!("  Box<String>: {}", boxed_str.value);
+    println!("  Box<bool>: {}", boxed_bool.value);
+
+    println!("");
+
+    let unboxed = unbox(boxed_num);
+    println!("Unboxed: {}", unboxed);
+}
+
+// EXPECTED OUTPUT:
+// Original: [1, 2, 3]
+// Doubled:  [2, 4, 6]
+//
+// Numbers to strings:
+//   10 -> "10"
+//   20 -> "20"
+//   30 -> "30"
+//
+// Pair: (42, answer)
+// Swapped: (answer, 42)
+//
+// Boxed values:
+//   Box<i32>: 100
+//   Box<String>: hello
+//   Box<bool>: true
+//
+// Unboxed: 100
+//
+// KEY CONCEPTS:
+// - Generic functions can map between types: map<T, U>
+// - Multiple type parameters enable complex transformations
+// - Higher-order functions (functions taking functions) + generics
+// - Generic structs work with function parameters
+// - Type inference makes generic code clean and readable
+//
+// TRY IT:
+// raven compile examples/05-advanced-types/03_generics_advanced.raven
+// cd dist && node server.js

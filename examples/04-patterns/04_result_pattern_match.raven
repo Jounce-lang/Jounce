@@ -1,0 +1,66 @@
+// examples/04-patterns/04_result_pattern_match.raven
+//
+// CONCEPT: Pattern matching with Result for validation
+// DIFFICULTY: Intermediate
+// FEATURES: Result<T,E>, pattern matching, loops, multiple error cases
+//
+// This example shows how to use Result<T,E> for validation with
+// multiple possible error conditions. Each error provides a specific
+// message explaining what went wrong.
+//
+// Key concepts:
+// - Multiple error conditions in one function
+// - Pattern matching on Result in loops
+// - Descriptive error messages
+
+fn validate_age(age: i32) -> Result<i32, String> {
+    // Check for various invalid age conditions
+    if age < 0 {
+        Err("Age cannot be negative")
+    } else if age > 150 {
+        Err("Age too high (must be 0-150)")
+    } else if age < 18 {
+        Err("Must be at least 18 years old")
+    } else {
+        Ok(age)  // Age is valid!
+    }
+}
+
+fn main() {
+    println!("Age Validation System:");
+    println!("");
+
+    // Test various ages
+    let ages = [-5, 16, 25, 200, 42];
+
+    for age in ages {
+        let result = validate_age(age);
+
+        match result {
+            Ok(valid) => println!("  Age {}: Valid ✓", valid),
+            Err(msg) => println!("  Age {}: Invalid - {}", age, msg),
+        }
+    }
+
+    println!("");
+    println!("Validation complete!");
+}
+
+// EXPECTED OUTPUT:
+// Age Validation System:
+//
+//   Age -5: Invalid - Age cannot be negative
+//   Age 16: Invalid - Must be at least 18 years old
+//   Age 25: Valid ✓
+//   Age 200: Invalid - Age too high (must be 0-150)
+//   Age 42: Valid ✓
+//
+// Validation complete!
+//
+// TRY IT:
+// raven compile examples/04-patterns/04_result_pattern_match.raven
+// cd dist && node server.js
+//
+// KEY TAKEAWAY:
+// Result<T,E> with pattern matching makes it easy to handle
+// multiple validation rules and provide clear error messages.

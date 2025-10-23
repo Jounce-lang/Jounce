@@ -1,0 +1,104 @@
+// examples/05-advanced-types/01_generic_functions.raven
+//
+// CONCEPT: Generic functions with type parameters
+// DIFFICULTY: Advanced
+// FEATURES: generics, type parameters, generic constraints
+//
+// Generic functions allow you to write code that works with any type.
+// The type parameter <T> means "for any type T". This enables code reuse
+// and type safety without duplicating function logic.
+//
+// RavensOne's generics use type erasure (like TypeScript) - the generic
+// type information is used at compile time for type checking, then erased
+// for JavaScript output.
+
+// Identity function - returns the same value it receives
+// Works with ANY type: i32, String, bool, arrays, structs, etc.
+fn identity<T>(value: T) -> T {
+    value
+}
+
+// Swap two values and return them as a tuple
+// Demonstrates multiple uses of the same type parameter
+fn swap<T>(a: T, b: T) -> (T, T) {
+    (b, a)
+}
+
+// Generic function with TWO type parameters
+// T and U can be different types (e.g., i32 and String)
+fn make_pair<T, U>(first: T, second: U) -> (T, U) {
+    (first, second)
+}
+
+// Find the maximum value in an array
+// Note: This is simplified - real implementation would use trait bounds
+fn find_max_int(numbers: [i32; 5]) -> i32 {
+    let mut max_val = numbers[0];
+    for num in numbers {
+        if num > max_val {
+            max_val = num;
+        }
+    }
+    max_val
+}
+
+fn main() {
+    // Using identity with different types
+    let num = identity(42);
+    println!("identity(42) = {}", num);
+
+    let text = identity("Hello");
+    println!("identity(\"Hello\") = {}", text);
+
+    let flag = identity(true);
+    println!("identity(true) = {}", flag);
+
+    println!("");
+
+    // Using swap
+    let (x, y) = swap(10, 20);
+    println!("After swap(10, 20): x = {}, y = {}", x, y);
+
+    let (a, b) = swap("first", "second");
+    println!("After swap(\"first\", \"second\"): a = {}, b = {}", a, b);
+
+    println!("");
+
+    // Using make_pair with different types
+    let (num, text2) = make_pair(42, "answer");
+    println!("make_pair(42, \"answer\") = ({}, {})", num, text2);
+
+    let (flag2, count) = make_pair(true, 100);
+    println!("make_pair(true, 100) = ({}, {})", flag2, count);
+
+    println!("");
+
+    // Find maximum value
+    let numbers = [10, 50, 25, 75, 30];
+    let max_num = find_max_int(numbers);
+    println!("Maximum of [10, 50, 25, 75, 30] = {}", max_num);
+}
+
+// EXPECTED OUTPUT:
+// identity(42) = 42
+// identity("Hello") = Hello
+// identity(true) = true
+//
+// After swap(10, 20): x = 20, y = 10
+// After swap("first", "second"): a = second, b = first
+//
+// make_pair(42, "answer") = (42, answer)
+// make_pair(true, 100) = (true, 100)
+//
+// Maximum of [10, 50, 25, 75, 30] = 75
+//
+// KEY CONCEPTS:
+// - Generic functions work with any type using <T> syntax
+// - Multiple type parameters (T, U, V) are supported
+// - Type parameters can be used for parameters and return types
+// - Generics provide type safety at compile time
+// - JavaScript output uses duck typing (type erasure)
+//
+// TRY IT:
+// raven compile examples/05-advanced-types/01_generic_functions.raven
+// cd dist && node server.js
