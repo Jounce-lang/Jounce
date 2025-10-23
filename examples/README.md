@@ -39,16 +39,18 @@ Learn how to control program flow with conditions and loops.
 10. **10_arrays.raven** - Array creation and indexing
 
 ### 03-functions/ - Advanced Functions
-**Difficulty**: Intermediate | **Lines**: 30-50 per example
+**Difficulty**: Intermediate | **Lines**: 30-50 per example | **Time**: 2-3 hours
 
 Master function concepts including recursion and closures.
 
-- Recursive functions (factorial, fibonacci)
-- Higher-order functions
-- Closures with type annotations
-- Function composition
-
-*(Coming in Sprint 3)*
+1. **01_factorial_recursion.raven** - Classic factorial recursion
+2. **02_fibonacci_recursion.raven** - Fibonacci sequence with recursion
+3. **03_mutual_recursion.raven** - Even/odd with mutual recursion
+4. **04_higher_order_map.raven** - Map pattern (transforming arrays)
+5. **05_higher_order_filter.raven** - Filter pattern (predicates)
+6. **06_closures_basic.raven** - Basic closures and variable capture
+7. **07_closures_typed.raven** - Closures with type annotations
+8. **08_function_composition.raven** - Composing and chaining functions
 
 ### 04-patterns/ - Error Handling
 **Difficulty**: Intermediate | **Lines**: 40-60 per example
@@ -202,13 +204,14 @@ find examples -name "*.raven" -exec raven compile {} \;
 
 ## 📊 Statistics
 
-- **Total Examples**: 20 (Sprint 1 + Sprint 2 complete)
+- **Total Examples**: 28 (Sprint 1 + Sprint 2 + Sprint 3 complete)
   - 01-basics: 10 examples ✅
   - 02-control-flow: 10 examples ✅
+  - 03-functions: 8 examples ✅
 - **Total Planned**: ~60 examples across 8 categories
 - **Test Coverage**: 100% of examples compile successfully
 - **Difficulty Levels**: 3 (Beginner, Intermediate, Advanced)
-- **Progress**: 33% complete (20/60)
+- **Progress**: 47% complete (28/60)
 
 ## 🤝 Contributing
 
@@ -237,9 +240,10 @@ Want to add examples? Follow these guidelines:
 
 ---
 
-**Sprint Status**: Phase 6 Sprint 2 Complete (20/20 examples total)
+**Sprint Status**: Phase 6 Sprint 3 Complete (28/28 examples total)
 - Sprint 1 ✅ Complete: 01-basics (10 examples)
 - Sprint 2 ✅ Complete: 02-control-flow (10 examples)
+- Sprint 3 ✅ Complete: 03-functions (8 examples)
 
-**Next Sprint**: Sprint 3 - Functions & Closures (8 examples)
+**Next Sprint**: Sprint 4 - Pattern Matching & Error Handling (8 examples)
 **Last Updated**: 2025-10-22

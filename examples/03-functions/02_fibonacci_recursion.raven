@@ -1,0 +1,61 @@
+// examples/03-functions/02_fibonacci_recursion.raven
+//
+// CONCEPT: Fibonacci sequence using recursion
+// DIFFICULTY: Intermediate
+// FEATURES: recursion, multiple base cases, multiple recursive calls
+//
+// This example demonstrates:
+// - The classic Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21...
+// - Multiple base cases (fib(0) = 0, fib(1) = 1)
+// - A function that makes TWO recursive calls
+// - Exponential time complexity (not optimal, but clear)
+
+fn fibonacci(n: i32) -> i32 {
+    if n <= 0 {
+        0
+    } else if n == 1 {
+        1
+    } else {
+        fibonacci(n - 1) + fibonacci(n - 2)
+    }
+}
+
+fn main() {
+    println!("Fibonacci sequence:");
+
+    for i in 0..=10 {
+        println!("  fib({}) = {}", i, fibonacci(i));
+    }
+}
+
+// EXPECTED OUTPUT:
+// Fibonacci sequence:
+//   fib(0) = 0
+//   fib(1) = 1
+//   fib(2) = 1
+//   fib(3) = 2
+//   fib(4) = 3
+//   fib(5) = 5
+//   fib(6) = 8
+//   fib(7) = 13
+//   fib(8) = 21
+//   fib(9) = 34
+//   fib(10) = 55
+//
+// TRY IT:
+// raven compile examples/03-functions/02_fibonacci_recursion.raven
+// cd dist && node server.js
+//
+// HOW IT WORKS:
+// fib(5) = fib(4) + fib(3)
+//        = (fib(3) + fib(2)) + (fib(2) + fib(1))
+//        = ((fib(2) + fib(1)) + (fib(1) + fib(0))) + ((fib(1) + fib(0)) + 1)
+//        = ...eventually all resolve to base cases...
+//        = 5
+//
+// WHAT YOU LEARNED:
+// - Some recursions need multiple base cases
+// - A function can make multiple recursive calls
+// - Each recursive call creates a tree of function calls
+// - This is NOT the most efficient way (many repeated calculations)
+// - But it clearly shows the recursive pattern!

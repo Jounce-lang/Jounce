@@ -1,0 +1,79 @@
+// examples/03-functions/05_higher_order_filter.raven
+//
+// CONCEPT: Higher-order functions (filter pattern)
+// DIFFICULTY: Intermediate
+// FEATURES: higher-order functions, predicates, filtering data
+//
+// This example demonstrates:
+// - A function that filters elements based on a condition
+// - Using predicates (functions that return bool)
+// - The "filter" pattern from functional programming
+// - Building new arrays based on conditions
+
+fn count_matching(numbers: [i32; 10], predicate: fn(i32) -> bool) -> i32 {
+    let mut count = 0;
+
+    for num in numbers {
+        if predicate(num) {
+            count = count + 1;
+        }
+    }
+
+    count
+}
+
+fn is_even(x: i32) -> bool {
+    x % 2 == 0
+}
+
+fn is_positive(x: i32) -> bool {
+    x > 0
+}
+
+fn is_large(x: i32) -> bool {
+    x > 50
+}
+
+fn main() {
+    let numbers = [10, -5, 23, 50, -12, 67, 8, 99, -3, 42];
+
+    println!("Numbers: {:?}", numbers);
+    println!("");
+
+    let even_count = count_matching(numbers, is_even);
+    println!("Even numbers: {}", even_count);
+
+    let positive_count = count_matching(numbers, is_positive);
+    println!("Positive numbers: {}", positive_count);
+
+    let large_count = count_matching(numbers, is_large);
+    println!("Large numbers (>50): {}", large_count);
+
+    // Using a closure inline
+    let small_count = count_matching(numbers, |x: i32| -> bool { x < 10 && x > 0 });
+    println!("Small positive (0<x<10): {}", small_count);
+}
+
+// EXPECTED OUTPUT:
+// Numbers: [10, -5, 23, 50, -12, 67, 8, 99, -3, 42]
+//
+// Even numbers: 5
+// Positive numbers: 7
+// Large numbers (>50): 2
+// Small positive (0<x<10): 1
+//
+// TRY IT:
+// raven compile examples/03-functions/05_higher_order_filter.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - Predicates are functions that return bool
+// - Higher-order functions can use predicates to filter data
+// - You can reuse the same filtering logic with different conditions
+// - fn(i32) -> bool means "a function that takes i32 and returns bool"
+// - This pattern is fundamental to functional programming
+// - Makes code more reusable and composable!
+//
+// FUNCTIONAL PROGRAMMING:
+// This is the "filter" pattern - one of the most common higher-order functions
+// along with "map" and "reduce" (fold)

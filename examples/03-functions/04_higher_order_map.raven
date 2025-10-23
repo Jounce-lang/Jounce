@@ -1,0 +1,66 @@
+// examples/03-functions/04_higher_order_map.raven
+//
+// CONCEPT: Higher-order functions (functions that take functions)
+// DIFFICULTY: Intermediate
+// FEATURES: higher-order functions, closures, transforming arrays
+//
+// This example demonstrates:
+// - A function that takes another function as a parameter
+// - Using a function to transform each element in an array
+// - The "map" pattern from functional programming
+// - Passing closures to higher-order functions
+
+fn map_numbers(numbers: [i32; 5], transform: fn(i32) -> i32) -> [i32; 5] {
+    [
+        transform(numbers[0]),
+        transform(numbers[1]),
+        transform(numbers[2]),
+        transform(numbers[3]),
+        transform(numbers[4])
+    ]
+}
+
+fn double(x: i32) -> i32 {
+    x * 2
+}
+
+fn square(x: i32) -> i32 {
+    x * x
+}
+
+fn main() {
+    let numbers = [1, 2, 3, 4, 5];
+
+    println!("Original: {:?}", numbers);
+
+    let doubled = map_numbers(numbers, double);
+    println!("Doubled: {:?}", doubled);
+
+    let squared = map_numbers(numbers, square);
+    println!("Squared: {:?}", squared);
+
+    // Using a closure inline
+    let plus_ten = map_numbers(numbers, |x: i32| -> i32 { x + 10 });
+    println!("Plus 10: {:?}", plus_ten);
+}
+
+// EXPECTED OUTPUT:
+// Original: [1, 2, 3, 4, 5]
+// Doubled: [2, 4, 6, 8, 10]
+// Squared: [1, 4, 9, 16, 25]
+// Plus 10: [11, 12, 13, 14, 15]
+//
+// TRY IT:
+// raven compile examples/03-functions/04_higher_order_map.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - Functions can accept other functions as parameters
+// - This is called a "higher-order function"
+// - The fn(i32) -> i32 syntax means "a function that takes i32 and returns i32"
+// - You can pass named functions (double, square)
+// - You can pass anonymous closures inline
+// - This pattern lets you reuse transformation logic!
+//
+// NOTE: This is a simplified map for fixed-size arrays
+// Real implementations would work with any size

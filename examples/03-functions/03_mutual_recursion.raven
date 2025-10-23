@@ -1,0 +1,72 @@
+// examples/03-functions/03_mutual_recursion.raven
+//
+// CONCEPT: Mutual recursion (functions calling each other)
+// DIFFICULTY: Intermediate
+// FEATURES: mutual recursion, even/odd check, multiple functions
+//
+// This example demonstrates:
+// - Two functions that call each other
+// - is_even calls is_odd, is_odd calls is_even
+// - A different way to check if numbers are even or odd
+// - Shows that recursion doesn't have to be self-referential
+
+fn is_even(n: i32) -> bool {
+    if n == 0 {
+        true
+    } else if n < 0 {
+        is_even(-n)
+    } else {
+        is_odd(n - 1)
+    }
+}
+
+fn is_odd(n: i32) -> bool {
+    if n == 0 {
+        false
+    } else if n < 0 {
+        is_odd(-n)
+    } else {
+        is_even(n - 1)
+    }
+}
+
+fn main() {
+    println!("Testing even/odd with mutual recursion:");
+
+    for i in 0..=6 {
+        println!("  {} is even: {}, odd: {}", i, is_even(i), is_odd(i));
+    }
+
+    println!("\nNegative numbers:");
+    println!("  -3 is even: {}, odd: {}", is_even(-3), is_odd(-3));
+    println!("  -4 is even: {}, odd: {}", is_even(-4), is_odd(-4));
+}
+
+// EXPECTED OUTPUT:
+// Testing even/odd with mutual recursion:
+//   0 is even: true, odd: false
+//   1 is even: false, odd: true
+//   2 is even: true, odd: false
+//   3 is even: false, odd: true
+//   4 is even: true, odd: false
+//   5 is even: false, odd: true
+//   6 is even: true, odd: false
+//
+// Negative numbers:
+//   -3 is even: false, odd: true
+//   -4 is even: true, odd: false
+//
+// TRY IT:
+// raven compile examples/03-functions/03_mutual_recursion.raven
+// cd dist && node server.js
+//
+// HOW IT WORKS:
+// is_even(4) → is_odd(3) → is_even(2) → is_odd(1) → is_even(0) → true
+// is_odd(3)  → is_even(2) → is_odd(1) → is_even(0) → false
+//
+// WHAT YOU LEARNED:
+// - Functions can call each other recursively (mutual recursion)
+// - Both functions need base cases
+// - This works because RavensOne handles forward references
+// - Mutual recursion is useful for state machines and parsers
+// - Not the most efficient way to check even/odd, but demonstrates the concept!

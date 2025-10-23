@@ -1,0 +1,63 @@
+// examples/03-functions/06_closures_basic.raven
+//
+// CONCEPT: Closures (anonymous functions that capture variables)
+// DIFFICULTY: Intermediate
+// FEATURES: closures, variable capture, inline functions
+//
+// This example demonstrates:
+// - Creating anonymous functions (closures)
+// - Closures can capture variables from their environment
+// - Using closures for quick, inline logic
+// - The |param| -> return_type syntax
+
+fn apply_operation(x: i32, y: i32, operation: fn(i32, i32) -> i32) -> i32 {
+    operation(x, y)
+}
+
+fn main() {
+    let a = 10;
+    let b = 5;
+
+    // Closure for addition
+    let sum = apply_operation(a, b, |x: i32, y: i32| -> i32 { x + y });
+    println!("{} + {} = {}", a, b, sum);
+
+    // Closure for subtraction
+    let diff = apply_operation(a, b, |x: i32, y: i32| -> i32 { x - y });
+    println!("{} - {} = {}", a, b, diff);
+
+    // Closure for multiplication
+    let product = apply_operation(a, b, |x: i32, y: i32| -> i32 { x * y });
+    println!("{} * {} = {}", a, b, product);
+
+    // Closure that captures a variable from the environment
+    let multiplier = 3;
+    let triple = |x: i32| -> i32 { x * multiplier };
+
+    println!("Triple of 7: {}", triple(7));
+    println!("Triple of 12: {}", triple(12));
+}
+
+// EXPECTED OUTPUT:
+// 10 + 5 = 15
+// 10 - 5 = 5
+// 10 * 5 = 50
+// Triple of 7: 21
+// Triple of 12: 36
+//
+// TRY IT:
+// raven compile examples/03-functions/06_closures_basic.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - Closures are anonymous functions defined inline
+// - Syntax: |param1, param2| -> return_type { body }
+// - Closures can capture variables from their surrounding scope
+// - The 'multiplier' variable is captured by the 'triple' closure
+// - Closures are perfect for short, one-off functions
+// - No need to define a separate named function!
+//
+// CLOSURE vs FUNCTION:
+// - Named function: defined separately, reusable
+// - Closure: defined inline, can capture environment
+// - Both are useful in different situations

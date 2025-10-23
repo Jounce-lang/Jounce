@@ -1,0 +1,113 @@
+// examples/03-functions/08_function_composition.raven
+//
+// CONCEPT: Function composition (combining functions)
+// DIFFICULTY: Advanced
+// FEATURES: function composition, chaining, pipeline pattern
+//
+// This example demonstrates:
+// - Combining multiple functions into a pipeline
+// - Each function transforms the output of the previous one
+// - Building complex transformations from simple pieces
+// - The power of functional composition
+
+fn compose_two(
+    f: fn(i32) -> i32,
+    g: fn(i32) -> i32
+) -> fn(i32) -> i32 {
+    |x: i32| -> i32 { f(g(x)) }
+}
+
+fn add_ten(x: i32) -> i32 {
+    x + 10
+}
+
+fn double(x: i32) -> i32 {
+    x * 2
+}
+
+fn square(x: i32) -> i32 {
+    x * x
+}
+
+fn pipeline(value: i32, steps: [fn(i32) -> i32; 3]) -> i32 {
+    let mut result = value;
+
+    for step in steps {
+        result = step(result);
+    }
+
+    result
+}
+
+fn main() {
+    println!("Function Composition Examples:");
+    println!("");
+
+    // Simple composition: double then add ten
+    let x = 5;
+    let step1 = double(x);
+    let step2 = add_ten(step1);
+    println!("double({}) then add_ten: {}", x, step2);
+
+    // Same thing, but nested
+    let result = add_ten(double(5));
+    println!("add_ten(double(5)): {}", result);
+    println!("");
+
+    // Pipeline: chain multiple transformations
+    let input = 3;
+    let steps = [square, double, add_ten];
+
+    println!("Pipeline: {} -> square -> double -> add_ten", input);
+    let output = pipeline(input, steps);
+    println!("Result: {}", output);
+    println!("  {} -> square = {}", input, square(input));
+    println!("  {} -> double = {}", 9, double(9));
+    println!("  {} -> add_ten = {}", 18, add_ten(18));
+    println!("");
+
+    // Different order, different result
+    let steps2 = [double, add_ten, square];
+    println!("Pipeline: {} -> double -> add_ten -> square", input);
+    let output2 = pipeline(input, steps2);
+    println!("Result: {}", output2);
+    println!("  {} -> double = {}", input, double(input));
+    println!("  {} -> add_ten = {}", 6, add_ten(6));
+    println!("  {} -> square = {}", 16, square(16));
+}
+
+// EXPECTED OUTPUT:
+// Function Composition Examples:
+//
+// double(5) then add_ten: 20
+// add_ten(double(5)): 20
+//
+// Pipeline: 3 -> square -> double -> add_ten
+// Result: 28
+//   3 -> square = 9
+//   9 -> double = 18
+//   18 -> add_ten = 28
+//
+// Pipeline: 3 -> double -> add_ten -> square
+// Result: 256
+//   3 -> double = 6
+//   6 -> add_ten = 16
+//   16 -> square = 256
+//
+// TRY IT:
+// raven compile examples/03-functions/08_function_composition.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - Function composition combines simple functions into complex ones
+// - The order of composition matters! (f(g(x)) ≠ g(f(x)))
+// - Pipelines process data through multiple transformations
+// - Each step takes the output of the previous step
+// - This is a core pattern in functional programming
+// - Build complex behavior from simple, reusable pieces!
+//
+// REAL-WORLD USES:
+// - Data transformation pipelines
+// - Validation chains
+// - Middleware in web frameworks
+// - Image processing filters

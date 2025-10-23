@@ -1,0 +1,100 @@
+// examples/03-functions/07_closures_typed.raven
+//
+// CONCEPT: Closures with explicit type annotations
+// DIFFICULTY: Intermediate
+// FEATURES: typed closures, complex closures, multiple captures
+//
+// This example demonstrates:
+// - Closures with full type annotations
+// - Capturing multiple variables
+// - Using closures in more complex scenarios
+// - Storing closures in variables
+
+fn calculate_with_context(
+    base: i32,
+    calculator: fn(i32) -> i32
+) -> i32 {
+    calculator(base)
+}
+
+fn main() {
+    let offset = 100;
+    let multiplier = 2;
+
+    // Closure with full type annotations
+    let add_offset: fn(i32) -> i32 = |x: i32| -> i32 {
+        x + offset
+    };
+
+    // Closure that captures multiple variables
+    let transform: fn(i32) -> i32 = |x: i32| -> i32 {
+        (x * multiplier) + offset
+    };
+
+    // Closure with more complex logic
+    let classify: fn(i32) -> i32 = |x: i32| -> i32 {
+        if x < 0 {
+            -1
+        } else if x == 0 {
+            0
+        } else {
+            1
+        }
+    };
+
+    println!("Testing closures:");
+    println!("");
+
+    println!("add_offset(5) = {}", add_offset(5));
+    println!("add_offset(20) = {}", add_offset(20));
+    println!("");
+
+    println!("transform(5) = {}", transform(5));
+    println!("transform(10) = {}", transform(10));
+    println!("");
+
+    println!("classify(-5) = {}", classify(-5));
+    println!("classify(0) = {}", classify(0));
+    println!("classify(5) = {}", classify(5));
+    println!("");
+
+    // Using closures with higher-order functions
+    let result1 = calculate_with_context(10, add_offset);
+    println!("calculate_with_context(10, add_offset) = {}", result1);
+
+    let result2 = calculate_with_context(10, transform);
+    println!("calculate_with_context(10, transform) = {}", result2);
+}
+
+// EXPECTED OUTPUT:
+// Testing closures:
+//
+// add_offset(5) = 105
+// add_offset(20) = 120
+//
+// transform(5) = 110
+// transform(10) = 120
+//
+// classify(-5) = -1
+// classify(0) = 0
+// classify(5) = 1
+//
+// calculate_with_context(10, add_offset) = 110
+// calculate_with_context(10, transform) = 120
+//
+// TRY IT:
+// raven compile examples/03-functions/07_closures_typed.raven
+// cd dist && node server.js
+//
+// WHAT YOU LEARNED:
+// - Closures can have explicit type annotations
+// - Format: let name: fn(param_type) -> return_type = |param| { body }
+// - Closures can capture multiple variables from their environment
+// - Closures can contain complex logic (if/else, calculations)
+// - Stored closures can be passed to higher-order functions
+// - Type annotations make code more self-documenting!
+//
+// BEST PRACTICES:
+// - Use type annotations for clarity
+// - Keep closures focused on one task
+// - Name closures descriptively when storing them
