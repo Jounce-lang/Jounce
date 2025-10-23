@@ -10,7 +10,7 @@
 // - server.js: Server-side code with HTTP server and RPC handlers
 // - client.js: Client-side code with RPC stubs and UI components
 
-use crate::ast::{Program, Statement, FunctionDefinition, ComponentDefinition, Expression, BlockStatement, Pattern, TypeExpression, ForInStatement, ForStatement};
+use crate::ast::{Program, Statement, FunctionDefinition, ComponentDefinition, Expression, BlockStatement, Pattern, TypeExpression, ForInStatement, ForStatement, ImplBlock, StructDefinition};
 use crate::code_splitter::CodeSplitter;
 use crate::rpc_generator::RPCGenerator;
 use crate::source_map::SourceMapBuilder;
@@ -235,6 +235,27 @@ impl JSEmitter {
                 output.push_str(&format!("const {} = {};\n", const_decl.name.value, value));
             }
             output.push_str("\n");
+        }
+
+        // Generate struct constructors and impl blocks
+        output.push_str("// Struct definitions and implementations\n");
+        for struct_def in &self.splitter.structs {
+            // Generate constructor function
+            let params: Vec<String> = struct_def.fields.iter()
+                .map(|(name, _)| name.value.clone())
+                .collect();
+            output.push_str(&format!(
+                "function {}({}) {{\n",
+                struct_def.name.value,
+                params.join(", ")
+            ));
+            for (field_name, _) in &struct_def.fields {
+                output.push_str(&format!("  this.{} = {};\n", field_name.value, field_name.value));
+            }
+            output.push_str("}\n\n");
+        }
+        for impl_block in &self.splitter.impl_blocks {
+            output.push_str(&self.generate_impl_block_js(impl_block));
         }
 
         // Generate client function implementations
@@ -617,6 +638,13 @@ impl JSEmitter {
             }
             Statement::For(for_stmt) => {
                 self.generate_for_js(for_stmt)
+            }
+            Statement::Trait(_) => {
+                // Traits are compile-time only, don't generate any JavaScript
+                String::new()
+            }
+            Statement::ImplBlock(impl_block) => {
+                self.generate_impl_block_js(impl_block)
             }
             _ => "// Unsupported statement".to_string(),
         }
@@ -1118,6 +1146,40 @@ impl JSEmitter {
         self.splitter.server_functions
             .iter()
             .any(|f| f.name.value == name)
+    }
+
+    /// Generates JavaScript for an impl block
+    fn generate_impl_block_js(&self, impl_block: &ImplBlock) -> String {
+        let type_name = &impl_block.type_name.value;
+        let mut js = String::new();
+
+        for method in &impl_block.methods {
+            let method_name = &method.name.value;
+
+            // Generate parameter list (skip first param if it's self/Self)
+            let params: Vec<String> = method.parameters.iter()
+                .skip_while(|p| {
+                    // Skip self parameter
+                    let param_name = &p.name.value;
+                    param_name == "self"
+                })
+                .map(|p| p.name.value.clone())
+                .collect();
+
+            // Generate method body
+            let body = self.generate_block_js(&method.body);
+
+            // Add method to prototype (for both inherent and trait impls)
+            js.push_str(&format!(
+                "{}.prototype.{} = function({}) {{\n{}\n}};\n\n",
+                type_name,
+                method_name,
+                params.join(", "),
+                body
+            ));
+        }
+
+        js
     }
 
     /// Returns statistics about the generated code

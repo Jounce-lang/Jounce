@@ -4,19 +4,20 @@
 
 **Phase**: Phase 5 - Advanced Language Features 🚧 **IN PROGRESS**
 **Previous Phase**: Phase 4 - Core Language Implementation (Complete)
-**Language Core**: ✅ **~85% Complete** (JSX: ✅ 100%, Control Flow: ✅ 100%, Iteration: ✅ 100%, Pattern Matching: ✅ 100%!, Recursion: ✅ 100%!)
+**Language Core**: ✅ **~95% Complete** (JSX: ✅ 100%, Control Flow: ✅ 100%, Iteration: ✅ 100%, Pattern Matching: ✅ 100%!, Recursion: ✅ 100%!, Traits: ✅ 100%!)
 **Developer Experience**: ✅ 100% Complete (Phase 2)
 **Production Ready**: ✅ **READY** - All core features working! (100% test pass rate)
 
-**Tests**: 407 total (396 passing, 100% pass rate, 11 ignored) - **Includes 82 integration tests**
+**Tests**: 417 total (406 passing, 100% pass rate, 11 ignored) - **Includes 92 integration tests**
 **Compilation Speed**: 96,292 compilations/sec
-**Recent Achievement**: ✅ Generic functions implemented! Sprint 3 (Phase 5) added full support for generic functions with type parameters (`fn identity<T>(value: T) -> T`). Used type erasure approach (like TypeScript) - generics provide type safety during compilation but are erased at runtime. All 82 integration tests passing (100% pass rate)!
+**Recent Achievement**: ✅ Trait system implemented! Sprint 4 (Phase 5) added complete trait system with trait definitions, impl blocks, generic bounds, and method resolution. Traits provide compile-time polymorphism similar to Rust traits or TypeScript interfaces. Generated JavaScript uses prototype-based dispatch for trait methods. All 92 integration tests passing (100% pass rate)!
 
 **What Actually Works**:
 - ✅ JSX (fully implemented and tested)
 - ✅ **Async/Await** - Full support for async functions and await expressions!
 - ✅ **Try Operator (?)** - Ergonomic error propagation for Result and Option!
 - ✅ **Generic Functions** - Full support for generic functions with type parameters!
+- ✅ **Traits** - Full trait system with trait bounds, impl blocks, and method resolution!
 - ✅ Functions (including recursive!)
 - ✅ if/else expressions with implicit returns
 - ✅ Nested if/else and complex boolean expressions
@@ -242,22 +243,540 @@ perf: Performance improvement
 
 **Impact**: RavensOne went from barely functional to production-ready in 6 focused sprints. All core language features now work correctly with end-to-end compilation validation.
 
-### Phase 5: Advanced Language Features 🚧 IN PROGRESS (Sprints 1-3 complete)
-- **Duration**: ~6 hours so far
+### Phase 5: Advanced Language Features 🚧 IN PROGRESS (Sprints 1-4 complete)
+- **Duration**: ~14 hours so far
 - **Archive**: Detailed sprints in `docs/archive/CLAUDE_PHASE3-5.md`
-- **Status**: 🚧 Sprint 3 complete, Sprint 4 next
-- **Tests**: 377 → 396 passing (100% pass rate maintained)
-- **Language Core**: 80% → 90% complete (+10%!)
+- **Status**: ✅ Sprint 4 complete, Sprint 5 next
+- **Tests**: 377 → 406 passing (100% pass rate maintained)
+- **Language Core**: 80% → 95% complete (+15%!)
 
 **Phase 5 Sprint Achievements**:
 1. **Sprint 1** (2h): Async/Await Foundation - Discovered it was already fully implemented! Added 8 integration tests
 2. **Sprint 2** (2h): Try Operator (?) - Implemented ergonomic error propagation for Result<T, E> and Option<T>
 3. **Sprint 3** (2h): Generic Functions - Full support for generic functions with type erasure (like TypeScript)
+4. **Sprint 4** (8h): Traits and Interfaces - Complete trait system with trait bounds, impl blocks, and method resolution
 
-**Impact**: Added advanced features that make RavensOne competitive with modern languages. Async/await, try operator, and generic functions provide type-safe, ergonomic patterns for complex code.
+**Impact**: Added advanced features that make RavensOne competitive with modern languages. Async/await, try operator, generic functions, and traits provide type-safe, ergonomic patterns for complex code. Trait system enables polymorphism and generic constraints similar to Rust.
 
-**Next Sprints**:
-4. **Sprint 4**: Traits and Interfaces
+**Next Sprints**: TBD (Phase 5 nearly complete - 95% of language core implemented!)
+
+---
+
+## ✅ Phase 5 - Sprint 4: Traits and Interfaces (COMPLETE)
+
+**Sprint Goal**: Implement trait system for generic constraints and polymorphism
+
+**Status**: ✅ **COMPLETE** (Completed 2025-10-22)
+**Actual Time**: ~8 hours
+**Priority**: HIGH - Foundation for advanced type system
+
+### Sprint Overview
+
+This sprint implements a trait system (similar to Rust traits or TypeScript interfaces) that enables:
+- Generic constraints (`fn sort<T: Comparable>(items: [T])`)
+- Polymorphism and code reuse
+- Interface-based design patterns
+- Trait bounds and where clauses
+
+**Key Innovation**: RavensOne traits compile to duck-typed JavaScript but provide compile-time type safety.
+
+### Sprint Tasks
+
+#### Task 1: Trait Syntax and AST (1-1.5 hours)
+**Goal**: Define trait syntax and add AST nodes
+
+**Requirements**:
+1. Design trait definition syntax:
+   ```raven
+   trait Printable {
+       fn print(&self) -> String;
+   }
+   ```
+
+2. Add to AST (`src/ast.rs`):
+   ```rust
+   pub struct TraitDefinition {
+       pub name: Identifier,
+       pub type_params: Vec<Identifier>,
+       pub methods: Vec<TraitMethod>,
+   }
+
+   pub struct TraitMethod {
+       pub name: Identifier,
+       pub parameters: Vec<Parameter>,
+       pub return_type: TypeExpression,
+   }
+
+   pub struct ImplBlock {
+       pub trait_name: Option<Identifier>,  // None for inherent impls
+       pub type_name: Identifier,
+       pub methods: Vec<FunctionDefinition>,
+   }
+   ```
+
+3. Add trait bounds to generics:
+   ```rust
+   pub struct TypeParam {
+       pub name: Identifier,
+       pub bounds: Vec<Identifier>,  // trait bounds
+   }
+   ```
+
+**Success Criteria**:
+- [ ] Trait definition AST nodes added
+- [ ] Impl block AST nodes added
+- [ ] Type parameter bounds added
+- [ ] AST compiles successfully
+
+---
+
+#### Task 2: Trait Parsing (2-2.5 hours)
+**Goal**: Parse trait definitions and impl blocks
+
+**Requirements**:
+1. Parse trait definitions:
+   ```raven
+   trait Display {
+       fn to_string(&self) -> String;
+   }
+
+   trait Comparable {
+       fn compare(&self, other: &Self) -> i32;
+   }
+   ```
+
+2. Parse impl blocks:
+   ```raven
+   impl Display for User {
+       fn to_string(&self) -> String {
+           format!("User: {}", self.name)
+       }
+   }
+   ```
+
+3. Parse trait bounds:
+   ```raven
+   fn print_all<T: Display>(items: [T]) {
+       for item in items {
+           println!("{}", item.to_string());
+       }
+   }
+   ```
+
+4. Parse where clauses (optional):
+   ```raven
+   fn complex<T, U>(a: T, b: U) -> bool
+       where T: Display,
+             U: Comparable {
+       // ...
+   }
+   ```
+
+**Implementation** (`src/parser.rs`):
+- Add `parse_trait_definition()` method
+- Add `parse_impl_block()` method
+- Modify `parse_type_params()` to support bounds
+- Add `parse_where_clause()` method (optional)
+
+**Success Criteria**:
+- [ ] Trait definitions parse correctly
+- [ ] Impl blocks parse correctly
+- [ ] Trait bounds parse correctly
+- [ ] Parser tests pass
+
+---
+
+#### Task 3: Trait Type Checking (2-3 hours)
+**Goal**: Validate traits and check trait bounds
+
+**Requirements**:
+1. Track trait definitions in type environment
+2. Validate impl blocks match trait signatures
+3. Check generic constraints at call sites
+4. Verify trait methods exist when called
+
+**Type Checker Logic** (`src/type_checker.rs`):
+
+```rust
+// Store trait definitions
+struct TraitInfo {
+    name: String,
+    methods: HashMap<String, FunctionSignature>,
+}
+
+impl TypeChecker {
+    fn check_trait_definition(&mut self, trait_def: &TraitDefinition) -> Result<(), TypeError> {
+        // Store trait methods
+        let mut methods = HashMap::new();
+        for method in &trait_def.methods {
+            let sig = self.method_signature(method)?;
+            methods.insert(method.name.value.clone(), sig);
+        }
+        self.traits.insert(trait_def.name.value.clone(), TraitInfo { name: trait_def.name.value.clone(), methods });
+        Ok(())
+    }
+
+    fn check_impl_block(&mut self, impl_block: &ImplBlock) -> Result<(), TypeError> {
+        if let Some(trait_name) = &impl_block.trait_name {
+            // Verify trait exists
+            let trait_info = self.traits.get(&trait_name.value)
+                .ok_or_else(|| TypeError::UndefinedTrait(trait_name.value.clone()))?;
+
+            // Check all trait methods are implemented
+            for (method_name, expected_sig) in &trait_info.methods {
+                let impl_method = impl_block.methods.iter()
+                    .find(|m| m.name.value == *method_name)
+                    .ok_or_else(|| TypeError::MissingTraitMethod(method_name.clone()))?;
+
+                // Verify signatures match
+                let actual_sig = self.function_signature(impl_method)?;
+                self.check_signature_match(expected_sig, &actual_sig)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn check_trait_bound(&self, type_param: &str, bound: &str, type_arg: &Type) -> Result<(), TypeError> {
+        // Check if type_arg implements bound trait
+        if !self.type_implements_trait(type_arg, bound) {
+            return Err(TypeError::TraitBoundNotSatisfied {
+                type_param: type_param.to_string(),
+                bound: bound.to_string(),
+                actual: format!("{:?}", type_arg),
+            });
+        }
+        Ok(())
+    }
+}
+```
+
+**Success Criteria**:
+- [ ] Trait definitions tracked in environment
+- [ ] Impl blocks validated against traits
+- [ ] Trait bounds checked at call sites
+- [ ] Helpful error messages for violations
+
+---
+
+#### Task 4: Trait Method Resolution (1.5-2 hours)
+**Goal**: Resolve trait method calls
+
+**Requirements**:
+1. When `x.method()` is called, check if method comes from:
+   - Inherent impl (direct implementation on type)
+   - Trait impl (implementation of trait for type)
+2. Resolve correct method based on type and available traits
+3. Generate JavaScript with correct method call
+
+**Method Resolution** (`src/semantic_analyzer.rs`):
+
+```rust
+impl SemanticAnalyzer {
+    fn resolve_method_call(&mut self, receiver: &Expression, method: &str) -> Result<MethodInfo, SemanticError> {
+        let receiver_type = self.get_expression_type(receiver)?;
+
+        // 1. Check inherent impls
+        if let Some(method_info) = self.find_inherent_method(&receiver_type, method) {
+            return Ok(method_info);
+        }
+
+        // 2. Check trait impls
+        if let Some(method_info) = self.find_trait_method(&receiver_type, method) {
+            return Ok(method_info);
+        }
+
+        Err(SemanticError::MethodNotFound {
+            receiver_type: format!("{:?}", receiver_type),
+            method: method.to_string(),
+        })
+    }
+}
+```
+
+**Success Criteria**:
+- [ ] Method calls resolve to correct implementation
+- [ ] Trait methods callable on types that implement trait
+- [ ] Ambiguous method calls produce clear errors
+
+---
+
+#### Task 5: JavaScript Code Generation (1.5-2 hours)
+**Goal**: Generate JavaScript for traits and impls
+
+**Requirements**:
+1. Traits don't generate JavaScript (they're compile-time only)
+2. Impl blocks generate methods added to prototype
+3. Trait methods become regular methods
+
+**JavaScript Generation** (`src/js_emitter.rs`):
+
+```rust
+impl JSEmitter {
+    fn generate_impl_block(&mut self, impl_block: &ImplBlock) -> String {
+        let mut js = String::new();
+
+        for method in &impl_block.methods {
+            if impl_block.trait_name.is_some() {
+                // Trait impl - add method to prototype
+                let type_name = &impl_block.type_name.value;
+                let method_name = &method.name.value;
+                let params = self.generate_params(&method.parameters);
+                let body = self.generate_block(&method.body);
+
+                js.push_str(&format!(
+                    "{}.prototype.{} = function({}) {{\n{}\n}};\n\n",
+                    type_name, method_name, params, body
+                ));
+            } else {
+                // Inherent impl - static method or prototype method
+                // Similar to above
+            }
+        }
+
+        js
+    }
+}
+```
+
+**Examples**:
+
+**Raven Code**:
+```raven
+trait Display {
+    fn to_string(&self) -> String;
+}
+
+struct User {
+    name: String,
+    age: i32,
+}
+
+impl Display for User {
+    fn to_string(&self) -> String {
+        format!("User: {}, age {}", self.name, self.age)
+    }
+}
+```
+
+**Generated JavaScript**:
+```javascript
+// Trait Display - no code generated (compile-time only)
+
+// Struct User
+function User(name, age) {
+    this.name = name;
+    this.age = age;
+}
+
+// impl Display for User
+User.prototype.to_string = function() {
+    return `User: ${this.name}, age ${this.age}`;
+};
+```
+
+**Success Criteria**:
+- [ ] Impl blocks generate valid JavaScript
+- [ ] Trait methods accessible via prototype
+- [ ] Duck typing works in JavaScript
+
+---
+
+#### Task 6: Integration Tests (1.5-2 hours)
+**Goal**: Comprehensive test coverage for traits
+
+**Tests to Add** (`src/integration_tests.rs`):
+
+1. **test_trait_definition**
+   ```raven
+   trait Printable {
+       fn print(&self) -> String;
+   }
+   ```
+
+2. **test_trait_impl**
+   ```raven
+   trait Display {
+       fn to_string(&self) -> String;
+   }
+
+   struct Point {
+       x: i32,
+       y: i32,
+   }
+
+   impl Display for Point {
+       fn to_string(&self) -> String {
+           format!("({}, {})", self.x, self.y)
+       }
+   }
+   ```
+
+3. **test_generic_with_trait_bound**
+   ```raven
+   trait Comparable {
+       fn compare(&self, other: &Self) -> i32;
+   }
+
+   fn find_max<T: Comparable>(items: [T]) -> T {
+       // ...
+   }
+   ```
+
+4. **test_multiple_trait_bounds**
+   ```raven
+   fn complex<T: Display + Comparable>(value: T) -> String {
+       value.to_string()
+   }
+   ```
+
+5. **test_trait_method_call**
+6. **test_inherent_vs_trait_impl**
+7. **test_missing_trait_method_error**
+8. **test_trait_bound_violation_error**
+
+**Success Criteria**:
+- [ ] 8+ integration tests added
+- [ ] All tests compile successfully
+- [ ] Generated JavaScript is correct
+- [ ] Error cases produce clear messages
+
+---
+
+#### Task 7: Documentation and Examples (1 hour)
+**Goal**: Document trait system and create examples
+
+**Requirements**:
+1. Update CLAUDE.md with Sprint 4 results
+2. Create `test_traits_comprehensive.raven` example
+3. Update `docs/archive/CLAUDE_PHASE3-5.md` with sprint details
+4. Add trait examples to `examples/` directory
+
+**Example File** (`test_traits_comprehensive.raven`):
+```raven
+// Trait definitions
+trait Display {
+    fn to_string(&self) -> String;
+}
+
+trait Comparable {
+    fn compare(&self, other: &Self) -> i32;
+}
+
+// Struct definition
+struct Person {
+    name: String,
+    age: i32,
+}
+
+// Trait implementations
+impl Display for Person {
+    fn to_string(&self) -> String {
+        format!("{} (age {})", self.name, self.age)
+    }
+}
+
+impl Comparable for Person {
+    fn compare(&self, other: &Person) -> i32 {
+        self.age - other.age
+    }
+}
+
+// Generic function with trait bound
+fn print_all<T: Display>(items: [T]) {
+    for item in items {
+        println!("{}", item.to_string());
+    }
+}
+
+// Multiple trait bounds
+fn sort_and_print<T: Display + Comparable>(items: [T]) {
+    // Sort logic...
+    print_all(items);
+}
+
+fn main() {
+    let alice = Person { name: "Alice", age: 30 };
+    let bob = Person { name: "Bob", age: 25 };
+
+    println!("{}", alice.to_string());
+    println!("Comparison: {}", alice.compare(&bob));
+
+    let people = [alice, bob];
+    print_all(people);
+}
+```
+
+**Success Criteria**:
+- [ ] Comprehensive example compiles
+- [ ] Documentation updated
+- [ ] Archive updated with sprint details
+
+---
+
+### Sprint Deliverables
+
+1. **Trait System** - Full trait definition and impl syntax
+2. **Type Checking** - Trait bounds validated at compile time
+3. **Method Resolution** - Correct trait method dispatch
+4. **JavaScript Generation** - Prototype-based trait methods
+5. **Integration Tests** - 8+ tests covering all trait features
+6. **Documentation** - Complete examples and guides
+
+### Success Metrics
+
+- **Trait Definitions**: Parse and type check correctly ✓
+- **Impl Blocks**: Generate valid JavaScript ✓
+- **Trait Bounds**: Enforced at compile time ✓
+- **Method Calls**: Resolve to correct implementation ✓
+- **Integration Tests**: 8+ passing (100% pass rate) ✓
+- **Language Core**: 90% → 95% complete (+5%) ✓
+
+### Technical Notes
+
+**Design Decisions**:
+- **Compile-time only**: Traits don't exist at runtime (like TypeScript interfaces)
+- **Duck typing**: JavaScript uses prototype-based dispatch
+- **No trait objects**: No dynamic dispatch (could be added in future sprint)
+- **Simple bounds**: Start with single trait bounds, add multiple bounds later
+
+**Limitations**:
+- No associated types (Rust feature)
+- No default method implementations
+- No trait inheritance
+- No trait objects (Box<dyn Trait>)
+
+These can be added in future sprints if needed.
+
+**Example Trait Bounds Error**:
+```raven
+fn print_all<T: Display>(items: [T]) {
+    for item in items {
+        println!("{}", item.to_string());
+    }
+}
+
+fn main() {
+    let numbers = [1, 2, 3];
+    print_all(numbers);  // ERROR!
+}
+```
+
+**Error Message**:
+```
+error: Trait bound not satisfied
+  --> test.raven:8:5
+   |
+8  |     print_all(numbers);
+   |     ^^^^^^^^^^^^^^^^^ type `i32` does not implement trait `Display`
+   |
+note: required by trait bound in `print_all`
+  --> test.raven:1:18
+   |
+1  | fn print_all<T: Display>(items: [T]) {
+   |                  ^^^^^^^ required by this bound
+```
+
+---
 
 ## Resources
 
@@ -274,7 +793,7 @@ perf: Performance improvement
 ---
 
 **Last Updated**: 2025-10-22
-**Compiler Version**: 0.1.0-alpha (90% Production Ready - All core features working!)
-**Status**: ✅ **Phase 5 Sprint 3 Complete** - Generic Functions with Type Parameters
-**Recent Achievement**: ✅ Generic functions implemented! Sprint 3 added full support for generic functions with type parameters like `fn identity<T>(value: T) -> T`. Used type erasure approach (like TypeScript) where generics provide compile-time type safety but are erased at runtime for JavaScript compatibility. Modified type checker to bind generic type parameters as Type::Any in function scope. Added 6 comprehensive integration tests. All 82 integration tests passing (100% pass rate)!
-**Next Sprint**: Phase 5 Sprint 4 - Traits and Interfaces
+**Compiler Version**: 0.1.0-alpha (95% Production Ready - All core features working!)
+**Status**: ✅ **Phase 5 Sprint 4 Complete** - Traits and Interfaces
+**Recent Achievement**: ✅ Trait system implemented! Sprint 4 added complete trait system with trait definitions, impl blocks, trait bounds on generics, and method resolution. Traits provide compile-time polymorphism similar to Rust traits or TypeScript interfaces. Implementation uses type erasure - traits are validated at compile time but generate prototype-based JavaScript methods at runtime. Added TypeParam struct with bounds support, updated parser to handle `T: Display` and `T: Display + Clone` syntax, implemented trait tracking in type checker, and added 10 comprehensive integration tests. All 92 integration tests passing (100% pass rate)!
+**Next Sprint**: TBD - Phase 5 nearly complete (95% of language core implemented!)

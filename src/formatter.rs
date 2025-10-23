@@ -292,7 +292,16 @@ impl Formatter {
                 if !first {
                     self.write(", ");
                 }
-                self.write(&type_param.value);
+                self.write(&type_param.name.value);
+                if !type_param.bounds.is_empty() {
+                    self.write(": ");
+                    for (i, bound) in type_param.bounds.iter().enumerate() {
+                        if i > 0 {
+                            self.write(" + ");
+                        }
+                        self.write(&bound.value);
+                    }
+                }
                 first = false;
             }
             self.write(">");
@@ -350,7 +359,16 @@ impl Formatter {
                 if !first {
                     self.write(", ");
                 }
-                self.write(&type_param.value);
+                self.write(&type_param.name.value);
+                if !type_param.bounds.is_empty() {
+                    self.write(": ");
+                    for (i, bound) in type_param.bounds.iter().enumerate() {
+                        if i > 0 {
+                            self.write(" + ");
+                        }
+                        self.write(&bound.value);
+                    }
+                }
                 first = false;
             }
             self.write(">");
@@ -428,7 +446,16 @@ impl Formatter {
                 if !first {
                     self.write(", ");
                 }
-                self.write(&type_param.value);
+                self.write(&type_param.name.value);
+                if !type_param.bounds.is_empty() {
+                    self.write(": ");
+                    for (i, bound) in type_param.bounds.iter().enumerate() {
+                        if i > 0 {
+                            self.write(" + ");
+                        }
+                        self.write(&bound.value);
+                    }
+                }
                 first = false;
             }
             self.write(">");
@@ -529,7 +556,16 @@ impl Formatter {
                 if !first {
                     self.write(", ");
                 }
-                self.write(&type_param.value);
+                self.write(&type_param.name.value);
+                if !type_param.bounds.is_empty() {
+                    self.write(": ");
+                    for (i, bound) in type_param.bounds.iter().enumerate() {
+                        if i > 0 {
+                            self.write(" + ");
+                        }
+                        self.write(&bound.value);
+                    }
+                }
                 first = false;
             }
             self.write("> ");
@@ -599,7 +635,16 @@ impl Formatter {
                 if !first {
                     self.write(", ");
                 }
-                self.write(&type_param.value);
+                self.write(&type_param.name.value);
+                if !type_param.bounds.is_empty() {
+                    self.write(": ");
+                    for (i, bound) in type_param.bounds.iter().enumerate() {
+                        if i > 0 {
+                            self.write(" + ");
+                        }
+                        self.write(&bound.value);
+                    }
+                }
                 first = false;
             }
             self.write(">");

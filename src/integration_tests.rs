@@ -2042,4 +2042,364 @@ mod tests {
         assert!(client_js.contains("function apply(value, f)"),
                 "should generate higher-order function");
     }
+
+    // ========================================
+    // Trait System Tests (Phase 5 Sprint 4)
+    // ========================================
+
+    #[test]
+    fn test_trait_definition() {
+        let source = r#"
+            trait Display {
+                fn to_string(self: Self) -> String;
+            }
+
+            fn main() {
+                println!("trait defined");
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "trait definition should compile");
+
+        let (_, client_js) = result.unwrap();
+        // Traits are compile-time only, no JavaScript generated
+        assert!(!client_js.contains("trait Display"),
+                "traits should not appear in generated JavaScript");
+    }
+
+    #[test]
+    fn test_trait_impl() {
+        let source = r#"
+            trait Display {
+                fn to_string(self: Self) -> String;
+            }
+
+            struct Point {
+                x: i32,
+                y: i32,
+            }
+
+            impl Display for Point {
+                fn to_string(self: Point) -> String {
+                    "Point(10, 20)"
+                }
+            }
+
+            fn main() {
+                let p = Point { x: 10, y: 20 };
+                let result = p.to_string();
+                println!("{}", result);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "trait implementation should compile");
+
+        let (_, client_js) = result.unwrap();
+        // Struct constructor should be generated
+        assert!(client_js.contains("function Point(x, y)"),
+                "should generate struct constructor");
+        // Trait method should be added to prototype
+        assert!(client_js.contains("Point.prototype.to_string"),
+                "should generate prototype method for trait impl");
+    }
+
+    #[test]
+    fn test_generic_with_trait_bound() {
+        let source = r#"
+            trait Printable {
+                fn print(self: Self) -> String;
+            }
+
+            struct Message {
+                text: String,
+            }
+
+            impl Printable for Message {
+                fn print(self: Message) -> String {
+                    self.text
+                }
+            }
+
+            fn print_value<T: Printable>(value: T) -> String {
+                value.print()
+            }
+
+            fn main() {
+                let msg = Message { text: "hello" };
+                let result = print_value(msg);
+                println!("{}", result);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "generic function with trait bound should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("function print_value(value)"),
+                "should generate generic function with trait bound");
+        assert!(client_js.contains("Message.prototype.print"),
+                "should generate trait method implementation");
+    }
+
+    #[test]
+    fn test_multiple_trait_bounds() {
+        let source = r#"
+            trait Display {
+                fn to_string(self: Self) -> String;
+            }
+
+            trait Clone {
+                fn clone(self: Self) -> Self;
+            }
+
+            struct User {
+                name: String,
+            }
+
+            impl Display for User {
+                fn to_string(self: User) -> String {
+                    "User"
+                }
+            }
+
+            impl Clone for User {
+                fn clone(self: User) -> User {
+                    self
+                }
+            }
+
+            fn process<T: Display + Clone>(value: T) -> String {
+                "processed"
+            }
+
+            fn main() {
+                let user = User { name: "Alice" };
+                let result = process(user);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "generic function with multiple trait bounds should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("User.prototype.to_string"),
+                "should generate to_string method");
+        assert!(client_js.contains("User.prototype.clone"),
+                "should generate clone method");
+    }
+
+    #[test]
+    fn test_trait_method_call() {
+        let source = r#"
+            trait Comparable {
+                fn compare(self: Self, other: Self) -> i32;
+            }
+
+            struct Number {
+                value: i32,
+            }
+
+            impl Comparable for Number {
+                fn compare(self: Number, other: Number) -> i32 {
+                    self.value - other.value
+                }
+            }
+
+            fn main() {
+                let a = Number { value: 10 };
+                let b = Number { value: 5 };
+                let result = a.compare(b);
+                println!("{}", result);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "trait method call should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("Number.prototype.compare"),
+                "should generate compare method");
+        assert!(client_js.contains(".compare("),
+                "should generate method call");
+    }
+
+    #[test]
+    fn test_inherent_vs_trait_impl() {
+        let source = r#"
+            trait Display {
+                fn to_string(self: Self) -> String;
+            }
+
+            struct Person {
+                name: String,
+                age: i32,
+            }
+
+            impl Person {
+                fn new(name: String, age: i32) -> Person {
+                    Person { name: name, age: age }
+                }
+            }
+
+            impl Display for Person {
+                fn to_string(self: Person) -> String {
+                    "Person"
+                }
+            }
+
+            fn main() {
+                let p = Person::new("Alice", 30);
+                let s = p.to_string();
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "both inherent and trait impl should compile");
+
+        let (_, client_js) = result.unwrap();
+        // Both inherent and trait methods should be generated
+        assert!(client_js.contains("Person.prototype.new") || client_js.contains("Person.new"),
+                "should generate inherent method");
+        assert!(client_js.contains("Person.prototype.to_string"),
+                "should generate trait method");
+    }
+
+    #[test]
+    fn test_trait_with_multiple_methods() {
+        let source = r#"
+            trait Shape {
+                fn area(self: Self) -> i32;
+                fn perimeter(self: Self) -> i32;
+            }
+
+            struct Rectangle {
+                width: i32,
+                height: i32,
+            }
+
+            impl Shape for Rectangle {
+                fn area(self: Rectangle) -> i32 {
+                    self.width * self.height
+                }
+
+                fn perimeter(self: Rectangle) -> i32 {
+                    2 * (self.width + self.height)
+                }
+            }
+
+            fn main() {
+                let rect = Rectangle { width: 5, height: 3 };
+                let a = rect.area();
+                let p = rect.perimeter();
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "trait with multiple methods should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("Rectangle.prototype.area"),
+                "should generate area method");
+        assert!(client_js.contains("Rectangle.prototype.perimeter"),
+                "should generate perimeter method");
+    }
+
+    #[test]
+    fn test_self_type_in_trait() {
+        let source = r#"
+            trait Builder {
+                fn build(self: Self) -> Self;
+            }
+
+            struct Config {
+                enabled: bool,
+            }
+
+            impl Builder for Config {
+                fn build(self: Config) -> Config {
+                    self
+                }
+            }
+
+            fn main() {
+                let cfg = Config { enabled: true };
+                let built = cfg.build();
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "Self type in trait should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("Config.prototype.build"),
+                "should generate build method");
+    }
+
+    #[test]
+    fn test_trait_impl_with_generic_struct() {
+        let source = r#"
+            trait Display {
+                fn to_string(self: Self) -> String;
+            }
+
+            struct Container<T> {
+                value: T,
+            }
+
+            impl Display for Container<i32> {
+                fn to_string(self: Container<i32>) -> String {
+                    "Container"
+                }
+            }
+
+            fn main() {
+                let c = Container { value: 42 };
+                let s = c.to_string();
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "trait impl for generic struct should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("Container.prototype.to_string"),
+                "should generate trait method for generic struct");
+    }
+
+    #[test]
+    fn test_nested_trait_bounds() {
+        let source = r#"
+            trait Display {
+                fn to_string(self: Self) -> String;
+            }
+
+            struct Wrapper<T: Display> {
+                inner: T,
+            }
+
+            struct Value {
+                data: i32,
+            }
+
+            impl Display for Value {
+                fn to_string(self: Value) -> String {
+                    "Value"
+                }
+            }
+
+            fn main() {
+                let v = Value { data: 42 };
+                let w = Wrapper { inner: v };
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "nested trait bounds should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("Value.prototype.to_string"),
+                "should generate trait method");
+    }
 }

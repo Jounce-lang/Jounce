@@ -1,13 +1,30 @@
 // Type Checker with Hindley-Milner Type Inference
 
-use crate::ast::{Expression, Statement, InfixExpression, PrefixExpression, TypeExpression};
+use crate::ast::{Expression, Statement, InfixExpression, PrefixExpression, TypeExpression, TraitDefinition, ImplBlock, FunctionParameter, TraitMethod};
 use crate::errors::CompileError;
 use crate::types::{Substitution, Type, TypeEnv};
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
+
+// Information about a trait's methods
+#[derive(Debug, Clone)]
+pub struct TraitInfo {
+    pub name: String,
+    pub methods: HashMap<String, FunctionSignature>,
+}
+
+// Function signature for trait method validation
+#[derive(Debug, Clone, PartialEq)]
+pub struct FunctionSignature {
+    pub param_types: Vec<Type>,
+    pub return_type: Type,
+}
 
 pub struct TypeChecker {
     env: TypeEnv,
     constraints: Vec<(Type, Type)>,
+    traits: HashMap<String, TraitInfo>,  // Track trait definitions
+    impls: HashMap<String, Vec<String>>,  // Track which traits are implemented for each type
+    methods: HashMap<String, HashMap<String, FunctionSignature>>,  // type_name -> (method_name -> signature)
 }
 
 impl TypeChecker {
@@ -21,6 +38,9 @@ impl TypeChecker {
         TypeChecker {
             env,
             constraints: Vec::new(),
+            traits: HashMap::new(),
+            impls: HashMap::new(),
+            methods: HashMap::new(),
         }
     }
 
@@ -156,7 +176,7 @@ impl TypeChecker {
                 // This allows them to unify with any concrete type during type checking
                 // (Type erasure approach - generics are erased at runtime like TypeScript)
                 for type_param in &func_def.type_params {
-                    self.env.bind(type_param.value.clone(), Type::Any);
+                    self.env.bind(type_param.name.value.clone(), Type::Any);
                 }
 
                 // Bind parameters to scope with their actual types
@@ -295,6 +315,16 @@ impl TypeChecker {
                     self.check_statement(stmt)?;
                 }
 
+                Ok(Type::Void)
+            }
+
+            Statement::Trait(trait_def) => {
+                self.check_trait_definition(trait_def)?;
+                Ok(Type::Void)
+            }
+
+            Statement::ImplBlock(impl_block) => {
+                self.check_impl_block(impl_block)?;
                 Ok(Type::Void)
             }
 
@@ -493,6 +523,19 @@ impl TypeChecker {
                         // Default: return Any
                         _ => Type::Any,
                     });
+                }
+
+                // Check if this is a method call on a user-defined type with impl blocks
+                if let Type::Named(type_name) = &object_type {
+                    if let Some(type_methods) = self.methods.get(type_name) {
+                        if let Some(method_sig) = type_methods.get(field_name) {
+                            // Return the method as a function type
+                            return Ok(Type::Function {
+                                params: method_sig.param_types.clone(),
+                                return_type: Box::new(method_sig.return_type.clone()),
+                            });
+                        }
+                    }
                 }
 
                 // For other types, return Any for now
@@ -878,6 +921,206 @@ impl TypeChecker {
             }
             _ => HashSet::new(),
         }
+    }
+
+    /// Check a trait definition and store it for later validation
+    fn check_trait_definition(&mut self, trait_def: &TraitDefinition) -> Result<(), CompileError> {
+        let trait_name = trait_def.name.value.clone();
+        let mut methods = HashMap::new();
+
+        // Process each trait method signature
+        for method in &trait_def.methods {
+            let param_types: Vec<Type> = method.parameters.iter()
+                .map(|p| self.type_expr_to_type(&p.type_annotation))
+                .collect();
+
+            let return_type = method.return_type.as_ref()
+                .map(|rt| self.type_expr_to_type(rt))
+                .unwrap_or(Type::Void);
+
+            let signature = FunctionSignature {
+                param_types,
+                return_type,
+            };
+
+            methods.insert(method.name.value.clone(), signature);
+        }
+
+        // Store the trait information
+        self.traits.insert(trait_name.clone(), TraitInfo {
+            name: trait_name,
+            methods,
+        });
+
+        Ok(())
+    }
+
+    /// Check an impl block and validate it against the trait (if any)
+    fn check_impl_block(&mut self, impl_block: &ImplBlock) -> Result<(), CompileError> {
+        let type_name = impl_block.type_name.value.clone();
+
+        if let Some(trait_name_ident) = &impl_block.trait_name {
+            let trait_name = trait_name_ident.value.clone();
+
+            // Verify the trait exists and clone it to avoid borrow issues
+            let trait_info = self.traits.get(&trait_name)
+                .ok_or_else(|| CompileError::Generic(format!(
+                    "Undefined trait: {}", trait_name
+                )))?
+                .clone();
+
+            // Check that all trait methods are implemented
+            for (method_name, expected_sig) in &trait_info.methods {
+                let impl_method = impl_block.methods.iter()
+                    .find(|m| m.name.value == *method_name)
+                    .ok_or_else(|| CompileError::Generic(format!(
+                        "Missing trait method '{}' in impl of '{}' for '{}'",
+                        method_name, trait_name, type_name
+                    )))?;
+
+                // Build the actual signature from the impl method
+                // Note: In the impl, Self resolves to the type being implemented
+                let actual_param_types: Vec<Type> = impl_method.parameters.iter()
+                    .map(|p| {
+                        let ty = self.type_expr_to_type(&p.type_annotation);
+                        // Replace Named(type_name) with the actual type when checking against Self
+                        if ty == Type::Named(type_name.clone()) {
+                            ty
+                        } else {
+                            ty
+                        }
+                    })
+                    .collect();
+
+                let actual_return_type = impl_method.return_type.as_ref()
+                    .map(|rt| self.type_expr_to_type(rt))
+                    .unwrap_or(Type::Void);
+
+                let actual_sig = FunctionSignature {
+                    param_types: actual_param_types,
+                    return_type: actual_return_type,
+                };
+
+                // Create expected signature with Self replaced by the implementing type
+                let expected_sig_resolved = FunctionSignature {
+                    param_types: expected_sig.param_types.iter().map(|ty| {
+                        if ty == &Type::Named("Self".to_string()) {
+                            Type::Named(type_name.clone())
+                        } else {
+                            ty.clone()
+                        }
+                    }).collect(),
+                    return_type: if expected_sig.return_type == Type::Named("Self".to_string()) {
+                        Type::Named(type_name.clone())
+                    } else {
+                        expected_sig.return_type.clone()
+                    },
+                };
+
+                // Verify signatures match
+                if actual_sig != expected_sig_resolved {
+                    return Err(CompileError::Generic(format!(
+                        "Method '{}' signature mismatch in impl of '{}' for '{}'. Expected {:?}, found {:?}",
+                        method_name, trait_name, type_name, expected_sig, actual_sig
+                    )));
+                }
+
+                // Type check the method body
+                self.env.push_scope();
+
+                // Bind parameters
+                for param in &impl_method.parameters {
+                    let param_type = self.type_expr_to_type(&param.type_annotation);
+                    self.env.bind(param.name.value.clone(), param_type);
+                }
+
+                // Check method body
+                for stmt in &impl_method.body.statements {
+                    self.check_statement(stmt)?;
+                }
+
+                self.env.pop_scope();
+            }
+
+            // Record that this type implements this trait
+            self.impls.entry(type_name.clone())
+                .or_insert_with(Vec::new)
+                .push(trait_name.clone());
+
+            // Store trait methods for this type
+            for (method_name, sig) in &trait_info.methods {
+                self.methods.entry(type_name.clone())
+                    .or_insert_with(HashMap::new)
+                    .insert(method_name.clone(), sig.clone());
+            }
+        } else {
+            // Inherent impl - just type check the methods and store them
+            for method in &impl_block.methods {
+                self.env.push_scope();
+
+                // Bind parameters
+                for param in &method.parameters {
+                    let param_type = self.type_expr_to_type(&param.type_annotation);
+                    self.env.bind(param.name.value.clone(), param_type);
+                }
+
+                // Check method body
+                for stmt in &method.body.statements {
+                    self.check_statement(stmt)?;
+                }
+
+                self.env.pop_scope();
+
+                // Store the method signature
+                let param_types: Vec<Type> = method.parameters.iter()
+                    .map(|p| self.type_expr_to_type(&p.type_annotation))
+                    .collect();
+                let return_type = method.return_type.as_ref()
+                    .map(|rt| self.type_expr_to_type(rt))
+                    .unwrap_or(Type::Void);
+
+                let signature = FunctionSignature {
+                    param_types,
+                    return_type,
+                };
+
+                self.methods.entry(type_name.clone())
+                    .or_insert_with(HashMap::new)
+                    .insert(method.name.value.clone(), signature);
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Check if a type implements a given trait
+    pub fn type_implements_trait(&self, type_name: &str, trait_name: &str) -> bool {
+        self.impls.get(type_name)
+            .map(|traits| traits.contains(&trait_name.to_string()))
+            .unwrap_or(false)
+    }
+
+    /// Check trait bounds for a generic function call
+    pub fn check_trait_bounds(&self, type_param_name: &str, bounds: &[String], actual_type: &Type) -> Result<(), CompileError> {
+        for bound in bounds {
+            // Extract the actual type name
+            let type_name = match actual_type {
+                Type::Named(name) => name.clone(),
+                _ => {
+                    // For non-named types, we can't check trait bounds yet
+                    // In a full implementation, we'd need more sophisticated type matching
+                    continue;
+                }
+            };
+
+            if !self.type_implements_trait(&type_name, bound) {
+                return Err(CompileError::Generic(format!(
+                    "Trait bound not satisfied: type '{}' does not implement trait '{}' (required by type parameter '{}')",
+                    type_name, bound, type_param_name
+                )));
+            }
+        }
+        Ok(())
     }
 }
 

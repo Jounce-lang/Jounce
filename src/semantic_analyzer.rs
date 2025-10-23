@@ -54,7 +54,7 @@ impl std::fmt::Display for ResolvedType {
 
 impl ResolvedType {
     pub fn is_copy(&self) -> bool {
-        matches!(self, ResolvedType::Integer | ResolvedType::Float | ResolvedType::Bool)
+        matches!(self, ResolvedType::Integer | ResolvedType::Float | ResolvedType::Bool | ResolvedType::String)
     }
 }
 

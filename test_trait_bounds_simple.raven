@@ -1,0 +1,31 @@
+// Test trait bounds parsing - simple version
+
+trait Display {
+    fn to_string(self: Self) -> String;
+}
+
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl Display for Point {
+    fn to_string(self: Point) -> String {
+        "Point"
+    }
+}
+
+// Function with single trait bound
+fn print_value<T: Display>(value: T) {
+    println!("Value: test");
+}
+
+// Function with multiple trait bounds
+fn process<T: Display>(value: T) -> String {
+    "test"
+}
+
+fn main() {
+    let p = Point { x: 10, y: 20 };
+    print_value(p);
+}

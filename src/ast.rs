@@ -97,7 +97,7 @@ pub struct MacroInvocation {
 pub struct StructDefinition {
     pub name: Identifier,
     pub lifetime_params: Vec<Lifetime>,  // Lifetime parameters like <'a, 'b>
-    pub type_params: Vec<Identifier>,  // Generic type parameters like <T, U>
+    pub type_params: Vec<TypeParam>,  // Generic type parameters like <T>, <T: Display>
     pub fields: Vec<(Identifier, TypeExpression)>,
     pub derives: Vec<String>,  // Derive macros: #[derive(Debug, Clone, etc.)]
 }
@@ -106,7 +106,7 @@ pub struct StructDefinition {
 pub struct EnumDefinition {
     pub name: Identifier,
     pub lifetime_params: Vec<Lifetime>,  // Lifetime parameters like <'a, 'b>
-    pub type_params: Vec<Identifier>,  // Generic type parameters like <T, U>
+    pub type_params: Vec<TypeParam>,  // Generic type parameters like <T>, <T: Display>
     pub variants: Vec<EnumVariant>,
     pub derives: Vec<String>,  // Derive macros: #[derive(Debug, Clone, etc.)]
 }
@@ -121,7 +121,7 @@ pub struct EnumVariant {
 pub struct FunctionDefinition {
     pub name: Identifier,
     pub lifetime_params: Vec<Lifetime>,  // Lifetime parameters like <'a, 'b>
-    pub type_params: Vec<Identifier>,  // Generic type parameters like <T, U>
+    pub type_params: Vec<TypeParam>,  // Generic type parameters like <T>, <T: Display>
     pub parameters: Vec<FunctionParameter>,
     pub is_server: bool,
     pub is_client: bool,
@@ -188,6 +188,14 @@ pub struct Identifier {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Lifetime {
     pub name: String,  // e.g., "a" for 'a, "static" for 'static
+}
+
+// Type parameter with optional trait bounds
+// Examples: T, T: Display, T: Display + Clone
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TypeParam {
+    pub name: Identifier,
+    pub bounds: Vec<Identifier>,  // trait bounds (e.g., ["Display", "Clone"])
 }
 
 #[derive(Debug, Clone)]
@@ -575,7 +583,7 @@ pub struct ComponentDefinition {
 pub struct ImplBlock {
     pub trait_name: Option<Identifier>,  // None for inherent impl, Some for trait impl
     pub lifetime_params: Vec<Lifetime>,  // Lifetime parameters like <'a, 'b>
-    pub type_params: Vec<Identifier>,  // Generic type parameters like <T, U>
+    pub type_params: Vec<TypeParam>,  // Generic type parameters like <T>, <T: Display>
     pub type_name: Identifier,  // The type being implemented (e.g., "Point")
     pub methods: Vec<ImplMethod>,
 }
@@ -592,7 +600,7 @@ pub struct ImplMethod {
 pub struct TraitDefinition {
     pub name: Identifier,
     pub lifetime_params: Vec<Lifetime>,  // Lifetime parameters like <'a, 'b>
-    pub type_params: Vec<Identifier>,  // Generic type parameters like <T, U>
+    pub type_params: Vec<TypeParam>,  // Generic type parameters like <T>, <T: Display>
     pub methods: Vec<TraitMethod>,
 }
 

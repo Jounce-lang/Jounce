@@ -335,7 +335,21 @@ impl BorrowChecker {
 
                 // Check all match arms
                 for arm in &match_expr.arms {
+                    // Enter a new scope for this match arm
+                    self.symbols.enter_scope();
+
+                    // Register all variables bound by the patterns in this arm
+                    for pattern in &arm.patterns {
+                        for ident in pattern.bound_identifiers() {
+                            self.symbols.define(ident.value.clone(), ResolvedType::Unknown);
+                        }
+                    }
+
+                    // Check the arm body with the pattern variables in scope
                     self.check_expression(&arm.body)?;
+
+                    // Exit the match arm scope
+                    self.symbols.exit_scope();
                 }
 
                 // For now, return Unknown type

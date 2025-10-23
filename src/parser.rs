@@ -132,14 +132,29 @@ impl<'a> Parser<'a> {
         Ok(UseStatement { path, imports })
     }
     
-    fn parse_type_params(&mut self) -> Result<Vec<Identifier>, CompileError> {
+    fn parse_type_params(&mut self) -> Result<Vec<TypeParam>, CompileError> {
         if !self.consume_if_matches(&TokenKind::LAngle) {
             return Ok(Vec::new());
         }
 
         let mut type_params = Vec::new();
         while self.current_token().kind != TokenKind::RAngle {
-            type_params.push(self.parse_identifier()?);
+            let name = self.parse_identifier()?;
+
+            // Parse optional trait bounds: T: Display or T: Display + Clone
+            let mut bounds = Vec::new();
+            if self.consume_if_matches(&TokenKind::Colon) {
+                // Parse first bound
+                bounds.push(self.parse_identifier()?);
+
+                // Parse additional bounds with + separator
+                while self.consume_if_matches(&TokenKind::Plus) {
+                    bounds.push(self.parse_identifier()?);
+                }
+            }
+
+            type_params.push(TypeParam { name, bounds });
+
             if !self.consume_if_matches(&TokenKind::Comma) {
                 break;
             }
