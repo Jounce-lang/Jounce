@@ -1,5 +1,0 @@
-fn main() {
-    /* This is a block comment */
-    let x = 5;
-    println!("{}", x);
-}

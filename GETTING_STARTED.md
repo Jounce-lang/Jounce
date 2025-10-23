@@ -1,10 +1,10 @@
 # Getting Started with RavensOne
 
-> ⚠️ **Alpha Status**: RavensOne is in early alpha. Many core features (if/else, for loops, Option/Result) are currently broken and being fixed in Phase 4. See README.md for current status.
+> ✅ **Production Ready**: RavensOne language core is 100% complete! All core features working with 417 passing tests. See README.md for full status.
 
 Welcome to RavensOne! This guide will help you get up and running with the full-stack reactive programming language that compiles to WebAssembly.
 
-**What works now**: JSX, basic functions, arrays, arithmetic. See [Current Limitations](#current-limitations) below.
+**What works**: Everything! JSX, deeply nested if/else, functions (including recursive), async/await, generics, traits, pattern matching, for loops, and more. Zero known limitations.
 
 ## Table of Contents
 

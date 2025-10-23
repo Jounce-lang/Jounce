@@ -1,4 +1,0 @@
-fn main() {
-    let in_stock = true;
-    let result = in_stock ? <span>in stock</span> : <span>out</span>;
-}

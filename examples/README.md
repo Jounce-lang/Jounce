@@ -1,227 +1,236 @@
-# RavensOne Analytics Dashboard - Example Application
+# RavensOne Examples
 
-A production-ready analytics dashboard showcasing all RavensOne features: reactive state management, SSR, type-safe full-stack development, and progressive hydration.
+A comprehensive collection of examples that progress from absolute basics to advanced full-stack applications.
 
-## 🚀 Quick Start
+## 📚 Organization
 
-### Run Locally (Instant)
+Examples are organized by difficulty and concept, with each category building on the previous:
+
+### 01-basics/ - Absolute Fundamentals
+**Difficulty**: Beginner | **Lines**: 5-20 per example | **Time**: 30-60 mins total
+
+Start here if you're new to RavensOne! These examples introduce one concept at a time.
+
+1. **01_hello_world.raven** - Your first program: println! macro
+2. **02_variables_let.raven** - Variable bindings with let
+3. **03_variables_mut.raven** - Mutable variables with mut
+4. **04_integers.raven** - Integer arithmetic (+, -, *, /)
+5. **05_strings.raven** - String literals and formatting
+6. **06_booleans.raven** - Boolean values and comparisons
+7. **07_simple_function.raven** - Functions with parameters
+8. **08_function_return.raven** - Explicit return statements
+9. **09_implicit_return.raven** - Implicit returns (Rust-style)
+10. **10_comments.raven** - Comment syntax and best practices
+
+### 02-control-flow/ - Making Decisions
+**Difficulty**: Beginner-Intermediate | **Lines**: 20-40 per example
+
+Learn how to control program flow with conditions and loops.
+
+- If/else expressions (1-level, 2-level, 3-level nesting)
+- For loops with ranges (inclusive and exclusive)
+- While loops
+- Match expressions
+- Pattern matching basics
+
+*(Coming in Sprint 2)*
+
+### 03-functions/ - Advanced Functions
+**Difficulty**: Intermediate | **Lines**: 30-50 per example
+
+Master function concepts including recursion and closures.
+
+- Recursive functions (factorial, fibonacci)
+- Higher-order functions
+- Closures with type annotations
+- Function composition
+
+*(Coming in Sprint 3)*
+
+### 04-patterns/ - Error Handling
+**Difficulty**: Intermediate | **Lines**: 40-60 per example
+
+Learn RavensOne's powerful pattern matching and error handling.
+
+- Option<T> with Some/None
+- Result<T, E> with Ok/Err
+- Try operator (?) for error propagation
+- Nested pattern matching
+
+*(Coming in Sprint 4)*
+
+### 05-advanced-types/ - Type System
+**Difficulty**: Advanced | **Lines**: 50-80 per example
+
+Explore RavensOne's advanced type system features.
+
+- Generic functions with type parameters
+- Traits and trait implementations
+- Trait bounds
+- Sized arrays [T; N]
+
+*(Coming in Sprint 5)*
+
+### 06-async/ - Asynchronous Programming
+**Difficulty**: Advanced | **Lines**: 60-100 per example
+
+Learn async/await and concurrent programming patterns.
+
+- Async/await basics
+- Concurrent operations
+- Error handling with async
+- Real-world async patterns
+
+*(Coming in Sprint 6)*
+
+### 07-fullstack/ - Full-Stack Features
+**Difficulty**: Advanced | **Lines**: 100-200 per example
+
+Discover RavensOne's unique full-stack capabilities.
+
+- @server and @client annotations
+- Automatic RPC generation
+- JSX components
+- State management
+
+*(Coming in Sprint 7)*
+
+### 08-apps/ - Real-World Applications
+**Difficulty**: Advanced | **Lines**: 200-400 per example
+
+Complete applications demonstrating best practices.
+
+- Todo App (full-stack)
+- Blog Engine
+- E-commerce Cart
+- User Authentication
+
+*(Coming in Sprint 8)*
+
+## 🚀 How to Run Examples
+
+### Quick Start (Any Example)
 
 ```bash
-# Open directly in browser
-open run_dashboard.html
+# Compile an example
+raven compile examples/01-basics/01_hello_world.raven
 
-# OR use a local server
-npm run dev
+# Run the compiled output
+cd dist && node server.js
 ```
 
-Visit: `http://localhost:8000/run_dashboard.html`
-
-### Deploy to Vercel (2 minutes)
+### Run All Examples in a Category
 
 ```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Deploy
-cd examples
-vercel
-
-# Deploy to production
-vercel --prod
+# Test all basics examples
+for file in examples/01-basics/*.raven; do
+    echo "Running: $file"
+    raven compile "$file"
+    cd dist && node server.js
+    cd ..
+done
 ```
 
-**That's it!** Your app is now live at `https://your-project.vercel.app`
+### Watch Mode (Auto-recompile)
 
-## 📋 What's Included
-
-- **`analytics_dashboard.raven`** - Source code in RavensOne language
-- **`run_dashboard.html`** - Interactive demo (works immediately!)
-- **`analytics_dashboard.css`** - Professional styling
-- **`vercel.json`** - Vercel deployment configuration
-- **`package.json`** - NPM configuration
-- **`DEPLOYMENT_GUIDE.md`** - Complete deployment instructions
-- **`ANALYTICS_README.md`** - Architecture documentation
-- **`HOW_TO_RUN.md`** - Detailed running instructions
-
-## ✨ Features Demonstrated
-
-### Reactive State Management
-```javascript
-const count = Signal.new(0);
-const double = Computed.new(() => count.get() * 2);
-create_effect(() => console.log(count.get()));
+```bash
+# Auto-recompile on file changes
+raven watch examples/01-basics/01_hello_world.raven
 ```
 
-### Server-Side Rendering (SSR)
-```rust
-render_to_document(vnode, ctx, app_name) -> HTML
-```
+## 📖 Learning Path
 
-### Progressive Hydration
-```rust
-HydrationStrategy::Immediate  // Critical components
-HydrationStrategy::WhenVisible  // Lazy-load on scroll
-```
+### Complete Beginner (Never programmed before)
+1. Start with **01-basics** (examples 01-10)
+2. Move to **02-control-flow** (if/else, loops)
+3. Practice **03-functions** (recursion, closures)
 
-### Type-Safe Full Stack
-```rust
-extern server fn fetch_metrics(user_id: String) -> Vec<Metric>
-```
+### Experienced Developer (Learning RavensOne)
+1. Skim **01-basics** for syntax differences
+2. Focus on **04-patterns** (Option, Result, match)
+3. Explore **05-advanced-types** (generics, traits)
+4. Try **07-fullstack** (unique RavensOne features)
 
-## 🎯 Live Demo Features
+### LLM Training (AI Learning RavensOne)
+1. Process all examples in order (01-basics → 08-apps)
+2. Each example demonstrates one concept clearly
+3. Comments explain WHY not just WHAT
+4. Expected output is provided for verification
 
-- ✅ 4 real-time metrics (Revenue, Users, Conversion, Session Duration)
-- ✅ Interactive date range selection
-- ✅ 30-day trend charts with Canvas API
-- ✅ Smooth loading states
-- ✅ Reactive updates (change propagation)
-- ✅ Mobile responsive design
-- ✅ Production-grade styling
+## 🎯 Example Template
 
-## 📊 Performance
+Each example follows a consistent structure:
 
-Expected metrics on Vercel:
-- **First Paint**: < 100ms
-- **Time to Interactive**: < 200ms
-- **Lighthouse Score**: 95-100
-- **Bundle Size**: 0KB (inline JS, future: ~50KB WASM)
+```raven
+// examples/category/example_name.raven
+//
+// CONCEPT: What this example teaches
+// DIFFICULTY: Beginner/Intermediate/Advanced
+// FEATURES: Specific language features used
+//
+// Detailed explanation of the concept
+// Multiple lines explaining WHY and HOW
 
-## 🛠️ Customization
-
-### Change Metrics
-
-Edit `run_dashboard.html`, modify `mockMetrics`:
-
-```javascript
-const mockMetrics = [
-    {
-        id: 'm1',
-        name: 'Your Custom Metric',
-        value: 12345,
-        change_percent: 15.5
-    }
-];
-```
-
-### Update Styling
-
-Edit `analytics_dashboard.css`:
-
-```css
-:root {
-    --primary-color: #your-color;
+fn main() {
+    // Clear, commented code
 }
+
+// EXPECTED OUTPUT:
+// What you should see when running this
+
+// TRY IT:
+// Command to compile and run
+
+// BEST PRACTICES: (optional)
+// Tips and recommendations
 ```
 
-### Add Real API
+## 🧪 Testing Examples
 
-Replace `fetchMetrics` function:
-
-```javascript
-async function fetchMetrics(dateRange) {
-    const response = await fetch('/api/metrics', {
-        method: 'POST',
-        body: JSON.stringify({ dateRange })
-    });
-    return await response.json();
-}
-```
-
-## 📚 Documentation
-
-- **Deployment**: See `DEPLOYMENT_GUIDE.md` for complete Vercel setup
-- **Running**: See `HOW_TO_RUN.md` for all running options
-- **Architecture**: See `ANALYTICS_README.md` for design details
-- **Main Docs**: See `../IMPLEMENTATION_SUMMARY.md` for feature overview
-
-## 🔧 Development
+All examples serve as compiler tests. To verify all examples compile:
 
 ```bash
-# Install dependencies (optional)
-cd examples
-npm install
+# Test all examples compile
+./scripts/test_examples.sh
 
-# Run locally
-npm run dev
-
-# Deploy preview
-npm run deploy:preview
-
-# Deploy production
-npm run deploy
+# Or manually:
+find examples -name "*.raven" -exec raven compile {} \;
 ```
 
-## 🌐 Deployment Options
+## 📊 Statistics
 
-### Vercel (Recommended)
-```bash
-vercel --prod
-```
-**Pros**: Instant, free tier, global CDN, automatic HTTPS
-
-### Netlify
-```bash
-netlify deploy --prod
-```
-**Pros**: Similar to Vercel, good free tier
-
-### GitHub Pages
-```bash
-# Push to gh-pages branch
-git subtree push --prefix examples origin gh-pages
-```
-**Pros**: Free for public repos
-
-### AWS S3 + CloudFront
-```bash
-aws s3 sync . s3://your-bucket --exclude "*.md"
-```
-**Pros**: Highly scalable, full control
-
-## 📈 Monitoring
-
-After deployment, monitor:
-- **Vercel Analytics**: Built-in performance tracking
-- **Google Analytics**: Add tracking code to HTML
-- **Sentry**: Error tracking and monitoring
+- **Total Examples**: 10 (Sprint 1 complete)
+- **Total Planned**: ~60 examples across 8 categories
+- **Test Coverage**: 100% of examples compile successfully
+- **Difficulty Levels**: 3 (Beginner, Intermediate, Advanced)
 
 ## 🤝 Contributing
 
-Improvements welcome! To contribute:
+Want to add examples? Follow these guidelines:
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test locally: `npm run dev`
-5. Submit a pull request
+1. **One Concept**: Each example demonstrates exactly ONE concept
+2. **Progressive**: Build on previous examples
+3. **Commented**: Explain WHY, not just WHAT
+4. **Tested**: Ensure it compiles and runs
+5. **Template**: Follow the example template above
 
-## 📝 License
+## 📚 Additional Resources
 
-MIT License - see main repository for details
+- [Getting Started Guide](../docs/GETTING_STARTED.md)
+- [Language Reference](../CLAUDE.md)
+- [API Documentation](../docs/guides/STDLIB_API_REFERENCE.md)
+- [LSP Features](../docs/guides/LSP_FEATURES.md)
 
-## 🆘 Support
+## 🎓 Learning Tips
 
-- **Issues**: https://github.com/ravensone/ravensone/issues
-- **Discussions**: https://github.com/ravensone/ravensone/discussions
-- **Vercel Docs**: https://vercel.com/docs
-
-## 🎓 Learn More
-
-- **RavensOne Language**: See `../README.md`
-- **Type System**: See `../src/types.rs`
-- **Reactive System**: See `../src/reactive.rs`
-- **SSR Engine**: See `../src/ssr.rs`
+1. **Type Out Examples**: Don't just read - type them yourself
+2. **Experiment**: Modify examples and see what happens
+3. **Expected Output**: Verify your output matches the expected
+4. **Progression**: Complete categories in order
+5. **Practice**: Write your own variations
 
 ---
 
-## 🚀 One-Line Deploy
-
-```bash
-git clone https://github.com/ravensone/ravensone.git && cd ravensone/examples && vercel --prod
-```
-
-That's it! Your analytics dashboard is live. 🎉
-
----
-
-**Built with RavensOne** | [Documentation](../IMPLEMENTATION_SUMMARY.md) | [GitHub](https://github.com/ravensone/ravensone)
+**Sprint Status**: Phase 6 Sprint 1 Complete (10/10 examples)
+**Next Sprint**: Sprint 2 - Control Flow & Collections (10 examples)
+**Last Updated**: 2025-10-22

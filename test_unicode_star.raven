@@ -1,6 +1,0 @@
-fn test() {
-    let rating = 4.5;
-    // Test Unicode star emoji
-    let result = <span class="stars">{"★".repeat((rating as i32))}</span>;
-    return result;
-}

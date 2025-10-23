@@ -1,7 +1,0 @@
-fn test() {
-    let count = 5;
-
-    <div>
-        <h2>Comments ({count})</h2>
-    </div>;
-}

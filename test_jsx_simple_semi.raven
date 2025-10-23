@@ -1,4 +1,0 @@
-fn test() {
-    let x = <div>Hi</div>;
-    let y = 1;
-}

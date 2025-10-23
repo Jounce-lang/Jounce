@@ -1,4 +1,0 @@
-fn test() {
-    let name = "World";
-    return <div>Hello {name}!</div>;
-}

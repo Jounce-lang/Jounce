@@ -1,0 +1,27 @@
+// examples/01-basics/03_variables_mut.raven
+//
+// CONCEPT: Mutable variables
+// DIFFICULTY: Beginner
+// FEATURES: mut keyword, reassignment
+//
+// By default, variables cannot be changed. To make a variable mutable,
+// use the `mut` keyword:
+// - `let mut` creates a mutable variable
+// - You can then reassign new values to it
+// - The type must remain the same
+
+fn main() {
+    let mut count = 0;       // Mutable variable
+
+    count = count + 1;       // Reassign: count is now 1
+    count = count + 1;       // Reassign: count is now 2
+
+    println!("count = {}", count);
+}
+
+// EXPECTED OUTPUT:
+// count = 2
+//
+// TRY IT:
+// raven compile examples/01-basics/03_variables_mut.raven
+// cd dist && node server.js

@@ -1,4 +1,0 @@
-fn main() {
-    let x = true;
-    return <div>{x && <span>Yes</span>}</div>;
-}

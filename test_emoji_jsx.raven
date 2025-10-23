@@ -1,5 +1,0 @@
-fn test() {
-    return <div>
-        <span>🔔</span>
-    </div>;
-}

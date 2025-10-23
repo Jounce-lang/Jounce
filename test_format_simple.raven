@@ -1,4 +1,0 @@
-fn test() -> String {
-    let name = "World";
-    return format!("Hello, {}!", name);
-}

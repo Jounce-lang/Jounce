@@ -1,8 +1,0 @@
-fn main() {
-    let count = 5;
-    return <div>
-        {count > 0 && (
-            <span>Has items</span>
-        )}
-    </div>;
-}

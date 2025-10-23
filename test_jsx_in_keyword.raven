@@ -1,6 +1,0 @@
-fn test() {
-    let stock = 5;
-    // Test if "in" keyword is incorrectly parsed in JSX text
-    let result = <span>{stock} in stock</span>;
-    return result;
-}

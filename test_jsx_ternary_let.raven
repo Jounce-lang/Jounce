@@ -1,8 +1,0 @@
-fn render(is_auth: bool) {
-    return <div>
-        {is_auth ? {
-            let msg = "Authenticated";
-            <p>{msg}</p>
-        } : <p>"Not authenticated"</p>}
-    </div>;
-}

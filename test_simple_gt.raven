@@ -1,9 +1,0 @@
-fn test() {
-    let x = Signal::new(5);
-
-    <button
-        disabled={x.get() > 1}
-    >
-        "Click"
-    </button>;
-}

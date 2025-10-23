@@ -1,0 +1,30 @@
+// examples/01-basics/08_function_return.raven
+//
+// CONCEPT: Functions with explicit return
+// DIFFICULTY: Beginner
+// FEATURES: return statement, return type annotation (-> i32)
+//
+// Functions can return values:
+// - Use `-> Type` to specify the return type
+// - Use `return` keyword to return a value
+// - The returned value can be stored in a variable
+
+fn add(a: i32, b: i32) -> i32 {
+    return a + b;        // Explicit return statement
+}
+
+fn main() {
+    let result = add(5, 3);
+    println!("5 + 3 = {}", result);
+
+    // Can also use the return value directly
+    println!("10 + 20 = {}", add(10, 20));
+}
+
+// EXPECTED OUTPUT:
+// 5 + 3 = 8
+// 10 + 20 = 30
+//
+// TRY IT:
+// raven compile examples/01-basics/08_function_return.raven
+// cd dist && node server.js

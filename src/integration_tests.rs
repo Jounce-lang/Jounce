@@ -1508,7 +1508,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Type checker has issues with deeply nested if/else expressions
     fn test_deeply_nested_expressions() {
         let source = r#"
             fn main() {
@@ -2469,5 +2468,181 @@ mod tests {
 
         let result = compile_source(source);
         assert!(result.is_ok(), "various sized array sizes should compile");
+    }
+
+    // =============================================================================
+    // Sprint 6: Deeply Nested If/Else Expressions
+    // =============================================================================
+
+    #[test]
+    fn test_nested_if_2_levels_in_let() {
+        let source = r#"
+            fn main() {
+                let result = if true {
+                    if true {
+                        42
+                    } else {
+                        0
+                    }
+                } else {
+                    0
+                };
+                println!("{}", result);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "2-level nested if/else in let statement should compile");
+    }
+
+    #[test]
+    fn test_nested_if_3_levels() {
+        let source = r#"
+            fn categorize(x: i32) -> String {
+                if x > 0 {
+                    if x > 100 {
+                        if x > 1000 {
+                            "huge positive"
+                        } else {
+                            "large positive"
+                        }
+                    } else {
+                        "small positive"
+                    }
+                } else {
+                    "non-positive"
+                }
+            }
+
+            fn main() {
+                let result = categorize(1500);
+                println!("{}", result);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "3-level nested if/else should compile");
+    }
+
+    #[test]
+    fn test_nested_if_with_different_conditions() {
+        let source = r#"
+            fn classify(x: i32, y: i32) -> String {
+                if x > 0 {
+                    if y > 0 {
+                        "both positive"
+                    } else {
+                        "x positive, y non-positive"
+                    }
+                } else {
+                    if y > 0 {
+                        "x non-positive, y positive"
+                    } else {
+                        "both non-positive"
+                    }
+                }
+            }
+
+            fn main() {
+                let result = classify(10, -5);
+                println!("{}", result);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "nested if/else with different conditions should compile");
+    }
+
+    #[test]
+    fn test_nested_if_mixed_with_expressions() {
+        let source = r#"
+            fn calculate(x: i32) -> i32 {
+                let base = if x > 0 {
+                    if x > 100 {
+                        100
+                    } else {
+                        50
+                    }
+                } else {
+                    0
+                };
+
+                let multiplier = if base > 50 {
+                    2
+                } else {
+                    1
+                };
+
+                base * multiplier
+            }
+
+            fn main() {
+                let result = calculate(150);
+                println!("{}", result);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "nested if/else mixed with other expressions should compile");
+    }
+
+    #[test]
+    fn test_nested_if_5_levels() {
+        let source = r#"
+            fn deep_classify(x: i32) -> String {
+                if x > 0 {
+                    if x > 10 {
+                        if x > 100 {
+                            if x > 1000 {
+                                if x > 10000 {
+                                    "enormous"
+                                } else {
+                                    "very large"
+                                }
+                            } else {
+                                "large"
+                            }
+                        } else {
+                            "medium"
+                        }
+                    } else {
+                        "small"
+                    }
+                } else {
+                    "non-positive"
+                }
+            }
+
+            fn main() {
+                let result = deep_classify(15000);
+                println!("{}", result);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "5-level nested if/else should compile");
+    }
+
+    #[test]
+    fn test_nested_if_with_return_statements() {
+        let source = r#"
+            fn early_return(x: i32) -> String {
+                if x > 0 {
+                    if x > 100 {
+                        return "large";
+                    }
+                    return "small";
+                }
+                return "non-positive";
+            }
+
+            fn main() {
+                let result = early_return(150);
+                println!("{}", result);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "nested if/else with return statements should compile");
     }
 }

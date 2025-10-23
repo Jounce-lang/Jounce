@@ -1,8 +1,0 @@
-fn get_value() -> Result<i32, String> {
-    Ok(42)
-}
-
-fn main() {
-    let value = get_value()?;
-    println!("Value: {}", value);
-}

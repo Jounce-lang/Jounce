@@ -1,9 +1,0 @@
-fn accepts_callback(callback: fn()) {
-    callback();
-}
-
-fn main() {
-    accepts_callback(|| {
-        println!("Called!");
-    });
-}

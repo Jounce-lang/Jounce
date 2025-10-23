@@ -1,9 +1,0 @@
-use math::{PI, E};
-
-fn calculate_area(radius: f64) -> f64 {
-    return PI * radius * radius;
-}
-
-fn main() {
-    let area = calculate_area(5.0);
-}

@@ -1,8 +1,0 @@
-fn main() {
-    let x = 10;
-    if x > 5 {
-        println!("Greater than 5");
-    } else {
-        println!("Not greater than 5");
-    }
-}

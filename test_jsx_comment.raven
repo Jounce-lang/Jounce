@@ -1,6 +1,0 @@
-fn main() {
-    let x = <div>
-        {/* This is a comment */}
-        <p>Hello</p>
-    </div>;
-}

@@ -1,5 +1,0 @@
-fn test() {
-    let name = "World";
-    let greeting = format!("Hello, {}!", name);
-    console::log(greeting);
-}

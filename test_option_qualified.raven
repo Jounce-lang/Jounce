@@ -1,4 +1,0 @@
-fn main() {
-    let x = Option::Some(5);
-    let y = Option::None;
-}

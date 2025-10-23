@@ -1,6 +1,0 @@
-fn test() -> String {
-    let first = "John";
-    let last = "Doe";
-    let age = 30;
-    return format!("{} {} is {} years old", first, last, age);
-}

@@ -1,8 +1,0 @@
-component Test() {
-    let items = vec![1, 2, 3];
-    return <div>
-        {items.map(|x| {
-            <span>{x}</span>
-        })}
-    </div>;
-}

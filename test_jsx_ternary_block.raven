@@ -1,9 +1,0 @@
-fn main() {
-    let x = 5;
-    let ui = <div>
-        {x > 3 ? {
-            let temp = x + 1;
-            <span>{temp}</span>
-        } : <span>0</span>}
-    </div>;
-}

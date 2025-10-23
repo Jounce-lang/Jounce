@@ -1,7 +1,0 @@
-fn test() {
-    let id = 123;
-
-    <div>
-        <strong>SKU:</strong> PROD-{id}
-    </div>;
-}

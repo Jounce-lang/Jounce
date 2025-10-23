@@ -1,8 +1,0 @@
-fn main() {
-    let x = true ? {
-        let y = 5;
-        y + 1
-    } : 0;
-
-    println!("{}", x);
-}

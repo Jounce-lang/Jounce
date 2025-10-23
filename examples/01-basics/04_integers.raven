@@ -1,0 +1,32 @@
+// examples/01-basics/04_integers.raven
+//
+// CONCEPT: Integer arithmetic
+// DIFFICULTY: Beginner
+// FEATURES: i32 type, arithmetic operators (+, -, *, /)
+//
+// RavensOne supports all standard arithmetic operations:
+// - Addition: +
+// - Subtraction: -
+// - Multiplication: *
+// - Division: /
+// - Modulo: %
+
+fn main() {
+    let a = 10;
+    let b = 5;
+
+    println!("a + b = {}", a + b);   // Addition: 15
+    println!("a - b = {}", a - b);   // Subtraction: 5
+    println!("a * b = {}", a * b);   // Multiplication: 50
+    println!("a / b = {}", a / b);   // Division: 2
+}
+
+// EXPECTED OUTPUT:
+// a + b = 15
+// a - b = 5
+// a * b = 50
+// a / b = 2
+//
+// TRY IT:
+// raven compile examples/01-basics/04_integers.raven
+// cd dist && node server.js

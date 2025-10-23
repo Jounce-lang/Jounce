@@ -1,0 +1,31 @@
+// examples/01-basics/05_strings.raven
+//
+// CONCEPT: String operations
+// DIFFICULTY: Beginner
+// FEATURES: String literals, string formatting
+//
+// Strings in RavensOne:
+// - Created with double quotes: "hello"
+// - Can be formatted with println! using {}
+// - String literals are copyable (can be used multiple times)
+
+fn main() {
+    let first = "Hello";
+    let last = "World";
+
+    // Combine strings in output
+    println!("{} {}", first, last);
+
+    // Use the same string multiple times
+    println!("first = {}", first);
+    println!("last = {}", last);
+}
+
+// EXPECTED OUTPUT:
+// Hello World
+// first = Hello
+// last = World
+//
+// TRY IT:
+// raven compile examples/01-basics/05_strings.raven
+// cd dist && node server.js

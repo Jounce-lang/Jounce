@@ -1,6 +1,0 @@
-fn main() {
-    let text1 = <div>if you want</div>;
-    let text2 = <div>for the best</div>;
-    let text3 = <div>let me know</div>;
-    let text4 = <div>return to sender</div>;
-}

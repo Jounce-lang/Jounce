@@ -1,7 +1,0 @@
-fn test() {
-    let my_closure = || {
-        return 42;
-    };
-
-    let result = my_closure();
-}

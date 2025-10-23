@@ -1,6 +1,0 @@
-component Test() {
-    let username = "john_doe";
-    <div>
-        <p>@{username}</p>
-    </div>
-}

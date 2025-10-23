@@ -1,5 +1,0 @@
-use raven_router::{Router, Route, Link};
-
-fn test() {
-    let x = 5;
-}

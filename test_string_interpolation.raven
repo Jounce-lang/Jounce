@@ -1,5 +1,0 @@
-fn main() {
-    let name = "World";
-    let msg = `Hello ${name}!`;
-    println!("{}", msg);
-}

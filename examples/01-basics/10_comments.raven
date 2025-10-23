@@ -1,0 +1,46 @@
+// examples/01-basics/10_comments.raven
+//
+// CONCEPT: Comment syntax
+// DIFFICULTY: Beginner
+// FEATURES: single-line comments, documentation
+//
+// Comments in RavensOne:
+// - Use // for single-line comments
+// - Comments are ignored by the compiler
+// - Use comments to explain your code
+// - Good comments explain WHY, not WHAT
+
+// This is a single-line comment
+
+// Comments can explain code
+fn main() {
+    // Variables store values
+    let x = 42;
+
+    // println! displays output to the console
+    println!("The answer is {}", x);
+
+    // Multi-line comments work by using multiple // lines
+    // You can have as many lines as you need
+    // Each line needs its own // prefix
+
+    // Comments can appear anywhere
+    let y = 10;  // Even at the end of a line
+    let z = y * 2;
+
+    println!("y = {}, z = {}", y, z);
+}
+
+// EXPECTED OUTPUT:
+// The answer is 42
+// y = 10, z = 20
+//
+// TRY IT:
+// raven compile examples/01-basics/10_comments.raven
+// cd dist && node server.js
+//
+// BEST PRACTICES:
+// - Comment WHY you're doing something, not WHAT
+// - Keep comments up-to-date with code changes
+// - Don't over-comment obvious code
+// - Use comments to explain complex logic

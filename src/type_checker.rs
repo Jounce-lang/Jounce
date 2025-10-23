@@ -240,14 +240,23 @@ impl TypeChecker {
                     )));
                 }
 
+                // Check then branch and get the type of the last statement
+                let mut then_type = Type::Void;
                 for stmt in &if_stmt.then_branch.statements {
-                    self.check_statement(stmt)?;
+                    then_type = self.check_statement(stmt)?;
                 }
 
+                // Check else branch if present
                 if let Some(else_branch) = &if_stmt.else_branch {
-                    self.check_statement(else_branch)?;
+                    let else_type = self.check_statement(else_branch)?;
+
+                    // If both branches return a value, unify the types
+                    let subst = self.unify(&then_type, &else_type)?;
+                    let unified_type = subst.apply(&then_type);
+                    return Ok(unified_type);
                 }
 
+                // No else branch - can only return Void
                 Ok(Type::Void)
             }
 

@@ -366,17 +366,30 @@ impl SemanticAnalyzer {
             )));
         }
 
-        // Analyze then branch
+        // Analyze then branch - get the type of the last statement
+        let mut then_type = ResolvedType::Unit;
         for s in &stmt.then_branch.statements {
-            self.analyze_statement(s)?;
+            then_type = self.analyze_statement(s)?;
         }
 
-        // Analyze else branch if present
+        // Analyze else branch if present and check type compatibility
         if let Some(else_stmt) = &stmt.else_branch {
-            self.analyze_statement(else_stmt)?;
-        }
+            let else_type = self.analyze_statement(else_stmt)?;
 
-        Ok(ResolvedType::Unit)
+            // If both branches return a value, check compatibility
+            if !self.types_compatible(&then_type, &else_type) {
+                return Err(CompileError::Generic(format!(
+                    "If statement branches have incompatible types: then '{}', else '{}'",
+                    then_type,
+                    else_type
+                )));
+            }
+            // Return the then_type since they're compatible
+            Ok(then_type)
+        } else {
+            // No else branch - can only return Unit since the if might not execute
+            Ok(ResolvedType::Unit)
+        }
     }
 
     fn analyze_while_statement(&mut self, stmt: &WhileStatement) -> Result<ResolvedType, CompileError> {

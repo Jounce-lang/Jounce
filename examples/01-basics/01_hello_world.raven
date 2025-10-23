@@ -1,0 +1,21 @@
+// examples/01-basics/01_hello_world.raven
+//
+// CONCEPT: Basic println! macro
+// DIFFICULTY: Beginner
+// FEATURES: println!, string literals, main function
+//
+// This is the simplest RavensOne program. It demonstrates:
+// - Using the println! macro for output
+// - String literal syntax
+// - The main function as entry point
+
+fn main() {
+    println!("Hello, World!");
+}
+
+// EXPECTED OUTPUT:
+// Hello, World!
+//
+// TRY IT:
+// raven compile examples/01-basics/01_hello_world.raven
+// cd dist && node server.js

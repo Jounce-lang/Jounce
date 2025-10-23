@@ -1,0 +1,24 @@
+// examples/01-basics/02_variables_let.raven
+//
+// CONCEPT: Variable bindings with let
+// DIFFICULTY: Beginner
+// FEATURES: let bindings, type inference, println! with multiple arguments
+//
+// Variables in RavensOne are declared with `let`:
+// - Variables are immutable by default (cannot be changed)
+// - Type is inferred from the value
+// - Can bind integers, strings, booleans, etc.
+
+fn main() {
+    let x = 42;              // Integer variable
+    let name = "Alice";      // String variable
+
+    println!("x = {}, name = {}", x, name);
+}
+
+// EXPECTED OUTPUT:
+// x = 42, name = Alice
+//
+// TRY IT:
+// raven compile examples/01-basics/02_variables_let.raven
+// cd dist && node server.js

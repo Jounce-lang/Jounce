@@ -1,9 +1,0 @@
-fn test() {
-    let x = true ? {
-        let y = 5;
-        y + 1
-    } : {
-        let z = 10;
-        z + 2
-    };
-}

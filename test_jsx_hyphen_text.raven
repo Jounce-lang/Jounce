@@ -1,5 +1,0 @@
-fn test() {
-    <div>
-        <strong>A</strong> B-C
-    </div>;
-}

@@ -1,0 +1,30 @@
+// examples/01-basics/07_simple_function.raven
+//
+// CONCEPT: Functions with parameters
+// DIFFICULTY: Beginner
+// FEATURES: fn keyword, function parameters, function calls
+//
+// Functions in RavensOne:
+// - Defined with `fn` keyword
+// - Can take parameters with type annotations
+// - Can be called multiple times
+// - Return type is optional if the function doesn't return a value
+
+fn greet(name: String) {
+    println!("Hello, {}!", name);
+}
+
+fn main() {
+    greet("Alice");      // Call function with "Alice"
+    greet("Bob");        // Call function with "Bob"
+    greet("Charlie");    // Call function with "Charlie"
+}
+
+// EXPECTED OUTPUT:
+// Hello, Alice!
+// Hello, Bob!
+// Hello, Charlie!
+//
+// TRY IT:
+// raven compile examples/01-basics/07_simple_function.raven
+// cd dist && node server.js

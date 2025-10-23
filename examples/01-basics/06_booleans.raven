@@ -1,0 +1,32 @@
+// examples/01-basics/06_booleans.raven
+//
+// CONCEPT: Boolean values and comparisons
+// DIFFICULTY: Beginner
+// FEATURES: bool type, comparison operators, logical operators
+//
+// Boolean values in RavensOne:
+// - true and false are the two boolean values
+// - Comparison operators: >, <, ==, !=, >=, <=
+// - Logical operators: && (and), || (or), ! (not)
+
+fn main() {
+    let is_true = true;
+    let is_false = false;
+    let x = 10;
+    let y = 5;
+
+    println!("x > y: {}", x > y);                      // Comparison: true
+    println!("x == y: {}", x == y);                    // Equality: false
+    println!("is_true && is_false: {}", is_true && is_false);  // Logical AND: false
+    println!("is_true || is_false: {}", is_true || is_false);  // Logical OR: true
+}
+
+// EXPECTED OUTPUT:
+// x > y: true
+// x == y: false
+// is_true && is_false: false
+// is_true || is_false: true
+//
+// TRY IT:
+// raven compile examples/01-basics/06_booleans.raven
+// cd dist && node server.js

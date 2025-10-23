@@ -1,0 +1,36 @@
+// examples/01-basics/09_implicit_return.raven
+//
+// CONCEPT: Implicit return (Rust-style)
+// DIFFICULTY: Beginner
+// FEATURES: implicit return, expression vs statement
+//
+// In RavensOne (like Rust), the last expression in a function is
+// automatically returned if there's no semicolon:
+// - `a * b` (no semicolon) = implicit return
+// - `a * b;` (with semicolon) = statement, returns nothing
+//
+// This is more concise than using `return`
+
+fn multiply(a: i32, b: i32) -> i32 {
+    a * b  // No semicolon = implicit return
+}
+
+fn subtract(a: i32, b: i32) -> i32 {
+    a - b  // This value is automatically returned
+}
+
+fn main() {
+    let result1 = multiply(4, 7);
+    println!("4 * 7 = {}", result1);
+
+    let result2 = subtract(15, 5);
+    println!("15 - 5 = {}", result2);
+}
+
+// EXPECTED OUTPUT:
+// 4 * 7 = 28
+// 15 - 5 = 10
+//
+// TRY IT:
+// raven compile examples/01-basics/09_implicit_return.raven
+// cd dist && node server.js
