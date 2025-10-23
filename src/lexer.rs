@@ -17,6 +17,7 @@ pub struct Lexer {
     css_mode: bool,           // Track if we're in CSS context
     css_depth: usize,         // Track brace nesting depth in CSS
     css_paren_depth: usize,   // Track parenthesis depth in CSS (for media queries)
+    in_media_query: bool,     // Track if we're parsing @media condition (until we hit {)
 }
 
 impl Lexer {
@@ -38,6 +39,7 @@ impl Lexer {
             css_mode: false,
             css_depth: 0,
             css_paren_depth: 0,
+            in_media_query: false,
         };
         lexer.read_char();
         lexer
@@ -98,6 +100,7 @@ impl Lexer {
             return match self.ch {
                 '{' => {
                     self.css_depth += 1;
+                    self.in_media_query = false; // Exit media query mode when { is found
                     self.read_char();
                     Token::new(TokenKind::LBrace, "{".to_string(), self.line, start_col)
                 }
@@ -143,6 +146,7 @@ impl Lexer {
 
                     match ident_token.lexeme.as_str() {
                         "media" => {
+                            self.in_media_query = true; // Enter media query mode
                             return Token::new(TokenKind::CssMedia, "@media".to_string(), self.line, start_col);
                         }
                         "keyframes" => {
@@ -160,9 +164,9 @@ impl Lexer {
                 '\0' => Token::new(TokenKind::Eof, "".to_string(), self.line, start_col),
                 _ => {
                     if self.ch.is_alphabetic() || self.ch == '-' {
-                        // When inside parentheses (media query condition), read as identifier
-                        if self.css_paren_depth > 0 {
-                            return self.read_identifier();
+                        // When in media query mode or inside parentheses, read as CSS property (handles hyphens like min-width, and keywords like 'and')
+                        if self.css_paren_depth > 0 || self.in_media_query {
+                            return self.read_css_property();
                         }
 
                         // Could be a property name or selector
@@ -190,8 +194,8 @@ impl Lexer {
                         // String value
                         self.read_string()
                     } else if self.ch.is_ascii_digit() {
-                        // When inside parentheses (media query condition), read as number
-                        if self.css_paren_depth > 0 {
+                        // When in media query mode or inside parentheses, read as number
+                        if self.css_paren_depth > 0 || self.in_media_query {
                             return self.read_number();
                         }
                         // Numeric value - read as CSS value
