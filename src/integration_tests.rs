@@ -2762,4 +2762,87 @@ mod tests {
         let result = compile_source(source);
         assert!(result.is_ok(), "CSS with multiple declarations should compile");
     }
+
+    #[test]
+    fn test_css_compound_selector_with_pseudo() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .button:hover {
+                        background: darkblue;
+                    }
+                };
+                println!("Compound selector with pseudo-class");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS compound selector with pseudo should compile");
+    }
+
+    #[test]
+    fn test_css_compound_selector_multiple_classes() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .button.primary {
+                        background: blue;
+                    }
+                };
+                println!("Compound selector with multiple classes");
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "CSS compound selector with multiple classes should compile");
+    }
+
+    #[test]
+    fn test_css_nested_descendant_selector() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .card .title {
+                        color: black;
+                    }
+                };
+                println!("Nested descendant selectors");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Nested selector error: {:?}", e);
+        }
+        assert!(result.is_ok(), "CSS nested descendant selectors should compile");
+    }
+
+    #[test]
+    fn test_css_complex_selectors_mixed() {
+        let source = r#"
+            fn main() {
+                let styles = css! {
+                    .button {
+                        background: blue;
+                    }
+                    .button:hover {
+                        background: darkblue;
+                    }
+                    .button.primary {
+                        background: green;
+                    }
+                    .card .title {
+                        color: black;
+                    }
+                };
+                println!("Mixed selector types");
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "CSS with mixed selector types should compile");
+    }
 }

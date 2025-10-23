@@ -1898,25 +1898,32 @@ impl<'a> Parser<'a> {
         Ok(Expression::CssMacro(CssExpression { rules }))
     }
 
-    /// Parse a CSS rule: .button { property: value; }
+    /// Parse a CSS rule: .button { property: value; } or with nesting
     fn parse_css_rule(&mut self) -> Result<CssRule, CompileError> {
         // Parse selector
         let selector = self.parse_css_selector()?;
 
-        // Expect opening brace for declarations
+        // Expect opening brace for declarations/nested rules
         self.expect_and_consume(&TokenKind::LBrace)?;
 
-        // Parse declarations
+        // Parse declarations and nested rules
         let mut declarations = Vec::new();
+        let mut nested_rules = Vec::new();
+
         while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
-            if self.current_token().kind == TokenKind::RBrace {
-                break;
+            // Check if this is a nested rule or a declaration
+            // Nested rules start with a selector (.class, &, #id, etc.)
+            // Declarations start with a property name
+            if self.is_nested_rule_start() {
+                // Parse nested rule recursively
+                nested_rules.push(self.parse_css_rule()?);
+            } else {
+                // Parse declaration
+                declarations.push(self.parse_css_declaration()?);
+
+                // Optional semicolon after declaration
+                self.consume_if_matches(&TokenKind::Semicolon);
             }
-
-            declarations.push(self.parse_css_declaration()?);
-
-            // Optional semicolon after declaration
-            self.consume_if_matches(&TokenKind::Semicolon);
         }
 
         // Expect closing brace
@@ -1925,8 +1932,17 @@ impl<'a> Parser<'a> {
         Ok(CssRule {
             selector,
             declarations,
-            nested_rules: vec![], // Sprint 2 feature
+            nested_rules,
         })
+    }
+
+    /// Check if the current token indicates the start of a nested CSS rule
+    fn is_nested_rule_start(&self) -> bool {
+        match &self.current_token().kind {
+            TokenKind::CssSelector(_) => true,  // .class, #id, div, &:hover, etc.
+            TokenKind::Ampersand => true,        // & for nesting
+            _ => false,
+        }
     }
 
     /// Parse CSS selector: .button, #id, div, :hover, etc.
@@ -1950,11 +1966,15 @@ impl<'a> Parser<'a> {
                 } else if selector_str.starts_with('&') {
                     // Nested selector: & (Sprint 2)
                     Ok(CssSelector::Nested(selector_str.clone()))
-                } else if selector_str.contains(':') || selector_str.contains('.') {
-                    // Compound selector: .button:hover
-                    // For Sprint 1, just store as raw string
-                    // Will parse properly in Sprint 2
-                    Ok(CssSelector::Element(selector_str.clone()))
+                } else if selector_str.contains(' ') {
+                    // Nested/descendant selector: ".card .title"
+                    Ok(CssSelector::Nested(selector_str.clone()))
+                } else if selector_str.contains(':') {
+                    // Compound selector with pseudo: .button:hover
+                    self.parse_compound_selector_from_string(selector_str)
+                } else if selector_str.matches('.').count() > 1 {
+                    // Compound selector with multiple classes: .button.primary
+                    self.parse_compound_selector_from_string(selector_str)
                 } else {
                     // Element selector: div, button, span
                     Ok(CssSelector::Element(selector_str.clone()))
@@ -2036,6 +2056,61 @@ impl<'a> Parser<'a> {
                 Ok(CssValue::Number(f.parse().unwrap_or(0.0)))
             }
             _ => Err(self.error(&format!("Expected CSS value, found {:?}", token.kind)))
+        }
+    }
+
+    /// Parse a compound selector from a string like ".button:hover" or ".button.primary"
+    /// Returns a Compound variant containing the individual selectors
+    fn parse_compound_selector_from_string(&self, selector_str: &str) -> Result<CssSelector, CompileError> {
+        let mut selectors = Vec::new();
+        let mut current = String::new();
+
+        for ch in selector_str.chars() {
+            match ch {
+                '.' => {
+                    // New class selector
+                    if !current.is_empty() {
+                        selectors.push(self.selector_from_string(&current)?);
+                    }
+                    current = String::from(".");
+                }
+                ':' => {
+                    // New pseudo selector
+                    if !current.is_empty() {
+                        selectors.push(self.selector_from_string(&current)?);
+                    }
+                    current = String::from(":");
+                }
+                _ => {
+                    current.push(ch);
+                }
+            }
+        }
+
+        // Don't forget the last selector
+        if !current.is_empty() {
+            selectors.push(self.selector_from_string(&current)?);
+        }
+
+        if selectors.len() > 1 {
+            Ok(CssSelector::Compound(selectors))
+        } else if selectors.len() == 1 {
+            Ok(selectors.into_iter().next().unwrap())
+        } else {
+            Err(self.error("Empty compound selector"))
+        }
+    }
+
+    /// Convert a selector string fragment to a CssSelector
+    fn selector_from_string(&self, s: &str) -> Result<CssSelector, CompileError> {
+        if s.starts_with('.') {
+            Ok(CssSelector::Class(s[1..].to_string()))
+        } else if s.starts_with('#') {
+            Ok(CssSelector::Id(s[1..].to_string()))
+        } else if s.starts_with(':') {
+            Ok(CssSelector::Pseudo(s[1..].to_string()))
+        } else {
+            Ok(CssSelector::Element(s.to_string()))
         }
     }
 }

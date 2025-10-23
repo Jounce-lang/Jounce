@@ -117,8 +117,8 @@ impl Lexer {
                     self.read_char();
                     Token::new(TokenKind::Colon, ":".to_string(), self.line, start_col)
                 }
-                '.' | '#' => {
-                    // CSS selector
+                '.' | '#' | '&' => {
+                    // CSS selector (including & for nesting)
                     self.read_css_selector()
                 }
                 '\0' => Token::new(TokenKind::Eof, "".to_string(), self.line, start_col),
@@ -591,17 +591,24 @@ impl Lexer {
         self.css_mode
     }
 
-    // Read a CSS selector (.button, #id, div, .button:hover, etc.)
+    // Read a CSS selector (.button, #id, div, .button:hover, .card .title, etc.)
     fn read_css_selector(&mut self) -> Token {
         let start_col = self.column;
         let start_pos = self.position;
 
-        // Read selector (can include: . # : letters - _)
-        while self.ch.is_alphanumeric() || matches!(self.ch, '.' | '#' | ':' | '-' | '_') {
+        // Read selector until we hit { (which indicates start of declarations)
+        // This allows for nested selectors like ".card .title"
+        while self.ch != '{' && self.ch != '\0' && self.ch != '\n' {
             self.read_char();
         }
 
-        let selector: String = self.input[start_pos..self.position].iter().collect();
+        // Trim whitespace from the end
+        let mut end_pos = self.position;
+        while end_pos > start_pos && self.input[end_pos - 1].is_whitespace() {
+            end_pos -= 1;
+        }
+
+        let selector: String = self.input[start_pos..end_pos].iter().collect();
         Token::new(TokenKind::CssSelector(selector.clone()), selector, self.line, start_col)
     }
 

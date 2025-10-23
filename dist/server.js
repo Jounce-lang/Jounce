@@ -22,11 +22,8 @@ const wasmInstance = new WebAssembly.Instance(wasmModule, {
 // Server function implementations
 // Shared utility functions
 module.exports.main = function() {
-  let x = 42;
-  console.log(`The answer is ${x}`);
-  let y = 10;
-  let z = (y * 2);
-  return console.log(`y = ${y}, z = ${z}`);
+  let styles = /* Unsupported expression */;
+  return console.log("Nesting test");
 
 }
 
