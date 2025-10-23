@@ -1921,6 +1921,8 @@ note: required by trait bound in `print_all`
   - `docs/archive/CLAUDE_PHASE1.md` (Language Core - 18 sprints)
   - `docs/archive/CLAUDE_PHASE2.md` (Developer Experience - 11 sprints)
   - `docs/archive/CLAUDE_PHASE3-5.md` (Phases 3-5 Detailed Sprints)
+- **Phase Plans**:
+  - `PHASE_7_5_CSS_PLAN.md` (CSS Integration - 3 sprints, 1856 lines)
 - **Guides**: docs/guides/ (LSP_FEATURES.md, CODE_FORMATTING.md, PARSER_LIMITATIONS.md, etc.)
 - **API Reference**: docs/guides/STDLIB_API_REFERENCE.md
 - **Registry**: https://ravensone-registry.fly.dev
@@ -2021,3 +2023,259 @@ note: required by trait bound in `print_all`
 **Status**: ✅ **Phase 6 Sprint 6 COMPLETE!** - 48 total examples (Sprint 1-6 complete)
 **Recent Achievement**: ✅ **Phase 6 Sprint 6 complete!** Created 6 comprehensive async/await examples covering async/await fundamentals, async functions with return values, sequential operation patterns, async error handling with Result<T,E> and Option<T>, async operations in loops, and real-world async data pipelines. All examples fully documented with expected output and compile successfully (100% pass rate). Total progress: 48/60 examples (80% complete). Examples demonstrate RavensOne's full async/await support with seamless error handling, natural chaining of async operations, and practical real-world patterns.
 **Next Steps**: Phase 6 Sprint 7 - Full-Stack Features (5 examples: @server/@client annotations, automatic RPC, JSX components, state management).
+
+
+---
+
+## 🎨 Phase 7.5: CSS Integration (PLANNED)
+
+**Status**: 📋 PLANNED
+**Priority**: CRITICAL - Must complete before Sprint 7-8 (Full-Stack Examples)
+**Duration**: 2-3 weeks (3 focused sprints)
+**Detailed Plan**: See `PHASE_7_5_CSS_PLAN.md` (1856 lines)
+
+### Why CSS Integration Now?
+
+1. **Every library needs styling** - Cannot build raven-ui without CSS
+2. **Examples are incomplete** - Sprint 7-8 full-stack apps need real styling
+3. **Developer expectation** - Modern frameworks (Svelte, Vue, Solid) have built-in CSS
+4. **Competitive necessity** - Without CSS, RavensOne feels incomplete
+
+### What We're Building
+
+- **CSS-in-Raven**: Native `css!` macro for component-scoped styles
+- **Dynamic styles**: Use Raven variables in CSS
+- **Scoped by default**: No global namespace pollution (CSS Modules approach)
+- **Advanced features**: Nesting, pseudo-classes, media queries, animations
+- **SSR-ready**: Critical CSS extraction for server-side rendering
+
+### Sprint Structure
+
+```
+Sprint 1 (Week 1): CSS Foundation
+├── Day 1: Parser & Syntax Design (css! macro)
+├── Day 2: Code Generation (scoped CSS)
+└── Day 3: File Output & HTML Integration
+
+Sprint 2 (Week 2): Advanced Features
+├── Day 4: Nesting & Pseudo-classes
+├── Day 5: Dynamic Styles (Raven variables)
+└── Day 6: Animations & Keyframes
+
+Sprint 3 (Week 3): Utilities & Ecosystem
+├── Day 7: Utility System (Tailwind-like)
+├── Day 8: CSS Modules & Themes
+└── Day 9: SSR & Critical CSS
+```
+
+### CSS Syntax (Recommended)
+
+```raven
+// CSS macro for scoped styles
+let styles = css! {
+    .button {
+        background: blue;
+        padding: 12px 24px;
+        border-radius: 4px;
+        color: white;
+    }
+
+    .button:hover {
+        background: darkblue;
+    }
+
+    .button.primary {
+        background: green;
+    }
+};
+
+// Use in JSX
+<button class={styles.button}>Click Me</button>
+```
+
+### Scoping Strategy
+
+```rust
+// Hash-based class name generation (like CSS Modules)
+fn generate_scoped_class_name(
+    component_name: &str,
+    class_name: &str,
+    file_path: &str,
+) -> String {
+    let hash = hash(&format!("{}{}", component_name, file_path));
+    format!("{}_{}_{}",
+        component_name,
+        class_name,
+        &hash[0..6]
+    )
+}
+
+// Example output:
+// .button → .Button_button_a3f5c9
+```
+
+### Sprint 1 Deliverables
+
+1. **Parser Changes** (`src/lexer.rs`, `src/parser.rs`)
+   - Recognize `css!` macro
+   - Parse CSS block syntax
+   - Handle CSS-specific tokens (`:`, `{`, `}`, etc.)
+
+2. **AST Additions** (`src/ast.rs`)
+   ```rust
+   pub struct CSSBlock {
+       pub rules: Vec<CSSRule>,
+       pub scope: Option<String>,
+   }
+
+   pub struct CSSRule {
+       pub selector: String,
+       pub declarations: Vec<CSSDeclaration>,
+   }
+   ```
+
+3. **Code Generation** (`src/css_generator.rs` - new file)
+   - Generate scoped CSS from AST
+   - Output `.css` files to `dist/`
+   - Auto-inject `<link>` tags in HTML
+
+4. **Testing**
+   - 20+ integration tests
+   - Compile examples with CSS
+   - Verify scoped class names
+
+### Sprint 2 Deliverables
+
+1. **Nesting Support**
+   ```raven
+   css! {
+       .card {
+           padding: 16px;
+
+           & .title {
+               font-size: 24px;
+           }
+
+           &:hover {
+               box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+           }
+       }
+   }
+   ```
+
+2. **Dynamic Styles**
+   ```raven
+   let primary_color = "blue";
+   let styles = css! {
+       .button {
+           background: ${primary_color};  // Interpolation
+       }
+   };
+   ```
+
+3. **Animations**
+   ```raven
+   css! {
+       @keyframes fadeIn {
+           from { opacity: 0; }
+           to { opacity: 1; }
+       }
+
+       .element {
+           animation: fadeIn 0.3s ease-in;
+       }
+   }
+   ```
+
+### Sprint 3 Deliverables
+
+1. **Utility System** (Tailwind-like)
+   ```raven
+   <div class="p-4 bg-blue-500 text-white rounded-lg">
+       Content
+   </div>
+   ```
+
+2. **CSS Modules**
+   ```raven
+   // Import external CSS
+   import styles from "./Button.css";
+
+   <button class={styles.primary}>Click</button>
+   ```
+
+3. **Theme System**
+   ```raven
+   let theme = {
+       colors: {
+           primary: "blue",
+           secondary: "green",
+       },
+       spacing: {
+           sm: "8px",
+           md: "16px",
+           lg: "24px",
+       }
+   };
+
+   // Use theme values
+   css! {
+       .button {
+           background: theme.colors.primary;
+           padding: theme.spacing.md;
+       }
+   }
+   ```
+
+4. **SSR & Critical CSS**
+   - Extract critical CSS for above-the-fold content
+   - Inline critical CSS in `<head>`
+   - Defer non-critical CSS loading
+
+### Success Metrics
+
+- **100% of examples compile** with CSS support
+- **Zero global namespace pollution** (all styles scoped)
+- **Complete feature parity** with Svelte/Vue CSS features
+- **50+ integration tests** covering all CSS features
+- **Documentation**: 5 guides (CSS_SYNTAX.md, CSS_NESTING.md, CSS_DYNAMIC.md, CSS_UTILITIES.md, CSS_SSR.md)
+- **Performance**: CSS generation adds < 5ms to compilation time
+
+### Technical Decisions
+
+1. **css! macro over style attribute** - Enables pseudo-classes, media queries, reuse
+2. **Hash-based scoping** - Like CSS Modules, predictable and debuggable
+3. **Separate .css files** - Better caching, standard workflow
+4. **CSS Variables for theming** - Browser-native, performant
+5. **PostCSS integration** (optional) - Autoprefixer, minification
+
+### File Changes Summary
+
+**New Files**:
+- `src/css_generator.rs` (500+ lines) - CSS code generation
+- `src/css_parser.rs` (300+ lines) - CSS-specific parsing
+- `docs/guides/CSS_SYNTAX.md` - CSS syntax guide
+- `docs/guides/CSS_ADVANCED.md` - Advanced CSS features
+- `docs/guides/CSS_UTILITIES.md` - Utility system guide
+
+**Modified Files**:
+- `src/lexer.rs` - Add CSS tokens
+- `src/parser.rs` - Parse css! macro
+- `src/ast.rs` - Add CSS nodes
+- `src/codegen.rs` - Integrate CSS generation
+- `src/js_emitter.rs` - Emit scoped class names
+- `src/main.rs` - Add CSS compilation step
+
+### After Phase 7.5
+
+Once CSS integration is complete:
+- ✅ Continue Phase 6 Sprint 7 (Full-Stack Examples with real styling)
+- ✅ Continue Phase 6 Sprint 8 (Real-World Apps with beautiful UIs)
+- ✅ Build raven-ui component library
+- ✅ Build aloha-shirts packages with proper styling
+- ✅ Create showcase applications
+
+**Detailed Implementation Plan**: See `PHASE_7_5_CSS_PLAN.md` for day-by-day tasks, code examples, testing strategy, and complete deliverables checklist.
+
+---
+
