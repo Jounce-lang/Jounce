@@ -469,15 +469,104 @@ Initial: current = {, peek = color (CSS-lexed)
 ```
 
 **Attempted Solutions**:
-- Refresh peek before consuming → skips tokens
-- Refresh after consuming → still has stale current
-- Re-lex both tokens → advances lexer position too far
-- Manual next_token() control → token buffer misalignment
+1. ❌ Refresh peek before consuming → skips tokens (color gets skipped)
+2. ❌ Refresh after consuming → still has stale current token
+3. ❌ Re-lex both tokens → advances lexer position too far
+4. ❌ Manual next_token() control → token buffer misalignment
+5. ✅ **Token Transformation (PARTIAL SUCCESS)**:
+   - Transform CSS-lexed `CssValue("color")` into `Identifier("color")`
+   - Simple files compile successfully!
+   - But: Integration tests fail with "Expected CSS property, found Colon"
 
-**Next Steps**:
-1. Study how JSX mode switching handles this (lexer.enter_jsx_mode/exit_jsx_mode)
-2. Consider: Re-lexing from saved position, or two-pass approach
-3. Alternative: Use different syntax like `css_var("name")` to avoid mode switching
+**Current Implementation** (src/parser.rs:2092-2133):
+```rust
+TokenKind::LBrace => {
+    // Exit CSS mode so future lexing is in normal mode
+    self.lexer.exit_css_mode();
+
+    // Consume { - this moves peek to current
+    self.next_token();
+
+    // Transform CSS-lexed token to normal-mode equivalent
+    if let TokenKind::CssValue(ref val) = self.current_token().kind {
+        let transformed = Token::new(
+            TokenKind::Identifier,
+            val.clone(),
+            self.current.line,
+            self.current.column
+        );
+        self.current = transformed;
+    }
+
+    // Parse the expression
+    let expr = self.parse_expression(Precedence::Lowest)?;
+
+    // Consume }
+    self.expect_and_consume(&TokenKind::RBrace)?;
+
+    // Re-enter CSS mode
+    self.lexer.enter_css_mode();
+    self.refresh_peek_token();  // Refresh peek for CSS parsing
+
+    Ok(CssValue::Dynamic(Box::new(expr)))
+}
+```
+
+**Current Issue**:
+- Simple test file compiles: `background: {color};` works!
+- Integration tests fail: "Expected CSS property, found Colon" at line after dynamic value
+- Error happens when parsing NEXT CSS declaration after the dynamic one
+- Example: After `background: {color};` parses successfully, `padding: 12px;` fails
+
+**Hypothesis**:
+After returning `CssValue::Dynamic(...)`, the parser returns to `parse_css_declaration()`.
+The next line should be `padding: 12px;` but parser sees wrong tokens, possibly:
+- Parser state is confused about where it is in CSS parsing
+- Token buffer has wrong tokens after re-entering CSS mode
+- The `refresh_peek_token()` after re-entering CSS isn't enough
+
+**Next Debugging Steps**:
+
+1. **Add Debug Output**: Insert eprintln! statements to see exact token flow:
+   - Before exiting CSS mode: what are current and peek?
+   - After parsing expression: what are current and peek?
+   - After re-entering CSS mode: what are current and peek?
+   - When error occurs: what token caused "Expected CSS property, found Colon"?
+
+2. **Check Parser State**: After returning Dynamic value, where does execution continue?
+   - Is it in `parse_css_declaration()`?
+   - Is it in `parse_css_rule()`?
+   - What's the call stack?
+
+3. **Try Refreshing Current Too**: After re-entering CSS mode:
+   ```rust
+   self.lexer.enter_css_mode();
+   self.current = self.lexer.next_token();
+   self.peek = self.lexer.next_token();
+   ```
+
+4. **Check If Problem is with Semicolon**: The error mentions "Colon" but might be semicolon:
+   - Is semicolon being consumed correctly after dynamic value?
+   - Should we consume semicolon BEFORE re-entering CSS mode?
+
+5. **Study parse_css_declaration() Flow**: Trace through how it handles:
+   - Normal: `background: blue;` → `padding: 12px;`
+   - Dynamic: `background: {color};` → `padding: 12px;`
+   - What's different?
+
+6. **Alternative: Don't Re-enter CSS Mode Immediately**:
+   - Stay in normal mode after parsing `}`
+   - Let the parent function (`parse_css_declaration`) re-enter CSS mode
+   - Return the Dynamic value without changing modes
+
+**Files to Check**:
+- `src/parser.rs:2092-2133` - Dynamic CSS value parsing
+- `src/parser.rs:2065-2084` - parse_css_declaration() caller
+- `src/integration_tests.rs:3080-3152` - Test cases
+
+**Success Criteria**:
+- All 3 dynamic CSS tests pass
+- Test count: 499 passing (496 + 3 currently ignored)
 
 **Sprint 2 Summary**:
 - **Status**: ✅ **85% COMPLETE** - All static CSS features working
