@@ -2093,18 +2093,26 @@ impl<'a> Parser<'a> {
                 // Dynamic CSS value: {props.color} or {some_expression}
                 // Sprint 2 Task 2.4
 
-                // Manually consume `{` while changing modes
-                // Skip the current check since we know it's LBrace
+                // Strategy: Transform CSS-lexed tokens into normal-mode equivalents
+                // to avoid re-lexing issues with the token buffer
 
-                // Exit CSS mode BEFORE advancing so next lex is in normal mode
+                // Exit CSS mode so future lexing is in normal mode
                 self.lexer.exit_css_mode();
 
-                // Advance: current = peek (CSS-lexed but we'll ignore it), peek = newly lexed (normal mode)
+                // Consume { - this moves peek to current
                 self.next_token();
 
-                // Now current is stale (CSS-lexed), but peek is good (normal-lexed)
-                // Advance again to get peek into current
-                self.next_token();
+                // Transform CSS-lexed current token to normal mode equivalent
+                // This handles simple cases like {color} where color was lexed as CssValue("color")
+                if let TokenKind::CssValue(ref val) = self.current_token().kind {
+                    let transformed = Token::new(
+                        TokenKind::Identifier,
+                        val.clone(),
+                        self.current.line,
+                        self.current.column
+                    );
+                    self.current = transformed;
+                }
 
                 // Parse the expression
                 let expr = self.parse_expression(Precedence::Lowest)?;
@@ -2114,6 +2122,15 @@ impl<'a> Parser<'a> {
 
                 // Re-enter CSS mode for subsequent CSS parsing
                 self.lexer.enter_css_mode();
+
+                // Transform peek token if it was lexed in normal mode
+                // If peek is an Identifier, it's likely a CSS property that was lexed in the wrong mode
+                if let TokenKind::Identifier = self.peek_token().kind {
+                    let lexeme = self.peek.lexeme.clone();
+                    let line = self.peek.line;
+                    let column = self.peek.column;
+                    self.peek = Token::new(TokenKind::CssProperty(lexeme.clone()), lexeme, line, column);
+                }
 
                 // Return dynamic CSS value
                 Ok(CssValue::Dynamic(Box::new(expr)))
@@ -2152,15 +2169,11 @@ impl<'a> Parser<'a> {
     fn parse_css_media_query(&mut self) -> Result<CssMediaQuery, CompileError> {
         use crate::ast::CssMediaQuery;
 
-        eprintln!("DEBUG: Entering parse_css_media_query");
-
         // Expect @media token
         self.expect_and_consume(&TokenKind::CssMedia)?;
-        eprintln!("DEBUG: Consumed @media token");
 
         // Expect opening parenthesis
         self.expect_and_consume(&TokenKind::LParen)?;
-        eprintln!("DEBUG: Consumed LParen, current token: {:?}", self.current_token());
 
         // Read the condition as a string until we hit the closing paren
         // Now that lexer properly tokenizes inside parens, we can read tokens normally
@@ -2171,11 +2184,9 @@ impl<'a> Parser<'a> {
         while paren_depth > 0 && self.current_token().kind != TokenKind::Eof {
             iterations += 1;
             if iterations > 100 {
-                eprintln!("DEBUG: Too many iterations in condition loop! Current token: {:?}", self.current_token());
                 return Err(self.error("Media query condition parsing exceeded iteration limit"));
             }
             let token = self.current_token().clone();
-            eprintln!("DEBUG: Condition loop iteration {}, token: {:?}, paren_depth: {}", iterations, token.kind, paren_depth);
 
             match &token.kind {
                 TokenKind::LParen => {
@@ -2201,7 +2212,6 @@ impl<'a> Parser<'a> {
         }
 
         condition.push(')');
-        eprintln!("DEBUG: Finished condition loop, current token: {:?}", self.current_token());
 
         // Continue reading tokens for complex conditions like "and (max-width: 1024px)"
         // Keep reading until we hit LBrace
@@ -2256,11 +2266,8 @@ impl<'a> Parser<'a> {
             break;
         }
 
-        eprintln!("DEBUG: Final condition: {}", condition);
-
         // Expect opening brace for media query block
         self.expect_and_consume(&TokenKind::LBrace)?;
-        eprintln!("DEBUG: Consumed LBrace for media query block, current token: {:?}", self.current_token());
 
         // Parse declarations within the media query
         let mut declarations = Vec::new();
@@ -2269,21 +2276,14 @@ impl<'a> Parser<'a> {
         while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
             decl_iterations += 1;
             if decl_iterations > 100 {
-                eprintln!("DEBUG: Too many iterations in declaration loop! Current token: {:?}", self.current_token());
                 return Err(self.error("Media query declaration parsing exceeded iteration limit"));
             }
-            eprintln!("DEBUG: Declaration loop iteration {}, current token: {:?}", decl_iterations, self.current_token());
             declarations.push(self.parse_css_declaration()?);
-            eprintln!("DEBUG: Parsed declaration, current token: {:?}", self.current_token());
             self.consume_if_matches(&TokenKind::Semicolon);
-            eprintln!("DEBUG: After consuming semicolon, current token: {:?}", self.current_token());
         }
-
-        eprintln!("DEBUG: Finished declaration loop, current token: {:?}", self.current_token());
 
         // Expect closing brace
         self.expect_and_consume(&TokenKind::RBrace)?;
-        eprintln!("DEBUG: Consumed RBrace, media query complete");
 
         Ok(CssMediaQuery {
             condition,

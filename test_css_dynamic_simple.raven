@@ -1,0 +1,9 @@
+fn main() {
+    let color = "blue";
+    let styles = css! {
+        .button {
+            background: {color};
+        }
+    };
+    println!("Test");
+}

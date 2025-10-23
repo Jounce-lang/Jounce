@@ -3078,7 +3078,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Task 2.4 deferred - Dynamic CSS values not yet supported
     fn test_css_dynamic_value_simple() {
         // Sprint 2 Task 2.4 - Dynamic CSS values
         let source = r#"
@@ -3102,7 +3101,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Task 2.4 deferred - Dynamic CSS values not yet supported
     fn test_css_dynamic_value_expression() {
         // Sprint 2 Task 2.4 - Dynamic CSS values with expressions
         let source = r#"
@@ -3126,7 +3124,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Task 2.4 deferred - Dynamic CSS values not yet supported
     fn test_css_dynamic_and_static_mixed() {
         // Sprint 2 Task 2.4 - Mix of static and dynamic values
         let source = r#"

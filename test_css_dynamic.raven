@@ -1,0 +1,17 @@
+// Test dynamic CSS values
+// Sprint 2 Task 2.4
+
+fn main() {
+    let primary_color = "blue";
+    let padding_value = "12px";
+
+    let styles = css! {
+        .button {
+            background: {primary_color};
+            padding: {padding_value};
+            color: white;
+        }
+    };
+
+    println!("Dynamic CSS test");
+}

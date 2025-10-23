@@ -1,0 +1,12 @@
+// Test dynamic CSS with just identifier
+fn main() {
+    let blue_color = "blue";
+
+    let styles = css! {
+        .box {
+            color: blue;
+        }
+    };
+
+    println!("Test: {}", blue_color);
+}
