@@ -14,13 +14,12 @@ import { RPCClient } from '../dist/client-runtime.js';
 const client = new RPCClient(window.location.origin + '/_rpc');
 
 
+// Struct definitions and implementations
 // Client function implementations
 // Shared utility functions
 export function main() {
-  let name = "Alice";
-  let age = 25;
-  console.log(`Hello, ${name}!`);
-  console.log(`Name: ${name}, Age: ${age}`);
+  let result = (() => { if (true) { return 42; } else { return 0; } })();
+  return console.log(`${result}`);
 
 }
 

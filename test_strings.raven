@@ -1,0 +1,7 @@
+fn main() {
+    let name = "Alice";
+    let greeting = "Hello";
+    let message = greeting;
+
+    println!("{}, {}!", greeting, name);
+}

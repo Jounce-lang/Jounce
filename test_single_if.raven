@@ -1,0 +1,9 @@
+fn main() {
+    let result = if true {
+        42
+    } else {
+        0
+    };
+
+    println!("{}", result);
+}

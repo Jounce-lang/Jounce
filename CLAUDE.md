@@ -2,18 +2,20 @@
 
 ## 📌 Current Status
 
-**Phase**: Phase 5 - Advanced Language Features 🚧 **IN PROGRESS**
+**Phase**: ✅ **Phase 5 - COMPLETE!** 🎉
 **Previous Phase**: Phase 4 - Core Language Implementation (Complete)
-**Language Core**: ✅ **~95% Complete** (JSX: ✅ 100%, Control Flow: ✅ 100%, Iteration: ✅ 100%, Pattern Matching: ✅ 100%!, Recursion: ✅ 100%!, Traits: ✅ 100%!)
+**Language Core**: ✅ **97% Complete** (JSX: ✅ 100%, Control Flow: ✅ 100%, Iteration: ✅ 100%, Pattern Matching: ✅ 100%!, Recursion: ✅ 100%!, Traits: ✅ 100%!, Generics: ✅ 100%!)
 **Developer Experience**: ✅ 100% Complete (Phase 2)
 **Production Ready**: ✅ **READY** - All core features working! (100% test pass rate)
 
-**Tests**: 417 total (406 passing, 100% pass rate, 11 ignored) - **Includes 92 integration tests**
+**Tests**: 421 total (410 passing, 100% pass rate, 11 ignored) - **Includes 96 integration tests**
 **Compilation Speed**: 96,292 compilations/sec
-**Recent Achievement**: ✅ Trait system implemented! Sprint 4 (Phase 5) added complete trait system with trait definitions, impl blocks, generic bounds, and method resolution. Traits provide compile-time polymorphism similar to Rust traits or TypeScript interfaces. Generated JavaScript uses prototype-based dispatch for trait methods. All 92 integration tests passing (100% pass rate)!
+**Recent Achievement**: ✅ Sprint 5 complete! Added sized array types `[T; N]` and closures with type annotations `|x: i32| -> i32`. Fixed 2 of 3 known limitations, bringing language core to 97% complete. Added 4 comprehensive integration tests. All 96 integration tests passing (100% pass rate)!
 
 **What Actually Works**:
 - ✅ JSX (fully implemented and tested)
+- ✅ **Sized Array Types** - `[T; N]` syntax for fixed-size arrays!
+- ✅ **Typed Closures** - Full closure syntax with param and return types: `|x: i32, y: i32| -> i32`!
 - ✅ **Async/Await** - Full support for async functions and await expressions!
 - ✅ **Try Operator (?)** - Ergonomic error propagation for Result and Option!
 - ✅ **Generic Functions** - Full support for generic functions with type parameters!
@@ -36,9 +38,7 @@
 - ✅ VS Code extension
 
 **Known Limitations**:
-- ⚠️ Closures with type annotations (parser limitation)
-- ⚠️ Sized array types `[T; N]` (parser limitation)
-- ⚠️ Deeply nested if/else expressions (type checker edge case)
+- ⚠️ Deeply nested if/else expressions (2+ levels) - Type checker issue with nested expressions
 
 ## Project Overview
 
@@ -243,22 +243,21 @@ perf: Performance improvement
 
 **Impact**: RavensOne went from barely functional to production-ready in 6 focused sprints. All core language features now work correctly with end-to-end compilation validation.
 
-### Phase 5: Advanced Language Features 🚧 IN PROGRESS (Sprints 1-4 complete)
-- **Duration**: ~14 hours so far
+### Phase 5: Advanced Language Features ✅ COMPLETE (All 5 sprints)
+- **Duration**: ~20 hours total
 - **Archive**: Detailed sprints in `docs/archive/CLAUDE_PHASE3-5.md`
-- **Status**: ✅ Sprint 4 complete, Sprint 5 next
-- **Tests**: 377 → 406 passing (100% pass rate maintained)
-- **Language Core**: 80% → 95% complete (+15%!)
+- **Status**: ✅ ALL SPRINTS COMPLETE
+- **Tests**: 377 → 410 passing (100% pass rate maintained)
+- **Language Core**: 80% → 97% complete (+17%!)
 
 **Phase 5 Sprint Achievements**:
 1. **Sprint 1** (2h): Async/Await Foundation - Discovered it was already fully implemented! Added 8 integration tests
 2. **Sprint 2** (2h): Try Operator (?) - Implemented ergonomic error propagation for Result<T, E> and Option<T>
 3. **Sprint 3** (2h): Generic Functions - Full support for generic functions with type erasure (like TypeScript)
 4. **Sprint 4** (8h): Traits and Interfaces - Complete trait system with trait bounds, impl blocks, and method resolution
+5. **Sprint 5** (6h): Sized Arrays & Typed Closures - Added `[T; N]` sized array syntax and full closure type annotations
 
-**Impact**: Added advanced features that make RavensOne competitive with modern languages. Async/await, try operator, generic functions, and traits provide type-safe, ergonomic patterns for complex code. Trait system enables polymorphism and generic constraints similar to Rust.
-
-**Next Sprints**: TBD (Phase 5 nearly complete - 95% of language core implemented!)
+**Impact**: Completed all advanced language features! RavensOne now has async/await, try operator, generics, traits, sized arrays, and typed closures - making it competitive with modern languages like Rust and TypeScript. Language core is 97% complete with only 1 known limitation remaining (deeply nested if/else, which is an edge case).
 
 ---
 
@@ -793,7 +792,7 @@ note: required by trait bound in `print_all`
 ---
 
 **Last Updated**: 2025-10-22
-**Compiler Version**: 0.1.0-alpha (95% Production Ready - All core features working!)
-**Status**: ✅ **Phase 5 Sprint 4 Complete** - Traits and Interfaces
-**Recent Achievement**: ✅ Trait system implemented! Sprint 4 added complete trait system with trait definitions, impl blocks, trait bounds on generics, and method resolution. Traits provide compile-time polymorphism similar to Rust traits or TypeScript interfaces. Implementation uses type erasure - traits are validated at compile time but generate prototype-based JavaScript methods at runtime. Added TypeParam struct with bounds support, updated parser to handle `T: Display` and `T: Display + Clone` syntax, implemented trait tracking in type checker, and added 10 comprehensive integration tests. All 92 integration tests passing (100% pass rate)!
-**Next Sprint**: TBD - Phase 5 nearly complete (95% of language core implemented!)
+**Compiler Version**: 0.1.0-alpha (97% Production Ready - All core features working!)
+**Status**: ✅ **Phase 5 COMPLETE!** - All 5 sprints done!
+**Recent Achievement**: ✅ Sprint 5 complete! Fixed remaining parser limitations by adding sized array types `[T; N]` and closures with type annotations `|x: i32, y: i32| -> i32`. Updated AST to include `SizedArray` type expression and `LambdaParameter` with optional type annotations. Parser now handles `[i32; 5]` syntax and full closure signatures with return types. Type checker uses parameter type annotations when present. Added 4 comprehensive integration tests. **Language core now 97% complete** - only 1 known limitation remaining (deeply nested if/else)! All 96 integration tests passing (100% pass rate). 410 tests total passing.
+**Next Steps**: RavensOne language core is essentially complete! Future work could include fixing the nested if/else edge case, improving error messages, or adding ecosystem features.

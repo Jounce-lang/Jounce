@@ -263,6 +263,11 @@ impl SemanticAnalyzer {
                 let inner_type = self.type_expression_to_resolved_type(inner);
                 ResolvedType::Array(Box::new(inner_type))
             }
+            TypeExpression::SizedArray(inner, _size) => {
+                // Sized arrays [T; N] - treat as arrays with the inner type
+                let inner_type = self.type_expression_to_resolved_type(inner);
+                ResolvedType::Array(Box::new(inner_type))
+            }
             TypeExpression::Function(_param_types, _return_type) => {
                 // For now, return Unknown for function types
                 // In a full implementation, we'd track function signatures properly

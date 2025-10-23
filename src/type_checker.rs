@@ -98,6 +98,11 @@ impl TypeChecker {
                 let inner_type = self.type_expr_to_type(inner);
                 Type::Array(Box::new(inner_type))
             }
+            TypeExpression::SizedArray(inner, _size) => {
+                // Sized arrays [T; N] - treat as arrays with the inner type
+                let inner_type = self.type_expr_to_type(inner);
+                Type::Array(Box::new(inner_type))
+            }
             TypeExpression::Function(param_types, return_type) => {
                 // Convert function type to Type::Function
                 let params: Vec<Type> = param_types.iter()
@@ -432,7 +437,12 @@ impl TypeChecker {
 
                 // Bind parameters
                 for param in &lambda.parameters {
-                    self.env.bind(param.value.clone(), Type::Any);
+                    let param_type = if let Some(ref type_expr) = param.type_annotation {
+                        self.type_expr_to_type(type_expr)
+                    } else {
+                        Type::Any // Type inference for untyped parameters
+                    };
+                    self.env.bind(param.name.value.clone(), param_type);
                 }
 
                 let body_type = self.infer_expression(&lambda.body)?;

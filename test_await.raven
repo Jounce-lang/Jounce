@@ -1,0 +1,8 @@
+async fn fetch_value() -> i32 {
+    42
+}
+
+async fn main() {
+    let value = await fetch_value();
+    println!("{}", value);
+}

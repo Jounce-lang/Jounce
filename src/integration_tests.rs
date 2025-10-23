@@ -2402,4 +2402,72 @@ mod tests {
         assert!(client_js.contains("Value.prototype.to_string"),
                 "should generate trait method");
     }
+
+    // ===== Phase 5 Sprint 5: Sized Arrays and Typed Closures =====
+
+    #[test]
+    fn test_sized_array_type() {
+        let source = r#"
+            fn process(numbers: [i32; 5]) -> i32 {
+                let sum = 0;
+                for num in numbers {
+                    sum = sum + num;
+                }
+                sum
+            }
+
+            fn main() {
+                let nums = [1, 2, 3, 4, 5];
+                let result = process(nums);
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "sized array type should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("function process"),
+                "should generate function with sized array parameter");
+    }
+
+    #[test]
+    fn test_closure_with_type_annotations() {
+        let source = r#"
+            fn main() {
+                let add = |x: i32, y: i32| -> i32 {
+                    x + y
+                };
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "closure with type annotations should compile");
+    }
+
+    #[test]
+    fn test_closure_partial_types() {
+        let source = r#"
+            fn main() {
+                let greet = |name: String| {
+                    name
+                };
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "closure with param types but no return type should compile");
+    }
+
+    #[test]
+    fn test_sized_array_various_sizes() {
+        let source = r#"
+            fn main() {
+                let small: [i32; 3] = [1, 2, 3];
+                let medium: [i32; 10] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            }
+        "#;
+
+        let result = compile_source(source);
+        assert!(result.is_ok(), "various sized array sizes should compile");
+    }
 }

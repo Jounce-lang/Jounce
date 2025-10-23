@@ -151,6 +151,10 @@ impl RPCGenerator {
             TypeExpression::Slice(inner) => {
                 format!("{}[]", self.format_type(inner))
             }
+            TypeExpression::SizedArray(inner, _size) => {
+                // Sized arrays [T; N] - format as TypeScript array Type[]
+                format!("{}[]", self.format_type(inner))
+            }
             TypeExpression::Function(param_types, return_type) => {
                 // Format as TypeScript function type: (param1: Type1, param2: Type2) => ReturnType
                 let param_strs = param_types

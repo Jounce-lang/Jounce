@@ -352,6 +352,7 @@ pub enum TypeExpression {
     Reference(Box<TypeExpression>),  // &T (immutable reference)
     MutableReference(Box<TypeExpression>),  // &mut T (mutable reference)
     Slice(Box<TypeExpression>),  // [T] (slice type)
+    SizedArray(Box<TypeExpression>, usize),  // [T; N] (fixed-size array)
     Function(Vec<TypeExpression>, Box<TypeExpression>),  // fn(T1, T2) -> R (function type)
 }
 
@@ -565,8 +566,15 @@ pub struct CapturedVariable {
 }
 
 #[derive(Debug, Clone)]
+pub struct LambdaParameter {
+    pub name: Identifier,
+    pub type_annotation: Option<TypeExpression>,
+}
+
+#[derive(Debug, Clone)]
 pub struct LambdaExpression {
-    pub parameters: Vec<Identifier>,
+    pub parameters: Vec<LambdaParameter>,
+    pub return_type: Option<TypeExpression>,
     pub body: Box<Expression>,
     pub captures: Vec<CapturedVariable>,  // Variables captured from environment
 }

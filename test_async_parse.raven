@@ -1,0 +1,7 @@
+async fn get_data() -> i32 {
+    42
+}
+
+fn main() {
+    let result = get_data();
+}

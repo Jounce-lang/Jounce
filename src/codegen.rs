@@ -90,7 +90,7 @@ impl StructTable {
 struct LambdaInfo {
     func_index: u32,                    // Function index in WASM
     type_index: u32,                    // Type signature index
-    parameters: Vec<Identifier>,        // Parameter names
+    parameters: Vec<LambdaParameter>,   // Parameter names and types
     body: Box<Expression>,              // Lambda body expression
     captured_vars: Vec<String>,         // Variables captured from enclosing scope
 }
@@ -498,7 +498,7 @@ impl CodeGenerator {
 
         // Register lambda parameters as locals (they start after the environment pointer if present)
         for param in &lambda.parameters {
-            self.local_symbol_table.insert(param.value.clone(), self.local_count);
+            self.local_symbol_table.insert(param.name.value.clone(), self.local_count);
             self.local_count += 1;
         }
 
@@ -1671,6 +1671,12 @@ impl CodeGenerator {
                 let inner_type = self.type_expression_to_resolved_type(inner);
                 ResolvedType::Array(Box::new(inner_type))
             }
+            TypeExpression::SizedArray(inner, _size) => {
+                // Sized arrays [T; N] - treat as arrays with the inner type
+                // Size information is primarily for type checking, not runtime
+                let inner_type = self.type_expression_to_resolved_type(inner);
+                ResolvedType::Array(Box::new(inner_type))
+            }
             TypeExpression::Function(_param_types, _return_type) => {
                 // For now, return Unknown for function types
                 // In a full implementation, we'd track function signatures properly
@@ -2026,7 +2032,7 @@ impl CodeGenerator {
         // Build a set of parameter names for quick lookup
         let param_names: HashSet<String> = lambda.parameters
             .iter()
-            .map(|p| p.value.clone())
+            .map(|p| p.name.value.clone())
             .collect();
 
         // Filter out parameters and function names - only keep variables from enclosing scope

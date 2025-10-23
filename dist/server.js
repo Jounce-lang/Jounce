@@ -22,10 +22,8 @@ const wasmInstance = new WebAssembly.Instance(wasmModule, {
 // Server function implementations
 // Shared utility functions
 module.exports.main = function() {
-  let name = "Alice";
-  let age = 25;
-  console.log(`Hello, ${name}!`);
-  console.log(`Name: ${name}, Age: ${age}`);
+  let result = (() => { if (true) { return 42; } else { return 0; } })();
+  return console.log(`${result}`);
 
 }
 

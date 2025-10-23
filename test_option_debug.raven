@@ -1,0 +1,15 @@
+fn find_value(n: i32) -> Option<i32> {
+    if n > 0 {
+        Some(n * 2)
+    } else {
+        None
+    }
+}
+
+fn main() {
+    let result = find_value(5);
+    match result {
+        Some(v) => println!("Found: {}", v),
+        None => println!("Not found"),
+    }
+}

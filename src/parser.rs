@@ -505,9 +505,36 @@ impl<'a> Parser<'a> {
             return Ok(TypeExpression::Function(param_types, return_type));
         }
 
-        // Check if this is a slice type [T]
+        // Check if this is a slice type [T] or sized array [T; N]
         if self.consume_if_matches(&TokenKind::LBracket) {
             let inner_type = self.parse_type_expression()?;
+
+            // Check for sized array [T; N]
+            if self.consume_if_matches(&TokenKind::Semicolon) {
+                // Parse the size (must be a number literal)
+                let size_token = self.current_token().clone();
+                if let TokenKind::Integer(val) = size_token.kind {
+                    if val < 0 {
+                        return Err(CompileError::ParserError {
+                            message: "Array size must be non-negative".to_string(),
+                            line: size_token.line,
+                            column: size_token.column,
+                        });
+                    }
+                    let size = val as usize;
+                    self.next_token();
+                    self.expect_and_consume(&TokenKind::RBracket)?;
+                    return Ok(TypeExpression::SizedArray(Box::new(inner_type), size));
+                } else {
+                    return Err(CompileError::ParserError {
+                        message: "Expected integer literal for array size".to_string(),
+                        line: size_token.line,
+                        column: size_token.column,
+                    });
+                }
+            }
+
+            // Otherwise it's a slice [T]
             self.expect_and_consume(&TokenKind::RBracket)?;
             return Ok(TypeExpression::Slice(Box::new(inner_type)));
         }
@@ -923,6 +950,7 @@ impl<'a> Parser<'a> {
 
                 Expression::Lambda(LambdaExpression {
                     parameters: vec![], // No parameters
+                    return_type: None,
                     body: Box::new(body),
                     captures: vec![], // Will be analyzed later
                 })
@@ -1180,6 +1208,7 @@ impl<'a> Parser<'a> {
                 let body = self.parse_expression(Precedence::Lowest)?;
                 return Ok(Expression::Lambda(LambdaExpression {
                     parameters: vec![],
+                    return_type: None,
                     body: Box::new(body),
                     captures: vec![],  // Will be analyzed later
                 }));
@@ -1195,15 +1224,16 @@ impl<'a> Parser<'a> {
                 // Parse typed parameters
                 let mut parameters = Vec::new();
                 loop {
-                    let param_name = self.parse_identifier()?;
+                    let name = self.parse_identifier()?;
 
-                    // Type annotation is optional but usually present here
-                    if self.consume_if_matches(&TokenKind::Colon) {
-                        // Parse and discard type for now (lambda parameters are type-inferred)
-                        self.parse_type_expression()?;
-                    }
+                    // Parse type annotation
+                    let type_annotation = if self.consume_if_matches(&TokenKind::Colon) {
+                        Some(self.parse_type_expression()?)
+                    } else {
+                        None
+                    };
 
-                    parameters.push(param_name);
+                    parameters.push(LambdaParameter { name, type_annotation });
 
                     if !self.consume_if_matches(&TokenKind::Comma) {
                         break;
@@ -1211,11 +1241,20 @@ impl<'a> Parser<'a> {
                 }
 
                 self.expect_and_consume(&TokenKind::RParen)?;
+
+                // Optional return type: (x: i32) -> i32 =>
+                let return_type = if self.consume_if_matches(&TokenKind::Arrow) {
+                    Some(self.parse_type_expression()?)
+                } else {
+                    None
+                };
+
                 self.expect_and_consume(&TokenKind::FatArrow)?;
                 let body = self.parse_expression(Precedence::Lowest)?;
 
                 return Ok(Expression::Lambda(LambdaExpression {
                     parameters,
+                    return_type,
                     body: Box::new(body),
                     captures: vec![],
                 }));
@@ -1247,10 +1286,11 @@ impl<'a> Parser<'a> {
 
         // Check if this is actually a lambda with single param: (x) => body
         if self.consume_if_matches(&TokenKind::FatArrow) {
-            if let Expression::Identifier(param) = first_expr {
+            if let Expression::Identifier(param_name) = first_expr {
                 let body = self.parse_expression(Precedence::Lowest)?;
                 return Ok(Expression::Lambda(LambdaExpression {
-                    parameters: vec![param],
+                    parameters: vec![LambdaParameter { name: param_name, type_annotation: None }],
+                    return_type: None,
                     body: Box::new(body),
                     captures: vec![],  // Will be analyzed later
                 }));
@@ -1264,11 +1304,30 @@ impl<'a> Parser<'a> {
     fn parse_lambda_with_pipes(&mut self) -> Result<Expression, CompileError> {
         self.expect_and_consume(&TokenKind::Pipe)?;
         let mut parameters = Vec::new();
+
+        // Parse parameters with optional type annotations: |x: i32, y: i32|
         while self.current_token().kind != TokenKind::Pipe {
-            parameters.push(self.parse_identifier()?);
+            let name = self.parse_identifier()?;
+
+            // Check for optional type annotation: |x: i32|
+            let type_annotation = if self.consume_if_matches(&TokenKind::Colon) {
+                Some(self.parse_type_expression()?)
+            } else {
+                None
+            };
+
+            parameters.push(LambdaParameter { name, type_annotation });
+
             if !self.consume_if_matches(&TokenKind::Comma) { break; }
         }
         self.expect_and_consume(&TokenKind::Pipe)?;
+
+        // Check for optional return type: -> i32
+        let return_type = if self.consume_if_matches(&TokenKind::Arrow) {
+            Some(self.parse_type_expression()?)
+        } else {
+            None
+        };
 
         // Check for => or just use the next expression
         self.consume_if_matches(&TokenKind::FatArrow);
@@ -1276,6 +1335,7 @@ impl<'a> Parser<'a> {
         let body = self.parse_expression(Precedence::Lowest)?;
         Ok(Expression::Lambda(LambdaExpression {
             parameters,
+            return_type,
             body: Box::new(body),
             captures: vec![],  // Will be analyzed later
         }))

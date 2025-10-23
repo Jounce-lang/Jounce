@@ -1104,10 +1104,23 @@ impl Formatter {
             if i > 0 {
                 self.write(", ");
             }
-            self.write(&param.value);
+            self.write(&param.name.value);
+            // Format type annotation if present
+            if let Some(ref type_expr) = param.type_annotation {
+                self.write(": ");
+                self.format_type_expression(type_expr);
+            }
         }
 
-        self.write("| ");
+        self.write("|");
+
+        // Format return type if present
+        if let Some(ref return_type) = lambda.return_type {
+            self.write(" -> ");
+            self.format_type_expression(return_type);
+        }
+
+        self.write(" ");
         self.format_expression(&lambda.body);
     }
 
@@ -1272,6 +1285,13 @@ impl Formatter {
             TypeExpression::Slice(ty) => {
                 self.write("[");
                 self.format_type_expression(ty);
+                self.write("]");
+            }
+            TypeExpression::SizedArray(ty, size) => {
+                self.write("[");
+                self.format_type_expression(ty);
+                self.write("; ");
+                self.write(&size.to_string());
                 self.write("]");
             }
             TypeExpression::Function(params, ret) => {
@@ -1688,13 +1708,20 @@ mod tests {
                 type_annotation: None,
                 value: Expression::Lambda(LambdaExpression {
                     parameters: vec![
-                        Identifier {
-                            value: "x".to_string(),
+                        LambdaParameter {
+                            name: Identifier {
+                                value: "x".to_string(),
+                            },
+                            type_annotation: None,
                         },
-                        Identifier {
-                            value: "y".to_string(),
+                        LambdaParameter {
+                            name: Identifier {
+                                value: "y".to_string(),
+                            },
+                            type_annotation: None,
                         },
                     ],
+                    return_type: None,
                     body: Box::new(Expression::Infix(InfixExpression {
                         left: Box::new(Expression::Identifier(Identifier {
                             value: "x".to_string(),

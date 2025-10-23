@@ -1,8 +1,9 @@
 fn divide(a: i32, b: i32) -> Result<i32, String> {
     if b == 0 {
-        return Err("Division by zero");
+        Err("Division by zero".to_string())
+    } else {
+        Ok(a / b)
     }
-    Ok(a / b)
 }
 
 fn calculate() -> Result<i32, String> {
