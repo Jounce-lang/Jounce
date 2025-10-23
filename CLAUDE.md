@@ -1040,6 +1040,330 @@ Build on Sprint 1 & 2 by introducing advanced function concepts including recurs
 
 ---
 
+## 🚧 Phase 6 - Sprint 4: Pattern Matching & Error Handling (NEXT)
+
+**Sprint Goal**: Create 8 examples demonstrating pattern matching and error handling with Option<T> and Result<T,E>
+
+**Status**: 🚧 **READY TO START**
+**Estimated Time**: 2-3 hours
+**Priority**: HIGH - Essential for robust error handling
+
+### Sprint 4 Overview
+
+Build on previous sprints by introducing RavensOne's powerful pattern matching and error handling capabilities. These examples demonstrate Option<T> for nullable values, Result<T,E> for error handling, the try operator (?), and nested pattern matching.
+
+**Target Audience**: Intermediate developers learning error handling patterns
+**Complexity**: 40-60 lines per example
+**Focus**: Pattern matching, error handling, Option/Result types
+
+### Sprint 4 Examples List
+
+1. **01_option_basic.raven** - Option<T> with Some/None (40 lines)
+2. **02_option_pattern_match.raven** - Pattern matching on Option (45 lines)
+3. **03_result_basic.raven** - Result<T,E> with Ok/Err (45 lines)
+4. **04_result_pattern_match.raven** - Pattern matching on Result (50 lines)
+5. **05_try_operator.raven** - Try operator (?) for error propagation (50 lines)
+6. **06_nested_patterns.raven** - Nested Option and Result patterns (55 lines)
+7. **07_combining_results.raven** - Combining multiple Results (55 lines)
+8. **08_real_world_errors.raven** - Real-world error handling example (60 lines)
+
+### Task 1: Create examples 1-3 (Option basics & Result basics) (45-60 mins)
+
+**Goal**: Demonstrate Option<T> and Result<T,E> fundamentals
+
+**Examples**:
+
+1. **01_option_basic.raven**:
+```raven
+// Basic Option<T> usage
+fn find_even(numbers: [i32; 5]) -> Option<i32> {
+    for num in numbers {
+        if num % 2 == 0 {
+            return Some(num);
+        }
+    }
+    None
+}
+
+fn main() {
+    let numbers = [1, 3, 5, 7, 9];
+    let result = find_even(numbers);
+
+    match result {
+        Some(value) => println!("Found even: {}", value),
+        None => println!("No even numbers found"),
+    }
+}
+```
+
+2. **02_option_pattern_match.raven**:
+```raven
+// Advanced Option pattern matching
+fn divide(a: i32, b: i32) -> Option<i32> {
+    if b == 0 {
+        None
+    } else {
+        Some(a / b)
+    }
+}
+
+fn main() {
+    let results = [
+        divide(10, 2),
+        divide(10, 0),
+        divide(20, 4),
+    ];
+
+    for result in results {
+        match result {
+            Some(value) => println!("Result: {}", value),
+            None => println!("Cannot divide by zero"),
+        }
+    }
+}
+```
+
+3. **03_result_basic.raven**:
+```raven
+// Basic Result<T,E> for error handling
+fn parse_positive(s: String) -> Result<i32, String> {
+    let num = 42; // Simplified parsing
+    if num > 0 {
+        Ok(num)
+    } else {
+        Err("Number must be positive")
+    }
+}
+
+fn main() {
+    let result = parse_positive("42");
+
+    match result {
+        Ok(value) => println!("Parsed: {}", value),
+        Err(error) => println!("Error: {}", error),
+    }
+}
+```
+
+**Success Criteria**:
+- [ ] All 3 examples compile successfully
+- [ ] Option<T> basics demonstrated clearly
+- [ ] Result<T,E> fundamentals shown
+- [ ] Pattern matching on both types
+
+### Task 2: Create examples 4-5 (Advanced patterns & try operator) (45-60 mins)
+
+**Goal**: Show advanced pattern matching and the try operator
+
+**Examples**:
+
+4. **04_result_pattern_match.raven**:
+```raven
+// Pattern matching with Result
+fn validate_age(age: i32) -> Result<i32, String> {
+    if age < 0 {
+        Err("Age cannot be negative")
+    } else if age > 150 {
+        Err("Age too high")
+    } else {
+        Ok(age)
+    }
+}
+
+fn main() {
+    let ages = [-5, 25, 200, 42];
+
+    for age in ages {
+        match validate_age(age) {
+            Ok(valid) => println!("{} is valid", valid),
+            Err(msg) => println!("Invalid: {}", msg),
+        }
+    }
+}
+```
+
+5. **05_try_operator.raven**:
+```raven
+// Try operator (?) for error propagation
+fn divide_checked(a: i32, b: i32) -> Result<i32, String> {
+    if b == 0 {
+        Err("Division by zero")
+    } else {
+        Ok(a / b)
+    }
+}
+
+fn calculate(a: i32, b: i32, c: i32) -> Result<i32, String> {
+    let x = divide_checked(a, b)?;
+    let y = divide_checked(x, c)?;
+    Ok(y)
+}
+
+fn main() {
+    match calculate(100, 5, 2) {
+        Ok(result) => println!("Result: {}", result),
+        Err(e) => println!("Error: {}", e),
+    }
+
+    match calculate(100, 0, 2) {
+        Ok(result) => println!("Result: {}", result),
+        Err(e) => println!("Error: {}", e),
+    }
+}
+```
+
+**Success Criteria**:
+- [ ] Advanced Result patterns shown
+- [ ] Try operator (?) demonstrated
+- [ ] Error propagation working correctly
+- [ ] Both examples compile
+
+### Task 3: Create examples 6-8 (Nested patterns & real-world) (45-60 mins)
+
+**Goal**: Demonstrate complex patterns and real-world scenarios
+
+**Examples**:
+
+6. **06_nested_patterns.raven**:
+```raven
+// Nested Option and Result patterns
+fn get_user_age(user_id: i32) -> Option<Result<i32, String>> {
+    if user_id == 0 {
+        None  // User not found
+    } else if user_id < 0 {
+        Some(Err("Invalid user ID"))
+    } else {
+        Some(Ok(25))  // Valid age
+    }
+}
+
+fn main() {
+    let ids = [0, -1, 1];
+
+    for id in ids {
+        match get_user_age(id) {
+            None => println!("User {} not found", id),
+            Some(Ok(age)) => println!("User {} age: {}", id, age),
+            Some(Err(e)) => println!("Error for user {}: {}", id, e),
+        }
+    }
+}
+```
+
+7. **07_combining_results.raven**:
+```raven
+// Combining multiple Result operations
+fn add_checked(a: i32, b: i32) -> Result<i32, String> {
+    let result = a + b;
+    if result > 1000 {
+        Err("Sum too large")
+    } else {
+        Ok(result)
+    }
+}
+
+fn calculate_total(nums: [i32; 3]) -> Result<i32, String> {
+    let sum1 = add_checked(nums[0], nums[1])?;
+    let sum2 = add_checked(sum1, nums[2])?;
+    Ok(sum2)
+}
+
+fn main() {
+    match calculate_total([10, 20, 30]) {
+        Ok(total) => println!("Total: {}", total),
+        Err(e) => println!("Error: {}", e),
+    }
+}
+```
+
+8. **08_real_world_errors.raven**:
+```raven
+// Real-world error handling example
+fn process_data(value: i32) -> Result<i32, String> {
+    if value < 0 {
+        Err("Value must be positive")
+    } else if value == 0 {
+        Err("Value cannot be zero")
+    } else {
+        Ok(value * 2)
+    }
+}
+
+fn pipeline(values: [i32; 5]) -> Result<i32, String> {
+    let mut total = 0;
+
+    for value in values {
+        match process_data(value) {
+            Ok(processed) => total = total + processed,
+            Err(e) => return Err(e),
+        }
+    }
+
+    Ok(total)
+}
+
+fn main() {
+    match pipeline([1, 2, 3, 4, 5]) {
+        Ok(result) => println!("Success: {}", result),
+        Err(e) => println!("Failed: {}", e),
+    }
+}
+```
+
+**Success Criteria**:
+- [ ] Nested patterns demonstrated
+- [ ] Combining Results shown
+- [ ] Real-world scenario illustrated
+- [ ] All 3 examples compile
+
+### Task 4: Update examples/README.md (15 mins)
+
+**Goal**: Document Sprint 4 completion
+
+**Changes**:
+- Update 04-patterns section with all 8 examples
+- Update statistics (28 → 36 examples)
+- Update progress percentage
+- Add Sprint 4 learning notes
+
+**Success Criteria**:
+- [ ] README accurately reflects Sprint 4
+- [ ] All 36 examples indexed
+- [ ] Learning progression updated
+
+### Task 5: Verify all examples compile (15 mins)
+
+**Goal**: Ensure every Sprint 4 example compiles without errors
+
+```bash
+for file in examples/04-patterns/*.raven; do
+    echo "Testing $file..."
+    ./target/release/raven compile "$file" || exit 1
+done
+```
+
+**Success Criteria**:
+- [ ] All 8 Sprint 4 examples compile
+- [ ] No warnings or errors
+- [ ] Generated JS is valid
+
+### Sprint 4 Deliverables
+
+1. ✅ 8 pattern matching & error handling examples
+2. ✅ Updated examples/README.md
+3. ✅ All examples compile successfully
+4. ✅ Progressive difficulty (40-60 lines)
+5. ✅ Each demonstrates error handling patterns
+
+### Success Metrics
+
+- **Compilation**: 100% of examples compile
+- **Progression**: Clear advancement from Sprint 3
+- **Coverage**: Core error handling patterns demonstrated
+- **Testing**: All examples serve as compiler tests
+
+---
+
 ## ✅ Phase 5 - Sprint 4: Traits and Interfaces (COMPLETE)
 
 **Sprint Goal**: Implement trait system for generic constraints and polymorphism
