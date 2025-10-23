@@ -196,8 +196,22 @@ impl Lexer {
                         }
                         // Numeric value - read as CSS value
                         let num_token = self.read_number();
+                        let mut value = num_token.lexeme.clone();
+
+                        // Check for percentage sign or CSS units (px, rem, em, %, etc.)
+                        if self.ch == '%' {
+                            value.push('%');
+                            self.read_char();
+                        } else if self.ch.is_alphabetic() {
+                            // Could be px, rem, em, vh, vw, etc.
+                            while self.ch.is_alphabetic() {
+                                value.push(self.ch);
+                                self.read_char();
+                            }
+                        }
+
                         // Convert to CSS value
-                        Token::new(TokenKind::CssValue(num_token.lexeme.clone()), num_token.lexeme, num_token.line, num_token.column)
+                        Token::new(TokenKind::CssValue(value.clone()), value, num_token.line, num_token.column)
                     } else {
                         // Unknown character
                         let ch = self.ch;

@@ -2,18 +2,50 @@
 
 ## 📌 Current Status
 
-**Phase**: 🚀 **Phase 7.5 Sprint 2 - Advanced CSS Features** (IN PROGRESS)
+**Phase**: 🚀 **Phase 7.5 Sprint 3 - Utilities & Ecosystem** (IN PROGRESS)
 **Language Core**: ✅ **100% COMPLETE** - Production ready!
-**Tests**: 470+ total (100% pass rate, 10 ignored) - **Includes 123 integration tests**
+**Tests**: 470+ total (most passing, some CSS tests need fixes)
 **Compilation Speed**: 96,292 compilations/sec
 **Examples**: 48 complete (Phase 6 Sprints 1-6)
 
-**Recent Achievement**: ✅ **Task 2.6 COMPLETE!** Implemented CSS keyframe animations (@keyframes) with scoped names, from/to selectors, percentage selectors (0%, 50%, 100%), and full test coverage (11 tests: 5 unit + 6 integration). Successfully compiled test file with 170 bytes of generated CSS. All features working!
+**Recent Achievement**: ✅ **Sprint 3 Task 3.1 COMPLETE!** Designed comprehensive utility class system (Tailwind-like)
+- Complete architecture design (UtilityGenerator, config system, tree-shaking)
+- Configuration format: `raven.config.toml` with theme customization
+- 8 utility categories: Layout, Spacing, Colors, Typography, Borders, Effects, States, Responsive
+- JIT generation with tree-shaking for small bundles (< 50KB typical)
+- Design document: `docs/guides/UTILITY_SYSTEM_DESIGN.md` (500+ lines)
 
-**Next Tasks**:
-- Task 2.4: Dynamic CSS values (Raven variables in CSS) - DEFERRED (parser lookahead issue)
-- Task 2.8: Sprint 2 testing & integration - 1h
-- Sprint 3: Utilities & Ecosystem - ~8h
+**Sprint Status**:
+- Sprint 2: ✅ 70% Complete (nesting, media queries, keyframes working)
+- Sprint 3: 🚀 10% Complete (Task 3.1 design done)
+
+**Next Steps** (Sprint 3 Implementation):
+1. **Task 3.1 Implementation - Core Utility System** (4-6h)
+   - Create `src/utility_generator.rs` and `src/utility_config.rs`
+   - Implement TOML config loading with defaults
+   - Build AST scanner to collect class names
+   - Create basic utility parsers (colors, spacing)
+   - Add dependencies: `toml`, `serde`, `regex`
+
+2. **Task 3.2 - Utility Categories** (3-4h)
+   - Layout utilities (flex, grid, display)
+   - Typography utilities (font-size, weight, alignment)
+   - Border utilities (width, radius, style)
+   - Effect utilities (shadow, opacity, transform)
+
+3. **Task 3.3 - Advanced Features** (3-4h)
+   - Responsive variants: `sm:`, `md:`, `lg:`, `xl:`
+   - State variants: `hover:`, `focus:`, `active:`
+   - Custom utilities from config
+   - Tree-shaking optimization
+
+4. **Task 3.4 - Testing & Integration** (2-3h)
+   - Unit tests for all parsers
+   - Integration tests with real .raven files
+   - Performance benchmarks
+   - Update examples to use utilities
+
+**Total Estimated Time**: ~12-17 hours for complete utility system
 
 ---
 
@@ -236,10 +268,19 @@ css! {
 - Multiple keyframes per css! block
 - Known limitation: Animation property doesn't auto-replace keyframe names with scoped versions (future enhancement)
 
-**Remaining Tasks** (~4 hours):
-- Task 2.4: Dynamic CSS values (Raven variables) - DEFERRED (parser lookahead issue)
-- Task 2.8: Sprint 2 testing & integration - 1h
-- Sprint 3: Utilities & Ecosystem - ~8h
+#### ✅ Task 2.8: Sprint 2 Testing & Lexer Fix (PARTIAL COMPLETE)
+- **Duration**: ~2 hours
+- **What Was Done**: Fixed CSS percentage parsing in lexer (50%, 100% now work), verified keyframes work correctly
+- **Issue Found**: Complex CSS values with multiple tokens (like `box-shadow: 0 2px 4px rgba(...)`) cause parser hangs
+- **Files Modified**: lexer.rs (added % and CSS unit handling after numbers)
+
+**Sprint 2 Summary**:
+- **Status**: ✅ 70% COMPLETE - Core features working, some edge cases need fixes
+- **Working**: Nesting, media queries, keyframe animations with percentages
+- **Needs Work**: Multi-token CSS value parsing, comprehensive test file
+- **Deferred**: Dynamic CSS values (Task 2.4)
+
+**Next: Sprint 3** - Utilities & Ecosystem (~8h)
 
 ---
 
@@ -358,4 +399,4 @@ perf: Performance improvement
 
 **Last Updated**: 2025-10-23
 **Compiler Version**: 0.1.0-alpha
-**Status**: 🚀 **Phase 7.5 Sprint 2 IN PROGRESS** - Task 2.6 Complete (Keyframe Animations)
+**Status**: 🚀 **Phase 7.5 Sprint 2 → Sprint 3** - Advanced CSS 70% Complete, Moving to Utilities & Ecosystem

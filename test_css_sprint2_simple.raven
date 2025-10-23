@@ -1,0 +1,79 @@
+@client
+fn TestCard() -> JSX {
+    let styles = css! {
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(50%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+
+            &:hover {
+                background: gray;
+            }
+
+            & .title {
+                font-size: 24px;
+                color: black;
+
+                &:hover {
+                    color: blue;
+                }
+            }
+
+            @media (max-width: 768px) {
+                padding: 10px;
+            }
+
+            @media (min-width: 1024px) {
+                padding: 30px;
+            }
+        }
+
+        .button {
+            background: blue;
+            color: white;
+            padding: 10px;
+
+            &:hover {
+                background: darkblue;
+            }
+
+            &:active {
+                opacity: 0.8;
+            }
+
+            @media (max-width: 768px) {
+                padding: 8px;
+            }
+        }
+    };
+
+    <div class={styles.card}>
+        <div class={styles.title}>Test Title</div>
+        <button class={styles.button}>Click Me</button>
+    </div>
+}
+
+fn main() {
+    render(TestCard, "#app");
+}

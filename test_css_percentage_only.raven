@@ -1,0 +1,23 @@
+@client
+fn TestCard() -> JSX {
+    let styles = css! {
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .card {
+            background: white;
+        }
+    };
+
+    <div class={styles.card}>Test</div>
+}
+
+fn main() {
+    render(TestCard, "#app");
+}
