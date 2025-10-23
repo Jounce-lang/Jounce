@@ -366,6 +366,16 @@ impl UtilityGenerator {
             return Some(display);
         }
 
+        // Try parsing accessibility utilities (sr-only)
+        if let Some(a11y) = self.parse_a11y_utility(class_name) {
+            return Some(a11y);
+        }
+
+        // Try parsing focus utilities (ring, outline)
+        if let Some(focus) = self.parse_focus_utility(class_name) {
+            return Some(focus);
+        }
+
         None
     }
 
@@ -404,6 +414,11 @@ impl UtilityGenerator {
         // Check for dark mode variant
         if prefix == "dark" {
             return Some(Variant::Dark);
+        }
+
+        // Check for print variant
+        if prefix == "print" {
+            return Some(Variant::Print);
         }
 
         // Check for state variants
@@ -462,6 +477,12 @@ impl UtilityGenerator {
             // Build the CSS with selector and declarations
             let mut css = format!("{} {}", selector, declarations);
 
+            // Wrap with print variant if present
+            let has_print = variants.iter().any(|v| matches!(v, Variant::Print));
+            if has_print {
+                css = format!("@media print {{\n  {}\n}}", css.trim());
+            }
+
             // Wrap with responsive variants (media queries) - outermost first
             for variant in variants {
                 if let Variant::Responsive { min_width, .. } = variant {
@@ -493,42 +514,127 @@ impl UtilityGenerator {
 
     /// Parse color utilities: bg-blue-500, text-red-600, border-gray-300, etc.
     fn parse_color_utility(&self, class: &str) -> Option<ColorUtility> {
-        // Pattern: (bg|text|border)-(color)-(shade)
-        let color_pattern = Regex::new(r"^(bg|text|border)-([\w]+)-(\d+)$").ok()?;
+        // Pattern: (bg|text|border)-(color)-(shade)[/opacity]
+        let color_pattern = Regex::new(r"^(bg|text|border)-([\w]+)-(\d+)(?:/(\d+))?$").ok()?;
 
         if let Some(caps) = color_pattern.captures(class) {
             let property = caps.get(1)?.as_str();
             let color_name = caps.get(2)?.as_str();
             let shade = caps.get(3)?.as_str().parse::<u32>().ok()?;
+            let opacity = caps.get(4).and_then(|m| m.as_str().parse::<u32>().ok());
 
             // Look up color in theme
             let color = self.config.css.theme.colors
                 .iter()
                 .find(|c| c.name == color_name)?;
 
-            let color_value = color.shades.get(&shade)?;
+            let mut color_value = color.shades.get(&shade)?.clone();
+
+            // Apply opacity if specified
+            if let Some(opacity_percent) = opacity {
+                color_value = self.apply_opacity_to_color(&color_value, opacity_percent);
+            }
 
             return Some(ColorUtility {
                 class_name: class.to_string(),
                 property: property.to_string(),
-                color: color_value.clone(),
+                color: color_value,
             });
         }
 
-        // Special named colors: bg-white, text-black, etc.
-        let named_pattern = Regex::new(r"^(bg|text|border)-(white|black|transparent)$").ok()?;
+        // Special named colors: bg-white, text-black, etc. with optional opacity
+        let named_pattern = Regex::new(r"^(bg|text|border)-(white|black|transparent)(?:/(\d+))?$").ok()?;
         if let Some(caps) = named_pattern.captures(class) {
             let property = caps.get(1)?.as_str();
             let color_name = caps.get(2)?.as_str();
+            let opacity = caps.get(3).and_then(|m| m.as_str().parse::<u32>().ok());
+
+            let mut color_value = color_name.to_string();
+
+            // Apply opacity if specified
+            if let Some(opacity_percent) = opacity {
+                color_value = self.apply_opacity_to_color(&color_value, opacity_percent);
+            }
 
             return Some(ColorUtility {
                 class_name: class.to_string(),
                 property: property.to_string(),
-                color: color_name.to_string(),
+                color: color_value,
             });
         }
 
+        // Arbitrary color values: bg-[#1da1f2], text-[rgb(255,0,0)], etc.
+        let arbitrary_pattern = Regex::new(r"^(bg|text|border)-\[([^\]]+)\]$").ok()?;
+        if let Some(caps) = arbitrary_pattern.captures(class) {
+            let property = caps.get(1)?.as_str();
+            let color_value = caps.get(2)?.as_str();
+
+            // Validate color format (hex, rgb, rgba, hsl, hsla)
+            if self.is_valid_color_value(color_value) {
+                return Some(ColorUtility {
+                    class_name: class.to_string(),
+                    property: property.to_string(),
+                    color: color_value.to_string(),
+                });
+            }
+        }
+
         None
+    }
+
+    /// Check if a value is a valid CSS color
+    fn is_valid_color_value(&self, value: &str) -> bool {
+        // Hex colors: #rgb, #rrggbb, #rrggbbaa
+        if value.starts_with('#') {
+            let hex = value.trim_start_matches('#');
+            return hex.len() == 3 || hex.len() == 6 || hex.len() == 8;
+        }
+
+        // RGB/RGBA
+        if value.starts_with("rgb(") || value.starts_with("rgba(") {
+            return value.ends_with(')');
+        }
+
+        // HSL/HSLA
+        if value.starts_with("hsl(") || value.starts_with("hsla(") {
+            return value.ends_with(')');
+        }
+
+        false
+    }
+
+    /// Apply opacity to a color value
+    /// Converts hex (#rrggbb) to rgba format with opacity
+    fn apply_opacity_to_color(&self, color: &str, opacity_percent: u32) -> String {
+        let opacity = (opacity_percent as f32) / 100.0;
+
+        // Handle special colors
+        if color == "white" {
+            return format!("rgba(255, 255, 255, {})", opacity);
+        } else if color == "black" {
+            return format!("rgba(0, 0, 0, {})", opacity);
+        } else if color == "transparent" {
+            return "transparent".to_string();
+        }
+
+        // Parse hex color
+        if color.starts_with('#') {
+            let hex = color.trim_start_matches('#');
+
+            // Convert hex to RGB
+            if hex.len() == 6 {
+                if let (Ok(r), Ok(g), Ok(b)) = (
+                    u8::from_str_radix(&hex[0..2], 16),
+                    u8::from_str_radix(&hex[2..4], 16),
+                    u8::from_str_radix(&hex[4..6], 16),
+                ) {
+                    return format!("rgba({}, {}, {}, {})", r, g, b, opacity);
+                }
+            }
+        }
+
+        // Fallback: return original color
+        color.to_string()
     }
 
     /// Parse spacing utilities: p-4, mx-auto, etc.
@@ -1042,6 +1148,112 @@ impl UtilityGenerator {
 
         None
     }
+
+    /// Parse accessibility utilities
+    fn parse_a11y_utility(&self, class: &str) -> Option<String> {
+        match class {
+            "sr-only" => Some(
+                r#".sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}"#.to_string()
+            ),
+            "not-sr-only" => Some(
+                r#".not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}"#.to_string()
+            ),
+            _ => None,
+        }
+    }
+
+    /// Parse focus utilities: ring-*, outline-*, etc.
+    fn parse_focus_utility(&self, class: &str) -> Option<String> {
+        // Basic ring utility (no width specified, defaults to 3px)
+        if class == "ring" {
+            return Some(".ring { --tw-ring-offset-width: 0px; --tw-ring-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color), 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color); }".to_string());
+        }
+
+        // Ring width utilities
+        if class.starts_with("ring-") && !class.contains("offset") {
+            // Check if it's a color ring (ring-blue-500, ring-red-600, etc.)
+            let color_pattern = Regex::new(r"^ring-([\w]+)-(\d+)$").ok()?;
+            if let Some(caps) = color_pattern.captures(class) {
+                let color_name = caps.get(1)?.as_str();
+                let shade = caps.get(2)?.as_str().parse::<u32>().ok()?;
+
+                // Look up color in theme
+                let color = self.config.css.theme.colors
+                    .iter()
+                    .find(|c| c.name == color_name)?;
+
+                let color_value = color.shades.get(&shade)?;
+
+                return Some(format!(
+                    ".ring-{}-{} {{ --tw-ring-color: {}; box-shadow: 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color), 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color); }}",
+                    color_name, shade, color_value
+                ));
+            }
+
+            // Ring width utilities (ring-0, ring-1, ring-2, etc.)
+            if let Some(width) = class.strip_prefix("ring-") {
+                return match width {
+                    "0" => Some(".ring-0 { box-shadow: none; }".to_string()),
+                    "1" => Some(".ring-1 { --tw-ring-offset-width: 0px; --tw-ring-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color), 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color); }".to_string()),
+                    "2" => Some(".ring-2 { --tw-ring-offset-width: 0px; --tw-ring-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color), 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); }".to_string()),
+                    "4" => Some(".ring-4 { --tw-ring-offset-width: 0px; --tw-ring-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color), 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color); }".to_string()),
+                    "8" => Some(".ring-8 { --tw-ring-offset-width: 0px; --tw-ring-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color), 0 0 0 calc(8px + var(--tw-ring-offset-width)) var(--tw-ring-color); }".to_string()),
+                    _ => None,
+                };
+            }
+        }
+
+        // Ring offset utilities
+        if class.starts_with("ring-offset-") {
+            if let Some(width) = class.strip_prefix("ring-offset-") {
+                return match width {
+                    "0" => Some(".ring-offset-0 { --tw-ring-offset-width: 0px; }".to_string()),
+                    "1" => Some(".ring-offset-1 { --tw-ring-offset-width: 1px; }".to_string()),
+                    "2" => Some(".ring-offset-2 { --tw-ring-offset-width: 2px; }".to_string()),
+                    "4" => Some(".ring-offset-4 { --tw-ring-offset-width: 4px; }".to_string()),
+                    "8" => Some(".ring-offset-8 { --tw-ring-offset-width: 8px; }".to_string()),
+                    _ => None,
+                };
+            }
+        }
+
+        // Outline utilities
+        if class.starts_with("outline") {
+            return match class {
+                "outline-none" => Some(".outline-none { outline: 2px solid transparent; outline-offset: 2px; }".to_string()),
+                "outline" => Some(".outline { outline-style: solid; }".to_string()),
+                "outline-dashed" => Some(".outline-dashed { outline-style: dashed; }".to_string()),
+                "outline-dotted" => Some(".outline-dotted { outline-style: dotted; }".to_string()),
+                "outline-0" => Some(".outline-0 { outline-width: 0px; }".to_string()),
+                "outline-1" => Some(".outline-1 { outline-width: 1px; }".to_string()),
+                "outline-2" => Some(".outline-2 { outline-width: 2px; }".to_string()),
+                "outline-4" => Some(".outline-4 { outline-width: 4px; }".to_string()),
+                "outline-8" => Some(".outline-8 { outline-width: 8px; }".to_string()),
+                _ => None,
+            };
+        }
+
+        None
+    }
 }
 
 /// Represents a variant applied to a utility class
@@ -1053,6 +1265,8 @@ enum Variant {
     State(String),
     /// Dark mode variant (e.g., "dark:")
     Dark,
+    /// Print variant (e.g., "print:")
+    Print,
 }
 
 /// Represents a parsed utility class
@@ -1823,5 +2037,316 @@ mod tests {
         println!("Generated CSS:\n{}", css);
 
         assert!(css.contains(".dark .dark\\:bg-gray-900"));
+    }
+
+    #[test]
+    fn test_opacity_modifier_basic() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("bg-blue-500/50").unwrap();
+
+        // Should generate rgba with 50% opacity
+        assert!(css.contains("rgba(59, 130, 246, 0.5)"));
+    }
+
+    #[test]
+    fn test_opacity_modifier_text_color() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("text-red-500/75").unwrap();
+
+        // Should generate rgba with 75% opacity
+        assert!(css.contains("rgba(239, 68, 68, 0.75)"));
+    }
+
+    #[test]
+    fn test_opacity_modifier_white() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("bg-white/25").unwrap();
+
+        // Should generate rgba for white with 25% opacity
+        assert!(css.contains("rgba(255, 255, 255, 0.25)"));
+    }
+
+    #[test]
+    fn test_opacity_modifier_with_variant() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("hover:bg-blue-500/80").unwrap();
+
+        // Should work with hover variant
+        assert!(css.contains("hover\\:bg-blue-500\\/80:hover"));
+        assert!(css.contains("rgba(59, 130, 246, 0.8)"));
+    }
+
+    #[test]
+    fn test_opacity_100_unchanged() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("bg-blue-500/100").unwrap();
+
+        // 100% opacity should still use rgba format
+        assert!(css.contains("rgba(59, 130, 246, 1)"));
+    }
+
+    #[test]
+    fn test_arbitrary_hex_color() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("bg-[#1da1f2]").unwrap();
+
+        // Should use the exact hex color
+        assert!(css.contains("background-color: #1da1f2"));
+    }
+
+    #[test]
+    fn test_arbitrary_rgb_color() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("text-[rgb(255,0,0)]").unwrap();
+
+        // Should use rgb format
+        assert!(css.contains("color: rgb(255,0,0)"));
+    }
+
+    #[test]
+    fn test_arbitrary_rgba_color() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("border-[rgba(0,128,255,0.5)]").unwrap();
+
+        // Should use rgba format
+        assert!(css.contains("border-color: rgba(0,128,255,0.5)"));
+    }
+
+    #[test]
+    fn test_arbitrary_short_hex() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("bg-[#fff]").unwrap();
+
+        // Should accept short hex format
+        assert!(css.contains("background-color: #fff"));
+    }
+
+    #[test]
+    fn test_arbitrary_with_variant() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("hover:bg-[#ff6b6b]").unwrap();
+        println!("Generated CSS:\n{}", css);
+
+        // Should work with variants
+        assert!(css.contains(":hover"));
+        assert!(css.contains("background-color: #ff6b6b"));
+    }
+
+    #[test]
+    fn test_arbitrary_invalid_rejected() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        // Invalid color format should return None
+        let css = gen.generate_utility("bg-[invalid]");
+        assert!(css.is_none());
+    }
+
+    #[test]
+    fn test_print_variant_basic() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("print:hidden").unwrap();
+
+        // Should wrap in @media print
+        assert!(css.contains("@media print"));
+        assert!(css.contains("display: none"));
+    }
+
+    #[test]
+    fn test_print_variant_color() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("print:text-black").unwrap();
+
+        // Should wrap in @media print
+        assert!(css.contains("@media print"));
+        assert!(css.contains("color: black"));
+    }
+
+    #[test]
+    fn test_print_with_responsive() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("md:print:p-4").unwrap();
+
+        // Should have both responsive and print media queries
+        assert!(css.contains("@media (min-width: 768px)"));
+        assert!(css.contains("@media print"));
+    }
+
+    #[test]
+    fn test_print_only_utility() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("print:block").unwrap();
+
+        // Should show element only when printing
+        assert!(css.contains("@media print"));
+        assert!(css.contains("display: block"));
+    }
+
+    #[test]
+    fn test_sr_only_basic() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("sr-only").unwrap();
+
+        // Should have all screen reader-only properties
+        assert!(css.contains(".sr-only"));
+        assert!(css.contains("position: absolute"));
+        assert!(css.contains("width: 1px"));
+        assert!(css.contains("height: 1px"));
+        assert!(css.contains("overflow: hidden"));
+        assert!(css.contains("clip: rect(0, 0, 0, 0)"));
+    }
+
+    #[test]
+    fn test_not_sr_only() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("not-sr-only").unwrap();
+
+        // Should reverse sr-only styles
+        assert!(css.contains(".not-sr-only"));
+        assert!(css.contains("position: static"));
+        assert!(css.contains("width: auto"));
+        assert!(css.contains("height: auto"));
+        assert!(css.contains("overflow: visible"));
+    }
+
+    #[test]
+    fn test_sr_only_with_variant() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("md:sr-only").unwrap();
+
+        // Should wrap in media query
+        assert!(css.contains("@media (min-width: 768px)"));
+        assert!(css.contains("position: absolute"));
+    }
+
+    #[test]
+    fn test_ring_basic() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("ring").unwrap();
+
+        // Should have ring styles
+        assert!(css.contains(".ring"));
+        assert!(css.contains("box-shadow"));
+        assert!(css.contains("--tw-ring-color"));
+    }
+
+    #[test]
+    fn test_ring_width() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("ring-2").unwrap();
+
+        // Should have 2px ring
+        assert!(css.contains(".ring-2"));
+        assert!(css.contains("calc(2px + var(--tw-ring-offset-width))"));
+    }
+
+    #[test]
+    fn test_ring_color() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("ring-blue-500").unwrap();
+
+        // Should have blue ring color
+        assert!(css.contains(".ring-blue-500"));
+        assert!(css.contains("--tw-ring-color: #3b82f6"));
+    }
+
+    #[test]
+    fn test_ring_offset() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("ring-offset-2").unwrap();
+
+        // Should set offset width
+        assert!(css.contains(".ring-offset-2"));
+        assert!(css.contains("--tw-ring-offset-width: 2px"));
+    }
+
+    #[test]
+    fn test_outline_none() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("outline-none").unwrap();
+
+        // Should remove outline
+        assert!(css.contains(".outline-none"));
+        assert!(css.contains("outline: 2px solid transparent"));
+    }
+
+    #[test]
+    fn test_outline_width() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("outline-2").unwrap();
+
+        // Should have 2px outline
+        assert!(css.contains(".outline-2"));
+        assert!(css.contains("outline-width: 2px"));
+    }
+
+    #[test]
+    fn test_focus_ring_variant() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("focus:ring-2").unwrap();
+
+        // Should have focus pseudo-class
+        assert!(css.contains(":focus"));
+        assert!(css.contains("ring-2"));
+    }
+
+    #[test]
+    fn test_focus_outline_none() {
+        let config = UtilityConfig::default();
+        let gen = UtilityGenerator::new(config);
+
+        let css = gen.generate_utility("focus:outline-none").unwrap();
+
+        // Should have focus pseudo-class with outline removal
+        assert!(css.contains(":focus"));
+        assert!(css.contains("outline"));
     }
 }

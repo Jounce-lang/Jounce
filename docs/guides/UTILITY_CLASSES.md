@@ -350,6 +350,138 @@ let customStyles = css! {
 
 ---
 
+### Accessibility
+
+#### Screen Reader Only
+Use these utilities to hide content visually while keeping it accessible to screen readers.
+
+```raven
+// Hidden label for screen readers
+<label class="sr-only">Search</label>
+<input type="text" placeholder="Search..." />
+
+// Error message with screen reader context
+<p class="text-red-600">
+    <span class="sr-only">Error:</span> Password must be 8+ characters
+</p>
+
+// Mobile menu button (hidden on desktop)
+<button class="md:sr-only">Menu</button>
+
+// Navigation (hidden on mobile, visible on desktop)
+<nav class="sr-only md:not-sr-only">
+    <ul>...</ul>
+</nav>
+```
+
+**Available Classes**:
+- `sr-only` - Visually hidden but accessible to screen readers
+- `not-sr-only` - Reverses sr-only (makes visible)
+
+**When to Use**:
+- Hidden labels for icon-only buttons
+- Skip navigation links
+- Error/success message prefixes
+- Responsive navigation (mobile vs desktop)
+
+---
+
+### Focus Utilities
+
+#### Focus Rings
+Add visible focus indicators for keyboard navigation accessibility.
+
+```raven
+// Standard focus ring
+<button class="focus:ring-2">Click me</button>
+
+// Custom ring width
+<button class="focus:ring">Default 3px ring</button>
+<button class="focus:ring-1">1px ring</button>
+<button class="focus:ring-4">4px ring</button>
+
+// Colored rings
+<button class="focus:ring-2 focus:ring-blue-500">Blue ring</button>
+<button class="focus:ring-2 focus:ring-red-500">Red ring</button>
+<button class="focus:ring-2 focus:ring-green-500">Green ring</button>
+
+// Ring with offset (space between element and ring)
+<button class="focus:ring-2 focus:ring-offset-2">Ring with offset</button>
+
+// Complete button example
+<button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+    Accessible Button
+</button>
+```
+
+**Available Classes**:
+- Width: `ring`, `ring-0`, `ring-1`, `ring-2`, `ring-4`, `ring-8`
+- Colors: `ring-{color}-{shade}` (e.g., `ring-blue-500`, `ring-red-600`)
+- Offset: `ring-offset-0`, `ring-offset-1`, `ring-offset-2`, `ring-offset-4`, `ring-offset-8`
+
+#### Outlines
+Alternative to rings for focus indication.
+
+```raven
+// Remove default outline
+<input class="focus:outline-none" />
+
+// Custom outline width
+<input class="focus:outline-2" />
+<input class="focus:outline-4" />
+
+// Outline style
+<button class="focus:outline">Solid outline</button>
+<button class="focus:outline-dashed">Dashed outline</button>
+<button class="focus:outline-dotted">Dotted outline</button>
+
+// Common pattern: remove outline + add ring
+<input class="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+```
+
+**Available Classes**:
+- `outline-none` - Remove outline
+- `outline` - Solid outline
+- `outline-dashed`, `outline-dotted` - Outline style
+- `outline-0`, `outline-1`, `outline-2`, `outline-4`, `outline-8` - Outline width
+
+---
+
+### Print Utilities
+
+Use the `print:` variant to apply styles only when printing.
+
+```raven
+// Hide navigation when printing
+<nav class="print:hidden">
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+</nav>
+
+// Ensure text is black for printing
+<p class="text-gray-700 print:text-black">This text will be black when printed</p>
+
+// Show contact info only when printing
+<div class="hidden print:block">
+    <p>Contact: info@example.com</p>
+    <p>Phone: 555-0123</p>
+</div>
+
+// Change layout for printing
+<div class="flex md:flex-row print:flex-col">
+    <div>Content 1</div>
+    <div>Content 2</div>
+</div>
+```
+
+**When to Use**:
+- Hide interactive elements (navigation, buttons)
+- Ensure sufficient contrast for printing
+- Show additional info (URLs, contact details)
+- Simplify layouts for better printing
+
+---
+
 ## Responsive Design
 
 Use responsive variants to apply styles at different breakpoints.

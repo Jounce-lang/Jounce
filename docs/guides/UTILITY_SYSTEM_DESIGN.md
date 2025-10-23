@@ -13,11 +13,17 @@
 - ✅ **Task 3.1**: Core Utility System (~3h) - COMPLETE
 - ✅ **Task 3.2**: Additional Utility Categories (~2h) - COMPLETE
 - ✅ **Task 3.3**: Advanced Features - Responsive & State Variants (~3h) - COMPLETE
-- ✅ **Task 3.4**: Tree-Shaking & Optimization (~2h) - COMPLETE
+- ✅ **Task 3.4**: Accessibility & Focus Utilities (~3h) - COMPLETE
+- ✅ **Task 3.5**: Documentation & Examples (~1h) - IN PROGRESS
 
-**Test Coverage**: 496 tests passing (26 utility tests + 470 previous)
+**Test Coverage**: 558 tests passing (72 utility tests + 486 previous)
 **Performance**: 9.94ms for 100 utilities (< 10ms target ✅)
-**Utilities Supported**: 150+ utility classes across 9 categories
+**Utilities Supported**: 200+ utility classes across 11 categories
+**New Features**:
+- ✅ Accessibility utilities (sr-only, not-sr-only)
+- ✅ Focus utilities (ring, outline)
+- ✅ Print variant (@media print)
+- ✅ Advanced color features (opacity modifiers, arbitrary values)
 
 **Files Created**:
 - `src/utility_generator.rs` (1,110 lines) - AST scanner, CSS generation, variants
@@ -28,6 +34,8 @@
 - `test_utilities_basic.raven` - Basic utilities
 - `test_utilities_advanced.raven` - Advanced utilities
 - `test_utilities_variants.raven` - Responsive & state variants
+- `test_accessibility_simple.raven` - Screen reader utilities
+- `test_focus_utilities.raven` - Ring and outline focus utilities
 
 ---
 
@@ -315,6 +323,118 @@ breakpoints = [
 @media (min-width: 768px) {
     .md\:flex { display: flex; }
 }
+```
+
+### 9. Accessibility Utilities
+```css
+/* Screen Reader Only - visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Not Screen Reader Only - reverses sr-only */
+.not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Responsive SR-Only */
+@media (min-width: 768px) {
+  .md\:sr-only {
+    position: absolute;
+    width: 1px;
+    /* ... */
+  }
+}
+```
+
+**Usage Example**:
+```raven
+// Hidden label for screen readers
+<label class="sr-only">Search</label>
+<input type="text" placeholder="Search..." />
+
+// Mobile: hidden, Desktop: visible
+<nav class="sr-only md:not-sr-only">
+  <ul>...</ul>
+</nav>
+```
+
+### 10. Focus Utilities
+```css
+/* Focus Rings - for keyboard navigation */
+.ring { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); }
+.ring-0 { box-shadow: none; }
+.ring-1 { box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5); }
+.ring-2 { box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); }
+.ring-4 { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5); }
+
+/* Ring Colors */
+.ring-blue-500 { --tw-ring-color: #3b82f6; }
+.ring-red-500 { --tw-ring-color: #ef4444; }
+.ring-green-500 { --tw-ring-color: #10b981; }
+
+/* Ring Offset - creates space between element and ring */
+.ring-offset-0 { --tw-ring-offset-width: 0px; }
+.ring-offset-2 { --tw-ring-offset-width: 2px; }
+.ring-offset-4 { --tw-ring-offset-width: 4px; }
+
+/* Outlines */
+.outline-none { outline: 2px solid transparent; outline-offset: 2px; }
+.outline { outline-style: solid; }
+.outline-dashed { outline-style: dashed; }
+.outline-0 { outline-width: 0px; }
+.outline-2 { outline-width: 2px; }
+.outline-4 { outline-width: 4px; }
+```
+
+**Usage Example**:
+```raven
+// Standard button with focus ring
+<button class="px-4 py-2 bg-blue-500 text-white rounded focus:outline-none focus:ring-2">
+  Click Me
+</button>
+
+// Custom ring color and offset
+<button class="focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+  Submit
+</button>
+
+// Outline instead of ring
+<input class="border border-gray-300 focus:outline-2 focus:outline-blue-500" />
+```
+
+### 11. Print Utilities
+```css
+/* Print-specific styles */
+@media print {
+  .print\:hidden { display: none; }
+  .print\:block { display: block; }
+  .print\:text-black { color: black; }
+}
+```
+
+**Usage Example**:
+```raven
+// Hide navigation when printing
+<nav class="print:hidden">...</nav>
+
+// Ensure text is black for printing
+<p class="text-gray-700 print:text-black">Content</p>
 ```
 
 ---
