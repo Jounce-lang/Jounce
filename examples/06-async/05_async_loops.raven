@@ -1,0 +1,157 @@
+// examples/06-async/05_async_loops.raven
+//
+// CONCEPT: Using async operations in loops
+// DIFFICULTY: Advanced
+// FEATURES: async in for loops, async in while loops, accumulating results
+//
+// This example demonstrates how to use async/await within different types
+// of loops, showing patterns for processing multiple items asynchronously.
+
+async fn process_item(item: i32) -> i32 {
+    println!("Processing item {}...", item);
+    item * 2
+}
+
+async fn validate_item(item: i32) -> bool {
+    println!("Validating item {}...", item);
+    match item {
+        0 => false,
+        _ => {
+            if item < 0 {
+                false
+            } else {
+                true
+            }
+        }
+    }
+}
+
+// Process array items with async
+async fn process_array(items: [i32; 5]) -> [i32; 5] {
+    let mut results: [i32; 5] = [0, 0, 0, 0, 0];
+
+    // Manually unroll to avoid index issues
+    let result0 = await process_item(items[0]);
+    results[0] = result0;
+
+    let result1 = await process_item(items[1]);
+    results[1] = result1;
+
+    let result2 = await process_item(items[2]);
+    results[2] = result2;
+
+    let result3 = await process_item(items[3]);
+    results[3] = result3;
+
+    let result4 = await process_item(items[4]);
+    results[4] = result4;
+
+    results
+}
+
+// Sum with async validation
+async fn sum_valid_items(items: [i32; 4]) -> i32 {
+    let mut total = 0;
+
+    for item in items {
+        let is_valid = await validate_item(item);
+        match is_valid {
+            true => {
+                total = total + item;
+            },
+            false => {},
+        }
+    }
+
+    total
+}
+
+// While loop with async
+async fn process_until_threshold(start: i32, threshold: i32) -> i32 {
+    let mut current = start;
+    let mut iterations = 0;
+
+    while current < threshold {
+        let processed = await process_item(current);
+        current = processed;
+        iterations = iterations + 1;
+
+        if iterations > 5 {
+            println!("Max iterations reached");
+            break;
+        }
+    }
+
+    current
+}
+
+async fn main() {
+    println!("=== Async in Loops ===");
+    println!("");
+
+    // Process array
+    println!("Processing array:");
+    let items: [i32; 5] = [1, 2, 3, 4, 5];
+    let results = await process_array(items);
+    println!("Input: [{}, {}, {}, {}, {}]", items[0], items[1], items[2], items[3], items[4]);
+    println!("Results: [{}, {}, {}, {}, {}]",
+        results[0], results[1], results[2], results[3], results[4]);
+
+    println!("");
+
+    // Sum valid items
+    println!("Sum valid items:");
+    let to_sum: [i32; 4] = [5, -2, 10, 0];
+    let total = await sum_valid_items(to_sum);
+    println!("Sum of valid items: {}", total);
+
+    println!("");
+
+    // While loop with threshold
+    println!("Process until threshold:");
+    let final_value = await process_until_threshold(3, 20);
+    println!("Final value: {}", final_value);
+}
+
+// EXPECTED OUTPUT:
+// === Async in Loops ===
+//
+// Processing array:
+// Processing item 1...
+// Processing item 2...
+// Processing item 3...
+// Processing item 4...
+// Processing item 5...
+// Input: [1, 2, 3, 4, 5]
+// Results: [2, 4, 6, 8, 10]
+//
+// Sum valid items:
+// Validating item 5...
+// Validating item -2...
+// Validating item 10...
+// Validating item 0...
+// Sum of valid items: 15
+//
+// Process until threshold:
+// Processing item 3...
+// Processing item 6...
+// Processing item 12...
+// Final value: 24
+//
+// KEY CONCEPTS:
+// - Async operations work naturally in for loops
+// - Each loop iteration waits for the async operation to complete
+// - While loops can use async conditions and operations
+// - Results can be accumulated across async iterations
+// - Loops with async are sequential (not parallel)
+//
+// BEST PRACTICES:
+// - Use for loops when processing a known collection
+// - Use while loops when the number of iterations is dynamic
+// - Consider breaking large async loops into smaller batches
+// - Be aware that loops execute sequentially (one await at a time)
+// - For parallel processing, consider concurrent patterns
+//
+// TRY IT:
+// raven compile examples/06-async/05_async_loops.raven
+// cd dist && node server.js

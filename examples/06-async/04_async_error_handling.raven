@@ -1,0 +1,177 @@
+// examples/06-async/04_async_error_handling.raven
+//
+// CONCEPT: Async error handling with Result and Option
+// DIFFICULTY: Advanced
+// FEATURES: async + Result<T,E>, async + Option<T>, try operator
+//
+// This example shows how to combine async/await with RavensOne's error
+// handling types (Result and Option) for robust asynchronous code.
+
+// Async function returning Result
+async fn fetch_user_by_id(id: i32) -> Result<String, String> {
+    println!("Looking up user {}...", id);
+
+    if id <= 0 {
+        Err("Invalid user ID")
+    } else if id == 1 {
+        Ok("Alice")
+    } else if id == 2 {
+        Ok("Bob")
+    } else {
+        Err("User not found")
+    }
+}
+
+// Async function returning Option
+async fn find_score(user: String) -> Option<i32> {
+    println!("Finding score for {}...", user);
+
+    match user {
+        "Alice" => Some(100),
+        "Bob" => Some(85),
+        _ => None,
+    }
+}
+
+// Chain async Result operations
+async fn get_user_score(id: i32) -> Result<i32, String> {
+    // Get user (might fail)
+    let user_result = await fetch_user_by_id(id);
+
+    match user_result {
+        Ok(user) => {
+            // Get score (might be None)
+            let score_option = await find_score(user);
+
+            match score_option {
+                Some(score) => Ok(score),
+                None => Err("Score not found"),
+            }
+        },
+        Err(e) => Err(e),
+    }
+}
+
+// Process multiple IDs
+async fn process_user_ids(ids: [i32; 3]) -> [Option<i32>; 3] {
+    // Process all users and build results array
+    let result0 = await get_user_score(ids[0]);
+    let opt0 = match result0 {
+        Ok(score) => Some(score),
+        Err(_) => None,
+    };
+
+    let result1 = await get_user_score(ids[1]);
+    let opt1 = match result1 {
+        Ok(score) => Some(score),
+        Err(_) => None,
+    };
+
+    let result2 = await get_user_score(ids[2]);
+    let opt2 = match result2 {
+        Ok(score) => Some(score),
+        Err(_) => None,
+    };
+
+    // Return array constructed from individual values
+    [opt0, opt1, opt2]
+}
+
+async fn main() {
+    println!("=== Async Error Handling ===");
+    println!("");
+
+    // Success case
+    println!("Valid user:");
+    let result1 = await get_user_score(1);
+    match result1 {
+        Ok(score) => println!("Score: {}", score),
+        Err(e) => println!("Error: {}", e),
+    }
+
+    println!("");
+
+    // Error case - invalid ID
+    println!("Invalid ID:");
+    let result2 = await get_user_score(-1);
+    match result2 {
+        Ok(score) => println!("Score: {}", score),
+        Err(e) => println!("Error: {}", e),
+    }
+
+    println!("");
+
+    // Error case - user not found
+    println!("User not found:");
+    let result3 = await get_user_score(99);
+    match result3 {
+        Ok(score) => println!("Score: {}", score),
+        Err(e) => println!("Error: {}", e),
+    }
+
+    println!("");
+
+    // Process multiple users
+    println!("Batch processing:");
+    let ids: [i32; 3] = [1, -1, 2];
+    let results = await process_user_ids(ids);
+
+    println!("Results:");
+    match results[0] {
+        Some(s) => println!("  User 1: {}", s),
+        None => println!("  User 1: Failed"),
+    }
+    match results[1] {
+        Some(s) => println!("  User 2: {}", s),
+        None => println!("  User 2: Failed"),
+    }
+    match results[2] {
+        Some(s) => println!("  User 3: {}", s),
+        None => println!("  User 3: Failed"),
+    }
+}
+
+// EXPECTED OUTPUT:
+// === Async Error Handling ===
+//
+// Valid user:
+// Looking up user 1...
+// Finding score for Alice...
+// Score: 100
+//
+// Invalid ID:
+// Looking up user -1...
+// Error: Invalid user ID
+//
+// User not found:
+// Looking up user 99...
+// Error: User not found
+//
+// Batch processing:
+// Looking up user 1...
+// Finding score for Alice...
+// Looking up user -1...
+// Looking up user 2...
+// Finding score for Bob...
+// Results:
+//   User 1: 100
+//   User 2: Failed
+//   User 3: 85
+//
+// KEY CONCEPTS:
+// - Async functions can return Result<T,E> for fallible operations
+// - Async functions can return Option<T> for optional values
+// - Match expressions handle both async results and errors
+// - Error propagation works naturally with async/await
+// - Can combine Result and Option in async code
+//
+// BEST PRACTICES:
+// - Use Result for operations that can fail with an error message
+// - Use Option for operations that might not return a value
+// - Handle errors explicitly with match expressions
+// - Consider using the ? operator for cleaner error propagation
+// - Provide meaningful error messages in Err variants
+//
+// TRY IT:
+// raven compile examples/06-async/04_async_error_handling.raven
+// cd dist && node server.js

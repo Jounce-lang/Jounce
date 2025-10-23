@@ -78,17 +78,17 @@ Explore RavensOne's advanced type system features.
 5. **05_generics_advanced.raven** - Advanced generics with higher-order functions
 6. **06_real_world_generics.raven** - Real-world leaderboard system
 
-### 06-async/ - Asynchronous Programming
-**Difficulty**: Advanced | **Lines**: 60-100 per example
+### 06-async/ - Asynchronous Programming ✅
+**Difficulty**: Advanced | **Lines**: 60-150 per example | **Time**: 2-3 hours
 
 Learn async/await and concurrent programming patterns.
 
-- Async/await basics
-- Concurrent operations
-- Error handling with async
-- Real-world async patterns
-
-*(Coming in Sprint 6)*
+1. **01_async_basic.raven** - Async/await fundamentals (basic syntax)
+2. **02_async_functions.raven** - Async functions with return values
+3. **03_concurrent_operations.raven** - Sequential vs concurrent patterns
+4. **04_async_error_handling.raven** - Async with Result<T,E> and Option<T>
+5. **05_async_loops.raven** - Using async operations in loops
+6. **06_real_world_async.raven** - Complete async data pipeline
 
 ### 07-fullstack/ - Full-Stack Features
 **Difficulty**: Advanced | **Lines**: 100-200 per example
@@ -206,16 +206,17 @@ find examples -name "*.raven" -exec raven compile {} \;
 
 ## 📊 Statistics
 
-- **Total Examples**: 42 (Sprint 1 + Sprint 2 + Sprint 3 + Sprint 4 + Sprint 5 complete)
+- **Total Examples**: 48 (Sprint 1 + Sprint 2 + Sprint 3 + Sprint 4 + Sprint 5 + Sprint 6 complete)
   - 01-basics: 10 examples ✅
   - 02-control-flow: 10 examples ✅
   - 03-functions: 8 examples ✅
   - 04-patterns: 8 examples ✅
   - 05-advanced-types: 6 examples ✅
+  - 06-async: 6 examples ✅
 - **Total Planned**: ~60 examples across 8 categories
 - **Test Coverage**: 100% of examples compile successfully
 - **Difficulty Levels**: 3 (Beginner, Intermediate, Advanced)
-- **Progress**: 70% complete (42/60)
+- **Progress**: 80% complete (48/60)
 
 ## 🤝 Contributing
 
@@ -244,11 +245,13 @@ Want to add examples? Follow these guidelines:
 
 ---
 
-**Sprint Status**: Phase 6 Sprint 4 Complete (36/36 examples total)
+**Sprint Status**: Phase 6 Sprint 6 Complete (48/48 examples total)
 - Sprint 1 ✅ Complete: 01-basics (10 examples)
 - Sprint 2 ✅ Complete: 02-control-flow (10 examples)
 - Sprint 3 ✅ Complete: 03-functions (8 examples)
 - Sprint 4 ✅ Complete: 04-patterns (8 examples)
+- Sprint 5 ✅ Complete: 05-advanced-types (6 examples)
+- Sprint 6 ✅ Complete: 06-async (6 examples)
 
-**Next Sprint**: Sprint 5 - Advanced Types (6 examples: generics, traits, trait bounds, sized arrays)
+**Next Sprint**: Sprint 7 - Full-Stack Features (5 examples: @server/@client, RPC, JSX, state)
 **Last Updated**: 2025-10-22

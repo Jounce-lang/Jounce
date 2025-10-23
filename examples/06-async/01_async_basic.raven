@@ -1,0 +1,89 @@
+// examples/06-async/01_async_basic.raven
+//
+// CONCEPT: Basic async/await syntax
+// DIFFICULTY: Advanced
+// FEATURES: async functions, await expressions
+//
+// This example introduces async/await, RavensOne's approach to asynchronous
+// programming. Async functions return a Promise-like value, and await pauses
+// execution until the promise resolves.
+//
+// Key points:
+// - async fn declares an asynchronous function
+// - await pauses execution until the async operation completes
+// - Async functions can be called from other async functions
+// - The main function can be async
+
+async fn fetch_user_name(user_id: i32) -> String {
+    // Simulate async operation
+    println!("Fetching user {}...", user_id);
+
+    // In real code, this might be a database query or API call
+    // For now, we'll just return a mock value
+    if user_id == 1 {
+        "Alice"
+    } else if user_id == 2 {
+        "Bob"
+    } else {
+        "Unknown"
+    }
+}
+
+async fn get_user_info(user_id: i32) -> String {
+    println!("Getting info for user {}", user_id);
+
+    // await pauses until fetch_user_name completes
+    let name = await fetch_user_name(user_id);
+
+    format!("User #{}: {}", user_id, name)
+}
+
+async fn main() {
+    println!("=== Async/Await Basics ===");
+    println!("");
+
+    // Call async function with await
+    let info1 = await get_user_info(1);
+    println!("{}", info1);
+
+    let info2 = await get_user_info(2);
+    println!("{}", info2);
+
+    let info3 = await get_user_info(99);
+    println!("{}", info3);
+
+    println!("");
+    println!("All operations completed!");
+}
+
+// EXPECTED OUTPUT:
+// === Async/Await Basics ===
+//
+// Getting info for user 1
+// Fetching user 1...
+// User #1: Alice
+// Getting info for user 2
+// Fetching user 2...
+// User #2: Bob
+// Getting info for user 99
+// Fetching user 99...
+// User #99: Unknown
+//
+// All operations completed!
+//
+// KEY CONCEPTS:
+// - async fn creates an asynchronous function
+// - await pauses execution until the async operation completes
+// - Async functions can call other async functions
+// - main() can be async for top-level await
+// - Async code looks like synchronous code (no callbacks!)
+//
+// BEST PRACTICES:
+// - Use async/await for I/O operations (network, file system, database)
+// - Await in sequence when operations depend on each other
+// - Use concurrent operations when they're independent (next examples)
+// - Always await async functions to get their results
+//
+// TRY IT:
+// raven compile examples/06-async/01_async_basic.raven
+// cd dist && node server.js

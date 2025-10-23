@@ -1,0 +1,135 @@
+// examples/06-async/03_concurrent_operations.raven
+//
+// CONCEPT: Concurrent async operations
+// DIFFICULTY: Advanced
+// FEATURES: multiple async operations, sequential vs concurrent
+//
+// This example demonstrates the difference between sequential and concurrent
+// async operations. Sequential operations wait for each to complete before
+// starting the next. In real concurrent code, we'd use Promise.all() or
+// similar patterns.
+
+async fn fetch_user(id: i32) -> String {
+    println!("Fetching user {}...", id);
+    // Simulate async delay
+    if id == 1 {
+        "Alice"
+    } else if id == 2 {
+        "Bob"
+    } else {
+        "Charlie"
+    }
+}
+
+async fn fetch_score(user: String) -> i32 {
+    println!("Fetching score for {}...", user);
+    // Simulate async operation
+    let score = match user {
+        "Alice" => 100,
+        "Bob" => 85,
+        "Charlie" => 92,
+        _ => 0,
+    };
+    score
+}
+
+// Sequential: Each operation waits for the previous one
+async fn sequential_fetch() -> [i32; 3] {
+    println!("Starting sequential fetch...");
+
+    let user1 = await fetch_user(1);
+    let score1 = await fetch_score(user1);
+
+    let user2 = await fetch_user(2);
+    let score2 = await fetch_score(user2);
+
+    let user3 = await fetch_user(3);
+    let score3 = await fetch_score(user3);
+
+    [score1, score2, score3]
+}
+
+// Calculate total from async operations
+async fn calculate_total(ids: [i32; 3]) -> i32 {
+    let mut total = 0;
+
+    for id in ids {
+        let user = await fetch_user(id);
+        let score = await fetch_score(user);
+        total = total + score;
+    }
+
+    total
+}
+
+async fn main() {
+    println!("=== Concurrent Operations ===");
+    println!("");
+
+    // Sequential fetch - waits for each operation
+    println!("Sequential operations:");
+    let scores = await sequential_fetch();
+    println!("Scores: [{}, {}, {}]", scores[0], scores[1], scores[2]);
+
+    println!("");
+
+    // Calculate total with async operations
+    println!("Calculating total:");
+    let ids: [i32; 3] = [1, 2, 3];
+    let total = await calculate_total(ids);
+    println!("Total score: {}", total);
+
+    println!("");
+
+    // Individual async operations
+    println!("Individual operations:");
+    let user = await fetch_user(1);
+    println!("User: {}", user);
+
+    let score = await fetch_score(user);
+    println!("Score: {}", score);
+}
+
+// EXPECTED OUTPUT:
+// === Concurrent Operations ===
+//
+// Sequential operations:
+// Starting sequential fetch...
+// Fetching user 1...
+// Fetching score for Alice...
+// Fetching user 2...
+// Fetching score for Bob...
+// Fetching user 3...
+// Fetching score for Charlie...
+// Scores: [100, 85, 92]
+//
+// Calculating total:
+// Fetching user 1...
+// Fetching score for Alice...
+// Fetching user 2...
+// Fetching score for Bob...
+// Fetching user 3...
+// Fetching score for Charlie...
+// Total score: 277
+//
+// Individual operations:
+// Fetching user 1...
+// User: Alice
+// Fetching score for Alice...
+// Score: 100
+//
+// KEY CONCEPTS:
+// - Sequential async: Each await waits for completion before continuing
+// - Operations execute one at a time (not truly concurrent in this example)
+// - Real concurrency would use Promise.all() in JavaScript
+// - Async in loops executes sequentially (one iteration at a time)
+//
+// BEST PRACTICES:
+// - Use sequential async when operations depend on each other
+// - For independent operations, consider concurrent patterns
+// - Be aware of the performance difference between sequential and concurrent
+// - In production, use proper concurrency primitives for parallel execution
+//
+// TRY IT:
+// raven compile examples/06-async/03_concurrent_operations.raven
+// cd dist && node server.js

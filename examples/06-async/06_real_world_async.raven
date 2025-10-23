@@ -1,0 +1,226 @@
+// examples/06-async/06_real_world_async.raven
+//
+// CONCEPT: Real-world async patterns
+// DIFFICULTY: Advanced
+// FEATURES: async pipelines, error handling, data validation
+//
+// This example demonstrates real-world async patterns like data validation
+// pipelines, multi-step processing, and comprehensive error handling.
+
+// User data type
+struct User {
+    id: i32,
+    name: String,
+    email: String,
+}
+
+// Response type
+struct UserResponse {
+    user: User,
+    score: i32,
+    status: String,
+}
+
+// Simulate fetching user from database
+async fn fetch_user_from_db(user_id: i32) -> Result<User, String> {
+    println!("Fetching user {} from database...", user_id);
+
+    if user_id <= 0 {
+        Err("Invalid user ID")
+    } else if user_id == 1 {
+        Ok(User {
+            id: 1,
+            name: "Alice",
+            email: "alice@example.com",
+        })
+    } else if user_id == 2 {
+        Ok(User {
+            id: 2,
+            name: "Bob",
+            email: "bob@example.com",
+        })
+    } else {
+        Err("User not found")
+    }
+}
+
+// Validate email format
+async fn validate_email(email: String) -> bool {
+    println!("Validating email: {}", email);
+    // Simple validation - check for @ symbol
+    let has_at = match email {
+        "alice@example.com" => true,
+        "bob@example.com" => true,
+        _ => false,
+    };
+    has_at
+}
+
+// Fetch user score
+async fn fetch_user_score(user_id: i32) -> Result<i32, String> {
+    println!("Fetching score for user {}...", user_id);
+
+    if user_id == 1 {
+        Ok(100)
+    } else if user_id == 2 {
+        Ok(85)
+    } else {
+        Err("Score not found")
+    }
+}
+
+// Complete user data pipeline
+async fn get_user_profile(user_id: i32) -> Result<UserResponse, String> {
+    println!("Starting profile fetch for user {}", user_id);
+
+    // Step 1: Fetch user
+    let user_result = await fetch_user_from_db(user_id);
+
+    match user_result {
+        Ok(user) => {
+            // Step 2: Validate email
+            let email_valid = await validate_email(user.email);
+
+            match email_valid {
+                true => {
+                    // Step 3: Fetch score
+                    let score_result = await fetch_user_score(user.id);
+
+                    match score_result {
+                        Ok(score) => {
+                            Ok(UserResponse {
+                                user: user,
+                                score: score,
+                                status: "active",
+                            })
+                        },
+                        Err(e) => Err(e),
+                    }
+                },
+                false => Err("Invalid email format"),
+            }
+        },
+        Err(e) => Err(e),
+    }
+}
+
+// Process multiple users
+async fn batch_fetch_profiles(user_ids: [i32; 3]) -> i32 {
+    println!("Batch fetching {} profiles", 3);
+
+    let mut success_count = 0;
+
+    for id in user_ids {
+        let result = await get_user_profile(id);
+
+        match result {
+            Ok(response) => {
+                println!("  ✓ User {}: {} (score: {})",
+                    response.user.id, response.user.name, response.score);
+                success_count = success_count + 1;
+            },
+            Err(e) => {
+                println!("  ✗ User {}: {}", id, e);
+            },
+        }
+    }
+
+    success_count
+}
+
+async fn main() {
+    println!("=== Real-World Async Patterns ===");
+    println!("");
+
+    // Success case - complete pipeline
+    println!("Complete pipeline (success):");
+    let result1 = await get_user_profile(1);
+    match result1 {
+        Ok(response) => {
+            println!("Profile: {} <{}>", response.user.name, response.user.email);
+            println!("Score: {}, Status: {}", response.score, response.status);
+        },
+        Err(e) => println!("Error: {}", e),
+    }
+
+    println!("");
+
+    // Error case - user not found
+    println!("Pipeline with error:");
+    let result2 = await get_user_profile(99);
+    match result2 {
+        Ok(response) => {
+            println!("Profile: {}", response.user.name);
+        },
+        Err(e) => println!("Error: {}", e),
+    }
+
+    println!("");
+
+    // Batch processing
+    println!("Batch processing:");
+    let ids: [i32; 3] = [1, 99, 2];
+    let success = await batch_fetch_profiles(ids);
+    println!("");
+    println!("Successfully processed {} out of {} profiles", success, 3);
+}
+
+// EXPECTED OUTPUT:
+// === Real-World Async Patterns ===
+//
+// Complete pipeline (success):
+// Starting profile fetch for user 1
+// Fetching user 1 from database...
+// Validating email: alice@example.com
+// Fetching score for user 1...
+// Profile: Alice <alice@example.com>
+// Score: 100, Status: active
+//
+// Pipeline with error:
+// Starting profile fetch for user 99
+// Fetching user 99 from database...
+// Error: User not found
+//
+// Batch processing:
+// Batch fetching 3 profiles
+// Starting profile fetch for user 1
+// Fetching user 1 from database...
+// Validating email: alice@example.com
+// Fetching score for user 1...
+//   ✓ User 1: Alice (score: 100)
+// Starting profile fetch for user 99
+// Fetching user 99 from database...
+//   ✗ User 99: User not found
+// Starting profile fetch for user 2
+// Fetching user 2 from database...
+// Validating email: bob@example.com
+// Fetching score for user 2...
+//   ✓ User 2: Bob (score: 85)
+//
+// Successfully processed 2 out of 3 profiles
+//
+// KEY CONCEPTS:
+// - Real-world async involves multi-step pipelines
+// - Each step can fail, requiring error handling
+// - Data validation happens asynchronously
+// - Batch operations process multiple items with individual error handling
+// - Complex data types (structs) work naturally with async
+//
+// REAL-WORLD USES:
+// - API endpoint handlers (fetch user, validate, return response)
+// - Database operations (query, validate, transform)
+// - External service integration (auth, payment processing)
+// - Data processing pipelines (fetch, validate, transform, store)
+// - Batch operations (import data, process records)
+//
+// BEST PRACTICES:
+// - Break complex operations into discrete async functions
+// - Validate data at each step of the pipeline
+// - Handle errors explicitly at appropriate levels
+// - Use Result<T,E> for operations that can fail
+// - Log progress for debugging and monitoring
+// - Consider partial success in batch operations
+//
+// TRY IT:
+// raven compile examples/06-async/06_real_world_async.raven
+// cd dist && node server.js

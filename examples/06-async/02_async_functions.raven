@@ -1,0 +1,124 @@
+// examples/06-async/02_async_functions.raven
+//
+// CONCEPT: Async functions with return values
+// DIFFICULTY: Advanced
+// FEATURES: async functions, different return types, await chains
+//
+// This example demonstrates async functions with various return types
+// and shows how to chain async operations together.
+
+// Async function returning an integer
+async fn calculate_score(base: i32) -> i32 {
+    println!("Calculating score from base {}...", base);
+    base * 10
+}
+
+// Async function returning a boolean
+async fn is_valid_score(score: i32) -> bool {
+    println!("Validating score {}...", score);
+    if score < 0 {
+        false
+    } else {
+        true
+    }
+}
+
+// Async function that calls other async functions
+async fn process_score(value: i32) -> String {
+    println!("Processing value {}", value);
+
+    // Chain async calls with await
+    let score = await calculate_score(value);
+    let valid = await is_valid_score(score);
+
+    // Use the boolean value in a match instead of if
+    match valid {
+        true => format!("Valid score: {}", score),
+        false => format!("Invalid score: {}", score),
+    }
+}
+
+// Async function with multiple operations
+async fn batch_process(values: [i32; 3]) -> i32 {
+    println!("Batch processing {} values", 3);
+
+    let mut total = 0;
+
+    for value in values {
+        let score = await calculate_score(value);
+        total = total + score;
+    }
+
+    total
+}
+
+async fn main() {
+    println!("=== Async Functions ===");
+    println!("");
+
+    // Single async operation
+    let result1 = await process_score(5);
+    println!("{}", result1);
+
+    println!("");
+
+    let result2 = await process_score(-3);
+    println!("{}", result2);
+
+    println!("");
+
+    // Batch processing
+    let values: [i32; 3] = [1, 2, 3];
+    let total = await batch_process(values);
+    println!("Total score: {}", total);
+
+    println!("");
+
+    // Direct async calls
+    let score = await calculate_score(7);
+    println!("Direct calculation: {}", score);
+
+    let valid = await is_valid_score(score);
+    println!("Is valid? {}", valid);
+}
+
+// EXPECTED OUTPUT:
+// === Async Functions ===
+//
+// Processing value 5
+// Calculating score from base 5...
+// Validating score 50...
+// Valid score: 50
+//
+// Processing value -3
+// Calculating score from base -3...
+// Validating score -30...
+// Invalid score: -30
+//
+// Batch processing 3 values
+// Calculating score from base 1...
+// Calculating score from base 2...
+// Calculating score from base 3...
+// Total score: 60
+//
+// Direct calculation: 7
+// Calculating score from base 7...
+// Is valid? true
+// Validating score 70...
+//
+// KEY CONCEPTS:
+// - Async functions can return any type (i32, bool, String, etc.)
+// - Await must be used to get the actual value from an async function
+// - Async functions can call other async functions
+// - Chaining async calls creates sequential operations
+// - Async works in loops (each iteration awaits before continuing)
+//
+// BEST PRACTICES:
+// - Keep async functions focused on a single responsibility
+// - Use descriptive names that indicate async behavior
+// - Chain async calls when operations depend on previous results
+// - Consider concurrent execution for independent operations (next example)
+//
+// TRY IT:
+// raven compile examples/06-async/02_async_functions.raven
+// cd dist && node server.js
