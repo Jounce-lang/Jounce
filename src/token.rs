@@ -83,6 +83,7 @@ pub enum TokenKind {
     CssValue(String),      // blue, 12px, "Arial", etc.
     CssMedia,              // @media
     CssKeyframes,          // @keyframes (Sprint 2 Task 2.6)
+    CssContainer,          // @container (Phase 8 Sprint 1 Task 1.4)
 
     // Meta
     Eof,

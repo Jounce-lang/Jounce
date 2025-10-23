@@ -1,0 +1,243 @@
+// RavensOne Utility Classes Example: Responsive Layouts
+// Demonstrates responsive design patterns using utility classes
+
+@client
+fn ResponsiveGrid() -> JSX {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-blue-500 text-white p-6 rounded-lg text-center">
+            <h3 class="text-xl font-bold">1</h3>
+            <p class="text-sm mt-2">1 col → 2 cols → 4 cols</p>
+        </div>
+        <div class="bg-blue-500 text-white p-6 rounded-lg text-center">
+            <h3 class="text-xl font-bold">2</h3>
+            <p class="text-sm mt-2">Resize to see changes</p>
+        </div>
+        <div class="bg-blue-500 text-white p-6 rounded-lg text-center">
+            <h3 class="text-xl font-bold">3</h3>
+            <p class="text-sm mt-2">Mobile-first design</p>
+        </div>
+        <div class="bg-blue-500 text-white p-6 rounded-lg text-center">
+            <h3 class="text-xl font-bold">4</h3>
+            <p class="text-sm mt-2">Automatic layout</p>
+        </div>
+    </div>
+}
+
+@client
+fn ResponsiveSidebar() -> JSX {
+    <div class="flex flex-col md:flex-row gap-4">
+        <aside class="w-full md:w-64 bg-gray-800 text-white p-6 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">Sidebar</h3>
+            <nav class="flex flex-col gap-2">
+                <a href="#" class="py-2 px-4 bg-gray-700 rounded hover:bg-gray-600">Home</a>
+                <a href="#" class="py-2 px-4 bg-gray-700 rounded hover:bg-gray-600">About</a>
+                <a href="#" class="py-2 px-4 bg-gray-700 rounded hover:bg-gray-600">Contact</a>
+            </nav>
+        </aside>
+        <main class="flex-1 bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Main Content</h2>
+            <p class="text-gray-600 mb-4">
+                On mobile, sidebar is full-width and stacked above content.
+                On tablet and larger, sidebar is fixed-width on the left.
+            </p>
+            <p class="text-gray-600">
+                This is a common responsive pattern for web applications.
+            </p>
+        </main>
+    </div>
+}
+
+@client
+fn ResponsiveNavbar() -> JSX {
+    <nav class="bg-white shadow-md rounded-lg p-4">
+        <div class="flex items-center justify-between">
+            <div class="text-xl font-bold text-gray-800">Logo</div>
+
+            {/* Desktop menu */}
+            <div class="hidden md:flex gap-6">
+                <a href="#" class="text-gray-600 hover:text-gray-900">Home</a>
+                <a href="#" class="text-gray-600 hover:text-gray-900">Features</a>
+                <a href="#" class="text-gray-600 hover:text-gray-900">Pricing</a>
+                <a href="#" class="text-gray-600 hover:text-gray-900">Contact</a>
+            </div>
+
+            {/* Mobile menu button */}
+            <button class="md:hidden px-4 py-2 bg-blue-500 text-white rounded">
+                Menu
+            </button>
+        </div>
+    </nav>
+}
+
+@client
+fn ResponsiveHero() -> JSX {
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-8 md:p-12 lg:p-16">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                Responsive Hero Section
+            </h1>
+            <p class="text-base md:text-lg lg:text-xl mb-8 opacity-90">
+                Text and spacing scale up on larger screens for better readability
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100">
+                    Get Started
+                </button>
+                <button class="px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600">
+                    Learn More
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@client
+fn ResponsiveCardGrid() -> JSX {
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Responsive Card Grid</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="bg-blue-500 h-32 rounded mb-4 flex items-center justify-center text-white text-4xl">
+                    📱
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Mobile</h3>
+                <p class="text-sm text-gray-600">1 column</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="bg-green-500 h-32 rounded mb-4 flex items-center justify-center text-white text-4xl">
+                    💻
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Tablet</h3>
+                <p class="text-sm text-gray-600">2 columns</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="bg-purple-500 h-32 rounded mb-4 flex items-center justify-center text-white text-4xl">
+                    🖥️
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Desktop</h3>
+                <p class="text-sm text-gray-600">3 columns</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="bg-red-500 h-32 rounded mb-4 flex items-center justify-center text-white text-4xl">
+                    🖥️
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Wide</h3>
+                <p class="text-sm text-gray-600">4 columns</p>
+            </div>
+        </div>
+    </div>
+}
+
+@client
+fn ResponsiveText() -> JSX {
+    <div class="bg-white p-6 md:p-8 lg:p-12 rounded-lg shadow-md">
+        <h2 class="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-800 mb-4">
+            Responsive Typography
+        </h2>
+        <p class="text-sm md:text-base lg:text-lg text-gray-600 mb-4">
+            This text starts small on mobile and grows larger on bigger screens.
+            The padding also increases to maintain proper spacing.
+        </p>
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1 p-4 bg-blue-50 rounded">
+                <h3 class="text-base md:text-lg font-semibold text-blue-800 mb-2">Column 1</h3>
+                <p class="text-sm md:text-base text-blue-600">Stacked on mobile</p>
+            </div>
+            <div class="flex-1 p-4 bg-green-50 rounded">
+                <h3 class="text-base md:text-lg font-semibold text-green-800 mb-2">Column 2</h3>
+                <p class="text-sm md:text-base text-green-600">Side by side on tablet+</p>
+            </div>
+        </div>
+    </div>
+}
+
+@client
+fn HideOnMobile() -> JSX {
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Responsive Visibility</h3>
+        <div class="space-y-4">
+            <div class="p-4 bg-blue-100 rounded">
+                <p class="font-medium text-blue-800">Visible on all sizes</p>
+            </div>
+            <div class="hidden md:block p-4 bg-green-100 rounded">
+                <p class="font-medium text-green-800">Hidden on mobile, visible on tablet+</p>
+            </div>
+            <div class="hidden lg:block p-4 bg-purple-100 rounded">
+                <p class="font-medium text-purple-800">Hidden on tablet, visible on desktop+</p>
+            </div>
+            <div class="block md:hidden p-4 bg-red-100 rounded">
+                <p class="font-medium text-red-800">Only visible on mobile</p>
+            </div>
+        </div>
+    </div>
+}
+
+@client
+fn App() -> JSX {
+    <div class="min-h-screen bg-gray-100 p-4 md:p-8">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-8">
+                Responsive Layout Examples
+            </h1>
+            <p class="text-base md:text-lg text-gray-600 mb-8">
+                Resize your browser window to see these layouts adapt to different screen sizes.
+            </p>
+
+            <div class="mb-12">
+                <ResponsiveHero />
+            </div>
+
+            <div class="mb-12">
+                <ResponsiveNavbar />
+            </div>
+
+            <div class="mb-12">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Responsive Grid</h2>
+                <ResponsiveGrid />
+            </div>
+
+            <div class="mb-12">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Sidebar Layout</h2>
+                <ResponsiveSidebar />
+            </div>
+
+            <div class="mb-12">
+                <ResponsiveCardGrid />
+            </div>
+
+            <div class="mb-12">
+                <ResponsiveText />
+            </div>
+
+            <div class="mb-12">
+                <HideOnMobile />
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Breakpoints</h3>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                    <div class="p-4 bg-gray-100 rounded">
+                        <div class="font-bold">Base</div>
+                        <div class="text-gray-600">0px+</div>
+                    </div>
+                    <div class="p-4 bg-blue-100 rounded">
+                        <div class="font-bold">sm:</div>
+                        <div class="text-gray-600">640px+</div>
+                    </div>
+                    <div class="p-4 bg-green-100 rounded">
+                        <div class="font-bold">md:</div>
+                        <div class="text-gray-600">768px+</div>
+                    </div>
+                    <div class="p-4 bg-yellow-100 rounded">
+                        <div class="font-bold">lg:</div>
+                        <div class="text-gray-600">1024px+</div>
+                    </div>
+                    <div class="p-4 bg-purple-100 rounded">
+                        <div class="font-bold">xl:</div>
+                        <div class="text-gray-600">1280px+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

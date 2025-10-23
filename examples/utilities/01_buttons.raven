@@ -1,0 +1,127 @@
+// RavensOne Utility Classes Example: Buttons
+// Demonstrates various button styles using utility classes
+
+@client
+fn PrimaryButton() -> JSX {
+    <button class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 hover:shadow-lg">
+        Primary Button
+    </button>
+}
+
+@client
+fn SecondaryButton() -> JSX {
+    <button class="px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
+        Secondary Button
+    </button>
+}
+
+@client
+fn OutlineButton() -> JSX {
+    <button class="px-6 py-3 bg-transparent border-2 border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-50">
+        Outline Button
+    </button>
+}
+
+@client
+fn DangerButton() -> JSX {
+    <button class="px-6 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 active:bg-red-700">
+        Danger Button
+    </button>
+}
+
+@client
+fn SmallButton() -> JSX {
+    <button class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
+        Small Button
+    </button>
+}
+
+@client
+fn LargeButton() -> JSX {
+    <button class="px-8 py-4 bg-blue-500 text-white text-lg font-bold rounded-xl shadow-lg hover:bg-blue-600">
+        Large Button
+    </button>
+}
+
+@client
+fn DisabledButton() -> JSX {
+    <button class="px-6 py-3 bg-gray-300 text-gray-500 font-semibold rounded-lg opacity-50 cursor-not-allowed" disabled>
+        Disabled Button
+    </button>
+}
+
+@client
+fn IconButton() -> JSX {
+    <button class="p-3 bg-blue-500 text-white rounded-full shadow-md hover:bg-blue-600 hover:shadow-lg">
+        ★
+    </button>
+}
+
+@client
+fn ButtonGroup() -> JSX {
+    <div class="flex gap-3">
+        <button class="px-4 py-2 bg-blue-500 text-white rounded-l-lg hover:bg-blue-600">
+            Left
+        </button>
+        <button class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-600">
+            Middle
+        </button>
+        <button class="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600">
+            Right
+        </button>
+    </div>
+}
+
+@client
+fn ResponsiveButton() -> JSX {
+    <button class="px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 bg-blue-500 text-white text-sm md:text-base lg:text-lg font-semibold rounded-lg hover:bg-blue-600">
+        Responsive Button
+    </button>
+}
+
+@client
+fn App() -> JSX {
+    <div class="min-h-screen bg-gray-100 p-8">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold text-gray-800 mb-8">Button Examples</h1>
+
+            <div class="bg-white rounded-lg shadow-md p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Button Variants</h2>
+                <div class="flex flex-wrap gap-4">
+                    <PrimaryButton />
+                    <SecondaryButton />
+                    <OutlineButton />
+                    <DangerButton />
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Button Sizes</h2>
+                <div class="flex flex-wrap items-center gap-4">
+                    <SmallButton />
+                    <PrimaryButton />
+                    <LargeButton />
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Special Buttons</h2>
+                <div class="flex flex-wrap items-center gap-4">
+                    <IconButton />
+                    <DisabledButton />
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Button Group</h2>
+                <ButtonGroup />
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Responsive Button</h2>
+                <ResponsiveButton />
+                <p class="text-sm text-gray-600 mt-4">Resize window to see size changes</p>
+            </div>
+        </div>
+    </div>
+}

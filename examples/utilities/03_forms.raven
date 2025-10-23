@@ -1,0 +1,245 @@
+// RavensOne Utility Classes Example: Forms
+// Demonstrates form layouts using utility classes
+
+@client
+fn LoginForm() -> JSX {
+    <form class="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Login</h2>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Email</label>
+            <input
+                type="email"
+                class="w-full px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                placeholder="you@example.com"
+            />
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 font-medium mb-2">Password</label>
+            <input
+                type="password"
+                class="w-full px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                placeholder="••••••••"
+            />
+        </div>
+
+        <button class="w-full px-4 py-3 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600">
+            Sign In
+        </button>
+
+        <p class="text-sm text-gray-600 text-center mt-4">
+            Don't have an account?
+            <a href="/signup" class="text-blue-500 hover:text-blue-700 font-medium">Sign up</a>
+        </p>
+    </form>
+}
+
+@client
+fn ContactForm() -> JSX {
+    <form class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Contact Us</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">First Name</label>
+                <input
+                    type="text"
+                    class="w-full px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                    placeholder="John"
+                />
+            </div>
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Last Name</label>
+                <input
+                    type="text"
+                    class="w-full px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                    placeholder="Doe"
+                />
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Email</label>
+            <input
+                type="email"
+                class="w-full px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                placeholder="john@example.com"
+            />
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Subject</label>
+            <select class="w-full px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none">
+                <option>General Inquiry</option>
+                <option>Support Request</option>
+                <option>Feedback</option>
+            </select>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 font-medium mb-2">Message</label>
+            <textarea
+                class="w-full px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none h-32"
+                placeholder="Your message here..."
+            ></textarea>
+        </div>
+
+        <div class="flex gap-4">
+            <button class="flex-1 px-4 py-3 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600">
+                Send Message
+            </button>
+            <button class="px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded hover:bg-gray-300">
+                Cancel
+            </button>
+        </div>
+    </form>
+}
+
+@client
+fn SearchForm() -> JSX {
+    <form class="max-w-3xl mx-auto">
+        <div class="flex gap-2">
+            <input
+                type="text"
+                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                placeholder="Search..."
+            />
+            <button class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600">
+                Search
+            </button>
+        </div>
+    </form>
+}
+
+@client
+fn FilterForm() -> JSX {
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Filters</h3>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Category</label>
+            <select class="w-full px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none">
+                <option>All Categories</option>
+                <option>Electronics</option>
+                <option>Clothing</option>
+                <option>Books</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Price Range</label>
+            <div class="grid grid-cols-2 gap-2">
+                <input
+                    type="number"
+                    class="px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                    placeholder="Min"
+                />
+                <input
+                    type="number"
+                    class="px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                    placeholder="Max"
+                />
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 font-medium mb-2">Rating</label>
+            <div class="flex gap-2">
+                <label class="flex items-center">
+                    <input type="checkbox" class="mr-2" />
+                    <span class="text-sm">4★ & up</span>
+                </label>
+            </div>
+        </div>
+
+        <button class="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600">
+            Apply Filters
+        </button>
+    </div>
+}
+
+@client
+fn InlineForm() -> JSX {
+    <form class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Newsletter Signup</h3>
+        <div class="flex gap-2">
+            <input
+                type="email"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                placeholder="Enter your email"
+            />
+            <button class="px-6 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600">
+                Subscribe
+            </button>
+        </div>
+    </form>
+}
+
+@client
+fn ValidationForm() -> JSX {
+    <form class="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Validation Example</h2>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Username</label>
+            <input
+                type="text"
+                class="w-full px-4 py-2 border-2 border-green-500 rounded focus:outline-none"
+                placeholder="Available!"
+            />
+            <p class="text-sm text-green-500 mt-1">✓ Username available</p>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 font-medium mb-2">Password</label>
+            <input
+                type="password"
+                class="w-full px-4 py-2 border-2 border-red-500 rounded focus:outline-none"
+                placeholder="Too short"
+            />
+            <p class="text-sm text-red-500 mt-1">✗ Password must be at least 8 characters</p>
+        </div>
+
+        <button class="w-full px-4 py-3 bg-gray-300 text-gray-500 font-semibold rounded cursor-not-allowed" disabled>
+            Submit
+        </button>
+    </form>
+}
+
+@client
+fn App() -> JSX {
+    <div class="min-h-screen bg-gray-100 p-8">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-4xl font-bold text-gray-800 mb-8">Form Examples</h1>
+
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Login Form</h2>
+                <LoginForm />
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Contact Form</h2>
+                <ContactForm />
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Search Form</h2>
+                <SearchForm />
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Inline & Filter Forms</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InlineForm />
+                    <FilterForm />
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Validation States</h2>
+                <ValidationForm />
+            </div>
+        </div>
+    </div>
+}

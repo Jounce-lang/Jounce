@@ -163,6 +163,7 @@ pub struct CssRule {
     pub declarations: Vec<CssDeclaration>,
     pub nested_rules: Vec<CssRule>,  // For Sprint 2 nesting
     pub media_queries: Vec<CssMediaQuery>,  // For Sprint 2 media queries
+    pub container_queries: Vec<CssContainerQuery>,  // For Phase 8 container queries
 }
 
 // CSS media query: @media (min-width: 768px) { ... }
@@ -170,6 +171,14 @@ pub struct CssRule {
 pub struct CssMediaQuery {
     pub condition: String,  // "(min-width: 768px)"
     pub declarations: Vec<CssDeclaration>,  // Declarations within this media query
+}
+
+// CSS container query: @container (min-width: 400px) { ... }
+// Phase 8 Sprint 1 Task 1.4
+#[derive(Debug, Clone)]
+pub struct CssContainerQuery {
+    pub condition: String,  // "(min-width: 400px)"
+    pub declarations: Vec<CssDeclaration>,  // Declarations within this container query
 }
 
 // CSS keyframes: @keyframes fadeIn { from { ... } to { ... } }

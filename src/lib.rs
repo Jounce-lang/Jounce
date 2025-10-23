@@ -5,6 +5,9 @@ pub mod ast;
 pub mod borrow_checker;
 pub mod codegen;
 pub mod css_generator; // CSS generation (Phase 7.5)
+pub mod utility_config; // Utility class configuration (Phase 7.5 Sprint 3)
+pub mod utility_generator; // Utility class generation (Phase 7.5 Sprint 3)
+pub mod design_tokens; // Design token parser (Phase 8 Sprint 2)
 pub mod deployer; // Make sure deployer is a module
 pub mod errors;
 pub mod lexer;
@@ -201,8 +204,21 @@ impl Compiler {
         let mut code_generator = CodeGenerator::new(target);
         let mut wasm_bytes = code_generator.generate_program(&program_ast)?;
 
+        // --- Utility CSS Generation (Phase 7.5 Sprint 3) ---
+        let utility_config = utility_config::UtilityConfig::load();
+        let mut utility_gen = utility_generator::UtilityGenerator::new(utility_config);
+        utility_gen.scan_for_utilities(&program_ast);
+        let utility_css = utility_gen.generate_css();
+
         // Extract CSS output (Phase 7.5)
-        let css_output = code_generator.get_css_output().to_string();
+        let component_css = code_generator.get_css_output().to_string();
+
+        // Combine utility CSS and component CSS
+        let css_output = if utility_css.is_empty() {
+            component_css
+        } else {
+            format!("{}\n{}", utility_css, component_css)
+        };
 
         // --- Optimization ---
         if self.optimize {

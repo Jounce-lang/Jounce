@@ -149,6 +149,10 @@ impl Lexer {
                             self.in_media_query = true; // Enter media query mode
                             return Token::new(TokenKind::CssMedia, "@media".to_string(), self.line, start_col);
                         }
+                        "container" => {
+                            self.in_media_query = true; // Use same flag (similar parsing logic)
+                            return Token::new(TokenKind::CssContainer, "@container".to_string(), self.line, start_col);
+                        }
                         "keyframes" => {
                             return Token::new(TokenKind::CssKeyframes, "@keyframes".to_string(), self.line, start_col);
                         }
@@ -407,6 +411,9 @@ impl Lexer {
                     match ident_token.lexeme.as_str() {
                         "media" => {
                             return Token::new(TokenKind::CssMedia, "@media".to_string(), self.line, start_col);
+                        }
+                        "container" => {
+                            return Token::new(TokenKind::CssContainer, "@container".to_string(), self.line, start_col);
                         }
                         "keyframes" => {
                             return Token::new(TokenKind::CssKeyframes, "@keyframes".to_string(), self.line, start_col);

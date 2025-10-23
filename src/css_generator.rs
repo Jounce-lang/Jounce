@@ -89,6 +89,11 @@ impl CssGenerator {
         for media_query in &rule.media_queries {
             self.generate_media_query(media_query, &scoped_selector);
         }
+
+        // Generate container queries for this rule (Phase 8)
+        for container_query in &rule.container_queries {
+            self.generate_container_query(container_query, &scoped_selector);
+        }
     }
 
     /// Generate CSS for a media query
@@ -116,6 +121,36 @@ impl CssGenerator {
         self.css_output.push_str("  }\n");
 
         // Close media query
+        self.css_output.push_str("}\n\n");
+    }
+
+    /// Generate CSS for a container query (Phase 8 Sprint 1 Task 1.4)
+    fn generate_container_query(&mut self, container_query: &CssContainerQuery, selector: &str) {
+        use crate::ast::CssContainerQuery;
+
+        // Output @container condition
+        self.css_output.push_str("@container ");
+        self.css_output.push_str(&container_query.condition);
+        self.css_output.push_str(" {\n");
+
+        // Output selector block with container query declarations
+        self.css_output.push_str("  ");
+        self.css_output.push_str(selector);
+        self.css_output.push_str(" {\n");
+
+        // Generate declarations with extra indent
+        for decl in &container_query.declarations {
+            self.css_output.push_str("    "); // Extra indent for container query
+            self.css_output.push_str(&decl.property);
+            self.css_output.push_str(": ");
+            self.css_output.push_str(&self.generate_value(&decl.value));
+            self.css_output.push_str(";\n");
+        }
+
+        // Close selector block
+        self.css_output.push_str("  }\n");
+
+        // Close container query
         self.css_output.push_str("}\n\n");
     }
 
@@ -433,6 +468,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -460,6 +496,7 @@ mod tests {
                     ],
                     nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
                 },
                 CssRule {
                     selector: CssSelector::Class("footer".to_string()),
@@ -471,6 +508,7 @@ mod tests {
                     ],
                     nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
                 },
             ],
             keyframes: vec![],
@@ -502,6 +540,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -530,6 +569,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -555,6 +595,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -581,6 +622,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -632,9 +674,11 @@ mod tests {
                     ],
                     nested_rules: vec![],
                     media_queries: vec![],
+            container_queries: vec![],
                 },
             ],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -672,9 +716,11 @@ mod tests {
                     ],
                     nested_rules: vec![],
                     media_queries: vec![],
+            container_queries: vec![],
                 },
             ],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -721,12 +767,15 @@ mod tests {
                             ],
                             nested_rules: vec![],
                             media_queries: vec![],
+            container_queries: vec![],
                         },
                     ],
                     media_queries: vec![],
+            container_queries: vec![],
                 },
             ],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -758,6 +807,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -787,6 +837,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -818,6 +869,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         // Test :disabled
@@ -834,6 +886,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen1.generate_rule(&rule1);
@@ -868,6 +921,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         // Test ::after
@@ -884,6 +938,7 @@ mod tests {
             ],
             nested_rules: vec![],
             media_queries: vec![],
+            container_queries: vec![],
         };
 
         gen1.generate_rule(&rule1);
@@ -923,6 +978,7 @@ mod tests {
                     ],
                 },
             ],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -970,6 +1026,7 @@ mod tests {
                     ],
                 },
             ],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);
@@ -1008,6 +1065,7 @@ mod tests {
                     ],
                     nested_rules: vec![],
                     media_queries: vec![],
+            container_queries: vec![],
                 },
             ],
             media_queries: vec![
@@ -1021,6 +1079,7 @@ mod tests {
                     ],
                 },
             ],
+            container_queries: vec![],
         };
 
         gen.generate_rule(&rule);

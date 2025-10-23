@@ -1,0 +1,279 @@
+# RavensOne Configuration Example
+# Copy this file to your project root as `raven.config.toml` to customize utility classes
+
+[css]
+# Enable utility class generation (default: true)
+utilities = true
+
+# Enable JIT (Just-In-Time) mode - only generates utilities you use (default: true)
+jit = true
+
+# Minify CSS output (default: false)
+minify = false
+
+[css.theme]
+# Custom colors - extend or override default palette
+# Each color can have shades from 50 to 900
+colors = [
+    { name = "brand", shades = {
+        50 = "#eff6ff",
+        100 = "#dbeafe",
+        500 = "#ff6b6b",
+        600 = "#ee5a5a",
+        700 = "#dd4949"
+    }},
+    { name = "accent", shades = {
+        500 = "#f59e0b",
+        600 = "#d97706"
+    }},
+]
+
+# Custom spacing values (in pixels)
+# Default: [0, 1, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56, 64, 80, 96, 128, 160, 192, 224, 256]
+spacing = [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96]
+
+# Custom font sizes
+font_sizes = [
+    { name = "xs", size = "0.75rem", line_height = "1rem" },
+    { name = "sm", size = "0.875rem", line_height = "1.25rem" },
+    { name = "base", size = "1rem", line_height = "1.5rem" },
+    { name = "lg", size = "1.125rem", line_height = "1.75rem" },
+    { name = "xl", size = "1.25rem", line_height = "1.75rem" },
+    { name = "2xl", size = "1.5rem", line_height = "2rem" },
+    { name = "3xl", size = "1.875rem", line_height = "2.25rem" },
+    { name = "4xl", size = "2.25rem", line_height = "2.5rem" },
+]
+
+# Custom border radius values
+border_radius = [
+    { name = "none", value = "0" },
+    { name = "sm", value = "2px" },
+    { name = "", value = "4px" },
+    { name = "md", value = "6px" },
+    { name = "lg", value = "8px" },
+    { name = "xl", value = "12px" },
+    { name = "2xl", value = "16px" },
+    { name = "full", value = "9999px" },
+]
+
+# Custom breakpoints for responsive utilities
+breakpoints = [
+    { name = "sm", min_width = "640px" },
+    { name = "md", min_width = "768px" },
+    { name = "lg", min_width = "1024px" },
+    { name = "xl", min_width = "1280px" },
+    { name = "2xl", min_width = "1536px" },
+]
+
+# ========================================
+# Custom Utility Classes
+# ========================================
+# Define your own utility classes here. These are perfect for:
+# - Reusable component styles (buttons, cards, badges)
+# - Brand-specific patterns
+# - Complex multi-property utilities
+#
+# Custom utilities:
+# - Work with all responsive variants (sm:, md:, lg:, xl:, 2xl:)
+# - Work with all state variants (hover:, focus:, active:, etc.)
+# - Can override standard utilities
+# - Are tree-shaken (only generated if used)
+
+[css.utilities_custom]
+
+# Button Utilities
+btn-primary = """
+    background: #4f46e5;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+"""
+
+btn-secondary = """
+    background: #6b7280;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+"""
+
+btn-outline = """
+    background: transparent;
+    color: #4f46e5;
+    padding: 8px 16px;
+    border: 2px solid #4f46e5;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+"""
+
+btn-danger = """
+    background: #ef4444;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+"""
+
+# Card Utilities
+card = """
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+"""
+
+card-elevated = """
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+"""
+
+card-bordered = """
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    border: 1px solid #e5e7eb;
+"""
+
+# Badge Utilities
+badge = """
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+"""
+
+badge-success = """
+    background: #10b981;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+"""
+
+badge-error = """
+    background: #ef4444;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+"""
+
+badge-warning = """
+    background: #f59e0b;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+"""
+
+badge-info = """
+    background: #3b82f6;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+"""
+
+# Text Utilities
+text-gradient = """
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+"""
+
+hero-text = """
+    font-size: 3rem;
+    font-weight: bold;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+"""
+
+# Input Utilities
+input = """
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: all 0.2s;
+"""
+
+input-error = """
+    padding: 8px 12px;
+    border: 2px solid #ef4444;
+    border-radius: 4px;
+    font-size: 1rem;
+"""
+
+# Container Utilities
+container-narrow = """
+    max-width: 768px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px;
+    padding-right: 16px;
+"""
+
+container-wide = """
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px;
+    padding-right: 16px;
+"""
+
+# Animation Utilities
+fade-in = """
+    animation: fadeIn 0.3s ease-in;
+"""
+
+slide-in = """
+    animation: slideIn 0.3s ease-out;
+"""
+
+# Glassmorphism Utility
+glass = """
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+"""
+
+# ========================================
+# Usage Examples
+# ========================================
+#
+# Basic usage:
+#   <button class="btn-primary">Click Me</button>
+#
+# With responsive variants:
+#   <div class="card md:card-elevated">Responsive Card</div>
+#
+# With state variants:
+#   <button class="btn-secondary hover:btn-primary">Hover Effect</button>
+#
+# Chained variants:
+#   <div class="lg:hover:card-elevated">Large Screen Hover</div>
+#
+# Mixing with standard utilities:
+#   <button class="btn-primary mt-4 w-full">Full Width Button</button>

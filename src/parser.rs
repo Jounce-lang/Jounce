@@ -1942,11 +1942,17 @@ impl<'a> Parser<'a> {
         let mut nested_rules = Vec::new();
         let mut media_queries = Vec::new();
 
+        // Phase 8: Container queries
+        let mut container_queries = Vec::new();
+
         while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
-            // Check if this is a nested rule, media query, or a declaration
+            // Check if this is a nested rule, media query, container query, or a declaration
             if self.current_token().kind == TokenKind::CssMedia {
                 // Parse media query: @media (condition) { ... }
                 media_queries.push(self.parse_css_media_query()?);
+            } else if self.current_token().kind == TokenKind::CssContainer {
+                // Parse container query: @container (condition) { ... }
+                container_queries.push(self.parse_css_container_query()?);
             } else if self.is_nested_rule_start() {
                 // Parse nested rule recursively
                 nested_rules.push(self.parse_css_rule()?);
@@ -1967,6 +1973,7 @@ impl<'a> Parser<'a> {
             declarations,
             nested_rules,
             media_queries,
+            container_queries,
         })
     }
 
@@ -2286,6 +2293,129 @@ impl<'a> Parser<'a> {
         self.expect_and_consume(&TokenKind::RBrace)?;
 
         Ok(CssMediaQuery {
+            condition,
+            declarations,
+        })
+    }
+
+    /// Parse CSS container query: @container (min-width: 400px) { ... }
+    /// Phase 8 Sprint 1 Task 1.4
+    fn parse_css_container_query(&mut self) -> Result<CssContainerQuery, CompileError> {
+        use crate::ast::CssContainerQuery;
+
+        // Expect @container token
+        self.expect_and_consume(&TokenKind::CssContainer)?;
+
+        // Expect opening parenthesis
+        self.expect_and_consume(&TokenKind::LParen)?;
+
+        // Read the condition as a string until we hit the closing paren
+        let mut condition = String::from("(");
+        let mut paren_depth = 1;
+        let mut iterations = 0;
+
+        while paren_depth > 0 && self.current_token().kind != TokenKind::Eof {
+            iterations += 1;
+            if iterations > 100 {
+                return Err(self.error("Container query condition parsing exceeded iteration limit"));
+            }
+            let token = self.current_token().clone();
+
+            match &token.kind {
+                TokenKind::LParen => {
+                    condition.push('(');
+                    paren_depth += 1;
+                }
+                TokenKind::RParen => {
+                    paren_depth -= 1;
+                    if paren_depth > 0 {
+                        condition.push(')');
+                    }
+                }
+                _ => {
+                    // Add token lexeme with space
+                    if !condition.ends_with('(') {
+                        condition.push(' ');
+                    }
+                    condition.push_str(&token.lexeme);
+                }
+            }
+
+            self.next_token();
+        }
+
+        condition.push(')');
+
+        // Continue reading tokens for complex conditions
+        while self.current_token().kind != TokenKind::LBrace && self.current_token().kind != TokenKind::Eof {
+            let token = self.current_token().clone();
+
+            // Handle "and" or "or" keywords
+            if let TokenKind::CssProperty(ref prop) = token.kind {
+                if prop == "and" || prop == "or" {
+                    condition.push(' ');
+                    condition.push_str(&token.lexeme);
+                    self.next_token();
+                    continue;
+                }
+            }
+
+            // Handle additional parenthesized conditions
+            if token.kind == TokenKind::LParen {
+                condition.push(' ');
+                condition.push('(');
+                paren_depth = 1;
+                self.next_token();
+
+                while paren_depth > 0 && self.current_token().kind != TokenKind::Eof {
+                    let token = self.current_token().clone();
+                    match &token.kind {
+                        TokenKind::LParen => {
+                            condition.push('(');
+                            paren_depth += 1;
+                        }
+                        TokenKind::RParen => {
+                            paren_depth -= 1;
+                            if paren_depth > 0 {
+                                condition.push(')');
+                            }
+                        }
+                        _ => {
+                            if !condition.ends_with('(') {
+                                condition.push(' ');
+                            }
+                            condition.push_str(&token.lexeme);
+                        }
+                    }
+                    self.next_token();
+                }
+                condition.push(')');
+                continue;
+            }
+
+            break;
+        }
+
+        // Expect opening brace for container query block
+        self.expect_and_consume(&TokenKind::LBrace)?;
+
+        // Parse declarations within the container query
+        let mut declarations = Vec::new();
+        let mut decl_iterations = 0;
+
+        while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
+            decl_iterations += 1;
+            if decl_iterations > 100 {
+                return Err(self.error("Container query declaration parsing exceeded iteration limit"));
+            }
+            declarations.push(self.parse_css_declaration()?);
+            self.consume_if_matches(&TokenKind::Semicolon);
+        }
+
+        // Expect closing brace
+        self.expect_and_consume(&TokenKind::RBrace)?;
+
+        Ok(CssContainerQuery {
             condition,
             declarations,
         })
