@@ -721,6 +721,10 @@ impl Formatter {
             Expression::TypeCast(cast) => self.format_type_cast(cast),
             Expression::Await(await_expr) => self.format_await_expression(await_expr),
             Expression::Block(block) => self.format_block_expression(block),
+            Expression::CssMacro(_) => {
+                // CSS formatting will be implemented in Sprint 1 Task 1.6
+                self.write("css! { /* formatting not yet implemented */ }")
+            }
         }
     }
 

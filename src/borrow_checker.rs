@@ -445,6 +445,10 @@ impl BorrowChecker {
                 }
                 Ok(ResolvedType::Unknown)
             }
+            Expression::CssMacro(_) => {
+                // CSS is checked separately in Sprint 1 Task 1.6
+                Ok(ResolvedType::Unknown)
+            }
         }
     }
 }

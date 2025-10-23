@@ -147,6 +147,53 @@ pub struct FunctionDeclaration {
     pub return_type: Option<TypeExpression>,
 }
 
+// CSS-related AST nodes
+
+// CSS macro expression: css! { ... }
+#[derive(Debug, Clone)]
+pub struct CssExpression {
+    pub rules: Vec<CssRule>,
+}
+
+// CSS rule: .button { ... }
+#[derive(Debug, Clone)]
+pub struct CssRule {
+    pub selector: CssSelector,
+    pub declarations: Vec<CssDeclaration>,
+    pub nested_rules: Vec<CssRule>,  // For Sprint 2 nesting (not used yet)
+}
+
+// CSS selector: .button, #id, div, etc.
+#[derive(Debug, Clone)]
+pub enum CssSelector {
+    Class(String),           // .button
+    Id(String),              // #main
+    Element(String),         // div, button
+    Pseudo(String),          // :hover, :focus
+    Nested(String),          // & for nesting (Sprint 2)
+    Compound(Vec<CssSelector>), // .button:hover
+}
+
+// CSS declaration: background: blue;
+#[derive(Debug, Clone)]
+pub struct CssDeclaration {
+    pub property: String,
+    pub value: CssValue,
+}
+
+// CSS value types
+#[derive(Debug, Clone)]
+pub enum CssValue {
+    Color(String),           // blue, #ff0000, rgb(255,0,0)
+    Length(f64, String),     // 12px, 1.5rem, 50%
+    String(String),          // "Arial", url(...)
+    Number(f64),             // 1.5, 0.5
+    Keyword(String),         // auto, none, inherit
+    Function(String, Vec<CssValue>), // calc(100% - 20px)
+    Raw(String),             // Unparsed value (for now - Sprint 1)
+    // Dynamic(Expression),     // {props.color} - Sprint 2 (commented out for now)
+}
+
 #[derive(Debug, Clone)]
 pub enum Expression {
     Identifier(Identifier),
@@ -177,6 +224,7 @@ pub enum Expression {
     TypeCast(TypeCastExpression),  // expr as Type (type casting)
     Await(AwaitExpression),  // await expr (async/await)
     Block(BlockStatement),  // { statements... } as an expression (for match arms, etc.)
+    CssMacro(CssExpression),  // css! { ... } macro for styles
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

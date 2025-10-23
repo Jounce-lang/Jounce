@@ -14,6 +14,8 @@ pub struct Lexer {
     in_closing_tag: bool,     // Track if parser is currently parsing a closing tag
     jsx_baseline_brace_depths: Vec<usize>, // Stack of brace depths when entering each JSX element
     just_closed_jsx_expr: bool, // Track if we just emitted a JsxCloseBrace (allows delimiters as JSX text)
+    css_mode: bool,           // Track if we're in CSS context
+    css_depth: usize,         // Track brace nesting depth in CSS
 }
 
 impl Lexer {
@@ -32,6 +34,8 @@ impl Lexer {
             in_closing_tag: false,
             jsx_baseline_brace_depths: Vec::new(),
             just_closed_jsx_expr: false,
+            css_mode: false,
+            css_depth: 0,
         };
         lexer.read_char();
         lexer
@@ -82,6 +86,82 @@ impl Lexer {
 
         // Reset the flag for non-JSX-text tokens (will be set again for JsxCloseBrace below)
         self.just_closed_jsx_expr = false;
+
+        // CSS mode handling
+        if self.css_mode {
+            self.skip_whitespace();
+            let start_col = self.column;
+
+            // Handle CSS-specific tokens
+            return match self.ch {
+                '{' => {
+                    self.css_depth += 1;
+                    self.read_char();
+                    Token::new(TokenKind::LBrace, "{".to_string(), self.line, start_col)
+                }
+                '}' => {
+                    if self.css_depth > 0 {
+                        self.css_depth -= 1;
+                    }
+                    if self.css_depth == 0 {
+                        self.css_mode = false;
+                    }
+                    self.read_char();
+                    Token::new(TokenKind::RBrace, "}".to_string(), self.line, start_col)
+                }
+                ';' => {
+                    self.read_char();
+                    Token::new(TokenKind::Semicolon, ";".to_string(), self.line, start_col)
+                }
+                ':' => {
+                    self.read_char();
+                    Token::new(TokenKind::Colon, ":".to_string(), self.line, start_col)
+                }
+                '.' | '#' => {
+                    // CSS selector
+                    self.read_css_selector()
+                }
+                '\0' => Token::new(TokenKind::Eof, "".to_string(), self.line, start_col),
+                _ => {
+                    if self.ch.is_alphabetic() || self.ch == '-' {
+                        // Could be a property name or selector
+                        // Peek ahead to determine which
+                        let mut peek_pos = self.position;
+                        while peek_pos < self.input.len() && (self.input[peek_pos].is_alphanumeric() || self.input[peek_pos] == '-') {
+                            peek_pos += 1;
+                        }
+                        // Skip whitespace
+                        while peek_pos < self.input.len() && self.input[peek_pos].is_whitespace() {
+                            peek_pos += 1;
+                        }
+
+                        if peek_pos < self.input.len() && self.input[peek_pos] == ':' {
+                            // It's a property name (followed by colon)
+                            self.read_css_property()
+                        } else if peek_pos < self.input.len() && self.input[peek_pos] == '{' {
+                            // It's a selector (followed by brace)
+                            self.read_css_selector()
+                        } else {
+                            // Assume it's a CSS value
+                            self.read_css_value()
+                        }
+                    } else if self.ch == '"' {
+                        // String value
+                        self.read_string()
+                    } else if self.ch.is_ascii_digit() {
+                        // Numeric value - read as CSS value
+                        let num_token = self.read_number();
+                        // Convert to CSS value
+                        Token::new(TokenKind::CssValue(num_token.lexeme.clone()), num_token.lexeme, num_token.line, num_token.column)
+                    } else {
+                        // Unknown character
+                        let ch = self.ch;
+                        self.read_char();
+                        Token::new(TokenKind::Illegal(ch), ch.to_string(), self.line, start_col)
+                    }
+                }
+            };
+        }
 
         self.skip_whitespace();
         let start_col = self.column;
@@ -338,6 +418,12 @@ impl Lexer {
         }
         let literal: String = self.input[start_pos..self.position].iter().collect();
 
+        // Check for css! macro
+        if literal == "css" && self.ch == '!' {
+            self.read_char(); // consume !
+            return Token::new(TokenKind::CssMacro, "css!".to_string(), self.line, start_col);
+        }
+
         // Check for boolean literals
         let kind = match literal.as_str() {
             "true" => TokenKind::Bool(true),
@@ -493,6 +579,64 @@ impl Lexer {
         if self.brace_depth > 0 {
             self.brace_depth -= 1;
         }
+    }
+
+    // CSS mode management
+    pub fn enter_css_mode(&mut self) {
+        self.css_mode = true;
+        self.css_depth = 1; // Start at depth 1 (first opening brace)
+    }
+
+    pub fn is_css_mode(&self) -> bool {
+        self.css_mode
+    }
+
+    // Read a CSS selector (.button, #id, div, .button:hover, etc.)
+    fn read_css_selector(&mut self) -> Token {
+        let start_col = self.column;
+        let start_pos = self.position;
+
+        // Read selector (can include: . # : letters - _)
+        while self.ch.is_alphanumeric() || matches!(self.ch, '.' | '#' | ':' | '-' | '_') {
+            self.read_char();
+        }
+
+        let selector: String = self.input[start_pos..self.position].iter().collect();
+        Token::new(TokenKind::CssSelector(selector.clone()), selector, self.line, start_col)
+    }
+
+    // Read a CSS property name (background, padding, etc.)
+    fn read_css_property(&mut self) -> Token {
+        let start_col = self.column;
+        let start_pos = self.position;
+
+        // Read property name (alphanumeric and hyphens)
+        while self.ch.is_alphanumeric() || self.ch == '-' {
+            self.read_char();
+        }
+
+        let property: String = self.input[start_pos..self.position].iter().collect();
+        Token::new(TokenKind::CssProperty(property.clone()), property, self.line, start_col)
+    }
+
+    // Read a CSS value (blue, 12px, "Arial", etc.)
+    fn read_css_value(&mut self) -> Token {
+        let start_col = self.column;
+        let start_pos = self.position;
+
+        // Skip leading whitespace
+        while self.ch.is_whitespace() && self.ch != '\n' {
+            self.read_char();
+        }
+
+        // Read until semicolon, closing brace, or newline
+        while self.ch != ';' && self.ch != '}' && self.ch != '\0' {
+            self.read_char();
+        }
+
+        let value: String = self.input[start_pos..self.position].iter().collect();
+        let trimmed = value.trim().to_string();
+        Token::new(TokenKind::CssValue(trimmed.clone()), trimmed, self.line, start_col)
     }
 }
 
@@ -824,5 +968,62 @@ mod tests {
 
         let token = lexer.next_token();
         assert_eq!(token.kind, TokenKind::JsxText("Line 1\nLine 2\nLine 3".to_string()));
+    }
+
+    #[test]
+    fn test_css_macro_recognition() {
+        let input = "css!".to_string();
+        let mut lexer = Lexer::new(input);
+
+        let token = lexer.next_token();
+        assert_eq!(token.kind, TokenKind::CssMacro);
+        assert_eq!(token.lexeme, "css!");
+    }
+
+    #[test]
+    fn test_css_basic_rule() {
+        let input = r#"css! {
+            .button {
+                background: blue;
+                padding: 12px;
+            }
+        }"#.to_string();
+
+        let mut lexer = Lexer::new(input);
+
+        // css!
+        let token1 = lexer.next_token();
+        assert_eq!(token1.kind, TokenKind::CssMacro);
+
+        // {
+        let token2 = lexer.next_token();
+        assert_eq!(token2.kind, TokenKind::LBrace);
+
+        // Enter CSS mode manually for testing
+        lexer.enter_css_mode();
+
+        // .button
+        let token3 = lexer.next_token();
+        assert!(matches!(token3.kind, TokenKind::CssSelector(_)));
+
+        // {
+        let token4 = lexer.next_token();
+        assert_eq!(token4.kind, TokenKind::LBrace);
+
+        // background
+        let token5 = lexer.next_token();
+        assert!(matches!(token5.kind, TokenKind::CssProperty(_)));
+
+        // :
+        let token6 = lexer.next_token();
+        assert_eq!(token6.kind, TokenKind::Colon);
+
+        // blue
+        let token7 = lexer.next_token();
+        assert!(matches!(token7.kind, TokenKind::CssValue(_)));
+
+        // ;
+        let token8 = lexer.next_token();
+        assert_eq!(token8.kind, TokenKind::Semicolon);
     }
 }

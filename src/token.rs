@@ -76,6 +76,12 @@ pub enum TokenKind {
     JsxOpenBrace,          // { in JSX context (for expressions)
     JsxCloseBrace,         // } in JSX context
 
+    // CSS-specific tokens
+    CssMacro,              // css!
+    CssSelector(String),   // .button, #id, div, .button:hover, etc.
+    CssProperty(String),   // background, padding, color, etc.
+    CssValue(String),      // blue, 12px, "Arial", etc.
+
     // Meta
     Eof,
     Illegal(char),

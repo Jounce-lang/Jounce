@@ -945,6 +945,11 @@ impl SemanticAnalyzer {
                 // In a full implementation, we'd expand the macro and analyze its result
                 Ok(ResolvedType::Unknown)
             }
+            Expression::CssMacro(_) => {
+                // CSS macro analyzed in Sprint 1 Task 1.6
+                // Returns a styles object mapping class names to scoped names
+                Ok(ResolvedType::Unknown)
+            }
         }
     }
 

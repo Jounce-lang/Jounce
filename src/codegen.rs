@@ -1386,6 +1386,11 @@ impl CodeGenerator {
                 // In a full implementation, we'd expand the macro here
                 f.instruction(&Instruction::I32Const(0));
             }
+            Expression::CssMacro(_) => {
+                // CSS generation handled separately in Sprint 1 Task 1.6
+                // Return placeholder for now
+                f.instruction(&Instruction::I32Const(0));
+            }
         }
         Ok(())
     }
@@ -2004,6 +2009,9 @@ impl CodeGenerator {
                     self.collect_lambdas_from_expression(arg);
                 }
             }
+            Expression::CssMacro(_) => {
+                // CSS macro doesn't contain lambdas
+            }
             // Base cases - no nested expressions to search
             Expression::IntegerLiteral(_)
             | Expression::FloatLiteral(_)
@@ -2133,6 +2141,9 @@ impl CodeGenerator {
                 for arg in &macro_call.arguments {
                     self.collect_variable_references(arg, vars);
                 }
+            }
+            Expression::CssMacro(_) => {
+                // CSS macro doesn't contain variable references
             }
             // Base cases - no variable references
             Expression::IntegerLiteral(_)

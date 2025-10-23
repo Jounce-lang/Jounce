@@ -1,0 +1,6 @@
+// Test CSS parsing - just the expression
+css! {
+    .button {
+        background: blue;
+    }
+}

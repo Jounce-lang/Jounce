@@ -1010,6 +1010,7 @@ impl<'a> Parser<'a> {
                 }
                 Expression::Block(BlockStatement { statements })
             },
+            TokenKind::CssMacro => self.parse_css_macro()?,
             _ => return Err(self.error(&format!("No prefix parse function for {:?}", token.kind))),
         };
 
@@ -1867,6 +1868,176 @@ impl<'a> Parser<'a> {
         let t = self.current_token();
         CompileError::ParserError { message: message.to_string(), line: t.line, column: t.column }
     }
+
+    // CSS Parsing Methods (Phase 7.5 Sprint 1 Task 1.3)
+
+    /// Parse css! { ... } macro
+    fn parse_css_macro(&mut self) -> Result<Expression, CompileError> {
+        // CRITICAL: Enter CSS mode BEFORE consuming any tokens
+        // This ensures that when we consume css! and advance, the NEW peek is fetched in CSS mode
+        // Current = css! (normal), Peek = { (normal)
+        // After entering CSS mode and consuming css!: Current = { (normal), Peek = .button (CSS mode!)
+        self.lexer.enter_css_mode();
+
+        // Expect css! token
+        self.expect_and_consume(&TokenKind::CssMacro)?;
+
+        // Consume the opening brace
+        self.expect_and_consume(&TokenKind::LBrace)?;
+
+        // Parse CSS rules
+        // Now current should be the first CSS selector
+        let mut rules = Vec::new();
+        while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
+            rules.push(self.parse_css_rule()?);
+        }
+
+        // Expect closing brace (CSS mode will auto-exit when depth reaches 0)
+        self.expect_and_consume(&TokenKind::RBrace)?;
+
+        Ok(Expression::CssMacro(CssExpression { rules }))
+    }
+
+    /// Parse a CSS rule: .button { property: value; }
+    fn parse_css_rule(&mut self) -> Result<CssRule, CompileError> {
+        // Parse selector
+        let selector = self.parse_css_selector()?;
+
+        // Expect opening brace for declarations
+        self.expect_and_consume(&TokenKind::LBrace)?;
+
+        // Parse declarations
+        let mut declarations = Vec::new();
+        while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
+            if self.current_token().kind == TokenKind::RBrace {
+                break;
+            }
+
+            declarations.push(self.parse_css_declaration()?);
+
+            // Optional semicolon after declaration
+            self.consume_if_matches(&TokenKind::Semicolon);
+        }
+
+        // Expect closing brace
+        self.expect_and_consume(&TokenKind::RBrace)?;
+
+        Ok(CssRule {
+            selector,
+            declarations,
+            nested_rules: vec![], // Sprint 2 feature
+        })
+    }
+
+    /// Parse CSS selector: .button, #id, div, :hover, etc.
+    fn parse_css_selector(&mut self) -> Result<CssSelector, CompileError> {
+        let token = self.current_token().clone();
+
+        match &token.kind {
+            TokenKind::CssSelector(selector_str) => {
+                self.next_token();
+
+                // Parse the selector string to determine type
+                if selector_str.starts_with('.') {
+                    // Class selector: .button
+                    Ok(CssSelector::Class(selector_str[1..].to_string()))
+                } else if selector_str.starts_with('#') {
+                    // ID selector: #main
+                    Ok(CssSelector::Id(selector_str[1..].to_string()))
+                } else if selector_str.starts_with(':') {
+                    // Pseudo selector: :hover
+                    Ok(CssSelector::Pseudo(selector_str[1..].to_string()))
+                } else if selector_str.starts_with('&') {
+                    // Nested selector: & (Sprint 2)
+                    Ok(CssSelector::Nested(selector_str.clone()))
+                } else if selector_str.contains(':') || selector_str.contains('.') {
+                    // Compound selector: .button:hover
+                    // For Sprint 1, just store as raw string
+                    // Will parse properly in Sprint 2
+                    Ok(CssSelector::Element(selector_str.clone()))
+                } else {
+                    // Element selector: div, button, span
+                    Ok(CssSelector::Element(selector_str.clone()))
+                }
+            }
+            TokenKind::Colon => {
+                // Workaround: Lexer tokenizes :hover as Colon + something
+                // Manually construct the pseudo-selector
+                self.next_token(); // consume :
+                let ident_token = self.current_token().clone();
+                match &ident_token.kind {
+                    TokenKind::CssProperty(name) => {
+                        self.next_token();
+                        Ok(CssSelector::Pseudo(name.clone()))
+                    }
+                    TokenKind::CssSelector(name) => {
+                        // Lexer generated CssSelector("hover") - extract the name
+                        self.next_token();
+                        Ok(CssSelector::Pseudo(name.clone()))
+                    }
+                    TokenKind::Identifier => {
+                        let name = ident_token.lexeme.clone();
+                        self.next_token();
+                        Ok(CssSelector::Pseudo(name))
+                    }
+                    _ => Err(self.error(&format!("Expected identifier after ':', found {:?}", ident_token.kind)))
+                }
+            }
+            _ => Err(self.error(&format!("Expected CSS selector, found {:?}", token.kind)))
+        }
+    }
+
+    /// Parse CSS declaration: property: value;
+    fn parse_css_declaration(&mut self) -> Result<CssDeclaration, CompileError> {
+        // Parse property name
+        let property_token = self.current_token().clone();
+        let property = match &property_token.kind {
+            TokenKind::CssProperty(prop) => {
+                self.next_token();
+                prop.clone()
+            }
+            _ => return Err(self.error(&format!("Expected CSS property, found {:?}", property_token.kind)))
+        };
+
+        // Expect colon
+        self.expect_and_consume(&TokenKind::Colon)?;
+
+        // Parse value
+        let value = self.parse_css_value()?;
+
+        Ok(CssDeclaration { property, value })
+    }
+
+    /// Parse CSS value: blue, 12px, "Arial", etc.
+    fn parse_css_value(&mut self) -> Result<CssValue, CompileError> {
+        let token = self.current_token().clone();
+
+        match &token.kind {
+            TokenKind::CssValue(value_str) => {
+                self.next_token();
+
+                // For Sprint 1, we'll use Raw for all values
+                // In Sprint 2, we'll parse into specific types (Color, Length, etc.)
+                Ok(CssValue::Raw(value_str.clone()))
+            }
+            TokenKind::String(s) => {
+                // String literal: "Arial", "url(...)"
+                self.next_token();
+                Ok(CssValue::String(s.clone()))
+            }
+            TokenKind::Integer(i) => {
+                // Numeric value: 0, 1, 2
+                self.next_token();
+                Ok(CssValue::Number(*i as f64))
+            }
+            TokenKind::Float(f) => {
+                // Floating point: 1.5, 0.5
+                self.next_token();
+                Ok(CssValue::Number(f.parse().unwrap_or(0.0)))
+            }
+            _ => Err(self.error(&format!("Expected CSS value, found {:?}", token.kind)))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -2051,6 +2222,94 @@ mod tests {
                 }
             }
             _ => panic!("Expected JsxElement"),
+        }
+    }
+
+    // CSS Parser Tests (Phase 7.5 Sprint 1)
+
+    #[test]
+    fn test_css_lexer_tokens_debug() {
+        // Debug test to see what tokens the lexer generates
+        let source = r#"css! {
+            .button {
+                background: blue;
+            }
+        }"#;
+        let mut lexer = Lexer::new(source.to_string());
+
+        // Get tokens
+        let t1 = lexer.next_token();
+        eprintln!("t1: {:?}", t1.kind);
+        assert_eq!(t1.kind, TokenKind::CssMacro);
+
+        let t2 = lexer.next_token();
+        eprintln!("t2: {:?}", t2.kind);
+        assert_eq!(t2.kind, TokenKind::LBrace);
+
+        // Enter CSS mode
+        lexer.enter_css_mode();
+
+        let t3 = lexer.next_token();
+        eprintln!("t3: {:?}", t3.kind);
+
+        let t4 = lexer.next_token();
+        eprintln!("t4: {:?}", t4.kind);
+
+        let t5 = lexer.next_token();
+        eprintln!("t5: {:?}", t5.kind);
+    }
+
+    #[test]
+    fn test_css_macro_simple() {
+        // Test parsing just the CSS macro expression
+        let source = r#"css! {
+            .button {
+                background: blue;
+            }
+        }"#;
+        let mut lexer = Lexer::new(source.to_string());
+        let mut parser = Parser::new(&mut lexer);
+        let expr = parser.parse_expression(Precedence::Lowest);
+        if let Err(e) = &expr {
+            eprintln!("Parser error: {:?}", e);
+        }
+        assert!(expr.is_ok(), "Should parse CSS macro successfully");
+
+        // Verify it's a CssMacro expression
+        match expr.unwrap() {
+            Expression::CssMacro(css_expr) => {
+                assert_eq!(css_expr.rules.len(), 1, "Should have 1 CSS rule");
+            }
+            _ => panic!("Expected CssMacro expression"),
+        }
+    }
+
+    #[test]
+    fn test_css_selector_types() {
+        // Test different selector types
+        let test_cases = vec![
+            (".button", "class"),
+            ("#main", "id"),
+            ("div", "element"),
+            (":hover", "pseudo"),
+        ];
+
+        for (selector, selector_type) in test_cases {
+            let source = format!(r#"
+                let styles = css! {{
+                    {} {{
+                        color: red;
+                    }}
+                }};
+            "#, selector);
+
+            let mut lexer = Lexer::new(source);
+            let mut parser = Parser::new(&mut lexer);
+            let program = parser.parse_program();
+            if let Err(e) = &program {
+                eprintln!("Failed to parse {} selector '{}': {:?}", selector_type, selector, e);
+            }
+            assert!(program.is_ok(), "Should parse {} selector", selector_type);
         }
     }
 }

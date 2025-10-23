@@ -700,6 +700,11 @@ impl TypeChecker {
                 // In a full implementation, we'd expand the macro and infer its result type
                 Ok(Type::Any)
             }
+
+            Expression::CssMacro(_) => {
+                // CSS macro returns a styles object (handled in Sprint 1 Task 1.6)
+                Ok(Type::Any)
+            }
         }
     }
 

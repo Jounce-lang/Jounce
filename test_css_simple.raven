@@ -1,0 +1,24 @@
+// Test CSS parsing - Phase 7.5 Sprint 1
+// Note: Values with units (12px) need better lexer support - Sprint 2
+fn main() {
+    let styles = css! {
+        .button {
+            background: blue;
+            color: white;
+        }
+
+        #header {
+            color: red;
+        }
+
+        div {
+            color: green;
+        }
+
+        :hover {
+            color: yellow;
+        }
+    };
+
+    println!("CSS styles created successfully!");
+}
