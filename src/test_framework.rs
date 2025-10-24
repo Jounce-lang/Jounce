@@ -128,59 +128,80 @@ impl TestRunner {
         }
     }
 
-    /// Generate test runner code
-    pub fn generate_runner_code(&self) -> String {
+    /// Generate test runner code (JavaScript)
+    pub fn generate_runner_code_js(&self) -> String {
         let mut code = String::new();
 
-        // Import test files
         code.push_str("// Auto-generated test runner\n\n");
-
-        // Generate test execution code
-        code.push_str("fn main() {\n");
-        code.push_str("    let mut passed = 0;\n");
-        code.push_str("    let mut failed = 0;\n");
-        code.push_str("    let mut test_results = [];\n\n");
+        code.push_str("(async () => {\n"); // Wrap in async IIFE for top-level await
+        code.push_str("let passed = 0;\n");
+        code.push_str("let failed = 0;\n\n");
 
         for test in &self.suite.tests {
             let test_name = &test.name;
-            code.push_str(&format!("    // Running test: {}\n", test_name));
-            code.push_str("    let start_time = Date.now();\n");
-            code.push_str("    let result = try {\n");
+            code.push_str(&format!("// Running test: {}\n", test_name));
 
             if test.is_async {
+                // Wrap async tests in an async IIFE
+                code.push_str("await (async () => {\n");
+                code.push_str("    const start_time = Date.now();\n");
+                code.push_str("    let result = 'passed';\n");
+                code.push_str("    try {\n");
                 code.push_str(&format!("        await {}();\n", test_name));
+                code.push_str("    } catch (error) {\n");
+                code.push_str("        result = error.message;\n");
+                code.push_str("    }\n");
+                code.push_str("    const duration = Date.now() - start_time;\n\n");
+                code.push_str("    if (result === 'passed') {\n");
+                code.push_str("        passed++;\n");
+                code.push_str(&format!("        console.log(`  ✓ {} (${{duration}}ms)`);\n", test_name));
+                code.push_str("    } else {\n");
+                code.push_str("        failed++;\n");
+                code.push_str(&format!("        console.log(`  ✗ {} (${{duration}}ms)`);\n", test_name));
+                code.push_str("        console.log(`    Error: ${result}`);\n");
+                code.push_str("    }\n");
+                code.push_str("})();\n\n");
             } else {
+                // Regular sync tests
+                code.push_str("{\n");
+                code.push_str("    const start_time = Date.now();\n");
+                code.push_str("    let result = 'passed';\n");
+                code.push_str("    try {\n");
                 code.push_str(&format!("        {}();\n", test_name));
+                code.push_str("    } catch (error) {\n");
+                code.push_str("        result = error.message;\n");
+                code.push_str("    }\n");
+                code.push_str("    const duration = Date.now() - start_time;\n\n");
+                code.push_str("    if (result === 'passed') {\n");
+                code.push_str("        passed++;\n");
+                code.push_str(&format!("        console.log(`  ✓ {} (${{duration}}ms)`);\n", test_name));
+                code.push_str("    } else {\n");
+                code.push_str("        failed++;\n");
+                code.push_str(&format!("        console.log(`  ✗ {} (${{duration}}ms)`);\n", test_name));
+                code.push_str("        console.log(`    Error: ${result}`);\n");
+                code.push_str("    }\n");
+                code.push_str("}\n\n");
             }
-
-            code.push_str("        \"passed\"\n");
-            code.push_str("    } catch (error) {\n");
-            code.push_str("        error.message\n");
-            code.push_str("    };\n");
-            code.push_str("    let duration = Date.now() - start_time;\n\n");
-
-            code.push_str("    if (result == \"passed\") {\n");
-            code.push_str("        passed = passed + 1;\n");
-            code.push_str(&format!("        console.log(\"  ✓ {} (\" + duration + \"ms)\");\n", test_name));
-            code.push_str("    } else {\n");
-            code.push_str("        failed = failed + 1;\n");
-            code.push_str(&format!("        console.log(\"  ✗ {} (\" + duration + \"ms)\");\n", test_name));
-            code.push_str("        console.log(\"    Error: \" + result);\n");
-            code.push_str("    }\n\n");
         }
 
-        code.push_str("    console.log(\"\");\n");
-        code.push_str("    console.log(\"Test Results:\");\n");
-        code.push_str("    console.log(\"  Passed: \" + passed);\n");
-        code.push_str("    console.log(\"  Failed: \" + failed);\n");
-        code.push_str("    console.log(\"  Total: \" + (passed + failed));\n\n");
+        code.push_str("console.log('');\n");
+        code.push_str("console.log('Test Results:');\n");
+        code.push_str("console.log(`  Passed: ${passed}`);\n");
+        code.push_str("console.log(`  Failed: ${failed}`);\n");
+        code.push_str("console.log(`  Total: ${passed + failed}`);\n\n");
 
-        code.push_str("    if (failed > 0) {\n");
-        code.push_str("        process.exit(1);\n");
-        code.push_str("    }\n");
+        code.push_str("if (failed > 0) {\n");
+        code.push_str("    process.exit(1);\n");
         code.push_str("}\n");
 
+        code.push_str("})(); // End async IIFE\n"); // Close the async IIFE
+
         code
+    }
+
+    /// Generate test runner code (for backwards compatibility)
+    pub fn generate_runner_code(&self) -> String {
+        self.generate_runner_code_js()
     }
 
     /// Print test summary
@@ -199,101 +220,40 @@ impl TestRunner {
     }
 }
 
-/// Built-in assertion functions (to be added to stdlib)
+/// Built-in assertion functions (JavaScript)
+/// Note: Simplified version using only currently supported features
 pub fn generate_assertion_library() -> String {
     r#"
-// Jounce Test Assertions
+// Jounce Test Assertions (JavaScript)
 // Built-in assertion functions for testing
 
-fn assert(condition: bool, message: string) {
+function assert(condition, message) {
     if (!condition) {
         throw new Error(message || "Assertion failed");
     }
 }
 
-fn assert_eq<T>(actual: T, expected: T, message: string) {
-    if (actual != expected) {
-        let msg = message || `Expected ${expected}, got ${actual}`;
-        throw new Error(msg);
+function assert_eq(actual, expected, message) {
+    if (actual !== expected) {
+        throw new Error(message || "Assertion failed: values not equal");
     }
 }
 
-fn assert_ne<T>(actual: T, expected: T, message: string) {
-    if (actual == expected) {
-        let msg = message || `Expected values to be different, but both were ${actual}`;
-        throw new Error(msg);
+function assert_ne(actual, expected, message) {
+    if (actual === expected) {
+        throw new Error(message || "Assertion failed: values should be different");
     }
 }
 
-fn assert_true(condition: bool, message: string) {
-    assert(condition == true, message || "Expected true");
-}
-
-fn assert_false(condition: bool, message: string) {
-    assert(condition == false, message || "Expected false");
-}
-
-fn assert_some<T>(option: Option<T>, message: string) {
-    if (option is None) {
-        throw new Error(message || "Expected Some, got None");
+function assert_true(condition, message) {
+    if (condition !== true) {
+        throw new Error(message || "Expected true");
     }
 }
 
-fn assert_none<T>(option: Option<T>, message: string) {
-    if (option is Some) {
-        throw new Error(message || "Expected None, got Some");
-    }
-}
-
-fn assert_ok<T, E>(result: Result<T, E>, message: string) {
-    if (result is Err) {
-        throw new Error(message || "Expected Ok, got Err");
-    }
-}
-
-fn assert_err<T, E>(result: Result<T, E>, message: string) {
-    if (result is Ok) {
-        throw new Error(message || "Expected Err, got Ok");
-    }
-}
-
-fn assert_contains<T>(array: [T], value: T, message: string) {
-    let found = false;
-    for (let item of array) {
-        if (item == value) {
-            found = true;
-            break;
-        }
-    }
-    if (!found) {
-        throw new Error(message || `Array does not contain ${value}`);
-    }
-}
-
-fn assert_length<T>(array: [T], expected_length: int, message: string) {
-    if (array.length != expected_length) {
-        let msg = message || `Expected length ${expected_length}, got ${array.length}`;
-        throw new Error(msg);
-    }
-}
-
-fn assert_empty<T>(collection: [T], message: string) {
-    if (collection.length > 0) {
-        throw new Error(message || "Expected empty collection");
-    }
-}
-
-fn assert_not_empty<T>(collection: [T], message: string) {
-    if (collection.length == 0) {
-        throw new Error(message || "Expected non-empty collection");
-    }
-}
-
-fn assert_approx(actual: float, expected: float, epsilon: float, message: string) {
-    let diff = Math.abs(actual - expected);
-    if (diff > epsilon) {
-        let msg = message || `Expected ${expected} ± ${epsilon}, got ${actual}`;
-        throw new Error(msg);
+function assert_false(condition, message) {
+    if (condition !== false) {
+        throw new Error(message || "Expected false");
     }
 }
 "#.to_string()

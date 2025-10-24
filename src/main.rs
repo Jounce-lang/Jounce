@@ -71,6 +71,12 @@ enum Commands {
     Test {
         #[arg(short, long)]
         watch: bool,
+        #[arg(short, long)]
+        verbose: bool,
+        #[arg(short, long)]
+        filter: Option<String>,
+        #[arg(default_value = "tests")]
+        path: PathBuf,
     },
     /// Format Jounce source files
     Fmt {
@@ -390,13 +396,13 @@ fn main() {
                 process::exit(1);
             }
         }
-        Commands::Test { watch } => {
+        Commands::Test { watch, verbose, filter, path } => {
             if watch {
                 println!("🧪 Running tests in watch mode...");
             } else {
                 println!("🧪 Running tests...");
             }
-            if let Err(e) = run_tests(watch) {
+            if let Err(e) = run_tests(path, watch, verbose, filter) {
                 eprintln!("❌ Tests failed: {}", e);
                 process::exit(1);
             }
@@ -795,65 +801,239 @@ fn start_dev_server(port: u16) -> std::io::Result<()> {
     Ok(())
 }
 
-fn run_tests(watch_mode: bool) -> std::io::Result<()> {
-    let test_dir = PathBuf::from("tests");
+fn run_tests(
+    test_path: PathBuf,
+    watch_mode: bool,
+    verbose: bool,
+    filter: Option<String>,
+) -> std::io::Result<()> {
+    use jounce_compiler::test_framework::{TestDiscovery, TestRunner, generate_assertion_library};
 
-    if !test_dir.exists() {
-        println!("ℹ️  No tests directory found. Creating tests/...");
-        fs::create_dir_all(&test_dir)?;
+    // Check if test directory exists
+    if !test_path.exists() {
+        println!("ℹ️  No tests directory found. Creating {}...", test_path.display());
+        fs::create_dir_all(&test_path)?;
         fs::write(
-            test_dir.join("example.test.jnc"),
-            "// Write your tests here\n// Example: test('1 + 1 = 2', () => { ... })\n"
+            test_path.join("example_test.jnc"),
+            r#"// Example test file
+// Functions starting with "test_" are automatically discovered and run
+
+fn add(a: int, b: int) -> int {
+    return a + b;
+}
+
+fn test_addition() {
+    let result = add(2, 3);
+    assert_eq(result, 5, "2 + 3 should equal 5");
+}
+
+fn test_subtraction() {
+    let result = 10 - 3;
+    assert_eq(result, 7, "10 - 3 should equal 7");
+}
+"#
         )?;
-        println!("✅ Created tests/example.test.jnc");
+        println!("✅ Created {}/example_test.jnc", test_path.display());
+        println!("\n💡 Run 'jnc test' again to execute tests");
         return Ok(());
     }
 
-    let mut passed = 0;
-    let mut failed = 0;
+    // Discover tests
+    let discovery = TestDiscovery::new();
+    let suite = match discovery.discover_tests(&test_path) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("❌ Test discovery failed: {}", e);
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Test discovery failed: {}", e)
+            ));
+        }
+    };
 
-    println!("🧪 Running tests...\n");
+    // Filter tests if requested
+    let filtered_tests: Vec<_> = if let Some(ref pattern) = filter {
+        suite.tests.iter()
+            .filter(|t| t.name.contains(pattern))
+            .cloned()
+            .collect()
+    } else {
+        suite.tests.clone()
+    };
 
-    for entry in fs::read_dir(test_dir)?.flatten() {
-        let path = entry.path();
-        if path.extension().map_or(false, |ext| ext == "jnc") {
-            println!("  Testing {}...", path.file_name().unwrap().to_string_lossy());
+    if filtered_tests.is_empty() {
+        println!("⚠️  No tests found matching filter criteria");
+        return Ok(());
+    }
 
-            // Compile test file
-            if let Ok(source) = fs::read_to_string(&path) {
-                let compiler = Compiler::new();
-                match compiler.compile_source(&source, BuildTarget::Client) {
-                    Ok(_) => {
-                        passed += 1;
-                        println!("    ✅ PASS");
-                    }
-                    Err(e) => {
-                        failed += 1;
-                        println!("    ❌ FAIL: {}", e);
-                    }
-                }
-            }
+    // Create filtered suite
+    let filtered_suite = jounce_compiler::test_framework::TestSuite {
+        tests: filtered_tests,
+        total_files: suite.total_files,
+    };
+
+    // Print test discovery summary
+    let runner = TestRunner::new(filtered_suite);
+    runner.print_summary();
+
+    if verbose {
+        println!();
+        for test in &runner.suite.tests {
+            let async_marker = if test.is_async { " (async)" } else { "" };
+            println!("  • {}{}", test.name, async_marker);
         }
     }
 
-    println!("\n📊 Test Results:");
-    println!("   ✅ Passed: {}", passed);
-    println!("   ❌ Failed: {}", failed);
+    // Generate test runner code
+    println!("\n🧪 Executing tests...\n");
 
+    // Compile all test files to JavaScript
+    let temp_dir = PathBuf::from("dist");
+    fs::create_dir_all(&temp_dir)?;
+
+    // Combine all test source files into one
+    let mut combined_source = String::new();
+    for test in &runner.suite.tests {
+        if let Ok(test_source) = fs::read_to_string(&test.file_path) {
+            combined_source.push_str(&test_source);
+            combined_source.push_str("\n\n");
+        }
+    }
+
+    // Parse and compile combined Jounce code to JavaScript
+    let mut lexer = Lexer::new(combined_source.clone());
+    let mut parser = Parser::new(&mut lexer);
+    let program = match parser.parse_program() {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("❌ Failed to parse test files: {:?}", e);
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Parser error: {:?}", e)
+            ));
+        }
+    };
+
+    // Generate JavaScript (use client-side generation to avoid server boilerplate)
+    let emitter = JSEmitter::new(&program);
+    let client_js = emitter.generate_client_js();
+
+    if verbose {
+        // Save unfiltered version for debugging
+        fs::write(temp_dir.join("test_runner_unfiltered.js"), &client_js)?;
+        println!("📝 Unfiltered JavaScript saved to dist/test_runner_unfiltered.js");
+    }
+
+    // Strip out import statements and RPC client code (not needed for tests)
+    let lines: Vec<&str> = client_js.lines().collect();
+    let mut filtered_lines = Vec::new();
+    let mut skip_until_blank = false;
+
+    for line in lines {
+        // Skip import statements
+        if line.starts_with("import {") || line.starts_with("import ") && line.contains(" from ") {
+            continue;
+        }
+        // Skip RPC client setup comments and code
+        if line.contains("// RPC Client Setup") ||
+           line.contains("// Auto-generated RPC client stubs") ||
+           line.contains("const client = new RPCClient") {
+            continue;
+        }
+        // Skip browser-only sections (window/document event listeners and their bodies)
+        if line.contains("window.addEventListener") ||
+           line.contains("document.addEventListener") {
+            skip_until_blank = true;
+            continue;
+        }
+        if skip_until_blank {
+            if line.trim().is_empty() {
+                skip_until_blank = false;
+            }
+            continue;
+        }
+        // Skip sourcemap comments
+        if line.contains("//# sourceMappingURL") {
+            continue;
+        }
+        // Skip UI initialization sections
+        if line.contains("// UI Components") || line.contains("// Initialize application") {
+            continue;
+        }
+
+        // Remove "export " prefix from function declarations
+        let cleaned_line = if line.starts_with("export function ") {
+            &line[7..]  // Remove "export " prefix
+        } else if line.starts_with("export async function ") {
+            &line[7..]  // Remove "export " prefix
+        } else {
+            line
+        };
+
+        filtered_lines.push(cleaned_line);
+    }
+    let test_functions_js = filtered_lines.join("\n");
+
+    // Build final test runner
+    let mut test_js = String::new();
+    test_js.push_str(&generate_assertion_library());
+    test_js.push_str("\n\n");
+    test_js.push_str(&test_functions_js);
+    test_js.push_str("\n\n");
+    test_js.push_str(&runner.generate_runner_code_js());
+
+    // Write executable test file
+    let test_runner_path = temp_dir.join("test_runner.js");
+    fs::write(&test_runner_path, test_js)?;
+
+    if verbose {
+        println!("📝 Test runner generated at {}", test_runner_path.display());
+    }
+
+    // Execute tests with Node.js
+    let output = process::Command::new("node")
+        .arg(&test_runner_path)
+        .output();
+
+    match output {
+        Ok(result) => {
+            // Print stdout
+            if !result.stdout.is_empty() {
+                print!("{}", String::from_utf8_lossy(&result.stdout));
+            }
+
+            // Print stderr
+            if !result.stderr.is_empty() {
+                eprint!("{}", String::from_utf8_lossy(&result.stderr));
+            }
+
+            // Check exit code
+            if !result.status.success() {
+                println!("\n❌ Some tests failed");
+                process::exit(1);
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Failed to execute tests: {}", e);
+            eprintln!("\n💡 Make sure Node.js is installed and available in your PATH");
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Node.js not found"
+            ));
+        }
+    }
+
+    // Watch mode
     if watch_mode {
-        println!("\n👀 Watching for changes...");
+        println!("\n👀 Watching for changes... (Ctrl+C to stop)");
         if let Err(e) = watch_and_compile(
-            PathBuf::from("tests"),
+            test_path,
             PathBuf::from("dist"),
             false,
-            false
+            verbose
         ) {
             eprintln!("Watch failed: {}", e);
         }
-    }
-
-    if failed > 0 {
-        process::exit(1);
     }
 
     Ok(())
