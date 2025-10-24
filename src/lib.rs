@@ -132,7 +132,7 @@ impl Compiler {
         // --- Module Import Resolution ---
         // Merge imported module definitions into the AST
         let mut module_loader = module_loader::ModuleLoader::new("aloha-shirts");
-        module_loader.merge_imports(&mut program_ast)?;
+        let _imported_files = module_loader.merge_imports(&mut program_ast)?;
 
         // --- Analysis Passes ---
         let mut analyzer = SemanticAnalyzer::new();
@@ -205,7 +205,7 @@ impl Compiler {
         // --- Module Import Resolution ---
         // Merge imported module definitions into the AST
         let mut module_loader = module_loader::ModuleLoader::new("aloha-shirts");
-        module_loader.merge_imports(&mut program_ast)?;
+        let _imported_files = module_loader.merge_imports(&mut program_ast)?;
 
         // --- Analysis Passes ---
         let mut analyzer = SemanticAnalyzer::new();

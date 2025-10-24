@@ -228,9 +228,14 @@ fn main() {
             let module_start = Instant::now();
             use jounce_compiler::module_loader::ModuleLoader;
             let mut module_loader = ModuleLoader::new("aloha-shirts");
-            if let Err(e) = module_loader.merge_imports(&mut program) {
-                eprintln!("❌ Module import failed: {}", e);
-                return;
+            match module_loader.merge_imports(&mut program) {
+                Ok(_imported_files) => {
+                    // Dependencies tracked if using cached compilation
+                }
+                Err(e) => {
+                    eprintln!("❌ Module import failed: {}", e);
+                    return;
+                }
             }
             let module_time = module_start.elapsed();
 

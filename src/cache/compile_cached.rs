@@ -57,9 +57,14 @@ pub fn compile_source_cached(
     // Clone the AST for processing (needed because we need a mutable reference)
     let mut program_ast = program_ast;
 
-    // Module import resolution
+    // Module import resolution and dependency tracking
     let mut module_loader = module_loader::ModuleLoader::new("aloha-shirts");
-    module_loader.merge_imports(&mut program_ast)?;
+    let imported_files = module_loader.merge_imports(&mut program_ast)?;
+
+    // Track dependencies in cache for smart invalidation
+    if !imported_files.is_empty() {
+        cache.add_dependencies(file_path, &imported_files);
+    }
 
     // Analysis passes (these could be cached too in the future)
     let mut analyzer = SemanticAnalyzer::new();

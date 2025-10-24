@@ -265,7 +265,12 @@ impl ModuleLoader {
     ///
     /// This processes all `use` statements and adds the imported definitions
     /// to the program, making them available for code generation.
-    pub fn merge_imports(&mut self, program: &mut Program) -> Result<(), CompileError> {
+    ///
+    /// Returns: Vec<PathBuf> - List of file paths that were imported
+    pub fn merge_imports(&mut self, program: &mut Program) -> Result<Vec<PathBuf>, CompileError> {
+        // Track imported files for dependency tracking
+        let mut imported_files: Vec<PathBuf> = Vec::new();
+
         // First, collect all use statements and find insertion point
         let mut use_statements: Vec<UseStatement> = Vec::new();
         let mut last_use_index = 0;
@@ -291,6 +296,9 @@ impl ModuleLoader {
 
             // Load the module
             let module = self.load_module(&module_path)?;
+
+            // Track this imported file
+            imported_files.push(module.file_path.clone());
 
             // Determine which symbols to import
             let symbols_to_import: Vec<(String, ExportedSymbol)> = if use_stmt.imports.is_empty() {
@@ -349,7 +357,7 @@ impl ModuleLoader {
             program.statements.insert(last_use_index + i, stmt);
         }
 
-        Ok(())
+        Ok(imported_files)
     }
 }
 

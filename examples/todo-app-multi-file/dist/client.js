@@ -358,6 +358,16 @@ export function create_todo(id, title) {
 
 }
 
+export function is_valid_id(id) {
+  return (id > 0);
+
+}
+
+export function generate_id() {
+  return 42;
+
+}
+
 export function format_count(count) {
   if ((count == 1)) {
   return "1 item";
@@ -367,23 +377,13 @@ export function format_count(count) {
 
 }
 
-export function double(n) {
-  return (n * 2);
-
-}
-
-export function is_valid_id(id) {
-  return (id > 0);
-
-}
-
 export function validate_title(title) {
   return (title.length() > 0);
 
 }
 
-export function generate_id() {
-  return 42;
+export function double(n) {
+  return (n * 2);
 
 }
 
@@ -393,13 +393,13 @@ export function format_todo(todo) {
 
 }
 
-export function mark_completed(todo) {
-  return new Todo(todo.id, todo.title, true);
+export function get_sample_todo() {
+  return create_todo(1, "Sample task");
 
 }
 
-export function get_sample_todo() {
-  return create_todo(1, "Sample task");
+export function mark_completed(todo) {
+  return new Todo(todo.id, todo.title, true);
 
 }
 

@@ -132,6 +132,15 @@ impl CompilationCache {
         Ok(ast)
     }
 
+    /// Add multiple dependencies for a file
+    pub fn add_dependencies(&self, file: &Path, imported_files: &[PathBuf]) {
+        if let Ok(mut deps) = self.dependencies.lock() {
+            for imported_file in imported_files {
+                deps.add_dependency(file.to_path_buf(), imported_file.clone());
+            }
+        }
+    }
+
     /// Invalidate cache for a specific file
     pub fn invalidate_file(&self, file_path: &Path) {
         // Remove from metadata
