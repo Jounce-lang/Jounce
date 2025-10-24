@@ -1,4 +1,4 @@
-# Jounce Language Roadmap
+# Jounce Development Roadmap
 
 **Current Version**: 0.3.0 "Production Ready"
 **Target Version**: 1.0.0 "Language Lock"
@@ -6,466 +6,636 @@
 
 ---
 
-## 📊 Current State Analysis
+## 📍 Where We Are (v0.3.0 Status)
 
-### ✅ Core Compiler (100% Complete)
+**✅ Complete & Production-Ready**:
+- Core compiler (lexer, parser, type checker, borrow checker, code gen)
+- Standard library (JSON, DateTime, Crypto, File I/O, YAML) - 100% tested
+- Developer tools (CLI, LSP, test framework, watch mode, HMR, formatter)
+- Compilation cache (102x faster builds with xxhash + DashMap)
+- 638/638 tests passing (100% coverage)
+- 5 ecosystem packages (router, http, forms, store, i18n)
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Lexer & Parser | ✅ Complete | Full tokenization and AST construction |
-| Type Checker | ✅ Complete | Full semantic analysis pipeline |
-| Borrow Checker | ✅ Complete | Memory-safe semantics enforced |
-| JavaScript Emitter | ✅ Complete | Server/client code generation |
-| WASM Generation | ✅ Complete | WebAssembly module output |
-| Error Diagnostics | ✅ Complete | Colorized, contextual error messages |
-| Source Maps | ✅ Complete | VLQ-encoded debugging support |
+**⚠️ Gaps That Block Mass Adoption**:
+- Multi-file projects unclear (module system needs documentation)
+- No reactivity system (critical for modern UI apps)
+- Only 5 packages (need 50+ for competitive ecosystem)
+- No real-world example apps
+- No community or contributors yet
 
-**Verdict**: Compiler core is production-ready. No critical features missing.
-
----
-
-### ✅ Language Features (95% Complete)
-
-| Feature | Status | Implementation | Priority |
-|---------|--------|----------------|----------|
-| Variables (let/mut/const) | ✅ Complete | Full immutability support | - |
-| Functions & Closures | ✅ Complete | First-class functions | - |
-| Structs & Enums | ✅ Complete | Pattern matching | - |
-| Generics | ✅ Complete | Type parameters | - |
-| Traits | ✅ Complete | Interface definitions | - |
-| Async/Await | ✅ Complete | JavaScript async support | - |
-| JSX Support | ✅ Complete | Component model | - |
-| Pattern Matching | ✅ Complete | match expressions with exhaustiveness | - |
-| Error Handling (?, Result, Option) | ✅ Complete | Full propagation | - |
-| Loops (for, while) | ✅ Complete | Range syntax | - |
-| Unit Type () | ✅ Complete | Void functions | - |
-| RPC (@server/@client) | ✅ Complete | Automatic RPC generation | - |
-| **Module System** | ⚠️ Partial | `use` statements exist, multi-file imports unclear | **High** |
-| **Style Blocks** | ⚠️ Partial | css! macro exists, no style {} DSL | **Medium** |
-| **Reactivity (Signal/Effect)** | ❌ Missing | No reactive primitives | **High** |
-| **Macro System** | ❌ Missing | No compile-time metaprogramming | **Low** |
-| **Security Annotations** | ❌ Missing | No @secure, @auth, @validate | **Medium** |
-
-**Verdict**: 95% complete. Missing reactivity system is biggest gap for UI apps.
+**🎯 Bottom Line**: We have a world-class compiler but need ecosystem + applications.
 
 ---
 
-### ✅ Standard Library (100% Complete)
+## 🚀 Execution Roadmap (Phases)
 
-| Module | Status | Tests | Coverage |
-|--------|--------|-------|----------|
-| JSON | ✅ Complete | 7/7 | 100% |
-| DateTime | ✅ Complete | 15/15 | 100% |
-| Crypto | ✅ Complete | 25/25 | 100% |
-| File I/O | ✅ Complete | 10/10 | 100% |
-| YAML | ✅ Complete | 15/15 | 100% |
-| HTTP Client | ✅ Complete | Integrated | 100% |
-| Collections (Vec, HashMap) | ✅ Complete | Built-in | 100% |
+### **Phase 11: Module System & Multi-File Support** (2-3 weeks)
 
-**Total**: 72/72 stdlib tests passing (100%)
-**Verdict**: Standard library is feature-complete and battle-tested.
+**Goal**: Enable multi-file projects with clear import/export semantics
 
----
+**Tasks**:
+1. [ ] Document current `use` statement behavior
+   - Test importing from local files (`use ./math.jnc`)
+   - Test importing packages (`use jounce_http::HttpClient`)
+   - Document module resolution rules
 
-### ✅ Developer Tools (100% Complete)
+2. [ ] Add `export` keyword support
+   - Parse `export fn`, `export struct`, `export enum`
+   - Generate proper JavaScript exports
+   - Add tests for export/import combinations
 
-| Tool | Status | Features | Notes |
-|------|--------|----------|-------|
-| CLI (`jnc`) | ✅ Complete | compile, watch, test, dev, fmt, pkg | Colorized output |
-| Package Manager | ✅ Complete | install, add, search, update, tree, audit | 1100+ lines |
-| Test Framework | ✅ Complete | Assertions, async tests, filtering | 7 assertions |
-| LSP Server | ✅ Complete | 8 features, 70+ completions | VSCode-ready |
-| Watch Mode | ✅ Complete | File watching with auto-recompile | notify crate |
-| Dev Server | ✅ Complete | HMR with WebSocket (355 lines) | Live reload |
-| Formatter | ✅ Complete | Auto-formatting | jnc fmt |
-| Source Maps | ✅ Complete | VLQ encoding | Debugging support |
-| Cache System | ✅ Complete | xxhash + DashMap, 102x faster | Thread-safe |
+3. [ ] Implement cross-file dependency tracking
+   - Build dependency graph for multiple files
+   - Cache invalidation when dependencies change
+   - Parallel compilation of independent modules
 
-**Verdict**: Developer experience rivals Next.js and Vite. World-class tooling.
-
----
-
-### ✅ Package Ecosystem (5/50 Complete = 10%)
-
-**Current Packages (Production-Ready)**:
-1. ✅ jounce-router v0.1.0 - Client-side routing
-2. ✅ jounce-http v0.1.0 - HTTP client
-3. ✅ jounce-forms v1.0.0 - Form validation
-4. ✅ jounce-i18n v1.0.0 - Internationalization
-5. ✅ jounce-store v1.0.0 - State management
-
-**Next 10 Priority Packages** (Target: v0.4.0):
-- [ ] jounce-auth - Authentication & authorization
-- [ ] jounce-db - Database abstractions
-- [ ] jounce-cache - Caching utilities
-- [ ] jounce-logger - Structured logging
-- [ ] jounce-ui - UI component library
-- [ ] jounce-animate - Animation primitives
-- [ ] jounce-theme - Theme management
-- [ ] jounce-utils - Common utilities
-- [ ] jounce-rpc - RPC helpers
-- [ ] jounce-docs - Documentation generator
-
-**Verdict**: Strong foundation (5 packages), but ecosystem needs expansion to 50+ packages for mass adoption.
-
----
-
-## 🎯 Version Milestones
-
-### v0.3.0 "Production Ready" ✅ COMPLETE
-
-**Released**: October 24, 2025
-
-**Achievements**:
-- ✅ 638/638 tests passing (100%)
-- ✅ 102x faster builds with compilation cache
-- ✅ 5 production-ready packages
-- ✅ Complete documentation (README, GETTING_STARTED, API docs)
-- ✅ Colorized CLI with cache statistics
-- ✅ HMR dev server infrastructure
-
----
-
-### v0.4.0 "Ecosystem Expansion" (Target: 2-3 months)
-
-**Goal**: Expand package ecosystem from 5 → 15 packages
-
-**Core Features**:
-- [ ] Multi-file module system (import/export clarity)
-- [ ] Style blocks (`style {}` DSL for CSS generation)
-- [ ] Security annotations (@secure, @auth, @validate)
-- [ ] Cross-file dependency graphing (incremental builds)
-
-**New Packages** (Priority Order):
-1. [ ] jounce-auth - JWT, OAuth, session management
-2. [ ] jounce-db - PostgreSQL, SQLite, MongoDB adapters
-3. [ ] jounce-cache - Redis, in-memory, LRU caching
-4. [ ] jounce-logger - Structured logging (JSON, console, file)
-5. [ ] jounce-ui - Button, Input, Modal, Toast components
-6. [ ] jounce-animate - Transitions, springs, keyframes
-7. [ ] jounce-theme - Dark mode, CSS variables, theme switching
-8. [ ] jounce-utils - String, array, object helpers
-9. [ ] jounce-rpc - RPC helpers and middleware
-10. [ ] jounce-docs - Auto-generate docs from code
-
-**Tooling Enhancements**:
-- [ ] Visual Playground (web REPL with live compilation)
-- [ ] VSCode extension improvements (go-to-definition, refactoring)
-- [ ] `jnc doctor` command (performance + security audits)
-- [ ] Package registry web dashboard
-
-**Success Criteria**:
-- 15 production-ready packages published
-- Multi-file projects supported
-- Style blocks documented and working
-- Developer playground live
-
----
-
-### v0.5.0 "Reactivity & Advanced Features" (Target: 4-6 months)
-
-**Goal**: Add reactive primitives and advanced language features
-
-**Language Features**:
-- [ ] Reactivity system (Signal, Effect, Computed)
-- [ ] Async runtime model (define concurrency strategy)
-- [ ] Match exhaustiveness checker improvements
-- [ ] Type inference enhancements
-- [ ] Inline doc comments (`///` → auto-docs)
-- [ ] Macro system (Phase 1: procedural macros)
-
-**New Packages** (10 more):
-11. [ ] jounce-websocket - WebSocket client/server
-12. [ ] jounce-graphql - GraphQL client
-13. [ ] jounce-orm - Database ORM
-14. [ ] jounce-query - Data fetching hooks
-15. [ ] jounce-upload - File upload utilities
-16. [ ] jounce-cors - CORS middleware
-17. [ ] jounce-oauth - OAuth providers
-18. [ ] jounce-markdown - Markdown parser/renderer
-19. [ ] jounce-icons - Icon library
-20. [ ] jounce-modal - Modal/dialog components
-
-**Tooling**:
-- [ ] Performance profiler (`jnc profile`)
-- [ ] Bundle analyzer
-- [ ] CLI telemetry (opt-in analytics)
-- [ ] Auto-update notifier
-
-**Success Criteria**:
-- Reactive UI examples working
-- 25+ packages in ecosystem
-- Macro system functional
-- Advanced type inference complete
-
----
-
-### v0.6.0 "AI & Automation" (Target: 7-9 months)
-
-**Goal**: AI-native development tools and automation
-
-**AI Integration**:
-- [ ] jounce-ai - OpenAI/Claude SDK
-- [ ] jounce-llm - LLM utilities
-- [ ] jounce-embed - Text embeddings
-- [ ] jounce-summarize - Text summarization
-- [ ] jounce-agent - AI agent framework
-- [ ] jounce-prompt-kit - Prompt engineering tools
-
-**Automation Packages**:
-- [ ] jounce-test-gen - AI test generation
-- [ ] jounce-docs-gen - AI documentation
-- [ ] jounce-migrate - Code migration tools
-- [ ] jounce-lint-fix - Auto-fix linter errors
-
-**Success Criteria**:
-- 35+ packages in ecosystem
-- AI assistant for code generation
-- Auto-migration tools working
-
----
-
-### v0.7.0 "Deployment & Infrastructure" (Target: 10-12 months)
-
-**Goal**: Production deployment and infrastructure tools
-
-**Deployment**:
-- [ ] jounce-deploy - Generic deployment CLI
-- [ ] jounce-vercel - Vercel integration
-- [ ] jounce-fly - Fly.io integration
-- [ ] jounce-deno - Deno runtime support
-- [ ] jounce-docker - Docker image generation
-- [ ] jounce-env - Environment management
-- [ ] jounce-config - Configuration management
-
-**Monitoring & Observability**:
-- [ ] jounce-analytics - Analytics SDK
-- [ ] jounce-sentry - Error tracking
-- [ ] jounce-metrics - Performance metrics
-- [ ] jounce-trace - Distributed tracing
-
-**Success Criteria**:
-- 45+ packages in ecosystem
-- One-click deployments working
-- Production monitoring tools ready
-
----
-
-### v1.0.0 "Language Lock" (Target: 12-18 months)
-
-**Goal**: Stable language specification, no breaking changes post-1.0
-
-**Language Freeze**:
-- ✅ All core syntax locked (no more breaking changes)
-- ✅ Module system fully specified
-- ✅ Type system complete and documented
-- ✅ Error handling semantics finalized
-- ✅ Concurrency model defined
-- ✅ Security model documented
-
-**Ecosystem Completion** (50+ packages):
-- UI & Experience (8): jounce-ui, icons, animate, tooltip, modal, dataview, markdown, grid
-- Data (8): store, cache, graphql, db, sqlite, postgres, redis, query, orm
-- Networking (8): http, websocket, rpc, upload, cors, oauth, api-gateway
-- AI & Automation (7): llm, ai, embed, summarize, agent, prompt-kit, ai-tools
-- Dev & Tooling (8): lint, format, test, devtools, docs, inspect, cli-utils, profiler
-- Infra (6): deploy, vercel, fly, deno, docker, env, config
-- Misc (5): time, utils, a11y, i18n, css-vars, theme, color
-
-**Documentation**:
-- [ ] Complete language specification
-- [ ] API reference for all packages
-- [ ] Tutorial series (beginner → advanced)
-- [ ] Migration guides from other languages
-- [ ] Performance tuning guide
-- [ ] Security best practices
-
-**Success Criteria**:
-- 50+ packages published
-- 10,000+ GitHub stars
-- 1,000+ production deployments
-- No critical bugs in issue tracker
-- Language specification finalized
-- Stable 1.0 release
-
----
-
-## 📈 Comparison to Other Languages
-
-### What Jounce Has That Others Don't
-
-| Feature | Jounce | TypeScript | Rust | Go |
-|---------|--------|------------|------|-----|
-| Full-stack single file | ✅ | ❌ | ❌ | ❌ |
-| Auto RPC generation | ✅ | ❌ | ❌ | ❌ |
-| JSX + Type safety | ✅ | ⚠️ | ❌ | ❌ |
-| 102x faster builds | ✅ | ❌ | ❌ | ⚠️ |
-| Borrow checker | ✅ | ❌ | ✅ | ❌ |
-| WASM compilation | ✅ | ⚠️ | ✅ | ✅ |
-| Built-in HMR | ✅ | ❌ | ❌ | ❌ |
-| Zero config dev server | ✅ | ❌ | ❌ | ❌ |
-| 100% test coverage | ✅ | ❌ | ❌ | ❌ |
-
-### Maturity vs Others (0.3.0 Status)
-
-**Compiler Maturity**: Rust-level (10/10)
-**Developer Experience**: Next.js-level (9/10)
-**Package Ecosystem**: Early-stage (3/10 - need 50+ packages)
-**Documentation**: Excellent (9/10)
-**Community**: Nascent (1/10 - needs users and contributors)
-
-**Overall Assessment**:
-Jounce at 0.3.0 is more complete than most languages at this stage. Core compiler and tooling are production-ready. Main gaps are ecosystem expansion and community building.
-
----
-
-## 🚧 Near-Term Priorities (Next 3 Months)
-
-### High Priority (Must Have for v0.4.0)
-
-1. **Multi-File Module System**
-   - Define import/export syntax clearly
-   - Implement cross-file dependency resolution
-   - Document module semantics
-   - Add tests for multi-file projects
-
-2. **Style Block DSL**
-   - Add `style {}` and `theme {}` syntax
-   - Compile to styles.css automatically
-   - Support CSS variables and theming
+4. [ ] Write multi-file example app
+   - Create `examples/todo-app-multi-file/`
+   - Split into: `main.jnc`, `components.jnc`, `api.jnc`, `utils.jnc`
    - Document best practices
 
-3. **Package Expansion (5 → 15)**
-   - Prioritize: auth, db, cache, logger, ui
-   - Write comprehensive docs for each
-   - Add example apps using packages
-   - Test all packages together
+5. [ ] Add CLI support for multi-file projects
+   - `jnc compile src/` (compile directory)
+   - `jnc init` (scaffold new project)
+   - Auto-detect entry point (main.jnc)
 
-4. **Visual Playground**
-   - Web-based REPL
-   - Real-time compilation
-   - Share code snippets
-   - Embed in documentation
+**Success Criteria**:
+- ✅ Multi-file todo app compiles and runs
+- ✅ Documentation for module system complete
+- ✅ Tests for import/export (20+ tests)
+- ✅ Cache works correctly with file dependencies
 
-### Medium Priority (Nice to Have)
-
-5. **Security Annotations**
-   - @secure, @auth, @validate annotations
-   - Compile-time security checks
-   - RPC authorization middleware
-
-6. **VSCode Extension Polish**
-   - Go-to-definition improvements
-   - Refactoring support
-   - Snippet library
-   - Debugging integration
-
-7. **Registry Dashboard**
-   - Web UI for package browsing
-   - Package stats and downloads
-   - Search and filtering
-   - Publisher accounts
-
-### Low Priority (Post-v0.4.0)
-
-8. **Reactivity System** (delayed to v0.5.0)
-9. **Macro System** (delayed to v0.5.0)
-10. **AI Integration** (delayed to v0.6.0)
+**Deliverable**: v0.3.1 with multi-file support
 
 ---
 
-## 📊 Success Metrics
+### **Phase 12: Style System & CSS DSL** (2-3 weeks)
 
-### Current Metrics (v0.3.0)
+**Goal**: Add first-class style blocks for component styling
 
-- **Tests**: 638/638 (100%)
-- **Packages**: 5
-- **GitHub Stars**: TBD
-- **Contributors**: 1 (+ Claude AI)
-- **Production Apps**: 0
-- **Documentation Pages**: 10+
+**Tasks**:
+1. [ ] Design `style {}` syntax
+   ```jounce
+   style Button {
+     background: blue;
+     color: white;
+     padding: 10px 20px;
 
-### Target Metrics (v1.0.0)
+     &:hover {
+       background: darkblue;
+     }
+   }
+   ```
 
-- **Tests**: 5000+ (with ecosystem)
-- **Packages**: 50+
-- **GitHub Stars**: 10,000+
-- **Contributors**: 50+
-- **Production Apps**: 1,000+
-- **Documentation Pages**: 100+
-- **Monthly Downloads**: 100,000+
+2. [ ] Implement style parser
+   - Add `style` keyword to lexer
+   - Parse CSS-like syntax in parser
+   - Build style AST
 
----
+3. [ ] Generate scoped CSS
+   - Convert style blocks to CSS classes
+   - Add scope identifiers (e.g., `Button_abc123`)
+   - Inject styles into `dist/styles.css`
 
-## 🤝 Contributing
+4. [ ] Add theme support
+   ```jounce
+   theme DarkMode {
+     primary: #1a1a1a;
+     text: #ffffff;
+     accent: #3b82f6;
+   }
 
-### How You Can Help
+   style Button {
+     background: theme.primary;
+     color: theme.text;
+   }
+   ```
 
-**If you're a developer**:
-- Build example applications
-- Write packages for the ecosystem
-- Report bugs and edge cases
-- Improve documentation
+5. [ ] Write style system docs
+   - Tutorial for styling components
+   - Theme switching examples
+   - CSS variable generation
 
-**If you're a designer**:
-- Create UI component packages
-- Design the package registry dashboard
-- Improve CLI output and branding
+**Success Criteria**:
+- ✅ Style blocks compile to CSS
+- ✅ Themes work with hot reload
+- ✅ Scoped styles prevent collisions
+- ✅ Documentation with examples
 
-**If you're a writer**:
-- Write tutorials and guides
-- Create video courses
-- Translate documentation
-- Blog about Jounce
-
-**If you're an influencer**:
-- Share on social media
-- Write comparison articles
-- Create demos and showcases
-- Speak at conferences
-
----
-
-## 🎓 Philosophy
-
-Jounce is built on these principles:
-
-1. **Simplicity First**: One file, one command, full stack
-2. **Speed Matters**: 100x faster builds, instant feedback
-3. **Safety Without Pain**: Type safety without ceremony
-4. **Batteries Included**: Rich stdlib, zero config tooling
-5. **AI-Native**: Built for the age of AI-assisted development
-6. **Community Driven**: Open source, open governance
+**Deliverable**: v0.3.2 with style system
 
 ---
 
-## 📅 Release Schedule
+### **Phase 13: Reactivity System (Signal/Effect)** (3-4 weeks)
 
-- **v0.3.0**: October 24, 2025 ✅
-- **v0.4.0**: January 2026 (3 months)
-- **v0.5.0**: March 2026 (2 months)
-- **v0.6.0**: June 2026 (3 months)
-- **v0.7.0**: September 2026 (3 months)
-- **v1.0.0**: Q1 2027 (12-18 months total)
+**Goal**: Add reactive primitives for stateful UIs
 
-**Aggressive but achievable with community help.**
+**Tasks**:
+1. [ ] Design reactivity API
+   ```jounce
+   fn Counter() -> JSX {
+     let count = signal(0);
+
+     return (
+       <div>
+         <p>Count: {count()}</p>
+         <button onclick={() => count.set(count() + 1)}>
+           Increment
+         </button>
+       </div>
+     );
+   }
+   ```
+
+2. [ ] Implement `signal<T>` primitive
+   - Parse signal syntax
+   - Generate JavaScript reactive code
+   - Add getter/setter methods
+
+3. [ ] Implement `effect()` for side effects
+   ```jounce
+   effect(() => {
+     console.log("Count changed: " + count());
+   });
+   ```
+
+4. [ ] Implement `computed()` for derived state
+   ```jounce
+   let doubled = computed(() => count() * 2);
+   ```
+
+5. [ ] Add DOM update batching
+   - Queue updates efficiently
+   - Batch DOM changes
+   - Optimize re-renders
+
+6. [ ] Write reactivity tutorial
+   - Basic counter example
+   - Todo list with signals
+   - Form state management
+   - Comparison to React hooks
+
+**Success Criteria**:
+- ✅ Signal-based counter works
+- ✅ Effects run on signal changes
+- ✅ Computed values update correctly
+- ✅ Performance is competitive
+
+**Deliverable**: v0.4.0 with reactivity system
 
 ---
 
-## 🌟 Vision
+### **Phase 14: Essential Packages (5 → 15)** (4-6 weeks)
 
-By v1.0.0, Jounce will be:
+**Goal**: Expand ecosystem with 10 critical packages
 
-- The **fastest way** to build full-stack applications
-- The **safest** language without sacrificing DX
-- The **most productive** environment for solo developers
-- The **best choice** for AI-assisted development
-- A **top 10 language** by developer satisfaction
+**Package Priority List**:
 
-**"One language. One file. Full stack. Maximum velocity."**
+#### 1. **jounce-auth** (Week 1)
+- JWT token management
+- Session handling
+- OAuth helpers
+- Role-based access control
+
+#### 2. **jounce-db** (Week 1)
+- PostgreSQL adapter
+- SQLite adapter
+- Connection pooling
+- Query builder
+
+#### 3. **jounce-ui** (Week 2)
+- Button, Input, Textarea
+- Modal, Toast, Alert
+- Dropdown, Select
+- Card, Badge, Tag
+
+#### 4. **jounce-logger** (Week 2)
+- Structured logging
+- Log levels (debug, info, warn, error)
+- JSON output
+- File rotation
+
+#### 5. **jounce-cache** (Week 3)
+- In-memory LRU cache
+- Redis adapter
+- TTL support
+- Cache invalidation
+
+#### 6. **jounce-animate** (Week 3)
+- CSS transitions
+- Spring animations
+- Keyframe animations
+- Easing functions
+
+#### 7. **jounce-theme** (Week 4)
+- Dark/light mode toggle
+- CSS variable management
+- Theme presets
+- Custom theme builder
+
+#### 8. **jounce-utils** (Week 4)
+- String utilities (slugify, truncate, capitalize)
+- Array utilities (chunk, unique, flatten)
+- Object utilities (merge, clone, pick)
+- Date utilities (format, parse, diff)
+
+#### 9. **jounce-rpc** (Week 5)
+- RPC middleware
+- Request/response interceptors
+- Error handling
+- Retry logic
+
+#### 10. **jounce-docs** (Week 6)
+- Parse doc comments (`///`)
+- Generate markdown docs
+- API reference builder
+- Code examples extraction
+
+**Implementation Process (per package)**:
+1. Design API and write spec (1 day)
+2. Implement core functionality (2 days)
+3. Write comprehensive tests (1 day)
+4. Document with examples (1 day)
+5. Publish to registry (0.5 day)
+
+**Success Criteria**:
+- ✅ 15 total packages in registry
+- ✅ Each package has 10+ tests
+- ✅ Full documentation for all packages
+- ✅ Example app using 5+ packages
+
+**Deliverable**: v0.4.0 with 15 packages
+
+---
+
+### **Phase 15: Real-World Example Applications** (3-4 weeks)
+
+**Goal**: Build production-quality apps to prove the language
+
+**Application List**:
+
+#### 1. **Todo App (Full Stack)** (Week 1)
+- User authentication (jounce-auth)
+- Database persistence (jounce-db)
+- Reactive UI (signals)
+- Styled components (style blocks)
+- **Lines**: ~500
+- **Packages**: auth, db, ui, theme
+
+#### 2. **Blog Platform** (Week 2)
+- Markdown editor
+- Post management
+- Comment system
+- Search functionality
+- **Lines**: ~1000
+- **Packages**: auth, db, router, markdown, ui
+
+#### 3. **E-Commerce Store** (Week 3)
+- Product catalog
+- Shopping cart (jounce-store)
+- Checkout flow (jounce-forms)
+- Payment integration
+- **Lines**: ~1500
+- **Packages**: store, forms, auth, db, cache, ui
+
+#### 4. **Dashboard App** (Week 4)
+- Data visualization
+- Real-time updates
+- API integration (jounce-http)
+- Responsive design
+- **Lines**: ~1200
+- **Packages**: http, cache, animate, theme, logger
+
+**Success Criteria**:
+- ✅ 4 polished example apps
+- ✅ Each app has README + screenshots
+- ✅ Apps deployed publicly
+- ✅ Code is well-documented
+
+**Deliverable**: `examples/` directory with 4 apps
+
+---
+
+### **Phase 16: Developer Tooling Enhancements** (2-3 weeks)
+
+**Goal**: Improve developer experience with advanced tooling
+
+**Tools to Build**:
+
+#### 1. **Visual Playground** (Week 1)
+- Web-based REPL (SolidJS + Monaco editor)
+- Real-time compilation
+- Live preview pane
+- Share code snippets (URL encoding)
+- Embed in documentation
+- **Tech**: SolidJS, Monaco, Jounce WASM
+
+#### 2. **jnc doctor** Command (Week 2)
+- Performance audit (bundle size, unused code)
+- Security audit (vulnerable dependencies)
+- Code quality checks (complexity, duplication)
+- Best practices recommendations
+- **Output**: Colorized report with fixes
+
+#### 3. **VSCode Extension Updates** (Week 3)
+- Go-to-definition across files
+- Refactoring (rename, extract function)
+- Snippet library (component templates)
+- Debugging integration (breakpoints in .jnc)
+- **Tech**: TypeScript, LSP protocol
+
+#### 4. **Package Registry Dashboard** (Week 3)
+- Web UI for browsing packages
+- Package stats (downloads, stars)
+- Search and filtering
+- Publisher profiles
+- **Tech**: SolidJS, Jounce backend
+
+**Success Criteria**:
+- ✅ Playground deployed at playground.jounce.dev
+- ✅ `jnc doctor` runs and provides useful feedback
+- ✅ VSCode extension has go-to-definition
+- ✅ Registry dashboard live at packages.jounce.dev
+
+**Deliverable**: v0.5.0 with advanced tooling
+
+---
+
+### **Phase 17: Security & Production Features** (2-3 weeks)
+
+**Goal**: Add enterprise-grade security and deployment features
+
+**Tasks**:
+
+#### 1. **Security Annotations** (Week 1)
+```jounce
+@secure
+@auth(role = "admin")
+fn delete_user(id: i64) {
+  // Only admins can delete users
+}
+
+@validate(schema = UserSchema)
+@server
+fn create_user(data: UserInput) {
+  // Input validated before execution
+}
+```
+
+- Parse @secure, @auth, @validate
+- Generate middleware checks
+- Add to RPC layer
+- Document security model
+
+#### 2. **Production Build Optimizations** (Week 2)
+- Dead code elimination
+- Tree shaking for packages
+- Minification improvements
+- Code splitting by route
+- **Target**: 30-50% smaller bundles
+
+#### 3. **Deployment Tooling** (Week 3)
+- `jnc deploy` command
+- Vercel integration
+- Fly.io integration
+- Docker image generation
+- Environment variable management
+
+**Success Criteria**:
+- ✅ Security annotations working
+- ✅ Production builds are optimized
+- ✅ One-click deployment to Vercel
+- ✅ Security documentation complete
+
+**Deliverable**: v0.6.0 with security + deployment
+
+---
+
+### **Phase 18: Ecosystem Expansion (15 → 30 packages)** (6-8 weeks)
+
+**Goal**: Reach critical mass of packages for broad use cases
+
+**Additional Packages** (15 more):
+
+**Networking** (5 packages):
+11. [ ] jounce-websocket - WebSocket client/server
+12. [ ] jounce-graphql - GraphQL client
+13. [ ] jounce-upload - File upload utilities
+14. [ ] jounce-cors - CORS middleware
+15. [ ] jounce-oauth - OAuth providers (Google, GitHub, etc.)
+
+**Data & Persistence** (3 packages):
+16. [ ] jounce-orm - Database ORM with relations
+17. [ ] jounce-query - React Query-like data fetching
+18. [ ] jounce-redis - Redis client
+
+**UI & Animation** (4 packages):
+19. [ ] jounce-icons - Icon library (Lucide/Heroicons)
+20. [ ] jounce-modal - Advanced modal system
+21. [ ] jounce-tooltip - Tooltip component
+22. [ ] jounce-grid - Data grid with sorting/filtering
+
+**Developer Tools** (3 packages):
+23. [ ] jounce-test-utils - Testing helpers
+24. [ ] jounce-devtools - Browser devtools extension
+25. [ ] jounce-profiler - Performance profiling
+
+**Success Criteria**:
+- ✅ 30 total packages in registry
+- ✅ All packages have >80% test coverage
+- ✅ Package discovery is easy
+- ✅ Inter-package compatibility verified
+
+**Deliverable**: v0.7.0 with 30 packages
+
+---
+
+### **Phase 19: AI Integration & Automation** (4-6 weeks)
+
+**Goal**: Make Jounce AI-native with LLM integration
+
+**AI Packages** (6 packages):
+
+26. [ ] **jounce-ai** - Unified LLM SDK
+   - OpenAI, Anthropic, Google AI APIs
+   - Streaming responses
+   - Token counting
+   - Error handling
+
+27. [ ] **jounce-llm** - LLM utilities
+   - Prompt templates
+   - Response parsing
+   - Chain-of-thought helpers
+   - Few-shot examples
+
+28. [ ] **jounce-embed** - Text embeddings
+   - Vector generation
+   - Similarity search
+   - Clustering helpers
+
+29. [ ] **jounce-rag** - RAG (Retrieval-Augmented Generation)
+   - Document chunking
+   - Vector database integration
+   - Context retrieval
+   - Answer generation
+
+30. [ ] **jounce-agent** - AI agent framework
+   - Tool calling
+   - Multi-step reasoning
+   - State management
+   - Memory/context
+
+31. [ ] **jounce-prompt-kit** - Prompt engineering
+   - Prompt library
+   - Version control for prompts
+   - A/B testing
+   - Analytics
+
+**AI-Powered Developer Tools**:
+- `jnc gen component` - Generate component from description
+- `jnc gen tests` - Auto-generate test cases
+- `jnc explain` - Explain code with AI
+- `jnc refactor` - AI-suggested refactorings
+
+**Success Criteria**:
+- ✅ 6 AI packages published
+- ✅ AI code generation works
+- ✅ Example AI app (chatbot, RAG system)
+- ✅ Documentation with AI best practices
+
+**Deliverable**: v0.8.0 with AI integration
+
+---
+
+### **Phase 20: Language Lock & v1.0 Preparation** (8-12 weeks)
+
+**Goal**: Finalize language spec, reach 50 packages, prepare for 1.0
+
+**Language Finalization**:
+- [ ] Complete language specification document
+- [ ] Freeze syntax (no breaking changes post-1.0)
+- [ ] Document all type system rules
+- [ ] Finalize error handling semantics
+- [ ] Define concurrency model clearly
+- [ ] Macro system design (optional, post-1.0 is fine)
+
+**Package Ecosystem (30 → 50)**:
+
+**Deployment & Infrastructure** (7 packages):
+32. [ ] jounce-deploy - Generic deployment CLI
+33. [ ] jounce-vercel - Vercel adapter
+34. [ ] jounce-fly - Fly.io adapter
+35. [ ] jounce-deno - Deno runtime support
+36. [ ] jounce-docker - Docker image builder
+37. [ ] jounce-env - Environment management
+38. [ ] jounce-config - Configuration loader
+
+**Monitoring & Observability** (5 packages):
+39. [ ] jounce-analytics - Analytics SDK
+40. [ ] jounce-sentry - Error tracking integration
+41. [ ] jounce-metrics - Performance metrics
+42. [ ] jounce-trace - Distributed tracing
+43. [ ] jounce-logs - Log aggregation
+
+**Advanced UI** (4 packages):
+44. [ ] jounce-dataview - Advanced data table
+45. [ ] jounce-chart - Charting library
+46. [ ] jounce-calendar - Calendar/date picker
+47. [ ] jounce-editor - Rich text editor
+
+**Utilities** (4 packages):
+48. [ ] jounce-a11y - Accessibility helpers
+49. [ ] jounce-seo - SEO utilities
+50. [ ] jounce-color - Color manipulation
+51. [ ] jounce-markdown - Markdown parser/renderer
+
+**Documentation**:
+- [ ] Complete API reference (all 50+ packages)
+- [ ] Tutorial series (10+ tutorials)
+- [ ] Migration guides (from TS, React, Next.js)
+- [ ] Performance tuning guide
+- [ ] Security best practices guide
+- [ ] Video course (optional)
+
+**Community Building**:
+- [ ] Launch website (jounce.dev)
+- [ ] Create Discord/forum
+- [ ] Write blog posts (launch announcement)
+- [ ] Submit to Hacker News, Reddit
+- [ ] Reach out to influencers
+- [ ] Conference talks (optional)
+
+**Success Criteria**:
+- ✅ 50+ packages published
+- ✅ Language spec finalized
+- ✅ 10+ real-world apps built
+- ✅ 1000+ GitHub stars
+- ✅ 50+ contributors
+- ✅ Zero critical bugs
+
+**Deliverable**: v1.0.0 "Language Lock"
+
+---
+
+## 📅 Timeline Overview
+
+| Phase | Duration | Target Date | Deliverable |
+|-------|----------|-------------|-------------|
+| Phase 11: Module System | 2-3 weeks | Nov 2025 | v0.3.1 |
+| Phase 12: Style System | 2-3 weeks | Nov 2025 | v0.3.2 |
+| Phase 13: Reactivity | 3-4 weeks | Dec 2025 | v0.4.0 |
+| Phase 14: 10 Packages | 4-6 weeks | Jan 2026 | v0.4.0 |
+| Phase 15: Example Apps | 3-4 weeks | Feb 2026 | examples/ |
+| Phase 16: Tooling | 2-3 weeks | Feb 2026 | v0.5.0 |
+| Phase 17: Security | 2-3 weeks | Mar 2026 | v0.6.0 |
+| Phase 18: 15 Packages | 6-8 weeks | Apr 2026 | v0.7.0 |
+| Phase 19: AI Integration | 4-6 weeks | Jun 2026 | v0.8.0 |
+| Phase 20: v1.0 Prep | 8-12 weeks | Sep 2026 | v1.0.0 |
+
+**Total Timeline**: 12-18 months from v0.3.0 to v1.0.0
+
+---
+
+## 🎯 Immediate Next Steps (Start Here)
+
+### **This Week** (Phase 11 Kickoff):
+1. [ ] Document current module system behavior
+2. [ ] Test multi-file imports
+3. [ ] Design export keyword syntax
+4. [ ] Create multi-file example project structure
+
+### **Next Week**:
+5. [ ] Implement export parsing
+6. [ ] Add cross-file dependency tracking
+7. [ ] Update CLI for directory compilation
+8. [ ] Write multi-file tests
+
+### **Week 3**:
+9. [ ] Build todo-app-multi-file example
+10. [ ] Document module best practices
+11. [ ] Release v0.3.1
+12. [ ] Start Phase 12 (style system)
+
+---
+
+## 🏆 Success Metrics
+
+### Current (v0.3.0):
+- Tests: 638/638 (100%)
+- Packages: 5
+- Contributors: 1
+- Stars: TBD
+- Apps: 0
+
+### Target (v1.0.0):
+- Tests: 5000+
+- Packages: 50+
+- Contributors: 50+
+- Stars: 10,000+
+- Apps: 1,000+
 
 ---
 
 **Last Updated**: October 24, 2025
-**Status**: v0.3.0 Production Ready → v0.4.0 Ecosystem Expansion
-**Next Milestone**: 15 packages, multi-file support, style blocks
+**Current Focus**: Phase 11 - Module System
+**Next Release**: v0.3.1 (multi-file support)
