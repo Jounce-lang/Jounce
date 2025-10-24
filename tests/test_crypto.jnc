@@ -1,0 +1,296 @@
+// Test Crypto Module Implementation
+
+// Test SHA-256 hashing
+fn test_sha256() {
+    let data = "Hello, World!";
+    let hash = crypto::sha256(data);
+
+    assert_true(hash.to_hex().len() > 0, "SHA-256 hash should not be empty");
+    assert_eq(hash.algorithm, HashAlgorithm::SHA256, "Algorithm should be SHA256");
+}
+
+// Test SHA-1 hashing
+fn test_sha1() {
+    let data = "Hello, World!";
+    let hash = crypto::sha1(data);
+
+    assert_true(hash.to_hex().len() > 0, "SHA-1 hash should not be empty");
+    assert_eq(hash.algorithm, HashAlgorithm::SHA1, "Algorithm should be SHA1");
+}
+
+// Test MD5 hashing
+fn test_md5() {
+    let data = "Hello, World!";
+    let hash = crypto::md5(data);
+
+    assert_true(hash.to_hex().len() > 0, "MD5 hash should not be empty");
+    assert_eq(hash.algorithm, HashAlgorithm::MD5, "Algorithm should be MD5");
+}
+
+// Test HMAC
+fn test_hmac() {
+    let key = "secret-key";
+    let data = "message";
+    let hmac = crypto::hmac_sha256(key, data);
+
+    assert_true(hmac.to_hex().len() > 0, "HMAC should not be empty");
+}
+
+// Test hash comparison
+fn test_hash_equality() {
+    let data = "test data";
+    let hash1 = crypto::sha256(data);
+    let hash2 = crypto::sha256(data);
+
+    assert_true(hash1.eq(&hash2), "Same input should produce same hash");
+}
+
+// Test random bytes generation
+fn test_random_bytes() {
+    let bytes1 = crypto::random_bytes(16);
+    let bytes2 = crypto::random_bytes(16);
+
+    assert_eq(bytes1.len(), 16, "Should generate 16 bytes");
+    assert_eq(bytes2.len(), 16, "Should generate 16 bytes");
+
+    // Random bytes should be different
+    let mut different = false;
+    for i in 0..16 {
+        if bytes1[i] != bytes2[i] {
+            different = true;
+            break;
+        }
+    }
+    assert_true(different, "Random bytes should be different");
+}
+
+// Test random integer generation
+fn test_random_int() {
+    let num1 = crypto::random_int(0, 100);
+    let num2 = crypto::random_int(0, 100);
+
+    assert_true(num1 >= 0 && num1 < 100, "Random int should be in range [0, 100)");
+    assert_true(num2 >= 0 && num2 < 100, "Random int should be in range [0, 100)");
+}
+
+// Test random float generation
+fn test_random_float() {
+    let num1 = crypto::random_float();
+    let num2 = crypto::random_float();
+
+    assert_true(num1 >= 0.0 && num1 < 1.0, "Random float should be in range [0, 1)");
+    assert_true(num2 >= 0.0 && num2 < 1.0, "Random float should be in range [0, 1)");
+}
+
+// Test random string generation
+fn test_random_string() {
+    let charset = "abc123";
+    let str1 = crypto::random_string(10, charset);
+    let str2 = crypto::random_string(10, charset);
+
+    assert_eq(str1.len(), 10, "Random string should have specified length");
+    assert_eq(str2.len(), 10, "Random string should have specified length");
+
+    // All characters should be from charset
+    for i in 0..str1.len() {
+        let ch = str1.substring(i, i + 1);
+        assert_true(charset.contains(ch), "Character should be from charset");
+    }
+}
+
+// Test random alphanumeric string
+fn test_random_alphanumeric() {
+    let str = crypto::random_alphanumeric(20);
+
+    assert_eq(str.len(), 20, "Should generate string of specified length");
+
+    // Check if alphanumeric
+    for i in 0..str.len() {
+        let ch = str.substring(i, i + 1);
+        let is_alpha = (ch >= "A" && ch <= "Z") || (ch >= "a" && ch <= "z");
+        let is_digit = ch >= "0" && ch <= "9";
+        assert_true(is_alpha || is_digit, "Should be alphanumeric");
+    }
+}
+
+// Test random hex string
+fn test_random_hex() {
+    let hex = crypto::random_hex(32);
+
+    assert_eq(hex.len(), 32, "Should generate hex string of specified length");
+
+    // Check if hex characters
+    for i in 0..hex.len() {
+        let ch = hex.substring(i, i + 1);
+        let is_hex = (ch >= "0" && ch <= "9") || (ch >= "a" && ch <= "f");
+        assert_true(is_hex, "Should be hex character");
+    }
+}
+
+// Test UUID v4 generation
+fn test_uuid_v4() {
+    let uuid1 = crypto::uuid_v4();
+    let uuid2 = crypto::uuid_v4();
+
+    // UUID format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    assert_eq(uuid1.len(), 36, "UUID should be 36 characters");
+    assert_eq(uuid2.len(), 36, "UUID should be 36 characters");
+
+    // Check hyphens at correct positions
+    assert_eq(uuid1.substring(8, 9), "-", "Should have hyphen at position 8");
+    assert_eq(uuid1.substring(13, 14), "-", "Should have hyphen at position 13");
+    assert_eq(uuid1.substring(18, 19), "-", "Should have hyphen at position 18");
+    assert_eq(uuid1.substring(23, 24), "-", "Should have hyphen at position 23");
+
+    // Check version bit (4)
+    assert_eq(uuid1.substring(14, 15), "4", "Should have version 4");
+
+    // UUIDs should be different
+    assert_ne(uuid1, uuid2, "UUIDs should be unique");
+}
+
+// Test base64 encoding
+fn test_base64_encode() {
+    let data = "Hello, World!";
+    let encoded = crypto::base64_encode(data);
+
+    assert_true(encoded.len() > 0, "Encoded string should not be empty");
+
+    // Base64 encoded "Hello, World!" should be known value
+    // SGVsbG8sIFdvcmxkIQ==
+}
+
+// Test base64 decoding
+fn test_base64_decode() {
+    let encoded = "SGVsbG8sIFdvcmxkIQ==";
+    let decoded_result = crypto::base64_decode(encoded);
+
+    match decoded_result {
+        Ok(decoded) => {
+            assert_eq(decoded, "Hello, World!", "Should decode correctly");
+        },
+        Err(e) => {
+            assert(false, "Failed to decode base64");
+        },
+    }
+}
+
+// Test base64 round-trip
+fn test_base64_roundtrip() {
+    let original = "The quick brown fox jumps over the lazy dog";
+    let encoded = crypto::base64_encode(original);
+    let decoded_result = crypto::base64_decode(encoded);
+
+    match decoded_result {
+        Ok(decoded) => {
+            assert_eq(decoded, original, "Round-trip should preserve data");
+        },
+        Err(e) => {
+            assert(false, "Round-trip failed");
+        },
+    }
+}
+
+// Test hex encoding
+fn test_hex_encode() {
+    let bytes = [72, 101, 108, 108, 111];  // "Hello" in ASCII
+    let hex = crypto::hex_encode(&bytes);
+
+    assert_eq(hex, "48656c6c6f", "Should encode to correct hex");
+}
+
+// Test hex decoding
+fn test_hex_decode() {
+    let hex = "48656c6c6f";
+    let bytes_result = crypto::hex_decode(hex);
+
+    match bytes_result {
+        Ok(bytes) => {
+            assert_eq(bytes.len(), 5, "Should decode to 5 bytes");
+            assert_eq(bytes[0], 72, "First byte should be 72");
+            assert_eq(bytes[1], 101, "Second byte should be 101");
+        },
+        Err(e) => {
+            assert(false, "Failed to decode hex");
+        },
+    }
+}
+
+// Test hex round-trip
+fn test_hex_roundtrip() {
+    let original = [1, 2, 3, 4, 5, 255, 128, 64, 32, 16];
+    let hex = crypto::hex_encode(&original);
+    let decoded_result = crypto::hex_decode(hex);
+
+    match decoded_result {
+        Ok(decoded) => {
+            assert_eq(decoded.len(), original.len(), "Should decode to same length");
+            for i in 0..original.len() {
+                assert_eq(decoded[i], original[i], "Bytes should match");
+            }
+        },
+        Err(e) => {
+            assert(false, "Round-trip failed");
+        },
+    }
+}
+
+// Test password hashing
+fn test_password_hashing() {
+    let password = "my-secure-password";
+    let hash = crypto::hash_password_auto(password);
+
+    assert_eq(hash.algorithm, "PBKDF2-SHA256", "Algorithm should be PBKDF2-SHA256");
+    assert_true(hash.iterations >= 100000, "Should use at least 100000 iterations");
+    assert_true(hash.salt.len() > 0, "Should have salt");
+    assert_true(hash.hash.len() > 0, "Should have hash");
+}
+
+// Test password verification
+fn test_password_verification() {
+    let password = "correct-password";
+    let wrong_password = "wrong-password";
+
+    let hash = crypto::hash_password_auto(password);
+
+    // Correct password should verify
+    assert_true(hash.verify(password), "Correct password should verify");
+
+    // Wrong password should not verify
+    assert_false(hash.verify(wrong_password), "Wrong password should not verify");
+}
+
+// Test password hash serialization
+fn test_password_hash_serialization() {
+    let password = "test-password";
+    let hash = crypto::hash_password_auto(password);
+
+    // Serialize to string
+    let serialized = hash.to_string();
+    assert_true(serialized.len() > 0, "Serialized string should not be empty");
+    assert_true(serialized.starts_with("$"), "Should start with $");
+
+    // Deserialize from string
+    let parsed_result = PasswordHash::from_string(serialized);
+    match parsed_result {
+        Ok(parsed) => {
+            assert_eq(parsed.algorithm, hash.algorithm, "Algorithm should match");
+            assert_eq(parsed.iterations, hash.iterations, "Iterations should match");
+            assert_eq(parsed.salt, hash.salt, "Salt should match");
+            assert_eq(parsed.hash, hash.hash, "Hash should match");
+        },
+        Err(e) => {
+            assert(false, "Failed to parse password hash");
+        },
+    }
+}
+
+// Test salt generation
+fn test_salt_generation() {
+    let salt1 = crypto::generate_salt(32);
+    let salt2 = crypto::generate_salt(32);
+
+    assert_eq(salt1.len(), 32, "Salt should have specified length");
+    assert_eq(salt2.len(), 32, "Salt should have specified length");
+    assert_ne(salt1, salt2, "Salts should be different");
+}

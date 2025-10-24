@@ -18,6 +18,7 @@ pub mod hashset;
 pub mod string;
 pub mod fs;
 pub mod math;
+pub mod crypto;
 
 // Re-export commonly used items
 pub use reactive::{Signal, Computed, Effect};
