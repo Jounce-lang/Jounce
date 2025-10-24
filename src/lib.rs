@@ -42,6 +42,7 @@ pub mod js_emitter; // JavaScript code generation for server and client bundles
 pub mod js_minifier; // JavaScript minification for production builds
 pub mod formatter; // Code formatter for consistent style
 pub mod watcher; // File watching and auto-recompilation
+pub mod test_framework; // Test framework for unit and integration testing (Phase 9 Sprint 2)
 
 use borrow_checker::BorrowChecker;
 use cache::CompilationCache;
