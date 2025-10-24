@@ -388,6 +388,268 @@ fn StyledComponent() -> JSX {
 }
 ```
 
+## Using Packages
+
+Jounce has a complete package ecosystem with a built-in package manager. You can install and use production-ready libraries to accelerate your development.
+
+### Package Manager Commands
+
+```bash
+# Install a package
+jnc pkg install jounce-router
+
+# Add dependency to jounce.toml
+jnc pkg add jounce-http
+
+# Install all dependencies from jounce.toml
+jnc pkg install
+
+# Search for packages
+jnc pkg search forms
+
+# Show package information
+jnc pkg info jounce-store
+
+# Update dependencies
+jnc pkg update
+
+# Show dependency tree
+jnc pkg tree
+
+# Security audit
+jnc pkg audit
+```
+
+### Available Packages
+
+#### jounce-router v0.1.0
+
+Client-side routing with history API, route guards, and navigation hooks.
+
+```jounce
+use jounce_router::{Router, Route};
+
+fn setup_routes() {
+    let router = Router::new();
+
+    // Add routes
+    router.add_route("/", home_handler);
+    router.add_route("/users/:id", user_handler);
+    router.add_route("/about", about_handler);
+
+    // Navigate programmatically
+    router.navigate("/users/42");
+}
+
+fn home_handler() -> JSX {
+    return <div><h1>Home Page</h1></div>;
+}
+
+fn user_handler(params: RouteParams) -> JSX {
+    let user_id = params.get("id");
+    return <div><h1>User {user_id}</h1></div>;
+}
+```
+
+#### jounce-http v0.1.0
+
+HTTP client for making API requests with configuration support.
+
+```jounce
+use jounce_http::HttpClient;
+
+async fn fetch_users() {
+    // Create client with base URL
+    let client = HttpClient::new("https://api.example.com");
+
+    // GET request
+    let response = client.get("/users").send().await;
+
+    if response.is_ok() {
+        let data = response.unwrap();
+        console.log("Users: " + data);
+    }
+
+    // POST request with JSON
+    let user_data = "{\"name\": \"Alice\", \"email\": \"alice@example.com\"}";
+    let post_response = client.post("/users")
+        .body(user_data)
+        .send()
+        .await;
+}
+```
+
+#### jounce-forms v1.0.0
+
+Form handling, validation, and form builders.
+
+```jounce
+use jounce_forms::{Form, Validator};
+
+fn create_signup_form() -> Form {
+    let form = Form::new()
+        .add_field("email", Validator::email())
+        .add_field("password", Validator::min_length(8))
+        .add_field("age", Validator::range(18, 100));
+
+    return form;
+}
+
+fn handle_submit(form_data: FormData) {
+    let form = create_signup_form();
+
+    let validation_result = form.validate(form_data);
+
+    if validation_result.is_valid() {
+        console.log("Form is valid!");
+    } else {
+        let errors = validation_result.errors();
+        console.log("Validation errors: " + errors.to_string());
+    }
+}
+```
+
+#### jounce-i18n v1.0.0
+
+Internationalization and localization support.
+
+```jounce
+use jounce_i18n::Translator;
+
+fn setup_translations() {
+    // Initialize translator with locale
+    let t = Translator::new("en");
+
+    // Load translations
+    t.load_translations("en", "{
+        \"welcome\": \"Welcome, {name}!\",
+        \"goodbye\": \"Goodbye!\"
+    }");
+
+    // Translate with parameters
+    let message = t.translate("welcome", {name: "Alice"});
+    console.log(message);  // "Welcome, Alice!"
+
+    // Switch locale
+    t.set_locale("es");
+}
+```
+
+#### jounce-store v1.0.0
+
+State management with actions, reducers, and middleware.
+
+```jounce
+use jounce_store::Store;
+
+enum Action {
+    Increment,
+    Decrement,
+    SetValue(i64),
+}
+
+struct AppState {
+    count: i64,
+}
+
+fn reducer(state: AppState, action: Action) -> AppState {
+    match action {
+        Action::Increment => {
+            return AppState { count: state.count + 1 };
+        }
+        Action::Decrement => {
+            return AppState { count: state.count - 1 };
+        }
+        Action::SetValue(value) => {
+            return AppState { count: value };
+        }
+    }
+}
+
+fn main() {
+    let initial_state = AppState { count: 0 };
+    let store = Store::new(initial_state, reducer);
+
+    // Dispatch actions
+    store.dispatch(Action::Increment);
+    store.dispatch(Action::Increment);
+
+    let state = store.get_state();
+    console.log("Count: " + state.count.to_string());  // "Count: 2"
+}
+```
+
+### Creating a Full Application with Packages
+
+Here's an example combining multiple packages:
+
+```jounce
+use jounce_router::{Router, Route};
+use jounce_http::HttpClient;
+use jounce_store::Store;
+use jounce_forms::{Form, Validator};
+
+fn main() {
+    // Setup router
+    let router = Router::new();
+    router.add_route("/", home_page);
+    router.add_route("/users", users_page);
+
+    // Initialize store
+    let store = Store::new(initial_state, reducer);
+
+    // Start app
+    router.start();
+}
+
+async fn users_page() -> JSX {
+    // Fetch users with HTTP client
+    let client = HttpClient::new("https://api.example.com");
+    let response = client.get("/users").send().await;
+
+    if response.is_ok() {
+        let users = response.unwrap();
+        return render_users_list(users);
+    }
+
+    return <div>Error loading users</div>;
+}
+
+fn render_users_list(users: String) -> JSX {
+    return (
+        <div class="container">
+            <h1>Users</h1>
+            <div class="users-list">
+                {/* Render users here */}
+            </div>
+        </div>
+    );
+}
+```
+
+### Package Configuration
+
+To manage dependencies, create a `jounce.toml` file in your project:
+
+```toml
+[package]
+name = "my-app"
+version = "1.0.0"
+
+[dependencies]
+jounce-router = "0.1.0"
+jounce-http = "0.1.0"
+jounce-forms = "1.0.0"
+jounce-i18n = "1.0.0"
+jounce-store = "1.0.0"
+```
+
+Then install all dependencies at once:
+
+```bash
+jnc pkg install
+```
+
 ## Compilation Options
 
 ### Basic Compilation
