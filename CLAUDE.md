@@ -136,52 +136,80 @@ jnc watch src --output dist
 
 ---
 
-## 🎯 Next Steps (START HERE)
+## 🎯 Phase 12 TODO List (START HERE)
 
-### Week 1: Design & Research
+**Use TodoWrite to track these tasks as you work through them!**
 
-**Task 1: Research Solid.js reactivity** (1 day)
-- Study Solid.js signal implementation
-- Read reactivity pattern documentation
-- Understand dependency tracking algorithms
-- Design Jounce reactivity API
+### Week 1: Design & Research (3-4 days)
 
-**Task 2: Design reactivity specification** (1 day)
-- Write `docs/design/REACTIVITY_SYSTEM.md`
-- Define signal, computed, effect semantics
-- JavaScript runtime code generation plan
-- Memory management strategy
+- [ ] **Task 1: Research Solid.js reactivity** (~4 hours)
+  - Study Solid.js signal implementation
+  - Read reactivity pattern documentation
+  - Understand dependency tracking algorithms
+  - Design Jounce reactivity API
 
-**Task 3: Implement signal runtime** (2-3 days)
-- Add `runtime/reactivity.js`
-- Implement Signal class
-- Implement Computed class
-- Implement Effect class
+- [ ] **Task 2: Design reactivity specification** (~4 hours)
+  - Write `docs/design/REACTIVITY_SYSTEM.md`
+  - Define signal, computed, effect semantics
+  - JavaScript runtime code generation plan
+  - Memory management strategy
 
-### Week 2: Parser & Codegen
+- [ ] **Task 3: Implement signal runtime** (~8-12 hours)
+  - Add `runtime/reactivity.js`
+  - Implement Signal class
+  - Implement Computed class
+  - Implement Effect class
+  - Test runtime in isolation
 
-**Task 4: Add reactivity syntax** (2 days)
-- Parse `signal()`, `computed()`, `effect()`
-- Update AST nodes
-- Type checking for reactive types
+### Week 2: Parser & Codegen (4-5 days)
 
-**Task 5: Generate reactive code** (2 days)
-- js_emitter.rs generates Signal/Computed/Effect
-- Property access → `.value`
-- Handle batching
+- [ ] **Task 4: Add reactivity syntax** (~8 hours)
+  - Parse `signal()`, `computed()`, `effect()`
+  - Update AST nodes
+  - Type checking for reactive types
+  - Error messages for misuse
 
-### Week 3: Testing & Examples
+- [ ] **Task 5: Generate reactive code** (~8 hours)
+  - js_emitter.rs generates Signal/Computed/Effect
+  - Property access → `.value`
+  - Handle batching
+  - Test generated JavaScript
 
-**Task 6: Write tests** (2 days)
-- 20+ tests for signals, computed, effects
-- Test dependency tracking
-- Test batching
-- Test memory cleanup
+### Week 3: Testing & Examples (4-5 days)
 
-**Task 7: Build example apps** (2 days)
-- Counter app
-- Todo app with reactivity
-- Form validation example
+- [ ] **Task 6: Write comprehensive tests** (~8 hours)
+  - 20+ tests for signals, computed, effects
+  - Test dependency tracking
+  - Test batching
+  - Test memory cleanup
+  - Edge cases (circular dependencies, etc.)
+
+- [ ] **Task 7: Build example apps** (~8 hours)
+  - Counter app (simple signal demo)
+  - Todo app with reactivity
+  - Form validation example
+  - Document each example
+
+- [ ] **Task 8: Write documentation** (~4 hours)
+  - User guide for reactivity
+  - API reference
+  - Migration guide from non-reactive code
+  - Performance considerations
+
+### Phase 12 Completion Checklist
+
+- [ ] All 8 tasks complete
+- [ ] 20+ reactivity tests passing
+- [ ] 3 example apps working
+- [ ] Documentation written
+- [ ] All existing 638 tests still passing
+- [ ] Committed and pushed to GitHub
+- [ ] ROADMAP.md updated
+- [ ] Ready for Phase 13
+
+---
+
+## 📋 Detailed Task Breakdown
 
 ---
 
