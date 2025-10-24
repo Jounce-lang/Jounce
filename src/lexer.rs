@@ -1243,4 +1243,58 @@ mod tests {
         let tok3 = lexer.next_token();
         assert!(matches!(tok3.kind, TokenKind::Integer(0))); // 0b0 = 0
     }
+
+    #[test]
+    fn test_style_keyword() {
+        let input = "style Button { }".to_string();
+        let mut lexer = Lexer::new(input);
+
+        let token = lexer.next_token();
+        assert_eq!(token.kind, TokenKind::Style);
+        assert_eq!(token.lexeme, "style");
+
+        let token2 = lexer.next_token();
+        assert_eq!(token2.kind, TokenKind::Identifier);
+        assert_eq!(token2.lexeme, "Button");
+    }
+
+    #[test]
+    fn test_theme_keyword() {
+        let input = "theme DarkMode { }".to_string();
+        let mut lexer = Lexer::new(input);
+
+        let token = lexer.next_token();
+        assert_eq!(token.kind, TokenKind::Theme);
+        assert_eq!(token.lexeme, "theme");
+
+        let token2 = lexer.next_token();
+        assert_eq!(token2.kind, TokenKind::Identifier);
+        assert_eq!(token2.lexeme, "DarkMode");
+    }
+
+    #[test]
+    fn test_style_and_theme_together() {
+        let input = "theme MyTheme { } style MyButton { }".to_string();
+        let mut lexer = Lexer::new(input);
+
+        // theme
+        let token1 = lexer.next_token();
+        assert_eq!(token1.kind, TokenKind::Theme);
+
+        // MyTheme
+        let token2 = lexer.next_token();
+        assert_eq!(token2.kind, TokenKind::Identifier);
+
+        // { }
+        lexer.next_token();
+        lexer.next_token();
+
+        // style
+        let token5 = lexer.next_token();
+        assert_eq!(token5.kind, TokenKind::Style);
+
+        // MyButton
+        let token6 = lexer.next_token();
+        assert_eq!(token6.kind, TokenKind::Identifier);
+    }
 }
