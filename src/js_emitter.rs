@@ -502,6 +502,12 @@ impl JSEmitter {
         output.push_str("if (!String.prototype.clone) {\n");
         output.push_str("  String.prototype.clone = function() { return this.toString(); };\n");
         output.push_str("}\n");
+        output.push_str("if (!String.prototype.push_str) {\n");
+        output.push_str("  String.prototype.push_str = function(s) { return this + s; };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.to_string) {\n");
+        output.push_str("  String.prototype.to_string = function() { return this.toString(); };\n");
+        output.push_str("}\n");
         output.push_str("if (!Number.prototype.to_string) {\n");
         output.push_str("  Number.prototype.to_string = function() { return this.toString(); };\n");
         output.push_str("}\n");
@@ -517,8 +523,31 @@ impl JSEmitter {
         output.push_str("if (!Object.prototype.keys) {\n");
         output.push_str("  Object.prototype.keys = function() { return Object.keys(this); };\n");
         output.push_str("}\n");
+        output.push_str("if (!Object.prototype.clone) {\n");
+        output.push_str("  Object.prototype.clone = function() { return JSON.parse(JSON.stringify(this)); };\n");
+        output.push_str("}\n");
         output.push_str("if (!String.from_char_code) {\n");
         output.push_str("  String.from_char_code = function(code) { return String.fromCharCode(code); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.new) {\n");
+        output.push_str("  String.new = function() {\n");
+        output.push_str("    const sb = { __value: \"\" };\n");
+        output.push_str("    sb.push_str = function(s) { this.__value += s; };\n");
+        output.push_str("    sb.toString = function() { return this.__value; };\n");
+        output.push_str("    sb.valueOf = function() { return this.__value; };\n");
+        output.push_str("    sb.clone = function() { return this.__value; };\n");
+        output.push_str("    sb.len = function() { return this.__value.length; };\n");
+        output.push_str("    sb.is_empty = function() { return this.__value.length === 0; };\n");
+        output.push_str("    sb.contains = function(s) { return this.__value.includes(s); };\n");
+        output.push_str("    sb.trim = function() { return this.__value.trim(); };\n");
+        output.push_str("    sb.starts_with = function(s) { return this.__value.startsWith(s); };\n");
+        output.push_str("    sb.ends_with = function(s) { return this.__value.endsWith(s); };\n");
+        output.push_str("    sb.substring = function(start, end) { return this.__value.substring(start, end); };\n");
+        output.push_str("    return sb;\n");
+        output.push_str("  };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.from) {\n");
+        output.push_str("  String.from = function(s) { return String(s); };\n");
         output.push_str("}\n\n");
 
         // Built-in Result and Option enums (Rust-style error handling)
@@ -531,7 +560,9 @@ impl JSEmitter {
         output.push_str("Result.prototype.is_err = function() { return this.variant === \"Err\"; };\n");
         output.push_str("Result.prototype.unwrap = function() { if (this.variant === \"Ok\") return this.data; throw new Error(\"Called unwrap on Err\"); };\n");
         output.push_str("Result.prototype.unwrap_err = function() { if (this.variant === \"Err\") return this.data; throw new Error(\"Called unwrap_err on Ok\"); };\n");
-        output.push_str("Result.prototype.unwrap_or = function(default_val) { return this.variant === \"Ok\" ? this.data : default_val; };\n\n");
+        output.push_str("Result.prototype.unwrap_or = function(default_val) { return this.variant === \"Ok\" ? this.data : default_val; };\n");
+        output.push_str("Result.Ok = Ok;\n");
+        output.push_str("Result.Err = Err;\n\n");
 
         output.push_str("// Option<T> enum - represents Some value or None\n");
         output.push_str("const Option = { __proto__: null };\n");
@@ -557,6 +588,12 @@ impl JSEmitter {
         output.push_str("}\n");
         output.push_str("if (!Map.prototype.get_or_default) {\n");
         output.push_str("  Map.prototype.get_or_default = function(k, def) { return this.has(k) ? this.get(k) : def; };\n");
+        output.push_str("}\n");
+        output.push_str("if (!Map.prototype.len) {\n");
+        output.push_str("  Map.prototype.len = function() { return this.size; };\n");
+        output.push_str("}\n");
+        output.push_str("if (!Map.prototype.is_empty) {\n");
+        output.push_str("  Map.prototype.is_empty = function() { return this.size === 0; };\n");
         output.push_str("}\n\n");
 
         // Generate RPC client stubs
@@ -681,6 +718,18 @@ impl JSEmitter {
         output.push_str("  set_permissions: typeof set_permissions !== 'undefined' ? set_permissions : undefined,\n");
         output.push_str("  walk_dir: typeof walk_dir !== 'undefined' ? walk_dir : undefined,\n");
         output.push_str("  glob: typeof glob !== 'undefined' ? glob : undefined,\n");
+        output.push_str("};\n\n");
+
+        output.push_str("const yaml = {\n");
+        output.push_str("  parse: typeof yaml_parse !== 'undefined' ? yaml_parse : undefined,\n");
+        output.push_str("  stringify: typeof yaml_stringify !== 'undefined' ? yaml_stringify : undefined,\n");
+        output.push_str("  // Helper functions for creating YAML values\n");
+        output.push_str("  yaml_null: typeof yaml_null !== 'undefined' ? yaml_null : undefined,\n");
+        output.push_str("  yaml_bool: typeof yaml_bool !== 'undefined' ? yaml_bool : undefined,\n");
+        output.push_str("  yaml_number: typeof yaml_number !== 'undefined' ? yaml_number : undefined,\n");
+        output.push_str("  yaml_string: typeof yaml_string !== 'undefined' ? yaml_string : undefined,\n");
+        output.push_str("  yaml_sequence: typeof yaml_sequence !== 'undefined' ? yaml_sequence : undefined,\n");
+        output.push_str("  yaml_mapping: typeof yaml_mapping !== 'undefined' ? yaml_mapping : undefined,\n");
         output.push_str("};\n\n");
 
         // Generate component implementations

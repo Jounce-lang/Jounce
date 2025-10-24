@@ -256,6 +256,72 @@ function assert_false(condition, message) {
         throw new Error(message || "Expected false");
     }
 }
+
+function assert_ok(result, message) {
+    if (!result || result.variant !== "Ok") {
+        throw new Error(message || "Expected Result::Ok variant");
+    }
+}
+
+function assert_err(result, message) {
+    if (!result || result.variant !== "Err") {
+        throw new Error(message || "Expected Result::Err variant");
+    }
+}
+
+function assert_some(option, message) {
+    if (!option || option.variant !== "Some") {
+        throw new Error(message || "Expected Option::Some variant");
+    }
+}
+
+function assert_none(option, message) {
+    if (!option || option.variant !== "None") {
+        throw new Error(message || "Expected Option::None variant");
+    }
+}
+
+function assert_contains(haystack, needle, message) {
+    if (Array.isArray(haystack)) {
+        if (!haystack.includes(needle)) {
+            throw new Error(message || `Array does not contain ${needle}`);
+        }
+    } else if (typeof haystack === "string") {
+        if (!haystack.includes(needle)) {
+            throw new Error(message || `String does not contain ${needle}`);
+        }
+    } else {
+        throw new Error("assert_contains requires array or string");
+    }
+}
+
+function assert_length(collection, expected, message) {
+    const actual = collection.length || collection.size || 0;
+    if (actual !== expected) {
+        throw new Error(message || `Expected length ${expected}, got ${actual}`);
+    }
+}
+
+function assert_empty(collection, message) {
+    const len = collection.length || collection.size || 0;
+    if (len !== 0) {
+        throw new Error(message || `Expected empty collection, got length ${len}`);
+    }
+}
+
+function assert_not_empty(collection, message) {
+    const len = collection.length || collection.size || 0;
+    if (len === 0) {
+        throw new Error(message || "Expected non-empty collection");
+    }
+}
+
+function assert_approx(actual, expected, epsilon, message) {
+    epsilon = epsilon || 0.0001;
+    if (Math.abs(actual - expected) > epsilon) {
+        throw new Error(message || `Expected ${expected} ± ${epsilon}, got ${actual}`);
+    }
+}
 "#.to_string()
 }
 

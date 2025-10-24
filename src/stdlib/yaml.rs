@@ -100,7 +100,7 @@ impl YamlValue {
         match self {
             YamlValue::Mapping(map) => {
                 if map.contains_key(&key) {
-                    Option::Some(map.get(&key).unwrap().clone())
+                    Option::Some(map.get(&key).clone())
                 } else {
                     Option::None
                 }
@@ -464,13 +464,13 @@ impl YamlParser {
 }
 
 // Parse YAML string to YamlValue
-fn parse(yaml: String) -> Result<YamlValue, String> {
+fn yaml_parse(yaml: String) -> Result<YamlValue, String> {
     let mut parser = YamlParser::new(yaml);
     return parser.parse_value();
 }
 
 // Serialize YamlValue to YAML string
-fn stringify(value: YamlValue) -> String {
+fn yaml_stringify(value: YamlValue) -> String {
     return stringify_with_indent(&value, 0);
 }
 
@@ -484,7 +484,8 @@ fn stringify_with_indent(value: &YamlValue, indent: i64) -> String {
         YamlValue::String(s) => {
             // Quote strings that need it
             if s.contains(":") || s.contains("#") || s.contains("\"") {
-                return format!("\"{}\"", s.replace("\"", "\\\""));
+                let escaped = s.replace("\"", "\\\"");
+                return "\"" + &escaped + "\"";
             }
             return s.clone();
         }
@@ -514,7 +515,7 @@ fn stringify_with_indent(value: &YamlValue, indent: i64) -> String {
                 result.push_str(&indent_str);
                 result.push_str(key);
                 result.push_str(": ");
-                let value_str = stringify_with_indent(&map.get(key).unwrap(), indent + 1);
+                let value_str = stringify_with_indent(&map.get(key), indent + 1);
                 result.push_str(&value_str);
             }
             return result;
