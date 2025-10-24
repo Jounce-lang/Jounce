@@ -1,6 +1,6 @@
 // Type Checker with Hindley-Milner Type Inference
 
-use crate::ast::{Expression, Statement, InfixExpression, PrefixExpression, TypeExpression, TraitDefinition, ImplBlock, FunctionParameter, TraitMethod};
+use crate::ast::{Expression, Statement, InfixExpression, PrefixExpression, TypeExpression, TraitDefinition, ImplBlock};
 use crate::errors::CompileError;
 use crate::types::{Substitution, Type, TypeEnv};
 use std::collections::{HashSet, HashMap};

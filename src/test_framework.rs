@@ -3,7 +3,6 @@
 
 use std::path::{Path, PathBuf};
 use std::fs;
-use crate::ast::Program;
 use crate::errors::CompileError;
 use crate::lexer::Lexer;
 use crate::parser::Parser;

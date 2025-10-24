@@ -1229,9 +1229,9 @@ enum FormatResult {
 }
 
 fn format_code(path: PathBuf, mode: FormatMode) -> std::io::Result<()> {
-    use jounce_compiler::formatter::{Formatter, FormatterConfig};
-    use jounce_compiler::lexer::Lexer;
-    use jounce_compiler::parser::Parser;
+    
+    
+    
     let mut formatted_count = 0;
     let mut error_count = 0;
     let mut total_count = 0;

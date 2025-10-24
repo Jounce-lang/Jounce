@@ -126,7 +126,7 @@ impl CssGenerator {
 
     /// Generate CSS for a container query (Phase 8 Sprint 1 Task 1.4)
     fn generate_container_query(&mut self, container_query: &CssContainerQuery, selector: &str) {
-        use crate::ast::CssContainerQuery;
+        
 
         // Output @container condition
         self.css_output.push_str("@container ");
