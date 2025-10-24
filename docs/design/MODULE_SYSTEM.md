@@ -1,6 +1,6 @@
 # Jounce Module System Documentation
 
-**Status**: Phase 11 - Module System Implementation
+**Status**: Phase 11 - Module System Implementation (5/11 tasks complete)
 **Created**: October 24, 2025
 **Last Updated**: October 24, 2025
 
@@ -9,6 +9,8 @@
 ## Overview
 
 Jounce has a module system for organizing code across multiple files and importing packages. This document describes the current implementation, what works, what's missing, and the plan for multi-file support.
+
+**Latest Update**: Tasks 6 and 9 completed! Local file imports with `./` and `../` now work. Multi-file todo app example demonstrates full functionality.
 
 ---
 
@@ -47,7 +49,72 @@ use jounce_store::store     → aloha-shirts/jounce-store/src/store/store.jnc
 use jounce_http::client     → aloha-shirts/jounce-http/src/client/client.jnc
 ```
 
-#### 2. UseStatement AST Node
+#### 2. Local File Imports (NEW! ✅)
+
+**Syntax**: `use ./path` or `use ../path`
+
+```jounce
+// Import from current directory
+use ./math;              → ./math.jnc
+
+// Import from parent directory
+use ../utils;            → ../utils.jnc
+
+// Import from nested directories
+use ./models/user;       → ./models/user.jnc
+use ../lib/helpers;      → ../lib/helpers.jnc
+```
+
+**How It Works**:
+- Parser (src/parser.rs:135) detects `.` and `..` tokens
+- Parses relative path segments (`.`, `..`, identifiers)
+- ModuleLoader (src/module_loader.rs:58) resolves relative to current working directory
+- All top-level functions, structs, enums are automatically imported
+
+**Implementation** (Task 6 Complete):
+- Parser updated to handle Dot and DotDot tokens
+- Module loader checks for relative paths (starts with `.` or `..`)
+- Resolves paths using PathBuf navigation
+- Falls back to package resolution for non-relative paths
+
+**Example**:
+```jounce
+// math.jnc
+fn add(a: i64, b: i64) -> i64 {
+    return a + b;
+}
+
+// main.jnc
+use ./math;
+
+fn main() {
+    let result = add(5, 3);
+    console.log(result.to_string());
+}
+```
+
+**Nested Imports Work**:
+```jounce
+// types.jnc
+struct Todo { id: i64, title: String, completed: bool }
+
+// storage.jnc
+use ./types;  // Import types
+
+fn get_sample() -> Todo {
+    return Todo { id: 1, title: "Sample", completed: false };
+}
+
+// main.jnc
+use ./storage;  // Imports storage, which imports types
+
+fn main() {
+    let todo = get_sample();
+    console.log(todo.title);
+}
+```
+
+#### 3. UseStatement AST Node
 
 **Definition** (src/ast.rs:34):
 ```rust
@@ -117,25 +184,7 @@ loader.merge_imports(&mut program)?;
 
 ## What's Missing ❌
 
-### 1. Local File Imports
-
-**Problem**: Cannot import from relative file paths.
-
-**Desired Syntax**:
-```jounce
-use ./math;              // Import from ./math.jnc
-use ./utils/helpers;     // Import from ./utils/helpers.jnc
-use ../common/types;     // Import from parent directory
-```
-
-**Current Error**: Module loader only searches in package directories, not relative to current file.
-
-**What Needs to Change**:
-- `resolve_module_path()` must detect `.` or `..` prefix
-- Resolve path relative to importing file's directory
-- Load and parse the local .jnc file
-
-### 2. Export Keyword
+### 1. Export Keyword
 
 **Problem**: All top-level items are exported. No way to make items private.
 
@@ -159,7 +208,7 @@ fn private_helper() {
 - `extract_exports()` only exports marked items (module_loader.rs)
 - JavaScript emitter generates `export` statements (js_emitter.rs)
 
-### 3. Directory Compilation
+### 2. Directory Compilation
 
 **Problem**: CLI only compiles single files, not directories.
 
@@ -176,7 +225,7 @@ jnc compile src/ --entry main.jnc  # Specify entry point
 - Determine entry point (main.jnc or --entry flag)
 - Compile with module resolution
 
-### 4. Cross-File Dependency Tracking
+### 3. Cross-File Dependency Tracking
 
 **Problem**: Cache doesn't track file dependencies.
 
@@ -195,7 +244,7 @@ Change math.jnc → main.jnc NOT recompiled (cache hit)
 - Cache invalidation triggers when any dependency changes
 - Watch mode must monitor imported files
 
-### 5. Module Re-exports
+### 4. Module Re-exports
 
 **Problem**: Cannot re-export symbols from imported modules.
 
