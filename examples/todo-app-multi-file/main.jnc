@@ -1,0 +1,46 @@
+// Todo App - Multi-file example
+// Demonstrates cross-file imports in Jounce
+
+use ./types;
+use ./utils;
+use ./storage;
+
+fn main() {
+    console.log("=== Todo App (Multi-file Example) ===");
+    console.log("");
+
+    // Test utility functions
+    console.log("Testing utilities...");
+    let count_text = format_count(3);
+    console.log("Count: " + count_text);
+
+    let valid = validate_title("Learn Jounce");
+    console.log("Title validation: " + valid.to_string());
+
+    let id = generate_id();
+    console.log("Generated ID: " + id.to_string());
+
+    let doubled = double(21);
+    console.log("Double 21: " + doubled.to_string());
+    console.log("");
+
+    // Test type creation
+    console.log("Creating todos...");
+    let todo1 = create_todo(1, "Learn Jounce");
+    let todo2 = create_todo(2, "Build an app");
+    console.log("✓ Created todos");
+    console.log("");
+
+    // Test storage functions
+    console.log("Testing storage...");
+    let sample = get_sample_todo();
+    console.log("Sample: " + format_todo(sample));
+
+    let completed_todo = mark_completed(todo1);
+    console.log("Completed: " + format_todo(completed_todo));
+    console.log("");
+
+    console.log("=== All imports working! ===");
+    console.log("Files: types.jnc, utils.jnc, storage.jnc");
+    console.log("Imports: 3 modules successfully loaded");
+}

@@ -1,0 +1,20 @@
+// Storage functions for todos
+
+use ./types;
+
+fn get_sample_todo() -> Todo {
+    return create_todo(1, "Sample task");
+}
+
+fn format_todo(todo: Todo) -> String {
+    let status = if todo.completed { "[x]" } else { "[ ]" };
+    return status + " " + todo.title;
+}
+
+fn mark_completed(todo: Todo) -> Todo {
+    return Todo {
+        id: todo.id,
+        title: todo.title,
+        completed: true,
+    };
+}

@@ -1,0 +1,21 @@
+// Shared types for todo app
+
+struct Todo {
+    id: i64,
+    title: String,
+    completed: bool,
+}
+
+enum Filter {
+    All,
+    Active,
+    Completed,
+}
+
+fn create_todo(id: i64, title: String) -> Todo {
+    return Todo {
+        id: id,
+        title: title,
+        completed: false,
+    };
+}

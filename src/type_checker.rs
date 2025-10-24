@@ -750,7 +750,27 @@ impl TypeChecker {
         let op = &infix.operator.lexeme;
 
         match op.as_str() {
-            "+" | "-" | "*" | "/" | "%" => {
+            "+" => {
+                // Addition: support both arithmetic and string concatenation
+                if left_type == Type::String || right_type == Type::String {
+                    // String concatenation
+                    Ok(Type::String)
+                } else if left_type.is_numeric() && right_type.is_numeric() {
+                    // Arithmetic addition
+                    if left_type == Type::Float || right_type == Type::Float {
+                        Ok(Type::Float)
+                    } else {
+                        Ok(Type::Int)
+                    }
+                } else {
+                    return Err(CompileError::Generic(format!(
+                        "Cannot apply + operator to {} and {}",
+                        left_type, right_type
+                    )));
+                }
+            }
+
+            "-" | "*" | "/" | "%" => {
                 // Arithmetic operations
                 if !left_type.is_numeric() {
                     return Err(CompileError::Generic(format!(

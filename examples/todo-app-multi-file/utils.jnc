@@ -1,0 +1,25 @@
+// Utility functions
+
+fn format_count(count: i64) -> String {
+    if count == 1 {
+        return "1 item";
+    }
+    return count.to_string() + " items";
+}
+
+fn validate_title(title: String) -> bool {
+    return title.length() > 0;
+}
+
+fn generate_id() -> i64 {
+    // Simple ID generation
+    return 42;
+}
+
+fn double(n: i64) -> i64 {
+    return n * 2;
+}
+
+fn is_valid_id(id: i64) -> bool {
+    return id > 0;
+}
