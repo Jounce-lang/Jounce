@@ -1,4 +1,4 @@
-# RavensOne Registry Status Summary
+# Jounce Registry Status Summary
 
 **Date**: October 19, 2025
 **Status**: ✅ **Local Registry Operational**
@@ -11,7 +11,7 @@
 
 - **Status**: Running locally
 - **URL**: http://localhost:4000
-- **Database**: PostgreSQL (ravensone_registry)
+- **Database**: PostgreSQL (jounce_registry)
 - **Process ID**: 15445
 - **Health**: ✅ OK
 
@@ -36,27 +36,27 @@ All 25 REST API endpoints are operational:
 The registry currently has **5 published packages**:
 
 ### 1. raven-i18n (v1.0.0)
-- **Description**: Internationalization (i18n) library for RavensOne applications
+- **Description**: Internationalization (i18n) library for Jounce applications
 - **Keywords**: i18n, l10n, internationalization, localization, translation
 - **Downloads**: 5
 
 ### 2. raven-store (v1.0.0)
-- **Description**: Advanced state management library for RavensOne applications
+- **Description**: Advanced state management library for Jounce applications
 - **Keywords**: state, reactive, store, signals
 - **Downloads**: 5
 
 ### 3. raven-http (v0.1.0)
-- **Description**: HTTP client library for RavensOne applications
+- **Description**: HTTP client library for Jounce applications
 - **Keywords**: http, fetch, ajax, client, api
 - **Downloads**: 4
 
 ### 4. raven-forms (v1.0.0)
-- **Description**: Powerful form handling and validation library for RavensOne
+- **Description**: Powerful form handling and validation library for Jounce
 - **Keywords**: forms, validation, input, ui
 - **Downloads**: 3
 
 ### 5. raven-router (v0.1.0)
-- **Description**: Client-side routing library for RavensOne single-page applications
+- **Description**: Client-side routing library for Jounce single-page applications
 - **Keywords**: router, routing, spa, navigation, history
 - **Downloads**: 3
 
@@ -71,14 +71,14 @@ The registry currently has **5 published packages**:
 **Structure**:
 ```
 aloha-shirts/raven-ui/
-├── raven.toml              # Package manifest
+├── jounce.toml              # Package manifest
 ├── README.md               # Documentation
 └── src/
-    ├── lib.raven           # Main exports
+    ├── lib.jnc           # Main exports
     └── components/
-        ├── Button.raven    # Button component with 6 variants
-        ├── Input.raven     # Input component with validation
-        └── Card.raven      # Card container component
+        ├── Button.jnc    # Button component with 6 variants
+        ├── Input.jnc     # Input component with validation
+        └── Card.jnc      # Card container component
 ```
 
 **Features**:
@@ -99,7 +99,7 @@ aloha-shirts/raven-ui/
 
 **Important Clarification**:
 
-- **Fly.io Registry** (https://ravensone-registry.fly.dev): Currently suspended
+- **Fly.io Registry** (https://jounce-registry.fly.dev): Currently suspended
 - **Local Registry** (http://localhost:4000): Active and operational
 
 The Fly.io deployment exists but is in a suspended state to save resources. All current development and testing is happening against the local registry running on your machine.
@@ -130,7 +130,7 @@ The Fly.io deployment exists but is in a suspended state to save resources. All 
 ### Local Registry Configuration
 
 **Environment** (`registry/.env`):
-- **Database**: postgres://jordanhill@localhost/ravensone_registry
+- **Database**: postgres://jordanhill@localhost/jounce_registry
 - **Port**: 4000
 - **JWT Secret**: dev-secret-key-for-local-testing-only...
 - **Storage**: ./packages (local filesystem)
@@ -138,7 +138,7 @@ The Fly.io deployment exists but is in a suspended state to save resources. All 
 
 ### Package Publishing Workflow
 
-1. **Create package directory** with raven.toml manifest
+1. **Create package directory** with jounce.toml manifest
 2. **Add components** in src/ directory
 3. **Login** (if not already authenticated):
    ```bash
@@ -175,7 +175,7 @@ The Fly.io deployment exists but is in a suspended state to save resources. All 
 Choose between:
 1. Testing raven-ui publishing to local registry
 2. Deploying everything to Fly.io production
-3. Focusing on other RavensOne development priorities
+3. Focusing on other Jounce development priorities
 
 ---
 

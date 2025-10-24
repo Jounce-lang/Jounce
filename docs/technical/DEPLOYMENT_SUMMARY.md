@@ -1,4 +1,4 @@
-# RavensOne Registry Deployment Summary
+# Jounce Registry Deployment Summary
 
 **Date**: October 19, 2025
 **Session Focus**: Registry Server Deployment & Documentation
@@ -8,24 +8,24 @@
 
 ## 🎉 Achievements
 
-This session successfully deployed the RavensOne package registry to production and enhanced the Getting Started documentation.
+This session successfully deployed the Jounce package registry to production and enhanced the Getting Started documentation.
 
 ### 1. ✅ Registry Server Deployed to Production
 
-**Deployment URL**: https://ravensone-registry.fly.dev
+**Deployment URL**: https://jounce-registry.fly.dev
 
 **Infrastructure**:
-- **App**: ravensone-registry (Fly.io)
-- **Database**: ravensone-registry-db (PostgreSQL on Fly.io)
+- **App**: jounce-registry (Fly.io)
+- **Database**: jounce-registry-db (PostgreSQL on Fly.io)
 - **Region**: San Jose, California (sjc)
 - **Image Size**: 29 MB (optimized multi-stage Docker build)
 
 **Verification**:
 ```bash
-$ curl https://ravensone-registry.fly.dev/health
+$ curl https://jounce-registry.fly.dev/health
 OK
 
-$ curl https://ravensone-registry.fly.dev/api/v1/stats
+$ curl https://jounce-registry.fly.dev/api/v1/stats
 {
   "total_packages": 0,
   "total_versions": 0,
@@ -72,13 +72,13 @@ $ curl https://ravensone-registry.fly.dev/api/v1/stats
 1. **Resumed PostgreSQL Database**
    - Machine ID: `d894037f679e18`
    - Status: `stopped` → `started`
-   - Command: `flyctl machine start d894037f679e18 --app ravensone-registry-db`
+   - Command: `flyctl machine start d894037f679e18 --app jounce-registry-db`
 
 2. **Deployed Registry Server**
    - Used existing Dockerfile (multi-stage build)
    - Build system: Depot (fast remote builder)
    - Deployment: Rolling update (zero downtime)
-   - Image: `registry.fly.io/ravensone-registry:deployment-01K7ZKW87WRZJ1W1TWFZA5KDVM`
+   - Image: `registry.fly.io/jounce-registry:deployment-01K7ZKW87WRZJ1W1TWFZA5KDVM`
 
 3. **Verified Health Check**
    - Health endpoint: `/health` ✅ Returns "OK"
@@ -216,13 +216,13 @@ Added a new "Package Management" section to `docs/GETTING_STARTED.md` covering:
    raven pkg init
    ```
 
-2. **Create `raven.toml`**
+2. **Create `jounce.toml`**
    ```toml
    [package]
    name = "my-awesome-package"
    version = "1.0.0"
    authors = ["Your Name <you@example.com>"]
-   description = "An awesome RavensOne package"
+   description = "An awesome Jounce package"
 
    [dependencies]
    # Add your dependencies here
@@ -243,7 +243,7 @@ Added a new "Package Management" section to `docs/GETTING_STARTED.md` covering:
 
 ## 🌐 Production Endpoints
 
-**Registry Base URL**: https://ravensone-registry.fly.dev
+**Registry Base URL**: https://jounce-registry.fly.dev
 
 **Key Endpoints**:
 - Health Check: `GET /health`
@@ -257,7 +257,7 @@ Added a new "Package Management" section to `docs/GETTING_STARTED.md` covering:
 
 ```bash
 # Register a new user
-curl -X POST https://ravensone-registry.fly.dev/api/v1/auth/register \
+curl -X POST https://jounce-registry.fly.dev/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "alice",
@@ -266,7 +266,7 @@ curl -X POST https://ravensone-registry.fly.dev/api/v1/auth/register \
   }'
 
 # Login
-curl -X POST https://ravensone-registry.fly.dev/api/v1/auth/login \
+curl -X POST https://jounce-registry.fly.dev/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "alice@example.com",
@@ -274,7 +274,7 @@ curl -X POST https://ravensone-registry.fly.dev/api/v1/auth/login \
   }'
 
 # Get statistics
-curl https://ravensone-registry.fly.dev/api/v1/stats
+curl https://jounce-registry.fly.dev/api/v1/stats
 ```
 
 ---
@@ -315,16 +315,16 @@ With the registry deployed and documented, the next priorities are:
 
 ```bash
 # Start database machine
-flyctl machine start d894037f679e18 --app ravensone-registry-db
+flyctl machine start d894037f679e18 --app jounce-registry-db
 
 # Deploy registry server
-flyctl deploy --app ravensone-registry
+flyctl deploy --app jounce-registry
 
 # Test health endpoint
-curl https://ravensone-registry.fly.dev/health
+curl https://jounce-registry.fly.dev/health
 
 # Test API endpoint
-curl https://ravensone-registry.fly.dev/api/v1/stats
+curl https://jounce-registry.fly.dev/api/v1/stats
 ```
 
 ### Build Details
@@ -343,7 +343,7 @@ The registry server uses the following environment variables:
 - `DATABASE_URL` - PostgreSQL connection string (Fly secret)
 - `JWT_SECRET` - JWT signing secret (Fly secret)
 - `PORT` - HTTP server port (8080)
-- `RUST_LOG` - Logging level (ravensone_registry=info)
+- `RUST_LOG` - Logging level (jounce_registry=info)
 - `STORAGE_TYPE` - Storage backend (local)
 - `STORAGE_PATH` - Package storage path (/app/storage)
 
@@ -365,7 +365,7 @@ The registry server uses the following environment variables:
 
 ## 🙏 Conclusion
 
-The RavensOne package registry is now **live and operational** at https://ravensone-registry.fly.dev!
+The Jounce package registry is now **live and operational** at https://jounce-registry.fly.dev!
 
 Developers can now:
 - Register accounts on the registry
@@ -374,7 +374,7 @@ Developers can now:
 - Search for packages using `raven pkg search`
 - View statistics and package information
 
-This deployment marks a major milestone for the RavensOne ecosystem, enabling package sharing and community growth.
+This deployment marks a major milestone for the Jounce ecosystem, enabling package sharing and community growth.
 
 ---
 
@@ -385,4 +385,4 @@ This deployment marks a major milestone for the RavensOne ecosystem, enabling pa
 
 ---
 
-*Built with precision and care for the RavensOne community! 🚀*
+*Built with precision and care for the Jounce community! 🚀*

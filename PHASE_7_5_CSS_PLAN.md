@@ -3,7 +3,7 @@
 **Status**: 📋 PLANNED
 **Priority**: CRITICAL - Must complete before libraries
 **Duration**: 2-3 weeks (3 focused sprints)
-**Goal**: Native CSS integration for RavensOne components
+**Goal**: Native CSS integration for Jounce components
 
 ---
 
@@ -13,7 +13,7 @@
 1. **Every library needs styling** - Can't build raven-ui without CSS
 2. **Examples are incomplete** - Sprint 7-8 full-stack apps need real styling
 3. **Developer expectation** - Modern frameworks (Svelte, Vue, Solid) have built-in CSS
-4. **Competitive necessity** - Without CSS, RavensOne feels incomplete
+4. **Competitive necessity** - Without CSS, Jounce feels incomplete
 
 ### What We're Building
 - **CSS-in-Raven**: Native `css!` macro for component-scoped styles
@@ -586,7 +586,7 @@ fn generate_html(&self, css_path: Option<&Path>) -> String {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RavensOne App</title>
+    <title>Jounce App</title>
     {css_link}
 </head>
 <body>
@@ -605,7 +605,7 @@ fn generate_html(&self, css_path: Option<&Path>) -> String {
 #### Task 1.10: End-to-End Test (2-3h)
 **Goal**: Complete working example
 
-**Test File**: `test_css_basic.raven`
+**Test File**: `test_css_basic.jnc`
 
 ```raven
 @client
@@ -1083,7 +1083,7 @@ let styles = css! {
 #### Task 2.8: Sprint 2 Testing (2h)
 **Goal**: Comprehensive test file
 
-**Test File**: `test_css_advanced.raven`
+**Test File**: `test_css_advanced.jnc`
 
 ```raven
 @client
@@ -1427,7 +1427,7 @@ impl Compiler {
 
 **Usage**:
 ```raven
-// In main.raven
+// In main.jnc
 import "./global.css";  // Global styles
 import "./reset.css";   // CSS reset
 
@@ -1671,7 +1671,7 @@ impl CssEmitter {
 ```json
 {
   "version": 3,
-  "sources": ["button.raven", "card.raven"],
+  "sources": ["button.jnc", "card.jnc"],
   "names": [],
   "mappings": "AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC"
 }
@@ -1805,7 +1805,7 @@ Once CSS is complete:
 1. **Use it in examples** - Retrofit Sprint 7-8 apps
 2. **Build raven-ui** - Component library with great styling
 3. **Build raven-forms** - Styled form components
-4. **Create design system** - Official RavensOne design tokens
+4. **Create design system** - Official Jounce design tokens
 5. **Showcase** - Beautiful examples that wow people
 
 ---

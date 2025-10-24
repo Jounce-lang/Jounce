@@ -1,17 +1,17 @@
-# CLAUDE.md - AI Assistant Guide for RavensOne
+# CLAUDE.md - AI Assistant Guide for Jounce
 
 ## Project Overview
 
-**RavensOne** is a revolutionary full-stack programming language that compiles `.raven` source files into JavaScript (server + client) and WebAssembly. The core innovation is **single-file full-stack development** with automatic code splitting via `@server` and `@client` annotations.
+**Jounce** is a revolutionary full-stack programming language that compiles `.jnc` source files into JavaScript (server + client) and WebAssembly. The core innovation is **single-file full-stack development** with automatic code splitting via `@server` and `@client` annotations.
 
 ### Key Innovation
-Write ONE `.raven` file → Get separate `server.js` + `client.js` + `app.wasm` + `index.html` with automatic RPC generation between client and server.
+Write ONE `.jnc` file → Get separate `server.js` + `client.js` + `app.wasm` + `index.html` with automatic RPC generation between client and server.
 
 ## Quick Facts
 
 - **Language**: Rust (compiler/toolchain)
 - **Main Binary**: `raven` (src/main.rs)
-- **Library**: `ravensone_compiler` (src/lib.rs)
+- **Library**: `jounce_compiler` (src/lib.rs)
 - **Version**: 0.1.0
 - **Test Coverage**: 221 tests passing (100% - 9 HTTP tests marked as ignored)
 - **Compilation Speed**: 15.2µs average, 65,711 compilations/sec
@@ -25,7 +25,7 @@ Write ONE `.raven` file → Get separate `server.js` + `client.js` + `app.wasm` 
 ### Compiler Pipeline
 
 ```
-.raven source
+.jnc source
     ↓
 [Lexer] (src/lexer.rs) → Tokens
     ↓
@@ -76,7 +76,7 @@ Output: dist/server.js, dist/client.js, dist/app.wasm, dist/index.html
 
 #### Package System
 - **Package Manager**: `raven pkg` commands
-- **Registry**: https://ravensone-registry.fly.dev
+- **Registry**: https://jounce-registry.fly.dev
 - **Local Packages**: aloha-shirts/ directory
   - raven-ui - UI components
   - raven-router - Client routing
@@ -149,15 +149,15 @@ component Counter() {
 
 ### Configuration
 - **Cargo.toml** - Rust project configuration
-- **raven.toml** - Package manifest (for .raven projects)
+- **jounce.toml** - Package manifest (for .jnc projects)
 
 ### Testing
-- **test_*.raven** - Test source files in root
+- **test_*.jnc** - Test source files in root
 - **examples/** - Example applications
-  - counter_app.raven
-  - todo_list.raven
-  - blog_app.raven
-  - shopping_app.raven
+  - counter_app.jnc
+  - todo_list.jnc
+  - blog_app.jnc
+  - shopping_app.jnc
   - devboard/ - Development dashboard
 
 ### Build Output
@@ -182,11 +182,11 @@ cargo test lexer             # Specific module
 cargo test -- --nocapture    # With output
 ```
 
-### Compiling .raven Files
+### Compiling .jnc Files
 ```bash
-./target/release/raven compile test.raven
-./target/release/raven compile app.raven --minify
-./target/release/raven compile app.raven --output custom-dist/
+./target/release/raven compile test.jnc
+./target/release/raven compile app.jnc --minify
+./target/release/raven compile app.jnc --output custom-dist/
 ```
 
 ### Package Management
@@ -286,21 +286,21 @@ Complete Compiler Bridge + Documentation Consolidation
 ### Example Files for Testing
 ```bash
 # Simple tests
-test_minimal.raven
-test_simple_func.raven
-test_closure.raven
+test_minimal.jnc
+test_simple_func.jnc
+test_closure.jnc
 
 # Complex scenarios
-test_closure_complex.raven
-test_indirect_call.raven
+test_closure_complex.jnc
+test_indirect_call.jnc
 
 # JSX tests
-test_jsx_simple.raven
-test_jsx_text.raven
-test_jsx_attrs.raven
-test_jsx_nested.raven
-test_jsx_expr.raven
-test_jsx_self_close_attr.raven
+test_jsx_simple.jnc
+test_jsx_text.jnc
+test_jsx_attrs.jnc
+test_jsx_nested.jnc
+test_jsx_expr.jnc
+test_jsx_self_close_attr.jnc
 ```
 
 ## Debugging Tips
@@ -319,7 +319,7 @@ cargo test parser::tests::test_parse_function
 
 ### 3. Check Generated Output
 ```bash
-raven compile test.raven
+raven compile test.jnc
 cat dist/server.js  # Inspect generated code
 cat dist/client.js
 ```
@@ -327,7 +327,7 @@ cat dist/client.js
 ### 4. Use Examples
 Start with working examples:
 ```bash
-raven compile examples/counter_app.raven
+raven compile examples/counter_app.jnc
 cd dist && node server.js
 ```
 
@@ -359,12 +359,12 @@ cd dist && node server.js
 1. **Read relevant source first**: Use Read tool on specific files
 2. **Check existing patterns**: Look for similar implementations
 3. **Run tests**: Always run `cargo test` after changes
-4. **Test with examples**: Compile example .raven files
+4. **Test with examples**: Compile example .jnc files
 5. **Update docs**: Modify README.md if user-facing
 
 ### When Fixing Bugs
 1. **Locate error source**: Check errors.rs and diagnostics.rs
-2. **Add test case**: Create minimal .raven file reproducing bug
+2. **Add test case**: Create minimal .jnc file reproducing bug
 3. **Verify fix**: Ensure test passes after fix
 4. **Check regressions**: Run full test suite
 
@@ -384,7 +384,7 @@ cd dist && node server.js
 ## Questions to Ask Before Starting
 
 1. **Scope**: Is this a lexer/parser/semantic/codegen change?
-2. **Breaking**: Will this break existing .raven files?
+2. **Breaking**: Will this break existing .jnc files?
 3. **Testing**: What test cases are needed?
 4. **Documentation**: What docs need updating?
 5. **Examples**: Should we add a new example?
@@ -476,9 +476,9 @@ grep -r "#\[test\]" src/
    - Real-world examples (Counter, Todo List)
 
 3. **Code Examples** (`examples/stdlib/`) - 1,000+ lines
-   - `math_examples.raven` (250+ lines) - 40+ math functions
-   - `reactive_examples.raven` (350+ lines) - 10 reactive demos
-   - `http_examples.raven` (400+ lines) - 12 HTTP patterns
+   - `math_examples.jnc` (250+ lines) - 40+ math functions
+   - `reactive_examples.jnc` (350+ lines) - 10 reactive demos
+   - `http_examples.jnc` (400+ lines) - 12 HTTP patterns
 
 **Critical Finding**: Division operator `/` not implemented in parser
 - Blocks math examples from compiling
@@ -506,7 +506,7 @@ grep -r "#\[test\]" src/
 - Implemented proper VLQ (Variable-Length Quantity) encoding
 - Full Source Map v3 specification compliance
 - Browser DevTools integration for debugging
-- Error messages now point to original .raven files
+- Error messages now point to original .jnc files
 
 **Testing**: 9/9 tests passing (4 LSP + 5 source map)
 
@@ -690,10 +690,10 @@ grep -r "#\[test\]" src/
 - **Language Completeness**: 80% → 85%
 
 **Test Files**:
-- ✅ test_for_push_struct.raven - Struct field comparisons in loops
-- ✅ test_turbofish.raven - Generic type parameters
-- ✅ test_chain.raven - Method chaining on string literals
-- ✅ test_ternary.raven - Conditional expressions
+- ✅ test_for_push_struct.jnc - Struct field comparisons in loops
+- ✅ test_turbofish.jnc - Generic type parameters
+- ✅ test_chain.jnc - Method chaining on string literals
+- ✅ test_ternary.jnc - Conditional expressions
 - ✅ All existing parser tests continue to pass
 
 **Key Architectural Improvements**:
@@ -736,8 +736,8 @@ grep -r "#\[test\]" src/
 ## Resources
 
 - **Main Docs**: README.md, GETTING_STARTED.md
-- **Registry**: https://ravensone-registry.fly.dev
-- **Test Files**: test_*.raven, examples/
+- **Registry**: https://jounce-registry.fly.dev
+- **Test Files**: test_*.jnc, examples/
 - **Package Examples**: aloha-shirts/
 
 ---
@@ -949,7 +949,7 @@ Language Completeness: Z%
    - Implemented `TypeCast` expression in AST
    - Full code generation for JavaScript and WebAssembly
    - Files: token.rs, ast.rs, parser.rs, js_emitter.rs, codegen.rs, borrow_checker.rs, semantic_analyzer.rs, type_checker.rs
-   - Test: `test_as_cast.raven` compiles successfully
+   - Test: `test_as_cast.jnc` compiles successfully
    - Time: 60 minutes
 
 2. ✅ **README.md Documentation Fix** - Prevents user confusion
@@ -1003,9 +1003,9 @@ Language Completeness: Z%
 - src/parser.rs (+5 lines) - Call closing tag mode methods
 
 **Test Results**:
-- ✅ test_jsx_simple_semi.raven - compiles
-- ✅ test_jsx_semicolon.raven - compiles
-- ✅ test_jsx_oneline.raven (nested JSX) - compiles
+- ✅ test_jsx_simple_semi.jnc - compiles
+- ✅ test_jsx_semicolon.jnc - compiles
+- ✅ test_jsx_oneline.jnc (nested JSX) - compiles
 - ✅ All 11 JSX parser tests pass
 - ✅ Full test suite: 221/221 passing (0 failures, 9 ignored)
 
@@ -1146,7 +1146,7 @@ Language Completeness: Z%
 - src/parser.rs (+5 lines) - Conditional exit_jsx_mode() based on was_jsx_mode
 
 **Test Results**:
-- ✅ test_jsx_return_complex.raven - parsing succeeds
+- ✅ test_jsx_return_complex.jnc - parsing succeeds
 - ✅ ecommerce app progresses past line 291
 - ✅ All 221 tests passing
 
@@ -1171,7 +1171,7 @@ Language Completeness: Z%
 - src/parser.rs (+4 lines) - Added exit_jsx_mode() for self-closing tags
 
 **Test Results**:
-- ✅ test_jsx_conditional_close.raven - parsing succeeds
+- ✅ test_jsx_conditional_close.jnc - parsing succeeds
 - ✅ social app progresses past line 508
 - ✅ All 221 tests passing
 
@@ -1194,7 +1194,7 @@ Language Completeness: Z%
 - Pattern: `condition ? { let x = ...; expr } : expr`
 
 **Test Results**:
-- ✅ test_ternary_block.raven - compiles successfully
+- ✅ test_ternary_block.jnc - compiles successfully
 - ✅ Verified block expressions work in ternary
 
 **Time**: 15 minutes
@@ -1384,7 +1384,7 @@ Language Completeness: Z%
 - ✅ **Tests Passing**: 221/221 (100% pass rate) - 0 regressions
 - ✅ **Language Completeness**: 97% → 98% (+1 point)
 - ✅ **Time**: ~105 minutes
-- ✅ **Test Files**: test_array_spread.raven, test_slice.raven
+- ✅ **Test Files**: test_array_spread.jnc, test_slice.jnc
 
 **Key Features Added**:
 - **Spread Operator**: `vec![...arr1, 4, 5]` works end-to-end
@@ -1451,7 +1451,7 @@ Language Completeness: Z%
 - code_splitter.rs (+10 lines) - Shared constants
 
 **Test Results**:
-- ✅ Manual test: `test_const_simple_types.raven` compiles
+- ✅ Manual test: `test_const_simple_types.jnc` compiles
 - ✅ Generated JS: `const MAX_USERS = 100;`
 - ✅ Full test suite: 221/221 passing
 
@@ -1534,14 +1534,14 @@ Language Completeness: Z%
 **Problem**: Social app used invalid syntax
 - Pattern: `{condition ? (let x = val; <JSX>) : <JSX>}`
 - Error: "No prefix parse function for Let"
-- Parentheses can't contain statements in Rust/RavensOne
+- Parentheses can't contain statements in Rust/Jounce
 
 **Solution**: Fixed example app to use correct syntax
 - Changed `(...)` to `{...}` for statement blocks
 - Blocks `{stmt; expr}` are the correct Rust-like syntax
 
 **Files Modified**:
-- examples/apps/social/main.raven (+2 lines)
+- examples/apps/social/main.jnc (+2 lines)
 
 **Test Results**:
 - ✅ `{cond ? { let x = 5; x + 1 } : 10}` works
@@ -1611,8 +1611,8 @@ Language Completeness: Z%
 - src/parser.rs (+8 lines) - Call enter_nested_jsx() for nested elements
 
 **Test Results**:
-- ✅ test_simple_jsx_and.raven - compiles successfully
-- ✅ test_jsx_and_operator.raven - compiles successfully
+- ✅ test_simple_jsx_and.jnc - compiles successfully
+- ✅ test_jsx_and_operator.jnc - compiles successfully
 - ✅ Full test suite: 221/221 passing (100% pass rate)
 
 **Example App Progress**:
@@ -1679,7 +1679,7 @@ These are separate issues to be addressed in future sprints
 - src/parser.rs (+18 lines, -7 lines) - Improved self-closing tag handling
 
 **Test Results**:
-- ✅ test_jsx_component_props.raven - compiles successfully
+- ✅ test_jsx_component_props.jnc - compiles successfully
 - ✅ All 221 tests passing (100% pass rate) - 0 regressions
 - ✅ Ecommerce: Line 285 → 493 (+208 lines, +73% progress)
 - ✅ Social: Line 487 → 808 (+321 lines, +66% progress)
@@ -1795,7 +1795,7 @@ These are separate issues to be addressed in future sprints
 **Example App Progress**:
 - **TaskBoard**: ✅ **PARSES COMPLETELY** (35 statements) - moved from line 996 error to compilation phase!
 - **Social**: ✅ **PARSES COMPLETELY** (31 statements) - moved from line 808 error to compilation phase!
-- **Ecommerce**: ❌ Still fails at line 662 (uses JavaScript object literal syntax, not RavensOne struct syntax)
+- **Ecommerce**: ❌ Still fails at line 662 (uses JavaScript object literal syntax, not Jounce struct syntax)
 
 **Key Achievements**:
 - **2 of 3 apps parse completely**: Major milestone for JSX implementation
@@ -1804,7 +1804,7 @@ These are separate issues to be addressed in future sprints
 - **Production-ready JSX**: Parser handles real-world patterns
 
 **Remaining Work**:
-- Ecommerce app uses JavaScript object syntax (`name: { ... }`) instead of RavensOne struct syntax
+- Ecommerce app uses JavaScript object syntax (`name: { ... }`) instead of Jounce struct syntax
 - This is an example app issue, not a parser bug
 
 ---

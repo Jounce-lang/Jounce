@@ -1,10 +1,10 @@
-# RavensOne Todo App with Authentication
+# Jounce Todo App with Authentication
 
-A complete full-stack todo application demonstrating the RavensOne compiler bridge with `@server` and `@client` annotations.
+A complete full-stack todo application demonstrating the Jounce compiler bridge with `@server` and `@client` annotations.
 
 ## 🎯 What This Demonstrates
 
-This example showcases the core features of RavensOne's compiler bridge:
+This example showcases the core features of Jounce's compiler bridge:
 
 ### ✅ @server/@client Separation
 - **Server functions** (`@server`) - Run only on Node.js
@@ -54,12 +54,12 @@ async fn show_todos() {
 
 ```
 todo-app/
-├── app.raven       # Single file with ALL code (server + client + shared)
+├── app.jnc       # Single file with ALL code (server + client + shared)
 ├── styles.css      # Styling (separate for clarity)
 └── README.md       # This file
 ```
 
-**Just one `.raven` file!** That's the power of RavensOne.
+**Just one `.jnc` file!** That's the power of Jounce.
 
 ---
 
@@ -69,7 +69,7 @@ todo-app/
 
 ```bash
 cd examples/apps/todo-app
-raven compile app.raven --minify
+raven compile app.jnc --minify
 ```
 
 **Output:**
@@ -194,7 +194,7 @@ fn show_login_form() {
 
 ### 1. Code Splitting
 
-The compiler reads your `.raven` file and separates code into buckets:
+The compiler reads your `.jnc` file and separates code into buckets:
 
 - **Server bucket**: All `@server` functions + shared functions
 - **Client bucket**: All `@client` functions + shared functions
@@ -221,9 +221,9 @@ server.rpc('create_todo', async (params) => {
 
 ### 3. Type Preservation
 
-RavensOne types map to JavaScript/TypeScript:
+Jounce types map to JavaScript/TypeScript:
 
-| RavensOne | JavaScript |
+| Jounce | JavaScript |
 |-----------|------------|
 | `i32` | `number` |
 | `String` | `string` |
@@ -326,7 +326,7 @@ fn load_dashboard() {
 For production, compile with minification:
 
 ```bash
-raven compile app.raven --minify --output build/
+raven compile app.jnc --minify --output build/
 ```
 
 This:
@@ -351,7 +351,7 @@ Then deploy `build/` to:
 **Compare to traditional stack:**
 - Next.js: ~15 files, 1,200+ lines
 - Express + React: ~20 files, 1,500+ lines
-- **RavensOne: 1 file, 550 lines** 🎉
+- **Jounce: 1 file, 550 lines** 🎉
 
 ---
 
@@ -371,7 +371,7 @@ After studying this example, you'll understand:
 ## 🔗 Related Documentation
 
 - [FULLSTACK_GUIDE.md](../../../FULLSTACK_GUIDE.md) - Complete compiler bridge guide
-- [README.md](../../../README.md) - Main RavensOne documentation
+- [README.md](../../../README.md) - Main Jounce documentation
 - [STATUS.md](../../../STATUS.md) - Project roadmap and progress
 
 ---
@@ -382,4 +382,4 @@ Found a bug or want to improve this example? PRs welcome!
 
 ---
 
-**Built with RavensOne** - _One language. One file. Full stack._
+**Built with Jounce** - _One language. One file. Full stack._

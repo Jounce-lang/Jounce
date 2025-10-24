@@ -1,4 +1,4 @@
-# RavensOne Production-Ready Roadmap - COMPLETED
+# Jounce Production-Ready Roadmap - COMPLETED
 
 **Status**: 🎉 ALL 11 TASKS COMPLETED + JSX SUPPORT ✅
 **Completion Date**: October 21, 2025
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-RavensOne has successfully completed all production-ready roadmap tasks, transforming from a compiler into a **complete full-stack development ecosystem** with professional tooling, deployment infrastructure, and comprehensive documentation.
+Jounce has successfully completed all production-ready roadmap tasks, transforming from a compiler into a **complete full-stack development ecosystem** with professional tooling, deployment infrastructure, and comprehensive documentation.
 
 ### Key Achievements
 
@@ -39,7 +39,7 @@ RavensOne has successfully completed all production-ready roadmap tasks, transfo
 **Example**:
 ```
 Error: Undefined variable 'usrname'
-  --> app.raven:42:10
+  --> app.jnc:42:10
    |
 42 |   let x = usrname;
    |           ^^^^^^^ Did you mean 'username'?
@@ -161,7 +161,7 @@ async fn fetch_user(id: i32) -> Result<User, Error> {
 {
   "version": 3,
   "file": "server.js",
-  "sources": ["app.raven"],
+  "sources": ["app.jnc"],
   "mappings": "AAAA,SAAS..."
 }
 ```
@@ -207,7 +207,7 @@ Optimizations applied: 47 total
 
 **Usage**:
 ```bash
-raven doc src/main.raven --output docs/
+raven doc src/main.jnc --output docs/
 open docs/index.html
 ```
 
@@ -215,10 +215,10 @@ open docs/index.html
 
 ### ✅ Task #10: Deploy Registry Server to Fly.io (COMPLETED)
 
-**Deployment**: https://ravensone-registry.fly.dev
+**Deployment**: https://jounce-registry.fly.dev
 
 **Infrastructure**:
-- PostgreSQL database (ravensone-registry-db)
+- PostgreSQL database (jounce-registry-db)
 - Docker containerized deployment
 - Persistent volume storage (1GB)
 - Auto-scaling machines
@@ -228,9 +228,9 @@ open docs/index.html
 
 **Endpoints**:
 ```
-Health:    https://ravensone-registry.fly.dev/health
-API Base:  https://ravensone-registry.fly.dev/api/v1
-Stats:     https://ravensone-registry.fly.dev/api/v1/stats/info
+Health:    https://jounce-registry.fly.dev/health
+API Base:  https://jounce-registry.fly.dev/api/v1
+Stats:     https://jounce-registry.fly.dev/api/v1/stats/info
 ```
 
 **Configuration**:
@@ -271,7 +271,7 @@ Stats:     https://ravensone-registry.fly.dev/api/v1/stats/info
 ### Compiler Architecture
 
 ```
-Source Code (.raven)
+Source Code (.jnc)
     ↓
 Lexer (tokenization) → 196 tests
     ↓
@@ -386,7 +386,7 @@ Test Suite Runtime:     1.56s
 
 ### Deployment Stats
 ```
-Registry URL:           https://ravensone-registry.fly.dev
+Registry URL:           https://jounce-registry.fly.dev
 Published Packages:     6
 Database:               PostgreSQL (1GB)
 Storage:                1GB volume
@@ -534,7 +534,7 @@ component Counter() {
 
 ## Conclusion
 
-RavensOne is now a **production-ready, full-stack development ecosystem** with:
+Jounce is now a **production-ready, full-stack development ecosystem** with:
 
 - ✅ Professional compiler toolchain
 - ✅ Complete standard library

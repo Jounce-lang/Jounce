@@ -1,4 +1,4 @@
-// WebAssembly Runtime Support for RavensOne
+// WebAssembly Runtime Support for Jounce
 // Memory management, string handling, and runtime imports
 
 use wasm_encoder::*;
@@ -12,7 +12,7 @@ pub const MAX_PAGES: u32 = 100;
 pub const HEAP_START: u32 = 1024; // First 1KB reserved for runtime
 pub const STRING_TABLE_START: u32 = HEAP_START;
 
-/// Runtime imports that RavensOne programs need
+/// Runtime imports that Jounce programs need
 pub struct RuntimeImports {
     imports: Vec<(String, String, EntityType)>,
 }

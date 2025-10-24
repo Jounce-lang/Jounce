@@ -1,13 +1,13 @@
-# RavensOne Utility Classes - Examples
+# Jounce Utility Classes - Examples
 
-This directory contains practical examples demonstrating the RavensOne utility class system.
+This directory contains practical examples demonstrating the Jounce utility class system.
 
 ## Quick Start
 
 Compile any example:
 ```bash
-cd /path/to/ravensone
-./target/release/raven compile examples/utilities/01_buttons.raven
+cd /path/to/jounce
+./target/release/raven compile examples/utilities/01_buttons.jnc
 ```
 
 Open `dist/index.html` in your browser to see the result!
@@ -16,7 +16,7 @@ Open `dist/index.html` in your browser to see the result!
 
 ## Examples
 
-### 01_buttons.raven
+### 01_buttons.jnc
 **Demonstrates**: Button variants, sizes, states, and groups
 
 **What You'll Learn**:
@@ -32,7 +32,7 @@ Open `dist/index.html` in your browser to see the result!
 
 ---
 
-### 02_cards.raven
+### 02_cards.jnc
 **Demonstrates**: Card components with various layouts
 
 **What You'll Learn**:
@@ -49,7 +49,7 @@ Open `dist/index.html` in your browser to see the result!
 
 ---
 
-### 03_forms.raven
+### 03_forms.jnc
 **Demonstrates**: Form layouts and input styling
 
 **What You'll Learn**:
@@ -65,7 +65,7 @@ Open `dist/index.html` in your browser to see the result!
 
 ---
 
-### 04_responsive_layouts.raven
+### 04_responsive_layouts.jnc
 **Demonstrates**: Responsive design patterns
 
 **What You'll Learn**:
@@ -141,7 +141,7 @@ All examples use these utility categories:
 ## Tips for Learning
 
 ### 1. Start Simple
-Begin with `01_buttons.raven` to understand basic utility usage.
+Begin with `01_buttons.jnc` to understand basic utility usage.
 
 ### 2. Experiment
 Try modifying class names to see how styles change:
@@ -168,10 +168,10 @@ Check `dist/styles.css` after compiling to see the generated utility classes.
 
 ```bash
 # Compile each example
-./target/release/raven compile examples/utilities/01_buttons.raven
-./target/release/raven compile examples/utilities/02_cards.raven
-./target/release/raven compile examples/utilities/03_forms.raven
-./target/release/raven compile examples/utilities/04_responsive_layouts.raven
+./target/release/raven compile examples/utilities/01_buttons.jnc
+./target/release/raven compile examples/utilities/02_cards.jnc
+./target/release/raven compile examples/utilities/03_forms.jnc
+./target/release/raven compile examples/utilities/04_responsive_layouts.jnc
 ```
 
 ---

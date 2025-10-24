@@ -1,7 +1,7 @@
 #!/bin/bash
-# Simple HTTP server for testing RavensOne apps locally
+# Simple HTTP server for testing Jounce apps locally
 
-echo "🔥 Starting RavensOne development server..."
+echo "🔥 Starting Jounce development server..."
 echo "📂 Serving from: $(pwd)"
 echo "🌐 Open http://localhost:8000 in your browser"
 echo ""

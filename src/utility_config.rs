@@ -1,4 +1,4 @@
-// RavensOne Utility Class System - Configuration
+// Jounce Utility Class System - Configuration
 // Loads configuration from raven.config.toml or provides sensible defaults
 
 use serde::{Deserialize, Serialize};

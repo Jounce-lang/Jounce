@@ -63,7 +63,7 @@
 - Pattern: `condition ? { let x = 5; expr } : expr` ✅ WORKS
 
 **Test Results**:
-- ✅ `test_ternary_block.raven` - Compiles successfully with `{...}` syntax
+- ✅ `test_ternary_block.jnc` - Compiles successfully with `{...}` syntax
 - ✅ Verified block expressions work in ternary branches
 
 **Result**: ✅ NO CHANGES NEEDED
@@ -125,7 +125,7 @@
 - Constants are shared across server and client bundles
 
 **Test Results**:
-- ✅ Manual test: `test_const_simple_types.raven` compiles successfully
+- ✅ Manual test: `test_const_simple_types.jnc` compiles successfully
 - ✅ Generated JS output:
 ```javascript
 // Shared constants

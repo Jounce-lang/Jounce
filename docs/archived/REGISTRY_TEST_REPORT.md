@@ -1,4 +1,4 @@
-# RavensOne Registry End-to-End Test Report
+# Jounce Registry End-to-End Test Report
 
 **Date**: October 17, 2025
 **Tester**: Claude Code
@@ -15,7 +15,7 @@
 ✅ **Package Search: WORKING**
 ✅ **Package Installation: WORKING**
 
-The RavensOne package registry is **fully operational** with complete end-to-end functionality. All core workflows including user registration, authentication, package publishing, search, and installation are working correctly. Package installation successfully downloads packages from the registry, extracts them to the local directory, and creates lock files with proper dependency tracking.
+The Jounce package registry is **fully operational** with complete end-to-end functionality. All core workflows including user registration, authentication, package publishing, search, and installation are working correctly. Package installation successfully downloads packages from the registry, extracts them to the local directory, and creates lock files with proper dependency tracking.
 
 ---
 
@@ -76,7 +76,7 @@ cargo build --release
 - ✅ User created in database
 - ✅ JWT token generated (30-day expiry)
 - ✅ Password hashed with Argon2id
-- ✅ Token saved to `~/.raven/credentials.json`
+- ✅ Token saved to `~/.jnc/credentials.json`
 - ✅ File permissions set to 0600
 
 ---
@@ -200,27 +200,27 @@ raven pkg search "raven"
 Found 5 packages:
 
 📦 raven-i18n @ 1.0.0
-   Internationalization (i18n) library for RavensOne applications
+   Internationalization (i18n) library for Jounce applications
    Keywords: i18n, l10n, internationalization, localization, translation
    Downloads: 0 | Score: 3.00
 
 📦 raven-forms @ 1.0.0
-   Powerful form handling and validation library for RavensOne
+   Powerful form handling and validation library for Jounce
    Keywords: forms, validation, input, ui
    Downloads: 0 | Score: 3.00
 
 📦 raven-store @ 1.0.0
-   Advanced state management library for RavensOne applications
+   Advanced state management library for Jounce applications
    Keywords: state, reactive, store, signals
    Downloads: 0 | Score: 3.00
 
 📦 raven-router @ 0.1.0
-   Client-side routing library for RavensOne single-page applications
+   Client-side routing library for Jounce single-page applications
    Keywords: router, routing, spa, navigation, history
    Downloads: 0 | Score: 3.00
 
 📦 raven-http @ 0.1.0
-   HTTP client library for RavensOne applications
+   HTTP client library for Jounce applications
    Keywords: http, fetch, ajax, client, api
    Downloads: 0 | Score: 3.00
 ```
@@ -265,20 +265,20 @@ raven-http = "^0.1.0"
 - ✅ Downloads package tarball from registry
 - ✅ Extracts all source files to `raven_packages/raven-http/`
 - ✅ Creates `raven.lock` with dependency metadata
-- ✅ All package files present (lib.raven, client.raven, request.raven, etc.)
+- ✅ All package files present (lib.jnc, client.jnc, request.jnc, etc.)
 
 **Downloaded Files**:
 ```
 raven_packages/raven-http/
-├── raven.toml
+├── jounce.toml
 └── src/
-    ├── lib.raven
-    ├── client.raven
-    ├── config.raven
-    ├── helpers.raven
-    ├── interceptors.raven
-    ├── request.raven
-    └── response.raven
+    ├── lib.jnc
+    ├── client.jnc
+    ├── config.jnc
+    ├── helpers.jnc
+    ├── interceptors.jnc
+    ├── request.jnc
+    └── response.jnc
 ```
 
 **Lock File**:
@@ -292,7 +292,7 @@ dependencies = []
 
 [packages.source]
 type = "Registry"
-url = "https://packages.ravensone.dev/raven-http/0.1.0"
+url = "https://packages.jounce.dev/raven-http/0.1.0"
 ```
 
 ---
@@ -338,13 +338,13 @@ JOIN packages ON package_versions.package_id = packages.package_id;
 ```bash
 brew install postgresql@14
 brew services start postgresql@14
-createdb ravensone_registry
+createdb jounce_registry
 ```
 
 ### Issue #2: Registry Client URL Mismatch
 **Status**: ✅ RESOLVED
 
-**Problem**: Client defaulted to `https://registry.ravensone.dev` (production URL)
+**Problem**: Client defaulted to `https://registry.jounce.dev` (production URL)
 **Solution**: Modified client to default to `http://localhost:4000/api/v1` for development
 **File**: `src/package_manager/registry.rs:24-25`
 **Code**:
@@ -413,7 +413,7 @@ let base_url = std::env::var("RAVEN_REGISTRY")
 
 **Overall Assessment**: ✅ **FULLY OPERATIONAL**
 
-The RavensOne package registry is **100% functional** with complete end-to-end capability:
+The Jounce package registry is **100% functional** with complete end-to-end capability:
 - ✅ User registration and authentication
 - ✅ Package publishing with multipart upload
 - ✅ Package search with relevance scoring

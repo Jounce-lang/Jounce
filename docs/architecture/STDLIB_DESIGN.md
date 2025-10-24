@@ -1,4 +1,4 @@
-# RavensOne Standard Library Architecture
+# Jounce Standard Library Architecture
 
 ## Philosophy
 
@@ -86,7 +86,7 @@ std::
 ## Core Modules (Priority Order)
 
 ### 1. **std::reactive** - CRITICAL FOR MVP
-The foundation of RavensOne's reactivity.
+The foundation of Jounce's reactivity.
 
 ```raven
 use std::reactive::{Signal, Computed, Effect};
@@ -482,7 +482,7 @@ src/
 ## Example: Full-Stack App with Stdlib
 
 ```raven
-// schemas.raven - THE ENTIRE APP IN ONE FILE!
+// schemas.jnc - THE ENTIRE APP IN ONE FILE!
 
 use std::{http, db, auth, reactive};
 
@@ -540,7 +540,7 @@ component TodoApp() {
 Deploy:
 ```bash
 $ raven deploy
-🎉 https://my-todos.ravens.one
+🎉 https://my-todos.jncs.one
 ```
 
 **One file. Full stack. Production ready.**

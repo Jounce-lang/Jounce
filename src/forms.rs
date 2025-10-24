@@ -1,4 +1,4 @@
-// Forms & Validation System for RavensOne
+// Forms & Validation System for Jounce
 // Form state management, field validation, error handling, and submission
 
 use crate::reactive::{Signal, Computed};

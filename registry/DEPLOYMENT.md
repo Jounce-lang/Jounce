@@ -1,6 +1,6 @@
-# RavensOne Registry - Fly.io Deployment Guide
+# Jounce Registry - Fly.io Deployment Guide
 
-Complete guide to deploying the RavensOne package registry to Fly.io.
+Complete guide to deploying the Jounce package registry to Fly.io.
 
 ---
 
@@ -45,14 +45,14 @@ cd registry
 
 # Create a PostgreSQL cluster (free tier: shared-cpu, 256MB)
 flyctl postgres create \
-  --name ravensone-registry-db \
+  --name jounce-registry-db \
   --region sjc \
   --initial-cluster-size 1 \
   --vm-size shared-cpu-1x \
   --volume-size 1
 
 # Save the connection string shown in the output!
-# It will look like: postgres://postgres:password@top2.nearest.of.ravensone-registry-db.internal:5432
+# It will look like: postgres://postgres:password@top2.nearest.of.jounce-registry-db.internal:5432
 ```
 
 **Note:** The database password will only be shown once! Save it securely.
@@ -63,7 +63,7 @@ flyctl postgres create \
 
 ```bash
 # Create the app (don't deploy yet)
-flyctl apps create ravensone-registry --org personal
+flyctl apps create jounce-registry --org personal
 
 # Or if you want to choose a different name:
 # flyctl apps create your-custom-name --org personal
@@ -75,7 +75,7 @@ flyctl apps create ravensone-registry --org personal
 
 ```bash
 # Attach the PostgreSQL database
-flyctl postgres attach ravensone-registry-db --app ravensone-registry
+flyctl postgres attach jounce-registry-db --app jounce-registry
 
 # This creates a DATABASE_URL secret automatically
 ```
@@ -90,10 +90,10 @@ flyctl postgres attach ravensone-registry-db --app ravensone-registry
 openssl rand -base64 32
 
 # Set the JWT secret
-flyctl secrets set JWT_SECRET="your-generated-secret-here" --app ravensone-registry
+flyctl secrets set JWT_SECRET="your-generated-secret-here" --app jounce-registry
 
 # Verify secrets
-flyctl secrets list --app ravensone-registry
+flyctl secrets list --app jounce-registry
 ```
 
 You should see:
@@ -109,7 +109,7 @@ You should see:
 flyctl volumes create registry_storage \
   --region sjc \
   --size 1 \
-  --app ravensone-registry
+  --app jounce-registry
 ```
 
 ---
@@ -118,10 +118,10 @@ flyctl volumes create registry_storage \
 
 ```bash
 # Deploy the registry
-flyctl deploy --app ravensone-registry
+flyctl deploy --app jounce-registry
 
 # Monitor deployment logs
-flyctl logs --app ravensone-registry
+flyctl logs --app jounce-registry
 ```
 
 **First deployment takes ~5-10 minutes** (building Rust from scratch).
@@ -134,7 +134,7 @@ After first deployment, run the schema migrations:
 
 ```bash
 # SSH into the app
-flyctl ssh console --app ravensone-registry
+flyctl ssh console --app jounce-registry
 
 # Inside the container, run psql
 psql $DATABASE_URL
@@ -153,7 +153,7 @@ exit
 
 ```bash
 # Get the database connection string
-flyctl postgres db-url ravensone-registry-db
+flyctl postgres db-url jounce-registry-db
 
 # Use psql locally
 psql "postgres://postgres:password@..." < migrations/20251017_init.sql
@@ -165,17 +165,17 @@ psql "postgres://postgres:password@..." < migrations/20251017_init.sql
 
 ```bash
 # Check app status
-flyctl status --app ravensone-registry
+flyctl status --app jounce-registry
 
 # Get the app URL
-flyctl info --app ravensone-registry
+flyctl info --app jounce-registry
 
 # Test health endpoint
-curl https://ravensone-registry.fly.dev/health
+curl https://jounce-registry.fly.dev/health
 # Should return: OK
 
 # Test user registration
-curl -X POST https://ravensone-registry.fly.dev/api/v1/auth/register \
+curl -X POST https://jounce-registry.fly.dev/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","email":"test@example.com","password":"testpass123"}'
 ```
@@ -189,11 +189,11 @@ Edit `src/package_manager/registry.rs`:
 ```rust
 pub fn new() -> Self {
     let home = dirs::home_dir().expect("Could not find home directory");
-    let raven_dir = home.join(".raven");
+    let raven_dir = home.join(".jnc");
 
     // Use production registry by default
     let base_url = std::env::var("RAVEN_REGISTRY")
-        .unwrap_or_else(|_| "https://ravensone-registry.fly.dev/api/v1".to_string());
+        .unwrap_or_else(|_| "https://jounce-registry.fly.dev/api/v1".to_string());
 
     RegistryClient {
         base_url,
@@ -216,40 +216,40 @@ cargo build --release
 
 ### View Logs
 ```bash
-flyctl logs --app ravensone-registry
+flyctl logs --app jounce-registry
 ```
 
 ### SSH into Container
 ```bash
-flyctl ssh console --app ravensone-registry
+flyctl ssh console --app jounce-registry
 ```
 
 ### Scale Resources (if needed)
 ```bash
 # Increase memory to 512MB
-flyctl scale memory 512 --app ravensone-registry
+flyctl scale memory 512 --app jounce-registry
 
 # Increase CPU
-flyctl scale vm shared-cpu-2x --app ravensone-registry
+flyctl scale vm shared-cpu-2x --app jounce-registry
 ```
 
 ### Redeploy After Changes
 ```bash
-flyctl deploy --app ravensone-registry
+flyctl deploy --app jounce-registry
 ```
 
 ### View Database Connection String
 ```bash
-flyctl postgres db-url ravensone-registry-db
+flyctl postgres db-url jounce-registry-db
 ```
 
 ### Destroy Everything (if needed)
 ```bash
 # Delete the app
-flyctl apps destroy ravensone-registry
+flyctl apps destroy jounce-registry
 
 # Delete the database
-flyctl postgres destroy ravensone-registry-db
+flyctl postgres destroy jounce-registry-db
 ```
 
 ---
@@ -261,7 +261,7 @@ flyctl postgres destroy ravensone-registry-db
 | `DATABASE_URL` | PostgreSQL connection string | `postgres attach` |
 | `JWT_SECRET` | 32+ character secret | `secrets set` |
 | `PORT` | `8080` | `fly.toml` |
-| `RUST_LOG` | `ravensone_registry=info` | `fly.toml` |
+| `RUST_LOG` | `jounce_registry=info` | `fly.toml` |
 | `STORAGE_TYPE` | `local` | `fly.toml` |
 | `STORAGE_PATH` | `/app/storage` | `fly.toml` |
 
@@ -273,7 +273,7 @@ flyctl postgres destroy ravensone-registry-db
 
 Check logs:
 ```bash
-flyctl logs --app ravensone-registry
+flyctl logs --app jounce-registry
 ```
 
 Common issues:
@@ -285,7 +285,7 @@ Common issues:
 
 ```bash
 # Check if health endpoint works
-flyctl ssh console --app ravensone-registry
+flyctl ssh console --app jounce-registry
 curl localhost:8080/health
 ```
 
@@ -293,14 +293,14 @@ curl localhost:8080/health
 
 ```bash
 # Test database connection
-flyctl postgres connect -a ravensone-registry-db
+flyctl postgres connect -a jounce-registry-db
 ```
 
 ### Out of Memory
 
 ```bash
 # Increase memory
-flyctl scale memory 512 --app ravensone-registry
+flyctl scale memory 512 --app jounce-registry
 ```
 
 ---
@@ -341,7 +341,7 @@ flyctl scale memory 512 --app ravensone-registry
 1. **Update client** to use production URL
 2. **Re-publish seed packages** to production registry
 3. **Test full workflow** (register, login, publish, search, install)
-4. **Set up custom domain** (optional): `ravensone.dev`
+4. **Set up custom domain** (optional): `jounce.dev`
 5. **Enable database backups**
 6. **Set up alerts** for downtime
 
@@ -351,10 +351,10 @@ flyctl scale memory 512 --app ravensone-registry
 
 ```bash
 # Add custom domain
-flyctl certs create registry.ravensone.dev --app ravensone-registry
+flyctl certs create registry.jounce.dev --app jounce-registry
 
 # Get DNS records to configure
-flyctl certs show registry.ravensone.dev --app ravensone-registry
+flyctl certs show registry.jounce.dev --app jounce-registry
 
 # Add the CNAME record to your DNS provider
 ```
@@ -365,7 +365,7 @@ flyctl certs show registry.ravensone.dev --app ravensone-registry
 
 - **Fly.io Docs**: https://fly.io/docs/
 - **Fly.io Community**: https://community.fly.io/
-- **RavensOne Issues**: https://github.com/jrezin1201/RavensOne/issues
+- **Jounce Issues**: https://github.com/jrezin1201/Jounce/issues
 
 ---
 
@@ -375,9 +375,9 @@ Run these commands in order:
 ```bash
 cd registry
 flyctl auth login
-flyctl postgres create --name ravensone-registry-db --region sjc
-flyctl apps create ravensone-registry
-flyctl postgres attach ravensone-registry-db
+flyctl postgres create --name jounce-registry-db --region sjc
+flyctl apps create jounce-registry
+flyctl postgres attach jounce-registry-db
 flyctl secrets set JWT_SECRET="$(openssl rand -base64 32)"
 flyctl volumes create registry_storage --region sjc --size 1
 flyctl deploy

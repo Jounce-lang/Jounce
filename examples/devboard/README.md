@@ -1,6 +1,6 @@
 # DevBoard - Developer Dashboard & Portfolio
 
-A beautiful, modern developer dashboard built with **RavensOne** - showcasing the power of full-stack reactive programming compiled to WebAssembly.
+A beautiful, modern developer dashboard built with **Jounce** - showcasing the power of full-stack reactive programming compiled to WebAssembly.
 
 ![DevBoard Screenshot](https://via.placeholder.com/1200x600/1a1a2e/5a67d8?text=DevBoard+Dashboard)
 
@@ -31,7 +31,7 @@ A beautiful, modern developer dashboard built with **RavensOne** - showcasing th
 
 ### Contact Form
 - **Full form validation**
-- **Server-side processing** with RavensOne #[server] functions
+- **Server-side processing** with Jounce #[server] functions
 - **Success/Error messages**
 - **Email integration ready** (SendGrid/Mailgun)
 
@@ -43,7 +43,7 @@ A beautiful, modern developer dashboard built with **RavensOne** - showcasing th
 
 ## 🚀 Tech Stack
 
-- **RavensOne** - Full-stack reactive programming language
+- **Jounce** - Full-stack reactive programming language
 - **WebAssembly** - High-performance compiled output
 - **Modern CSS** - CSS Grid, Flexbox, Custom Properties
 - **GitHub API** - Real-time data integration
@@ -54,7 +54,7 @@ A beautiful, modern developer dashboard built with **RavensOne** - showcasing th
 ```
 devboard/
 ├── src/
-│   └── main.raven          # Main application code (600+ lines)
+│   └── main.jnc          # Main application code (600+ lines)
 ├── public/
 │   ├── index.html          # HTML entry point
 │   └── styles.css          # Modern CSS styling (500+ lines)
@@ -65,7 +65,7 @@ devboard/
 ## 🛠️ Installation & Setup
 
 ### Prerequisites
-- RavensOne compiler installed
+- Jounce compiler installed
 - Node.js 18+ (for development server)
 - Git (for cloning)
 
@@ -75,8 +75,8 @@ devboard/
 # Navigate to devboard directory
 cd examples/devboard
 
-# Compile the RavensOne code
-raven compile src/main.raven --output public/
+# Compile the Jounce code
+raven compile src/main.jnc --output public/
 
 # Start development server
 raven dev
@@ -89,13 +89,13 @@ open http://localhost:3000
 
 ```bash
 # Compile with optimizations
-raven compile src/main.raven \
+raven compile src/main.jnc \
     --output public/ \
     --optimize \
     --target client
 
 # Compile server bundle
-raven compile src/main.raven \
+raven compile src/main.jnc \
     --output backend/ \
     --optimize \
     --target server
@@ -105,7 +105,7 @@ raven compile src/main.raven \
 
 ### Change GitHub Username
 
-Edit `src/main.raven`, line ~450:
+Edit `src/main.jnc`, line ~450:
 
 ```rust
 let stats = fetch_github_stats("YOUR_GITHUB_USERNAME");
@@ -113,7 +113,7 @@ let stats = fetch_github_stats("YOUR_GITHUB_USERNAME");
 
 ### Modify Projects
 
-Edit the `get_projects()` server function in `src/main.raven`:
+Edit the `get_projects()` server function in `src/main.jnc`:
 
 ```rust
 #[server]
@@ -136,7 +136,7 @@ fn get_projects() -> Vec<Project> {
 
 ### Update Blog Posts
 
-Modify `get_blog_posts()` in `src/main.raven`:
+Modify `get_blog_posts()` in `src/main.jnc`:
 
 ```rust
 #[server]
@@ -261,7 +261,7 @@ docker run -p 3000:3000 devboard
 
 ```
 Total Lines: ~1,100
-RavensOne Code: ~600 lines
+Jounce Code: ~600 lines
 CSS: ~500 lines
 Components: 8 major components
 Server Functions: 4 endpoints
@@ -275,7 +275,7 @@ Server Functions: 4 endpoints
 
 ## 🤝 Contributing
 
-This is a showcase app for RavensOne. Contributions welcome!
+This is a showcase app for Jounce. Contributions welcome!
 
 1. Fork the repository
 2. Create feature branch
@@ -288,18 +288,18 @@ MIT License - Feel free to use for your own portfolio!
 
 ## 🙏 Acknowledgments
 
-- **RavensOne** - The language powering this app
+- **Jounce** - The language powering this app
 - **GitHub API** - Real-time stats
 - **Modern CSS** - Beautiful responsive design
 
 ## 📞 Support
 
-- RavensOne Docs: [GETTING_STARTED.md](../../GETTING_STARTED.md)
-- Issues: [GitHub Issues](https://github.com/yourusername/ravensone/issues)
-- Discord: [Join Community](https://discord.gg/ravensone)
+- Jounce Docs: [GETTING_STARTED.md](../../GETTING_STARTED.md)
+- Issues: [GitHub Issues](https://github.com/yourusername/jounce/issues)
+- Discord: [Join Community](https://discord.gg/jounce)
 
 ---
 
-**Built with ❤️ using RavensOne**
+**Built with ❤️ using Jounce**
 
 *Showcasing the future of full-stack reactive development*

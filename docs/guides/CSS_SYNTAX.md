@@ -1,4 +1,4 @@
-# CSS Syntax Guide - RavensOne
+# CSS Syntax Guide - Jounce
 
 **Version**: 0.1.0 (Phase 7.5 Sprint 1)
 **Status**: ✅ FINALIZED
@@ -8,7 +8,7 @@
 
 ## Overview
 
-RavensOne provides native CSS integration through the `css!` macro, enabling component-scoped styles with zero runtime overhead. CSS is compiled at build time, scoped automatically, and output as separate `.css` files.
+Jounce provides native CSS integration through the `css!` macro, enabling component-scoped styles with zero runtime overhead. CSS is compiled at build time, scoped automatically, and output as separate `.css` files.
 
 **Key Features**:
 - **Scoped by default** - No global namespace pollution (CSS Modules approach)
@@ -23,7 +23,7 @@ RavensOne provides native CSS integration through the `css!` macro, enabling com
 
 ### The css! Macro
 
-The primary way to write CSS in RavensOne is the `css!` macro:
+The primary way to write CSS in Jounce is the `css!` macro:
 
 ```raven
 let styles = css! {
@@ -113,12 +113,12 @@ let styles = css! {
 ```raven
 // Two components can use .button without conflicts!
 
-// components/PrimaryButton.raven
+// components/PrimaryButton.jnc
 let styles = css! {
     .button { background: blue; }
 };
 
-// components/SecondaryButton.raven
+// components/SecondaryButton.jnc
 let styles = css! {
     .button { background: gray; }
 };

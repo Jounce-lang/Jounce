@@ -172,9 +172,9 @@ These can be future enhancements (Phase 9+) if needed.
 - `benches/grid_utilities.rs` (performance tests)
 - `examples/design-tokens.json` (example tokens)
 - `examples/themes/` (theme examples)
-- `test_grid_utilities.raven`
-- `test_container_queries.raven`
-- `test_dark_mode.raven`
+- `test_grid_utilities.jnc`
+- `test_container_queries.jnc`
+- `test_dark_mode.jnc`
 
 **Modified Files**:
 - `src/utility_generator.rs` (grid utilities, dark mode variant)

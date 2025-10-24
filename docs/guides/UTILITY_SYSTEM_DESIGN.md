@@ -1,4 +1,4 @@
-# RavensOne Utility Class System Design
+# Jounce Utility Class System Design
 
 **Status**: ✅ **COMPLETE - IMPLEMENTED**
 **Sprint**: Phase 7.5 Sprint 3 (Tasks 3.1-3.4)
@@ -31,11 +31,11 @@
 - `benches/utility_generation.rs` (75 lines) - Performance benchmarks
 
 **Real-World Tests**:
-- `test_utilities_basic.raven` - Basic utilities
-- `test_utilities_advanced.raven` - Advanced utilities
-- `test_utilities_variants.raven` - Responsive & state variants
-- `test_accessibility_simple.raven` - Screen reader utilities
-- `test_focus_utilities.raven` - Ring and outline focus utilities
+- `test_utilities_basic.jnc` - Basic utilities
+- `test_utilities_advanced.jnc` - Advanced utilities
+- `test_utilities_variants.jnc` - Responsive & state variants
+- `test_accessibility_simple.jnc` - Screen reader utilities
+- `test_focus_utilities.jnc` - Ring and outline focus utilities
 
 ---
 
@@ -92,7 +92,7 @@ Utility classes are single-purpose CSS classes that apply one specific style. In
 - Fast compilation even with many utilities
 
 ### 5. **Framework-Agnostic**
-- Works with any RavensOne component
+- Works with any Jounce component
 - No special setup required
 - Just use class names in JSX
 
@@ -729,7 +729,7 @@ impl ThemeConfig {
 ### Compilation Flow
 
 ```
-1. Parse .raven file
+1. Parse .jnc file
 2. Build AST
 3. IF utilities enabled:
    a. Initialize UtilityGenerator with config
@@ -938,7 +938,7 @@ fn test_utility_generation_end_to_end() {
 
 ### Phase 4: Optimization & Testing ✅ COMPLETE (Task 3.4 - 2 hours)
 - ✅ Unit tests for all utility parsers (22 tests)
-- ✅ Integration tests (real-world .raven files)
+- ✅ Integration tests (real-world .jnc files)
 - ✅ Performance benchmarks (9.94ms for 100 utilities)
 - ✅ Metrics tracking (classes scanned vs generated)
 - ✅ CSS minification support
@@ -953,7 +953,7 @@ fn test_utility_generation_end_to_end() {
 
 All criteria met! ✅
 
-- ✅ Can use Tailwind-like utilities in RavensOne JSX (150+ utilities)
+- ✅ Can use Tailwind-like utilities in Jounce JSX (150+ utilities)
 - ✅ Configuration via `raven.config.toml` works (TOML parsing with defaults)
 - ✅ Tree-shaking keeps bundles small (94% reduction: 500 → 28 classes)
 - ✅ All utility categories implemented (9 categories)
@@ -968,7 +968,7 @@ All criteria met! ✅
 - ✅ Variant chaining (md:hover:opacity-50)
 - ✅ CSS escaping for special characters
 - ✅ Performance benchmarks (benches/utility_generation.rs)
-- ✅ Real-world compilation tests (3 .raven test files)
+- ✅ Real-world compilation tests (3 .jnc test files)
 
 ---
 

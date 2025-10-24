@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "RavensOne",
-  "scopeName": "source.raven",
+  "name": "Jounce",
+  "scopeName": "source.jnc",
   "patterns": [
     { "include": "#comments" },
     { "include": "#annotations" },
@@ -19,11 +19,11 @@
     "comments": {
       "patterns": [
         {
-          "name": "comment.line.double-slash.raven",
+          "name": "comment.line.double-slash.jnc",
           "match": "//.*$"
         },
         {
-          "name": "comment.block.raven",
+          "name": "comment.block.jnc",
           "begin": "/\\*",
           "end": "\\*/"
         }
@@ -32,10 +32,10 @@
     "annotations": {
       "patterns": [
         {
-          "name": "meta.annotation.raven",
+          "name": "meta.annotation.jnc",
           "match": "@(server|client)\\b",
           "captures": {
-            "0": { "name": "storage.type.annotation.raven" }
+            "0": { "name": "storage.type.annotation.jnc" }
           }
         }
       ]
@@ -43,19 +43,19 @@
     "keywords": {
       "patterns": [
         {
-          "name": "keyword.control.raven",
+          "name": "keyword.control.jnc",
           "match": "\\b(if|else|match|for|while|loop|break|continue|return)\\b"
         },
         {
-          "name": "keyword.other.raven",
+          "name": "keyword.other.jnc",
           "match": "\\b(fn|let|const|mut|struct|enum|impl|trait|type|pub|use|mod|as|in)\\b"
         },
         {
-          "name": "keyword.control.async.raven",
+          "name": "keyword.control.async.jnc",
           "match": "\\b(async|await)\\b"
         },
         {
-          "name": "keyword.operator.raven",
+          "name": "keyword.operator.jnc",
           "match": "\\b(move|ref)\\b"
         }
       ]
@@ -63,15 +63,15 @@
     "types": {
       "patterns": [
         {
-          "name": "storage.type.primitive.raven",
+          "name": "storage.type.primitive.jnc",
           "match": "\\b(i8|i16|i32|i64|i128|u8|u16|u32|u64|u128|f32|f64|bool|char|str)\\b"
         },
         {
-          "name": "storage.type.raven",
+          "name": "storage.type.jnc",
           "match": "\\b(String|Vec|Option|Result|HashMap|HashSet|Box|Rc|Arc|Cell|RefCell)\\b"
         },
         {
-          "name": "storage.type.self.raven",
+          "name": "storage.type.self.jnc",
           "match": "\\b(Self|self)\\b"
         }
       ]
@@ -79,11 +79,11 @@
     "constants": {
       "patterns": [
         {
-          "name": "constant.language.boolean.raven",
+          "name": "constant.language.boolean.jnc",
           "match": "\\b(true|false)\\b"
         },
         {
-          "name": "constant.language.raven",
+          "name": "constant.language.jnc",
           "match": "\\b(None|Some|Ok|Err|Signal)\\b"
         }
       ]
@@ -91,27 +91,27 @@
     "strings": {
       "patterns": [
         {
-          "name": "string.quoted.double.raven",
+          "name": "string.quoted.double.jnc",
           "begin": "\"",
           "end": "\"",
           "patterns": [
             {
-              "name": "constant.character.escape.raven",
+              "name": "constant.character.escape.jnc",
               "match": "\\\\(n|r|t|\\\\|0|\"|')"
             },
             {
-              "name": "constant.character.escape.unicode.raven",
+              "name": "constant.character.escape.unicode.jnc",
               "match": "\\\\u\\{[0-9a-fA-F]+\\}"
             }
           ]
         },
         {
-          "name": "string.quoted.single.raven",
+          "name": "string.quoted.single.jnc",
           "begin": "'",
           "end": "'",
           "patterns": [
             {
-              "name": "constant.character.escape.raven",
+              "name": "constant.character.escape.jnc",
               "match": "\\\\(n|r|t|\\\\|0|\"|')"
             }
           ]
@@ -121,19 +121,19 @@
     "numbers": {
       "patterns": [
         {
-          "name": "constant.numeric.float.raven",
+          "name": "constant.numeric.float.jnc",
           "match": "\\b\\d+\\.\\d+([eE][+-]?\\d+)?(f32|f64)?\\b"
         },
         {
-          "name": "constant.numeric.integer.raven",
+          "name": "constant.numeric.integer.jnc",
           "match": "\\b\\d+(_\\d+)*(i8|i16|i32|i64|i128|u8|u16|u32|u64|u128)?\\b"
         },
         {
-          "name": "constant.numeric.hex.raven",
+          "name": "constant.numeric.hex.jnc",
           "match": "\\b0x[0-9a-fA-F]+(_[0-9a-fA-F]+)*\\b"
         },
         {
-          "name": "constant.numeric.binary.raven",
+          "name": "constant.numeric.binary.jnc",
           "match": "\\b0b[01]+(_[01]+)*\\b"
         }
       ]
@@ -141,39 +141,39 @@
     "operators": {
       "patterns": [
         {
-          "name": "keyword.operator.comparison.raven",
+          "name": "keyword.operator.comparison.jnc",
           "match": "(==|!=|<|>|<=|>=)"
         },
         {
-          "name": "keyword.operator.logical.raven",
+          "name": "keyword.operator.logical.jnc",
           "match": "(&&|\\|\\||!)"
         },
         {
-          "name": "keyword.operator.arithmetic.raven",
+          "name": "keyword.operator.arithmetic.jnc",
           "match": "(\\+|-|\\*|/|%)"
         },
         {
-          "name": "keyword.operator.assignment.raven",
+          "name": "keyword.operator.assignment.jnc",
           "match": "(=|\\+=|-=|\\*=|/=|%=)"
         },
         {
-          "name": "keyword.operator.namespace.raven",
+          "name": "keyword.operator.namespace.jnc",
           "match": "::"
         },
         {
-          "name": "keyword.operator.arrow.raven",
+          "name": "keyword.operator.arrow.jnc",
           "match": "(->|=>)"
         },
         {
-          "name": "keyword.operator.range.raven",
+          "name": "keyword.operator.range.jnc",
           "match": "(\\.\\.|\\.\\.=)"
         },
         {
-          "name": "keyword.operator.spread.raven",
+          "name": "keyword.operator.spread.jnc",
           "match": "\\.\\.\\."
         },
         {
-          "name": "keyword.operator.turbofish.raven",
+          "name": "keyword.operator.turbofish.jnc",
           "match": "::<"
         }
       ]
@@ -181,11 +181,11 @@
     "functions": {
       "patterns": [
         {
-          "name": "entity.name.function.raven",
+          "name": "entity.name.function.jnc",
           "match": "\\b([a-z_][a-zA-Z0-9_]*)\\s*(?=\\()"
         },
         {
-          "name": "entity.name.function.macro.raven",
+          "name": "entity.name.function.macro.jnc",
           "match": "\\b([a-z_][a-zA-Z0-9_]*)!"
         }
       ]
@@ -193,11 +193,11 @@
     "variables": {
       "patterns": [
         {
-          "name": "variable.other.constant.raven",
+          "name": "variable.other.constant.jnc",
           "match": "\\b[A-Z][A-Z0-9_]*\\b"
         },
         {
-          "name": "variable.other.raven",
+          "name": "variable.other.jnc",
           "match": "\\b[a-z_][a-zA-Z0-9_]*\\b"
         }
       ]
@@ -205,16 +205,16 @@
     "jsx": {
       "patterns": [
         {
-          "name": "meta.tag.jsx.raven",
+          "name": "meta.tag.jsx.jnc",
           "begin": "(<)([A-Z][a-zA-Z0-9]*|[a-z][a-zA-Z0-9\\-]*)",
           "beginCaptures": {
-            "1": { "name": "punctuation.definition.tag.begin.jsx.raven" },
-            "2": { "name": "entity.name.tag.jsx.raven" }
+            "1": { "name": "punctuation.definition.tag.begin.jsx.jnc" },
+            "2": { "name": "entity.name.tag.jsx.jnc" }
           },
           "end": "(/>)|(>)",
           "endCaptures": {
-            "1": { "name": "punctuation.definition.tag.self-close.jsx.raven" },
-            "2": { "name": "punctuation.definition.tag.end.jsx.raven" }
+            "1": { "name": "punctuation.definition.tag.self-close.jsx.jnc" },
+            "2": { "name": "punctuation.definition.tag.end.jsx.jnc" }
           },
           "patterns": [
             { "include": "#jsx-attributes" },
@@ -222,15 +222,15 @@
           ]
         },
         {
-          "name": "meta.tag.jsx.close.raven",
+          "name": "meta.tag.jsx.close.jnc",
           "begin": "(</)([A-Z][a-zA-Z0-9]*|[a-z][a-zA-Z0-9\\-]*)",
           "beginCaptures": {
-            "1": { "name": "punctuation.definition.tag.begin.jsx.raven" },
-            "2": { "name": "entity.name.tag.jsx.raven" }
+            "1": { "name": "punctuation.definition.tag.begin.jsx.jnc" },
+            "2": { "name": "entity.name.tag.jsx.jnc" }
           },
           "end": "(>)",
           "endCaptures": {
-            "1": { "name": "punctuation.definition.tag.end.jsx.raven" }
+            "1": { "name": "punctuation.definition.tag.end.jsx.jnc" }
           }
         },
         { "include": "#jsx-expression" }
@@ -239,11 +239,11 @@
     "jsx-attributes": {
       "patterns": [
         {
-          "name": "entity.other.attribute-name.jsx.raven",
+          "name": "entity.other.attribute-name.jsx.jnc",
           "match": "\\b[a-zA-Z_][a-zA-Z0-9_\\-]*(?==)"
         },
         {
-          "name": "entity.other.attribute-name.jsx.raven",
+          "name": "entity.other.attribute-name.jsx.jnc",
           "match": "\\b[a-zA-Z_][a-zA-Z0-9_\\-]*\\b"
         }
       ]
@@ -251,14 +251,14 @@
     "jsx-expression": {
       "patterns": [
         {
-          "name": "meta.embedded.expression.jsx.raven",
+          "name": "meta.embedded.expression.jsx.jnc",
           "begin": "\\{",
           "end": "\\}",
           "beginCaptures": {
-            "0": { "name": "punctuation.section.embedded.begin.jsx.raven" }
+            "0": { "name": "punctuation.section.embedded.begin.jsx.jnc" }
           },
           "endCaptures": {
-            "0": { "name": "punctuation.section.embedded.end.jsx.raven" }
+            "0": { "name": "punctuation.section.embedded.end.jsx.jnc" }
           },
           "patterns": [
             { "include": "$self" }

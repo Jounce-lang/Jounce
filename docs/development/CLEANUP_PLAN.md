@@ -79,32 +79,32 @@ docs/
 
 ### Temporary Test Files to Keep in Root
 **Production test files** (keep for CI/CD):
-- test_minimal.raven
-- test_simple_func.raven
-- test_closure.raven
-- test_closure_complex.raven
+- test_minimal.jnc
+- test_simple_func.jnc
+- test_closure.jnc
+- test_closure_complex.jnc
 
 ### Create `test/` Directory
 Move manual test files:
 ```
 test/
 ├── jsx/              # JSX-specific tests
-│   ├── test_jsx_simple.raven
-│   ├── test_jsx_text.raven
-│   ├── test_jsx_attrs.raven
-│   ├── test_jsx_nested.raven
-│   ├── test_jsx_expr.raven
-│   ├── test_jsx_one_attr.raven
-│   └── test_jsx_self_close_attr.raven
+│   ├── test_jsx_simple.jnc
+│   ├── test_jsx_text.jnc
+│   ├── test_jsx_attrs.jnc
+│   ├── test_jsx_nested.jnc
+│   ├── test_jsx_expr.jnc
+│   ├── test_jsx_one_attr.jnc
+│   └── test_jsx_self_close_attr.jnc
 │
 ├── features/         # Feature-specific tests
-│   ├── test_indirect_call.raven
-│   ├── test_indirect_simple.raven
-│   ├── test_error.raven
-│   └── test_nofunction.raven
+│   ├── test_indirect_call.jnc
+│   ├── test_indirect_simple.jnc
+│   ├── test_error.jnc
+│   └── test_nofunction.jnc
 │
 └── legacy/          # Old test files
-    ├── test-*.raven (with hyphens)
+    ├── test-*.jnc (with hyphens)
     └── test_*.wasm
 ```
 
@@ -218,7 +218,7 @@ Index of all documentation:
 ## 📁 Final Structure
 
 ```
-ravensone/
+jounce/
 ├── README.md                           # Main entry point
 ├── CLAUDE.md                           # AI guide
 ├── GETTING_STARTED.md                  # Quick start
@@ -263,10 +263,10 @@ ravensone/
 │   ├── features/                       # Feature tests
 │   └── legacy/                         # Old tests
 │
-├── test_minimal.raven                  # Core tests (keep in root)
-├── test_simple_func.raven
-├── test_closure.raven
-└── test_closure_complex.raven
+├── test_minimal.jnc                  # Core tests (keep in root)
+├── test_simple_func.jnc
+├── test_closure.jnc
+└── test_closure_complex.jnc
 ```
 
 ---
@@ -308,15 +308,15 @@ mv DEVELOPMENT_PLAN_3_PHASES.md docs/archive/
 ### Step 3: Move Test Files (5 min)
 ```bash
 # JSX tests
-mv test_jsx_*.raven test/jsx/
+mv test_jsx_*.jnc test/jsx/
 
 # Feature tests
-mv test_indirect*.raven test/features/
-mv test_error.raven test/features/
-mv test_nofunction.raven test/features/
+mv test_indirect*.jnc test/features/
+mv test_error.jnc test/features/
+mv test_nofunction.jnc test/features/
 
 # Legacy
-mv test-*.raven test/legacy/
+mv test-*.jnc test/legacy/
 mv test-*.wasm test/legacy/
 ```
 

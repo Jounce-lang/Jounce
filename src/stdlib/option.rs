@@ -4,7 +4,7 @@
 /// or None, and does not. This is similar to Rust's Option type and provides a type-safe way
 /// to handle nullable values.
 
-/// Option type definition in RavensOne syntax
+/// Option type definition in Jounce syntax
 pub const OPTION_DEFINITION: &str = r#"
 // The Option type - a type that represents an optional value
 enum Option<T> {

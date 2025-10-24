@@ -1,15 +1,15 @@
 [package]
-name = "ravensone"
+name = "jounce"
 version = "0.2.0"
 edition = "2021"
-description = "The RavensOne language compiler and toolchain"
+description = "The Jounce language compiler and toolchain"
 
 [lib]
-name = "ravensone_compiler"
+name = "jounce_compiler"
 path = "src/lib.rs"
 
 [[bin]]
-name = "raven"
+name = "jnc"
 path = "src/main.rs"
 
 [[example]]

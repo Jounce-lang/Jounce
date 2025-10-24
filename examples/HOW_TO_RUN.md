@@ -5,11 +5,11 @@
 The fastest way to see the analytics dashboard in action:
 
 ```bash
-# From the ravensone directory
+# From the jounce directory
 open examples/run_dashboard.html
 ```
 
-This will open a **client-side simulation** of the RavensOne application that demonstrates:
+This will open a **client-side simulation** of the Jounce application that demonstrates:
 - ✅ Reactive state management (Signal, ReactiveVec)
 - ✅ Computed values (Total Revenue calculation)
 - ✅ Effects (auto-rendering on state changes)
@@ -38,7 +38,7 @@ This will open a **client-side simulation** of the RavensOne application that de
    - Charts redraw when data changes
    - Smooth loading transitions
 
-## Production Build (When RavensOne Compiler is Complete)
+## Production Build (When Jounce Compiler is Complete)
 
 Once the full compiler is implemented, you would run:
 
@@ -46,17 +46,17 @@ Once the full compiler is implemented, you would run:
 
 ```bash
 # Compile for client (browser)
-raven compile examples/analytics_dashboard.raven --target=client -o dist/dashboard.wasm
+raven compile examples/analytics_dashboard.jnc --target=client -o dist/dashboard.wasm
 
 # Compile for server (SSR)
-raven compile examples/analytics_dashboard.raven --target=server -o dist/dashboard_ssr.wasm
+raven compile examples/analytics_dashboard.jnc --target=server -o dist/dashboard_ssr.wasm
 ```
 
 ### Step 2: Start Development Server
 
 ```bash
 # Start dev server with SSR and hot reload
-raven dev examples/analytics_dashboard.raven
+raven dev examples/analytics_dashboard.jnc
 ```
 
 This will:
@@ -69,7 +69,7 @@ This will:
 
 ```bash
 # Optimized production build
-raven build examples/analytics_dashboard.raven --optimize
+raven build examples/analytics_dashboard.jnc --optimize
 ```
 
 This creates:
@@ -82,10 +82,10 @@ This creates:
 
 ```bash
 # Deploy to static hosting (Vercel, Netlify, etc.)
-raven deploy examples/analytics_dashboard.raven --platform=vercel
+raven deploy examples/analytics_dashboard.jnc --platform=vercel
 
 # Or deploy to Node.js server
-raven deploy examples/analytics_dashboard.raven --platform=node
+raven deploy examples/analytics_dashboard.jnc --platform=node
 ```
 
 ## Architecture
@@ -269,7 +269,7 @@ async function login(email, password) {
 
 ## Next Steps
 
-1. **Explore the Code**: Open `analytics_dashboard.raven` to see the RavensOne source
+1. **Explore the Code**: Open `analytics_dashboard.jnc` to see the Jounce source
 2. **Read the Architecture**: Check `ANALYTICS_README.md` for design details
 3. **Customize**: Modify colors, metrics, charts to fit your needs
 4. **Integrate**: Add real backend APIs when ready
@@ -279,8 +279,8 @@ async function login(email, password) {
 For issues or questions:
 - Check the main README: `../README.md`
 - View implementation details: `../IMPLEMENTATION_SUMMARY.md`
-- Report bugs: https://github.com/ravensone/ravensone/issues
+- Report bugs: https://github.com/jounce/jounce/issues
 
 ---
 
-**Enjoy exploring RavensOne's capabilities!** 🚀
+**Enjoy exploring Jounce's capabilities!** 🚀

@@ -1,4 +1,4 @@
-// Integration tests that compile full .raven programs end-to-end
+// Integration tests that compile full .jnc programs end-to-end
 // These tests validate that the entire compilation pipeline works correctly
 
 use crate::lexer::Lexer;

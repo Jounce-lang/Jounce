@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "ravensone_registry=debug,tower_http=debug".into()),
+                .unwrap_or_else(|_| "jounce_registry=debug,tower_http=debug".into()),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize database
     let database_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://postgres:postgres@localhost/ravensone_registry".to_string());
+        .unwrap_or_else(|_| "postgres://postgres:postgres@localhost/jounce_registry".to_string());
 
     let pool = sqlx::postgres::PgPoolOptions::new()
         .max_connections(50)
@@ -77,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
-    tracing::info!("🚀 RavensOne Registry server listening on {}", addr);
+    tracing::info!("🚀 Jounce Registry server listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;

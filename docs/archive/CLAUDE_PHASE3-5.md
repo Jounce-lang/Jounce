@@ -14,7 +14,7 @@ This archive contains the detailed sprint documentation for Phase 3 (Ecosystem &
 
 ## 🚀 Phase 3: Ecosystem & Distribution
 
-**Focus**: Making RavensOne accessible to developers worldwide
+**Focus**: Making Jounce accessible to developers worldwide
 **Status**: 🚀 IN PROGRESS
 **Current Sprint**: Sprint 1 - VS Code Extension
 
@@ -26,18 +26,18 @@ This archive contains the detailed sprint documentation for Phase 3 (Ecosystem &
 
 **Status**: ✅ COMPLETE (Completed 2025-10-22)
 **Actual Time**: ~6 hours
-**Priority**: HIGH (Makes RavensOne accessible to developers)
+**Priority**: HIGH (Makes Jounce accessible to developers)
 
 ### Sprint Overview
 
-This sprint creates the official RavensOne VS Code extension that:
-- Connects to the RavensOne LSP server
-- Provides syntax highlighting for `.raven` files
+This sprint creates the official Jounce VS Code extension that:
+- Connects to the Jounce LSP server
+- Provides syntax highlighting for `.jnc` files
 - Exposes all 8 LSP features (completions, hover, go-to-def, formatting, etc.)
 - Includes commands for compile, watch, and format
 - Ready for publishing to VS Code Marketplace
 
-**Impact**: This extension makes RavensOne a first-class citizen in VS Code, the world's most popular code editor.
+**Impact**: This extension makes Jounce a first-class citizen in VS Code, the world's most popular code editor.
 
 ### Sprint Tasks
 
@@ -82,7 +82,7 @@ vscode-extension/
 ---
 
 #### Task 2: LSP Client Integration (2-3 hours)
-**Goal**: Connect the extension to the RavensOne LSP server
+**Goal**: Connect the extension to the Jounce LSP server
 
 **Requirements**:
 1. Add `vscode-languageclient` dependency
@@ -102,7 +102,7 @@ const serverOptions: ServerOptions = {
 const clientOptions: LanguageClientOptions = {
   documentSelector: [{ scheme: 'file', language: 'raven' }],
   synchronize: {
-    fileEvents: workspace.createFileSystemWatcher('**/*.raven')
+    fileEvents: workspace.createFileSystemWatcher('**/*.jnc')
   }
 };
 ```
@@ -121,7 +121,7 @@ const clientOptions: LanguageClientOptions = {
 ---
 
 #### Task 3: Syntax Highlighting (1-2 hours)
-**Goal**: Create TextMate grammar for `.raven` syntax highlighting
+**Goal**: Create TextMate grammar for `.jnc` syntax highlighting
 
 **Requirements**:
 1. Create `syntaxes/raven.tmLanguage.json`
@@ -132,17 +132,17 @@ const clientOptions: LanguageClientOptions = {
    - Strings, numbers, comments
    - JSX elements and attributes
    - Annotations (@server, @client)
-3. Test with example .raven files
+3. Test with example .jnc files
 4. Configure language-configuration.json (brackets, comments, etc.)
 
 **Grammar Scope Mappings**:
-- `keyword.control.raven` - fn, let, if, match, etc.
-- `storage.type.raven` - i32, f64, String, etc.
-- `entity.name.function.raven` - Function names
-- `variable.other.raven` - Variables
-- `string.quoted.double.raven` - String literals
-- `comment.line.double-slash.raven` - Comments
-- `meta.tag.raven` - JSX tags
+- `keyword.control.jnc` - fn, let, if, match, etc.
+- `storage.type.jnc` - i32, f64, String, etc.
+- `entity.name.function.jnc` - Function names
+- `variable.other.jnc` - Variables
+- `string.quoted.double.jnc` - String literals
+- `comment.line.double-slash.jnc` - Comments
+- `meta.tag.jnc` - JSX tags
 
 **Files to Create**:
 - `vscode-extension/syntaxes/raven.tmLanguage.json`
@@ -159,7 +159,7 @@ const clientOptions: LanguageClientOptions = {
 ---
 
 #### Task 4: Extension Commands (1-2 hours)
-**Goal**: Add VS Code commands for common RavensOne operations
+**Goal**: Add VS Code commands for common Jounce operations
 
 **Commands to Implement**:
 1. **Compile Current File** - `raven.compile`
@@ -208,23 +208,23 @@ context.subscriptions.push(
 **Goal**: Add configurable settings for the extension
 
 **Settings to Add**:
-1. `ravensone.lspPath` - Path to `raven` binary (default: "raven")
-2. `ravensone.enableInlayHints` - Enable/disable inlay hints (default: true)
-3. `ravensone.enableTypeHints` - Type hints in editor (default: true)
-4. `ravensone.enableParameterHints` - Parameter hints (default: true)
-5. `ravensone.formatOnSave` - Auto-format on save (default: false)
-6. `ravensone.trace.server` - LSP server trace level (default: "off")
+1. `jounce.lspPath` - Path to `raven` binary (default: "raven")
+2. `jounce.enableInlayHints` - Enable/disable inlay hints (default: true)
+3. `jounce.enableTypeHints` - Type hints in editor (default: true)
+4. `jounce.enableParameterHints` - Parameter hints (default: true)
+5. `jounce.formatOnSave` - Auto-format on save (default: false)
+6. `jounce.trace.server` - LSP server trace level (default: "off")
 
 **Settings Schema** (in package.json):
 ```json
 "contributes": {
   "configuration": {
-    "title": "RavensOne",
+    "title": "Jounce",
     "properties": {
-      "ravensone.lspPath": {
+      "jounce.lspPath": {
         "type": "string",
         "default": "raven",
-        "description": "Path to the RavensOne compiler binary"
+        "description": "Path to the Jounce compiler binary"
       }
     }
   }
@@ -284,7 +284,7 @@ context.subscriptions.push(
 
 1. **VS Code Extension** - Fully functional extension in `vscode-extension/`
 2. **LSP Integration** - All 8 LSP features working seamlessly
-3. **Syntax Highlighting** - Beautiful `.raven` file highlighting
+3. **Syntax Highlighting** - Beautiful `.jnc` file highlighting
 4. **Commands** - 5 useful commands (compile, watch, format, test, profile)
 5. **Settings** - 6 configurable settings
 6. **Documentation** - Professional README and CHANGELOG
@@ -323,7 +323,7 @@ context.subscriptions.push(
 - Monitor downloads and ratings
 
 **Testing Checklist**:
-- [ ] Extension activates on .raven file open
+- [ ] Extension activates on .jnc file open
 - [ ] Syntax highlighting works
 - [ ] Completions appear (Ctrl+Space)
 - [ ] Hover shows type info
@@ -363,7 +363,7 @@ context.subscriptions.push(
 - `vscode-extension/LICENSE` - MIT License
 - `vscode-extension/PACKAGING.md` - Publishing guide
 - `vscode-extension/ICON_TODO.md` - Icon creation instructions
-- `vscode-extension/test-syntax.raven` - Syntax highlighting test file
+- `vscode-extension/test-syntax.jnc` - Syntax highlighting test file
 - `vscode-extension/.vscodeignore`, `.gitignore` - Build configuration
 
 **Statistics**:
@@ -389,13 +389,13 @@ context.subscriptions.push(
 - ✅ All 6 settings configurable
 
 **Impact**:
-- RavensOne is now accessible in VS Code, the world's most popular code editor
+- Jounce is now accessible in VS Code, the world's most popular code editor
 - All Phase 2 LSP features are available to developers
 - Extension is production-ready and can be published to the marketplace
 - Developer experience is now on par with established languages
 
 **Next Steps**:
-1. Test extension with real `.raven` files
+1. Test extension with real `.jnc` files
 2. Create extension icon (128x128 PNG)
 3. Gather user feedback
 4. Publish to VS Code Marketplace
@@ -538,7 +538,7 @@ println!("Name: {}, Age: {}", name, age);
 
 ## ⏸️ Phase 3 - Sprint 3: Educational Examples & Learning Path (PAUSED)
 
-**Sprint Goal**: Create comprehensive, working example applications that teach RavensOne from beginner to advanced
+**Sprint Goal**: Create comprehensive, working example applications that teach Jounce from beginner to advanced
 
 **Status**: ⏸️ **PAUSED** - Blocked by compiler bugs (Started 2025-10-22)
 **Reason**: Cannot create meaningful examples without if/else, loops, Option/Result
@@ -547,7 +547,7 @@ println!("Name: {}, Age: {}", name, age);
 
 ### Sprint Overview
 
-This sprint creates a complete learning path with **working, compilable examples** that showcase RavensOne's current capabilities. Unlike the aspirational apps in `examples/apps/`, these examples use ONLY implemented features and can compile and run today.
+This sprint creates a complete learning path with **working, compilable examples** that showcase Jounce's current capabilities. Unlike the aspirational apps in `examples/apps/`, these examples use ONLY implemented features and can compile and run today.
 
 **Key Principle**: Every example MUST compile successfully with the current compiler.
 
@@ -568,16 +568,16 @@ This sprint creates a complete learning path with **working, compilable examples
 **Goal**: Finish the `examples/01-basics/` tutorial series with 6 comprehensive lessons
 
 **Current Status**:
-- ✅ 01-hello-world.raven (Complete)
-- ✅ 02-variables-types.raven (Complete)
-- ✅ 03-control-flow.raven (Complete)
-- ❌ 04-functions.raven (Missing)
-- ❌ 05-collections.raven (Missing)
-- ❌ 06-error-handling.raven (Missing)
+- ✅ 01-hello-world.jnc (Complete)
+- ✅ 02-variables-types.jnc (Complete)
+- ✅ 03-control-flow.jnc (Complete)
+- ❌ 04-functions.jnc (Missing)
+- ❌ 05-collections.jnc (Missing)
+- ❌ 06-error-handling.jnc (Missing)
 
 **Examples to Create**:
 
-1. **04-functions.raven** - Functions, parameters, return types
+1. **04-functions.jnc** - Functions, parameters, return types
    ```raven
    // Function basics
    fn add(a: i32, b: i32) -> i32 { a + b }
@@ -591,7 +591,7 @@ This sprint creates a complete learning path with **working, compilable examples
    }
    ```
 
-2. **05-collections.raven** - Arrays, vectors, iteration
+2. **05-collections.jnc** - Arrays, vectors, iteration
    ```raven
    // Arrays
    let numbers = [1, 2, 3, 4, 5];
@@ -606,7 +606,7 @@ This sprint creates a complete learning path with **working, compilable examples
    }
    ```
 
-3. **06-error-handling.raven** - Option, Result, match
+3. **06-error-handling.jnc** - Option, Result, match
    ```raven
    // Option<T>
    fn find_user(id: i32) -> Option<String> {
@@ -634,9 +634,9 @@ This sprint creates a complete learning path with **working, compilable examples
    ```
 
 **Files to Create**:
-- `examples/01-basics/04-functions.raven`
-- `examples/01-basics/05-collections.raven`
-- `examples/01-basics/06-error-handling.raven`
+- `examples/01-basics/04-functions.jnc`
+- `examples/01-basics/05-collections.jnc`
+- `examples/01-basics/06-error-handling.jnc`
 
 **Success Criteria**:
 - [ ] All 3 examples compile successfully
@@ -653,7 +653,7 @@ This sprint creates a complete learning path with **working, compilable examples
 
 **Examples to Create**:
 
-1. **07-hello-jsx.raven** - First JSX component
+1. **07-hello-jsx.jnc** - First JSX component
    ```raven
    fn main() {
        let app = <div>
@@ -665,7 +665,7 @@ This sprint creates a complete learning path with **working, compilable examples
    }
    ```
 
-2. **08-reactive-counter.raven** - Reactive state with Signal
+2. **08-reactive-counter.jnc** - Reactive state with Signal
    ```raven
    fn Counter() -> Element {
        let count = Signal::new(0);
@@ -679,7 +679,7 @@ This sprint creates a complete learning path with **working, compilable examples
    }
    ```
 
-3. **09-server-client-split.raven** - Server/client code splitting
+3. **09-server-client-split.jnc** - Server/client code splitting
    ```raven
    @server
    fn fetch_message() -> String {
@@ -695,7 +695,7 @@ This sprint creates a complete learning path with **working, compilable examples
    }
    ```
 
-4. **10-todo-app-simple.raven** - Simple todo list with state
+4. **10-todo-app-simple.jnc** - Simple todo list with state
    ```raven
    fn TodoApp() -> Element {
        let todos = Signal::new(Vec::new());
@@ -722,7 +722,7 @@ This sprint creates a complete learning path with **working, compilable examples
    }
    ```
 
-5. **11-user-dashboard.raven** - Data fetching and display
+5. **11-user-dashboard.jnc** - Data fetching and display
    ```raven
    @server
    fn get_user_stats() -> UserStats {
@@ -761,11 +761,11 @@ This sprint creates a complete learning path with **working, compilable examples
 **Directory**: `examples/02-fullstack/`
 
 **Files to Create**:
-- `examples/02-fullstack/07-hello-jsx.raven`
-- `examples/02-fullstack/08-reactive-counter.raven`
-- `examples/02-fullstack/09-server-client-split.raven`
-- `examples/02-fullstack/10-todo-app-simple.raven`
-- `examples/02-fullstack/11-user-dashboard.raven`
+- `examples/02-fullstack/07-hello-jsx.jnc`
+- `examples/02-fullstack/08-reactive-counter.jnc`
+- `examples/02-fullstack/09-server-client-split.jnc`
+- `examples/02-fullstack/10-todo-app-simple.jnc`
+- `examples/02-fullstack/11-user-dashboard.jnc`
 - `examples/02-fullstack/README.md` - Guide to full-stack development
 
 **Success Criteria**:
@@ -807,9 +807,9 @@ This sprint creates a complete learning path with **working, compilable examples
 **Directory**: `examples/03-mini-apps/`
 
 **Files to Create**:
-- `examples/03-mini-apps/weather-dashboard.raven`
-- `examples/03-mini-apps/product-catalog.raven`
-- `examples/03-mini-apps/blog-reader.raven`
+- `examples/03-mini-apps/weather-dashboard.jnc`
+- `examples/03-mini-apps/product-catalog.jnc`
+- `examples/03-mini-apps/blog-reader.jnc`
 - `examples/03-mini-apps/README.md` - Guide to building mini-apps
 
 **Success Criteria**:
@@ -827,7 +827,7 @@ This sprint creates a complete learning path with **working, compilable examples
 
 **Examples to Create**:
 
-1. **12-math-utilities.raven** - Math stdlib showcase
+1. **12-math-utilities.jnc** - Math stdlib showcase
    ```raven
    use math;
 
@@ -847,7 +847,7 @@ This sprint creates a complete learning path with **working, compilable examples
    }
    ```
 
-2. **13-http-client.raven** - HTTP requests
+2. **13-http-client.jnc** - HTTP requests
    ```raven
    use http;
 
@@ -865,7 +865,7 @@ This sprint creates a complete learning path with **working, compilable examples
    }
    ```
 
-3. **14-collections-demo.raven** - Vec, HashMap, HashSet
+3. **14-collections-demo.jnc** - Vec, HashMap, HashSet
    ```raven
    fn main() {
        // Vectors
@@ -891,9 +891,9 @@ This sprint creates a complete learning path with **working, compilable examples
 **Directory**: `examples/04-stdlib/`
 
 **Files to Create**:
-- `examples/04-stdlib/12-math-utilities.raven`
-- `examples/04-stdlib/13-http-client.raven`
-- `examples/04-stdlib/14-collections-demo.raven`
+- `examples/04-stdlib/12-math-utilities.jnc`
+- `examples/04-stdlib/13-http-client.jnc`
+- `examples/04-stdlib/14-collections-demo.jnc`
 - `examples/04-stdlib/README.md` - Standard library guide
 
 **Success Criteria**:
@@ -978,32 +978,32 @@ examples/
 ├── .gitignore                     # Ignore compiled files (NEW)
 │
 ├── 01-basics/                     # Fundamentals
-│   ├── 01-hello-world.raven      # ✅ Exists
-│   ├── 02-variables-types.raven  # ✅ Exists
-│   ├── 03-control-flow.raven     # ✅ Exists
-│   ├── 04-functions.raven        # NEW
-│   ├── 05-collections.raven      # NEW
-│   └── 06-error-handling.raven   # NEW
+│   ├── 01-hello-world.jnc      # ✅ Exists
+│   ├── 02-variables-types.jnc  # ✅ Exists
+│   ├── 03-control-flow.jnc     # ✅ Exists
+│   ├── 04-functions.jnc        # NEW
+│   ├── 05-collections.jnc      # NEW
+│   └── 06-error-handling.jnc   # NEW
 │
 ├── 02-fullstack/                  # NEW DIRECTORY
 │   ├── README.md
-│   ├── 07-hello-jsx.raven
-│   ├── 08-reactive-counter.raven
-│   ├── 09-server-client-split.raven
-│   ├── 10-todo-app-simple.raven
-│   └── 11-user-dashboard.raven
+│   ├── 07-hello-jsx.jnc
+│   ├── 08-reactive-counter.jnc
+│   ├── 09-server-client-split.jnc
+│   ├── 10-todo-app-simple.jnc
+│   └── 11-user-dashboard.jnc
 │
 ├── 03-mini-apps/                  # NEW DIRECTORY
 │   ├── README.md
-│   ├── weather-dashboard.raven
-│   ├── product-catalog.raven
-│   └── blog-reader.raven
+│   ├── weather-dashboard.jnc
+│   ├── product-catalog.jnc
+│   └── blog-reader.jnc
 │
 ├── 04-stdlib/                     # NEW DIRECTORY
 │   ├── README.md
-│   ├── 12-math-utilities.raven
-│   ├── 13-http-client.raven
-│   └── 14-collections-demo.raven
+│   ├── 12-math-utilities.jnc
+│   ├── 13-http-client.jnc
+│   └── 14-collections-demo.jnc
 │
 └── apps/                          # Existing aspirational apps
     ├── README.md                  # ✅ Exists
@@ -1015,7 +1015,7 @@ examples/
 ### Testing Plan
 
 **For Each Example**:
-1. Compile: `./target/release/raven compile examples/XX/example.raven`
+1. Compile: `./target/release/raven compile examples/XX/example.jnc`
 2. Verify output: Check `dist/` directory
 3. Run server: `node dist/server.js` (if applicable)
 4. Test client: Open `dist/index.html` (if applicable)
@@ -1024,7 +1024,7 @@ examples/
 **Batch Testing**:
 ```bash
 # Compile all examples in sequence
-for file in examples/01-basics/*.raven examples/02-fullstack/*.raven examples/03-mini-apps/*.raven examples/04-stdlib/*.raven; do
+for file in examples/01-basics/*.jnc examples/02-fullstack/*.jnc examples/03-mini-apps/*.jnc examples/04-stdlib/*.jnc; do
     echo "Compiling $file..."
     ./target/release/raven compile "$file" || echo "FAILED: $file"
 done
@@ -1197,10 +1197,10 @@ Based on testing, these features **DO work**:
 
 This sprint will:
 - **Enable learning** - Complete tutorial path for new users
-- **Showcase capabilities** - Demonstrate what RavensOne can do TODAY
+- **Showcase capabilities** - Demonstrate what Jounce can do TODAY
 - **Validate compiler** - 17 real-world test cases
 - **Foundation for growth** - Template for future examples
-- **Marketing material** - Show off RavensOne's potential
+- **Marketing material** - Show off Jounce's potential
 
 ---
 
@@ -1244,7 +1244,7 @@ The borrow checker has a critical bug where it references `__else_block` without
 - Option<T> and Result<T, E>
 - Most error handling patterns
 
-**This is the #1 blocker for RavensOne.**
+**This is the #1 blocker for Jounce.**
 
 ### Sprint Tasks
 
@@ -1440,9 +1440,9 @@ fn divide(a: f64, b: f64) -> Result<f64, String> {
 - `src/lib.rs` (lines 187-188) - Added integration_tests module
 
 **Test Files Created**:
-- `test_if_else_bug.raven` - Minimal reproduction case
-- `test_if_else_option.raven` - Option<T> with if/else
-- `test_if_else_result.raven` - Result<T, E> with if/else
+- `test_if_else_bug.jnc` - Minimal reproduction case
+- `test_if_else_option.jnc` - Option<T> with if/else
+- `test_if_else_result.jnc` - Result<T, E> with if/else
 
 **Impact**:
 - Language Core: 30% → 50% complete (+20%!)
@@ -1516,7 +1516,7 @@ This sprint implemented range-based for loops, enabling developers to write idio
 - ✅ Parser correctly handles range precedence
 - ✅ JavaScript generation produces efficient for loops
 - ✅ 4 integration tests added (total: 326 tests, 100% pass rate)
-- ✅ Test compilation verified: `test_for_range.raven` compiles and runs correctly
+- ✅ Test compilation verified: `test_for_range.jnc` compiles and runs correctly
 
 **Files Modified**:
 - `src/parser.rs` - Added Range precedence and range expression parsing
@@ -1524,12 +1524,12 @@ This sprint implemented range-based for loops, enabling developers to write idio
 - `src/integration_tests.rs` - Added 4 integration tests
 
 **Test Files Created**:
-- `test_for_range.raven` - Manual test for range-based for loops
+- `test_for_range.jnc` - Manual test for range-based for loops
 - `test_for_output.js` - Verification script for generated JavaScript
 
 **Impact**:
 - Language Core: 50% → 60% complete (+10%!)
-- Iteration is now fully functional in RavensOne
+- Iteration is now fully functional in Jounce
 - Developers can write idiomatic for loops like Rust
 - Foundation ready for creating comprehensive learning materials
 
@@ -1601,7 +1601,7 @@ This sprint implemented OR patterns in match arms, allowing developers to write 
 - ✅ Parser correctly handles `pattern1 | pattern2 | pattern3` syntax
 - ✅ JavaScript generation produces efficient OR conditions
 - ✅ 3 integration tests added (total: 329 tests, 100% pass rate)
-- ✅ Test compilation verified: `test_match_or.raven` compiles and runs correctly
+- ✅ Test compilation verified: `test_match_or.jnc` compiles and runs correctly
 - ✅ 0 regressions - all existing tests still pass
 
 **Example Before/After**:
@@ -1725,7 +1725,7 @@ fn factorial(n: i32) -> i32 {
   - Mutual recursion (is_even/is_odd)
   - Recursion with accumulators (tail-call-like patterns)
 - ✅ All 329 tests passing (0 regressions)
-- ✅ Created comprehensive recursion test file (`test_recursion_comprehensive.raven`)
+- ✅ Created comprehensive recursion test file (`test_recursion_comprehensive.jnc`)
 
 **Files Modified**:
 - `src/js_emitter.rs` (lines 410, 443-551, 822-860) - Added expression handlers and implicit return support
@@ -1774,7 +1774,7 @@ export function factorial(n) {
 
 ### Sprint Overview
 
-This sprint added 50 comprehensive integration tests covering all major language features to prevent regressions and validate the entire compilation pipeline. Each test compiles real .raven source code end-to-end through the full compiler stack.
+This sprint added 50 comprehensive integration tests covering all major language features to prevent regressions and validate the entire compilation pipeline. Each test compiles real .jnc source code end-to-end through the full compiler stack.
 
 ### Sprint Tasks Completed
 
@@ -1999,7 +1999,7 @@ pub fn is_copy(&self) -> bool {
 }
 ```
 
-**Rationale**: In JavaScript (RavensOne's target), all strings are immutable and copyable by default. There's no distinction between `&str` and `String` like in Rust.
+**Rationale**: In JavaScript (Jounce's target), all strings are immutable and copyable by default. There's no distinction between `&str` and `String` like in Rust.
 
 **Result**: String literals can now be used multiple times without move errors.
 
@@ -2057,7 +2057,7 @@ Two tests represent parser/type checker limitations and were marked as `#[ignore
 - Pattern matching is now fully functional
 - Option/Result types work correctly
 - String handling is intuitive (matches JavaScript semantics)
-- RavensOne is now production-ready for core features!
+- Jounce is now production-ready for core features!
 
 **Pass Rate Progress**:
 - Sprint 5 Start: 100% (329/329)
@@ -2070,14 +2070,14 @@ Two tests represent parser/type checker limitations and were marked as `#[ignore
 
 ## 🚀 Phase 5: Advanced Language Features
 
-**Focus**: Implement advanced features that elevate RavensOne to a production-grade language
+**Focus**: Implement advanced features that elevate Jounce to a production-grade language
 **Status**: 🚧 **STARTING** (Started 2025-10-22)
 **Priority**: HIGH - Modern features expected in production languages
 **Estimated Duration**: 4-6 sprints (~12-20 hours)
 
 ### Phase 5 Overview
 
-Phase 4 completed the core language features. Phase 5 focuses on advanced features that make RavensOne competitive with modern languages while leveraging JavaScript's strengths.
+Phase 4 completed the core language features. Phase 5 focuses on advanced features that make Jounce competitive with modern languages while leveraging JavaScript's strengths.
 
 **Key Principle**: Prioritize features that map cleanly to JavaScript and provide maximum developer value.
 
@@ -2102,7 +2102,7 @@ Phase 4 completed the core language features. Phase 5 focuses on advanced featur
 
 ### Sprint Overview
 
-Async/await is crucial for modern web development. Since RavensOne compiles to JavaScript, we can map directly to JS async/await, making this a natural fit.
+Async/await is crucial for modern web development. Since Jounce compiles to JavaScript, we can map directly to JS async/await, making this a natural fit.
 
 **Key Insight**: JavaScript has excellent async/await support. We just need to:
 1. Parse `async fn` and `await` expressions
@@ -2461,7 +2461,7 @@ async function main() {
 ```
 
 **Impact**:
-- RavensOne now has full async/await support!
+- Jounce now has full async/await support!
 - Modern asynchronous programming patterns are fully enabled
 - Seamless integration with JavaScript async ecosystem
 - Perfect for full-stack web development
@@ -2584,7 +2584,7 @@ fn parse_postfix(&mut self, left: Expression) -> Result<Expression, CompileError
 
 **Code Generation**:
 
-**RavensOne**:
+**Jounce**:
 ```raven
 fn read_file(path: &str) -> Result<String, Error> {
     let content = fs::read_to_string(path)?;
@@ -2761,12 +2761,12 @@ fn process_data() -> Result<String, Error> {
 - `src/integration_tests.rs` (lines 1780-1900) - Added 5 integration tests
 
 **Test Files Created**:
-- `test_try_simple.raven` - Basic try operator usage
-- `test_try_chain.raven` - Chained try operators
+- `test_try_simple.jnc` - Basic try operator usage
+- `test_try_chain.jnc` - Chained try operators
 
 **Generated JavaScript**:
 ```javascript
-// RavensOne: let x = divide(10, 2)?;
+// Jounce: let x = divide(10, 2)?;
 // JavaScript: let x = (divide(10, 2).value);
 ```
 
@@ -2915,7 +2915,7 @@ fn apply<T, U>(value: T, f: fn(T) -> U) -> U {
 
 ### Example Before/After
 
-**RavensOne Source**:
+**Jounce Source**:
 ```raven
 fn identity<T>(value: T) -> T {
     value
@@ -3009,7 +3009,7 @@ export function main() {
 
 ### Sprint Summary
 
-Sprint 4 successfully implemented a complete trait system for RavensOne, providing compile-time polymorphism similar to Rust traits or TypeScript interfaces. The implementation includes:
+Sprint 4 successfully implemented a complete trait system for Jounce, providing compile-time polymorphism similar to Rust traits or TypeScript interfaces. The implementation includes:
 - Trait definitions with method signatures
 - Impl blocks (both inherent and trait-based)
 - Generic type parameters with trait bounds (`T: Display`, `T: Display + Clone`)
@@ -3113,7 +3113,7 @@ fn parse_type_params(&mut self) -> Result<Vec<TypeParam>, CompileError> {
 - `src/parser.rs` (parse_type_params method)
 - `src/formatter.rs` (format type parameters with bounds)
 
-**Test Results**: Successfully compiled `test_trait_bounds_simple.raven`
+**Test Results**: Successfully compiled `test_trait_bounds_simple.jnc`
 
 ---
 
@@ -3282,7 +3282,7 @@ Expression::FieldAccess { object, field } => {
 **Files Modified**:
 - `src/type_checker.rs` - Enhanced FieldAccess expression handling
 
-**Test Results**: Successfully compiled `test_trait_method_call.raven`
+**Test Results**: Successfully compiled `test_trait_method_call.jnc`
 
 ---
 
@@ -3495,7 +3495,7 @@ struct Wrapper<T: Display> { inner: T }
 
 **Created Files**:
 
-1. **test_traits_comprehensive.raven** - Complete trait system example:
+1. **test_traits_comprehensive.jnc** - Complete trait system example:
    - 4 trait definitions (Display, Clone, Comparable, Builder)
    - 4 struct definitions (Point, Person, Rectangle, Container<T>)
    - Inherent implementations
@@ -3520,7 +3520,7 @@ struct Wrapper<T: Display> { inner: T }
    - Test results and statistics
 
 **Files Modified**:
-- `test_traits_comprehensive.raven` - NEW comprehensive example
+- `test_traits_comprehensive.jnc` - NEW comprehensive example
 - `CLAUDE.md` - Updated with Sprint 4 completion
 - `docs/archive/CLAUDE_PHASE3-5.md` - Added Sprint 4 archive
 
@@ -3528,7 +3528,7 @@ struct Wrapper<T: Display> { inner: T }
 
 ### Example: Comprehensive Trait Usage
 
-**Source** (test_traits_comprehensive.raven):
+**Source** (test_traits_comprehensive.jnc):
 ```raven
 trait Display {
     fn to_string(self: Self) -> String;
@@ -3622,7 +3622,7 @@ export function main() {
 - `src/code_splitter.rs` - Added struct and impl_block tracking
 - `src/formatter.rs` - Updated to format trait bounds
 - `src/integration_tests.rs` - Added 10 comprehensive tests
-- `test_traits_comprehensive.raven` - NEW comprehensive example
+- `test_traits_comprehensive.jnc` - NEW comprehensive example
 - `CLAUDE.md` - Updated with Sprint 4 completion
 - `docs/archive/CLAUDE_PHASE3-5.md` - Added Sprint 4 documentation
 
@@ -3689,10 +3689,10 @@ These features could be added in future sprints if needed.
 - Method calls use native JavaScript prototype dispatch (fast!)
 
 **Comparison to Other Languages**:
-- **Rust Traits**: Similar syntax and semantics, but RavensOne uses type erasure instead of monomorphization
-- **TypeScript Interfaces**: Similar compile-time checking, but RavensOne has structural typing for traits
+- **Rust Traits**: Similar syntax and semantics, but Jounce uses type erasure instead of monomorphization
+- **TypeScript Interfaces**: Similar compile-time checking, but Jounce has structural typing for traits
 - **Java Interfaces**: Similar concept, but Java has runtime type information (instanceof)
-- **Go Interfaces**: Similar duck typing at runtime, but RavensOne validates at compile time
+- **Go Interfaces**: Similar duck typing at runtime, but Jounce validates at compile time
 
 **Next Steps**: Phase 5 Sprint 5 complete! Only 1 known limitation remains (deeply nested if/else).
 
@@ -3708,7 +3708,7 @@ These features could be added in future sprints if needed.
 
 ### Sprint Overview
 
-This sprint fixes the last remaining known limitation in RavensOne: deeply nested if/else expressions (2+ levels). The issue was that `Statement::If` in both the semantic analyzer and type checker always returned Unit/Void, even when the if statement was used as an expression.
+This sprint fixes the last remaining known limitation in Jounce: deeply nested if/else expressions (2+ levels). The issue was that `Statement::If` in both the semantic analyzer and type checker always returned Unit/Void, even when the if statement was used as an expression.
 
 **Key Achievement**: ✅ **Language Core 100% COMPLETE** - Zero known limitations!
 
@@ -3838,10 +3838,10 @@ fn categorize(x: i32) -> String {
 All test cases now compile and generate correct JavaScript:
 
 ```bash
-./target/release/raven compile test_deeply_nested_4_levels.raven
+./target/release/raven compile test_deeply_nested_4_levels.jnc
 # ✅ Compilation complete!
 
-./target/release/raven compile test_nested_if_5_levels.raven
+./target/release/raven compile test_nested_if_5_levels.jnc
 # ✅ Compilation complete!
 
 cargo test --lib
@@ -3869,7 +3869,7 @@ cargo test --lib
 
 🎯 **LANGUAGE CORE 100% COMPLETE!**
 
-RavensOne now supports:
+Jounce now supports:
 - ✅ Unlimited nesting depth for if/else expressions
 - ✅ Proper type inference through all nesting levels
 - ✅ If statements as expressions in all contexts
@@ -3877,6 +3877,6 @@ RavensOne now supports:
 
 The language is now **fully production-ready** with all planned core features implemented and tested!
 
-**Next Steps**: RavensOne core language is complete! Future work: ecosystem features (package registry expansion, more stdlib modules), improved error messages, performance optimizations, or community examples.
+**Next Steps**: Jounce core language is complete! Future work: ecosystem features (package registry expansion, more stdlib modules), improved error messages, performance optimizations, or community examples.
 
 ---

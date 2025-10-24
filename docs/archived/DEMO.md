@@ -1,4 +1,4 @@
-# 🔥 RavensOne Live Demos
+# 🔥 Jounce Live Demos
 
 ## Server is Running!
 
@@ -94,7 +94,7 @@ python3 serve.py
 
 **In the Console:**
 ```
-🚀 RavensOne Counter Demo Ready!
+🚀 Jounce Counter Demo Ready!
 📊 Signal ID: 0
 🎯 Effect registered and watching for changes
 ➕ Increment: 0 → 1
@@ -238,7 +238,7 @@ You now have a **fully working reactive counter** running in the browser with:
 - ✅ WASM module support
 - ✅ Production-quality UI
 
-**RavensOne is ALIVE and working!** 🔥🚀
+**Jounce is ALIVE and working!** 🔥🚀
 
 ---
 

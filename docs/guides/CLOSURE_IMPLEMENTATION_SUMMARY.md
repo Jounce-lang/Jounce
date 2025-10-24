@@ -1,7 +1,7 @@
 # Closure Implementation Summary
 
 ## Overview
-Successfully implemented closure support for the RavensOne compiler, including capture analysis, environment allocation, and code generation for WebAssembly.
+Successfully implemented closure support for the Jounce compiler, including capture analysis, environment allocation, and code generation for WebAssembly.
 
 ## Implementation Details
 
@@ -81,7 +81,7 @@ i32.load offset=0  ;; Load value at offset 0 (first captured var)
 
 ### Successful Compilations
 
-✅ **test_minimal.raven**: Simple function with parameters
+✅ **test_minimal.jnc**: Simple function with parameters
 ```raven
 function main() {
   let x = 5;
@@ -90,7 +90,7 @@ function main() {
 ```
 Output: 36 bytes WASM
 
-✅ **test_closure.raven**: Lambda with single capture
+✅ **test_closure.jnc**: Lambda with single capture
 ```raven
 function main() {
   let n = 10;
@@ -100,7 +100,7 @@ function main() {
 ```
 Output: 59 bytes WASM
 
-✅ **test_closure_complex.raven**: Multiple captures and nesting
+✅ **test_closure_complex.jnc**: Multiple captures and nesting
 ```raven
 function main() {
   let x = 5;
@@ -115,7 +115,7 @@ function main() {
 ```
 Output: 102 bytes WASM
 
-✅ **examples/basic_functions.raven**: Existing test still works
+✅ **examples/basic_functions.jnc**: Existing test still works
 Output: 114 bytes WASM
 
 ### Test Suite
@@ -189,9 +189,9 @@ Output: 114 bytes WASM
 - **Indirect call**: Via WASM function table (call_indirect)
 
 ### Memory Usage
-- **Minimal example (test_minimal.raven)**: 36 bytes
-- **Simple closure (test_closure.raven)**: 59 bytes (64% larger)
-- **Complex closure (test_closure_complex.raven)**: 102 bytes (183% larger)
+- **Minimal example (test_minimal.jnc)**: 36 bytes
+- **Simple closure (test_closure.jnc)**: 59 bytes (64% larger)
+- **Complex closure (test_closure_complex.jnc)**: 102 bytes (183% larger)
 
 ## Next Steps
 
@@ -232,11 +232,11 @@ Output: 114 bytes WASM
 - `src/ast.rs`: Lambda AST nodes and capture tracking
 
 ### Tests Created
-- `test_minimal.raven`: Basic function test
-- `test_closure.raven`: Simple closure test
-- `test_closure_complex.raven`: Advanced closure test
-- `test_simple_func.raven`: Function with direct call
-- `test_nofunction.raven`: No functions (control test)
+- `test_minimal.jnc`: Basic function test
+- `test_closure.jnc`: Simple closure test
+- `test_closure_complex.jnc`: Advanced closure test
+- `test_simple_func.jnc`: Function with direct call
+- `test_nofunction.jnc`: No functions (control test)
 
 ## Conclusion
 
@@ -253,4 +253,4 @@ The closure implementation is **functionally complete** for basic use cases:
 - Memory management (garbage collection)
 - Type system completeness (generic closures, function types)
 
-The implementation provides a solid foundation for functional programming patterns in RavensOne while maintaining compatibility with the existing codebase.
+The implementation provides a solid foundation for functional programming patterns in Jounce while maintaining compatibility with the existing codebase.

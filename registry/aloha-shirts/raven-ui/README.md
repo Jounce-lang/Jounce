@@ -1,6 +1,6 @@
 # raven-ui
 
-Complete UI component library for RavensOne applications.
+Complete UI component library for Jounce applications.
 
 ## Features
 

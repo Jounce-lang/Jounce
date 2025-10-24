@@ -7,7 +7,7 @@
 
 ## Overview
 
-The RavensOne AST has complete JSX support with well-designed node types. The parser can represent any JSX syntax using the AST nodes defined in `src/ast.rs`. This guide explains the AST structure and how to construct JSX nodes during parsing.
+The Jounce AST has complete JSX support with well-designed node types. The parser can represent any JSX syntax using the AST nodes defined in `src/ast.rs`. This guide explains the AST structure and how to construct JSX nodes during parsing.
 
 ---
 

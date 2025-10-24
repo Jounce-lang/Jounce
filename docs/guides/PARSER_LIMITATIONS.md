@@ -1,10 +1,10 @@
-# RavensOne Parser Limitations
+# Jounce Parser Limitations
 
-This document outlines the current state of the RavensOne parser, what works, what doesn't, and what would be needed to implement full JSX support.
+This document outlines the current state of the Jounce parser, what works, what doesn't, and what would be needed to implement full JSX support.
 
 ## Current State: What Works ✅
 
-The RavensOne compiler successfully parses and compiles **non-JSX RavensOne code**. This includes:
+The Jounce compiler successfully parses and compiles **non-JSX Jounce code**. This includes:
 
 - Basic data structures (structs, enums)
 - Functions and methods
@@ -16,7 +16,7 @@ The RavensOne compiler successfully parses and compiles **non-JSX RavensOne code
 ### Example: Compiles Successfully
 
 ```rust
-// examples/enum_simple.raven
+// examples/enum_simple.jnc
 enum Result {
     Ok(i32),
     Err(String),
@@ -39,7 +39,7 @@ fn main() {
 }
 ```
 
-**Compilation**: `./target/release/raven compile examples/enum_simple.raven` → ✅ SUCCESS
+**Compilation**: `./target/release/raven compile examples/enum_simple.jnc` → ✅ SUCCESS
 
 ## What Doesn't Work ❌
 
@@ -65,10 +65,10 @@ fn main() {
 **Test Coverage**: 11 dedicated JSX parser tests, all passing
 
 **Files that may still fail**:
-- `examples/analytics_dashboard.raven` - Complex multi-line JSX
-- `examples/todo_app.raven` - Component-based architecture
-- `examples/counter_app.raven` - Multi-line JSX in return
-- `examples/devboard/src/main.raven` - Full application
+- `examples/analytics_dashboard.jnc` - Complex multi-line JSX
+- `examples/todo_app.jnc` - Component-based architecture
+- `examples/counter_app.jnc` - Multi-line JSX in return
+- `examples/devboard/src/main.jnc` - Full application
 
 ### 2. Lexer Limitations
 
@@ -160,7 +160,7 @@ let name = "John"; // Already a String
 
 ## Technical Requirements for JSX Support
 
-To enable JSX/component syntax in RavensOne, the following compiler work is needed:
+To enable JSX/component syntax in Jounce, the following compiler work is needed:
 
 ### 1. Lexer Updates
 
@@ -381,16 +381,16 @@ fn render_card(title: String, content: String) -> String {
 fn main() {
     let app = document.getElementById("app");
     let heading = document.createElement("h1");
-    heading.textContent = "Welcome to RavensOne";
+    heading.textContent = "Welcome to Jounce";
     app.appendChild(heading);
 }
 ```
 
 ## References
 
-- **Working Example**: `examples/enum_simple.raven` - Basic RavensOne syntax without JSX
+- **Working Example**: `examples/enum_simple.jnc` - Basic Jounce syntax without JSX
 - **Aspirational Examples**: All files in `examples/` with JSX syntax
-- **DevBoard App**: `examples/devboard/src/main.raven` - Full application showing intended syntax
+- **DevBoard App**: `examples/devboard/src/main.jnc` - Full application showing intended syntax
 
 ## Testing JSX Implementation
 
@@ -400,7 +400,7 @@ When JSX support is added, test with this minimal example:
 component Hello(name: String) {
     return <div>
         <h1>Hello, {name}!</h1>
-        <p>Welcome to RavensOne</p>
+        <p>Welcome to Jounce</p>
     </div>;
 }
 
@@ -410,10 +410,10 @@ fn main() {
 }
 ```
 
-**Expected Output**: DOM tree with `<div><h1>Hello, World!</h1><p>Welcome to RavensOne</p></div>`
+**Expected Output**: DOM tree with `<div><h1>Hello, World!</h1><p>Welcome to Jounce</p></div>`
 
 ---
 
 **Document Status**: Updated 2025-10-21 - JSX Parser Implemented
-**RavensOne Version**: Sprint 7 Complete - commit f9df4db
+**Jounce Version**: Sprint 7 Complete - commit f9df4db
 **Test Status**: 221/230 passing (96%), 11/11 JSX parser tests ✅

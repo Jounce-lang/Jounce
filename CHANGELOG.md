@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to RavensOne will be documented in this file.
+All notable changes to Jounce will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -65,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Example Apps**:
 - Fixed social app syntax (parentheses to blocks in ternary)
 
-**Files Modified**: 4 (module_loader.rs, semantic_analyzer.rs, js_emitter.rs, social/main.raven)
+**Files Modified**: 4 (module_loader.rs, semantic_analyzer.rs, js_emitter.rs, social/main.jnc)
 **Tests**: 221 passing, 0 regressions
 **Language Completeness**: 99% → 100%
 
@@ -225,9 +225,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - STDLIB_TUTORIAL.md (1,200+ lines) - 8 progressive lessons from beginner to advanced
   - examples/stdlib/README.md (389 lines) - Learning path and troubleshooting
 - **Code Examples** (1,000+ lines)
-  - math_examples.raven - 40+ Math functions demonstrated
-  - reactive_examples.raven - 9 reactive programming demos
-  - http_examples.raven - 12 HTTP client examples
+  - math_examples.jnc - 40+ Math functions demonstrated
+  - reactive_examples.jnc - 9 reactive programming demos
+  - http_examples.jnc - 12 HTTP client examples
 - **Limitations Discovered**
   - Division operator (`/`) not implemented in parser
   - Blocks math examples from compiling
@@ -251,9 +251,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (October 21, 2025 - Task 1: Real-World Apps)
 - **Production Applications** (2,711 lines code + 1,515 lines docs)
-  - shopping_app.raven - E-commerce platform
-  - social_feed_app.raven - Social media feed
-  - task_management_board.raven - Kanban board
+  - shopping_app.jnc - E-commerce platform
+  - social_feed_app.jnc - Social media feed
+  - task_management_board.jnc - Kanban board
 - **Documentation**
   - APPS_COMPLETE.md - Complete app analysis
   - devboard/README.md - Developer dashboard guide
@@ -294,7 +294,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - std::option, std::result, std::iterator
   - std::vec, std::json, std::time
   - std::hashmap, std::string, std::fs
-- Package manager and registry (https://ravensone-registry.fly.dev)
+- Package manager and registry (https://jounce-registry.fly.dev)
 - Hot Module Replacement (HMR)
 - VSCode extension with LSP support
 - Source map generation

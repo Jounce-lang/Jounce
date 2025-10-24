@@ -35,9 +35,9 @@ pub fn deploy_project() -> Result<(), CompileError> {
     let provider = CloudflareProvider {};
     
     // FIX: Instead of a placeholder comment, we provide a valid, minimal
-    // RavensOne program for the compiler to process.
-    let source = fs::read_to_string("src/main.raven")
-        .map_err(|e| CompileError::Generic(format!("Could not read project entrypoint 'src/main.raven': {}", e)))?;
+    // Jounce program for the compiler to process.
+    let source = fs::read_to_string("src/main.jnc")
+        .map_err(|e| CompileError::Generic(format!("Could not read project entrypoint 'src/main.jnc': {}", e)))?;
 
     // 1. Create distribution directories
     let client_dist_path = Path::new("./dist/client");

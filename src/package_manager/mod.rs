@@ -1,4 +1,4 @@
-// Package Manager for RavensOne
+// Package Manager for Jounce
 // Handles dependencies, versioning, and package installation
 
 pub mod registry;
@@ -174,7 +174,7 @@ impl PackageManager {
         let _ = registry.load_credentials(); // Load saved credentials if available
 
         let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-        let cache_dir = home.join(".raven").join("cache");
+        let cache_dir = home.join(".jnc").join("cache");
 
         PackageManager {
             manifest_path: project_root.join("raven.toml"),
@@ -393,7 +393,7 @@ impl PackageManager {
             name: name.to_string(),
             version: version.clone(),
             source: PackageSource::Registry {
-                url: format!("https://packages.ravensone.dev/{}/{}", name, version),
+                url: format!("https://packages.jounce.dev/{}/{}", name, version),
             },
             dependencies: dep_names,
         });
@@ -806,7 +806,7 @@ impl PackageManager {
 
         let mut hasher = DefaultHasher::new();
 
-        // Hash all .raven files in the package
+        // Hash all .jnc files in the package
         if package_path.exists() {
             for entry in (fs::read_dir(package_path)
                 .map_err(|e| PackageError::IoError(e.to_string()))?).flatten()

@@ -1,6 +1,6 @@
-# Analytics Dashboard - RavensOne Production Application
+# Analytics Dashboard - Jounce Production Application
 
-A comprehensive multi-tenant analytics dashboard showcasing **all** of RavensOne's features in a real-world production scenario.
+A comprehensive multi-tenant analytics dashboard showcasing **all** of Jounce's features in a real-world production scenario.
 
 ## Overview
 
@@ -180,17 +180,17 @@ create_effect(|| {
 
 ```bash
 # Compile the application
-raven compile examples/analytics_dashboard.raven --target=client -o dist/dashboard.wasm
-raven compile examples/analytics_dashboard.raven --target=server -o dist/dashboard_ssr.wasm
+raven compile examples/analytics_dashboard.jnc --target=client -o dist/dashboard.wasm
+raven compile examples/analytics_dashboard.jnc --target=server -o dist/dashboard_ssr.wasm
 
 # Start development server with SSR
-raven dev examples/analytics_dashboard.raven
+raven dev examples/analytics_dashboard.jnc
 
 # Build for production
-raven build examples/analytics_dashboard.raven --optimize
+raven build examples/analytics_dashboard.jnc --optimize
 
 # Run tests
-raven test examples/analytics_dashboard.raven
+raven test examples/analytics_dashboard.jnc
 ```
 
 ## Testing Features
@@ -232,7 +232,7 @@ To make this production-ready, you would add:
    - Performance monitoring
    - User analytics
 
-## Why This App Showcases RavensOne's Power
+## Why This App Showcases Jounce's Power
 
 1. **Type Safety Everywhere**: From database queries to UI rendering, types prevent bugs
 2. **Reactive by Default**: No manual DOM manipulation or state management boilerplate
@@ -243,7 +243,7 @@ To make this production-ready, you would add:
 
 ## Comparison with Other Frameworks
 
-| Feature | RavensOne | React + Next.js | Svelte + SvelteKit |
+| Feature | Jounce | React + Next.js | Svelte + SvelteKit |
 |---------|-----------|-----------------|-------------------|
 | Type System | Built-in, Inferred | TypeScript (separate) | TypeScript (separate) |
 | Reactivity | Fine-grained signals | Virtual DOM | Compiled reactive |
@@ -255,6 +255,6 @@ To make this production-ready, you would add:
 
 ---
 
-**Built with ❤️ using RavensOne**
+**Built with ❤️ using Jounce**
 
-For more information: https://github.com/ravensone/ravensone
+For more information: https://github.com/jounce/jounce

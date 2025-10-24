@@ -1,11 +1,11 @@
-# RavensOne Standard Library API Reference
+# Jounce Standard Library API Reference
 
 **Version**: 0.1.0
 **Last Updated**: 2025-10-21
 **Total Modules**: 16
 **Total Functions**: 200+
 
-Complete API reference for all RavensOne standard library modules.
+Complete API reference for all Jounce standard library modules.
 
 ---
 
@@ -962,11 +962,11 @@ Adds a query parameter.
 **Example**:
 ```raven
 let response = HttpRequest::get("https://api.example.com/search")
-    .query("q", "RavensOne")
+    .query("q", "Jounce")
     .query("limit", "10")
     .send()
     .await;
-// URL: https://api.example.com/search?q=RavensOne&limit=10
+// URL: https://api.example.com/search?q=Jounce&limit=10
 ```
 
 #### `request.json(data: Value) -> HttpRequest`

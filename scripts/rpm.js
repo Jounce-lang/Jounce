@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * RavensOne Package Manager (RPM)
+ * Jounce Package Manager (RPM)
  *
- * A lightweight package manager for RavensOne modules
- * Inspired by npm, cargo, and pip but optimized for RavensOne
+ * A lightweight package manager for Jounce modules
+ * Inspired by npm, cargo, and pip but optimized for Jounce
  */
 
 const fs = require('fs');
@@ -13,7 +13,7 @@ const https = require('https');
 const http = require('http');
 
 const VERSION = '1.0.0';
-const REGISTRY_DIR = path.join(process.cwd(), '.ravens');
+const REGISTRY_DIR = path.join(process.cwd(), '.jncs');
 const PACKAGES_DIR = path.join(REGISTRY_DIR, 'packages');
 const CACHE_DIR = path.join(REGISTRY_DIR, 'cache');
 const LOCK_FILE = 'raven.lock';
@@ -27,10 +27,10 @@ class PackageManager {
     }
 
     /**
-     * Initialize new RavensOne project
+     * Initialize new Jounce project
      */
     async init(options = {}) {
-        console.log('🎯 Initializing RavensOne project...\n');
+        console.log('🎯 Initializing Jounce project...\n');
 
         // Check if already initialized
         if (fs.existsSync(MANIFEST_FILE)) {
@@ -50,7 +50,7 @@ class PackageManager {
             description,
             author,
             license: 'MIT',
-            main: 'src/main.raven',
+            main: 'src/main.jnc',
             dependencies: {},
             devDependencies: {},
             scripts: {
@@ -71,20 +71,20 @@ class PackageManager {
             'src',
             'tests',
             'examples',
-            '.ravens'
+            '.jncs'
         ]);
 
         // Create example main file
         const exampleCode = `// ${name} - Main entry point
 
 fn main() {
-    console.log("Hello from RavensOne! 🎯");
+    console.log("Hello from Jounce! 🎯");
 }
 `;
-        fs.writeFileSync('src/main.raven', exampleCode);
+        fs.writeFileSync('src/main.jnc', exampleCode);
 
         // Create .gitignore
-        const gitignore = `.ravens/
+        const gitignore = `.jncs/
 *.wasm
 node_modules/
 dist/
@@ -96,7 +96,7 @@ dist/
         console.log('📦 Package:', name);
         console.log('📝 Version:', version);
         console.log('📂 Structure:');
-        console.log('   src/main.raven');
+        console.log('   src/main.jnc');
         console.log('   tests/');
         console.log('   examples/');
         console.log('   raven.json\n');
@@ -278,7 +278,7 @@ dist/
         console.log(`Name:        ${pkg.name}`);
         console.log(`Version:     ${pkg.version}`);
         console.log(`Description: ${pkg.description}`);
-        console.log(`Author:      ${pkg.author || 'RavensOne Team'}`);
+        console.log(`Author:      ${pkg.author || 'Jounce Team'}`);
         console.log(`License:     ${pkg.license || 'MIT'}`);
         console.log();
         console.log(`Install:     raven install ${pkg.name}`);
@@ -412,7 +412,7 @@ dist/
 
                 // Skip certain directories
                 if (entry.name === 'node_modules' ||
-                    entry.name === '.ravens' ||
+                    entry.name === '.jncs' ||
                     entry.name === '.git') {
                     continue;
                 }
@@ -435,10 +435,10 @@ dist/
                 name: '@ravens/http-client',
                 version: '1.0.0',
                 description: 'Full-featured HTTP client with builder pattern',
-                author: 'RavensOne Team',
+                author: 'Jounce Team',
                 license: 'MIT',
                 files: {
-                    'main.raven': `// HTTP Client module
+                    'main.jnc': `// HTTP Client module
 export class HttpClient {
     constructor(baseUrl = '') {
         this.baseUrl = baseUrl;
@@ -462,10 +462,10 @@ export class HttpClient {
                 name: '@ravens/ui-components',
                 version: '1.0.0',
                 description: 'Reusable UI components (Button, Card, Modal, etc)',
-                author: 'RavensOne Team',
+                author: 'Jounce Team',
                 license: 'MIT',
                 files: {
-                    'main.raven': `// UI Components module
+                    'main.jnc': `// UI Components module
 export { Button, Card, Modal, Input, Badge, List } from './components';
 `
                 }
@@ -474,10 +474,10 @@ export { Button, Card, Modal, Input, Badge, List } from './components';
                 name: '@ravens/wasm-utils',
                 version: '1.0.0',
                 description: 'WebAssembly utilities and helpers',
-                author: 'RavensOne Team',
+                author: 'Jounce Team',
                 license: 'MIT',
                 files: {
-                    'main.raven': `// WASM utilities
+                    'main.jnc': `// WASM utilities
 export class WasmLoader {
     async load(url) {
         const response = await fetch(url);
@@ -492,10 +492,10 @@ export class WasmLoader {
                 name: '@ravens/database',
                 version: '1.0.0',
                 description: 'Database ORM with query builder',
-                author: 'RavensOne Team',
+                author: 'Jounce Team',
                 license: 'MIT',
                 files: {
-                    'main.raven': `// Database ORM
+                    'main.jnc': `// Database ORM
 export class Database {
     constructor(config) {
         this.config = config;
@@ -512,10 +512,10 @@ export class Database {
                 name: '@ravens/auth',
                 version: '1.0.0',
                 description: 'Authentication and authorization utilities',
-                author: 'RavensOne Team',
+                author: 'Jounce Team',
                 license: 'MIT',
                 files: {
-                    'main.raven': `// Authentication module
+                    'main.jnc': `// Authentication module
 export class Auth {
     async login(username, password) {
         // Login logic
@@ -532,10 +532,10 @@ export class Auth {
                 name: '@ravens/router',
                 version: '1.0.0',
                 description: 'Client-side routing for SPAs',
-                author: 'RavensOne Team',
+                author: 'Jounce Team',
                 license: 'MIT',
                 files: {
-                    'main.raven': `// Router module
+                    'main.jnc': `// Router module
 export class Router {
     constructor(routes) {
         this.routes = routes;
@@ -556,13 +556,13 @@ export class Router {
 
 function printHelp() {
     console.log(`
-🎯 RavensOne Package Manager v${VERSION}
+🎯 Jounce Package Manager v${VERSION}
 
 Usage:
   raven <command> [options]
 
 Commands:
-  init                    Initialize new RavensOne project
+  init                    Initialize new Jounce project
   install [package]       Install package(s)
   uninstall <package>     Uninstall package
   list                    List installed packages
@@ -598,7 +598,7 @@ async function main() {
     }
 
     if (command === '--version' || command === '-v') {
-        console.log(`RavensOne Package Manager v${VERSION}`);
+        console.log(`Jounce Package Manager v${VERSION}`);
         return;
     }
 

@@ -1,4 +1,4 @@
-/// Authentication and Authorization for RavensOne
+/// Authentication and Authorization for Jounce
 ///
 /// Provides user authentication, JWT tokens, sessions, and RBAC
 /// Secure by default with bcrypt password hashing

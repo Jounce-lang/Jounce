@@ -1,4 +1,4 @@
-# Deploying RavensOne Analytics Dashboard to Vercel
+# Deploying Jounce Analytics Dashboard to Vercel
 
 Complete step-by-step guide for deploying the production application to Vercel.
 
@@ -17,21 +17,21 @@ Before starting, ensure you have:
 
 ## Step 1: Clone the Repository
 
-Open your terminal and clone the RavensOne repository:
+Open your terminal and clone the Jounce repository:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/ravensone.git
+git clone https://github.com/YOUR_USERNAME/jounce.git
 
 # Navigate to the directory
-cd ravensone
+cd jounce
 
 # Verify the example files exist
 ls examples/
 ```
 
 You should see:
-- `analytics_dashboard.raven`
+- `analytics_dashboard.jnc`
 - `analytics_dashboard.css`
 - `run_dashboard.html`
 - `ANALYTICS_README.md`
@@ -56,7 +56,7 @@ Edit `vercel.json` with the following content:
 ```json
 {
   "version": 2,
-  "name": "ravensone-analytics-dashboard",
+  "name": "jounce-analytics-dashboard",
   "builds": [
     {
       "src": "run_dashboard.html",
@@ -92,9 +92,9 @@ Edit `package.json`:
 
 ```json
 {
-  "name": "ravensone-analytics-dashboard",
+  "name": "jounce-analytics-dashboard",
   "version": "1.0.0",
-  "description": "Production analytics dashboard built with RavensOne",
+  "description": "Production analytics dashboard built with Jounce",
   "private": true,
   "scripts": {
     "dev": "open run_dashboard.html",
@@ -102,7 +102,7 @@ Edit `package.json`:
     "start": "echo 'Deployed to Vercel'"
   },
   "keywords": [
-    "ravensone",
+    "jounce",
     "analytics",
     "dashboard",
     "reactive",
@@ -156,10 +156,10 @@ git init
 git add .
 
 # Commit
-git commit -m "Add RavensOne Analytics Dashboard for deployment"
+git commit -m "Add Jounce Analytics Dashboard for deployment"
 
 # Add your GitHub repository as remote
-git remote add origin https://github.com/YOUR_USERNAME/ravensone.git
+git remote add origin https://github.com/YOUR_USERNAME/jounce.git
 
 # Push to GitHub
 git push -u origin main
@@ -197,16 +197,16 @@ vercel
 
 You'll be prompted with several questions:
 
-1. **Set up and deploy "~/ravensone/examples"?** → Press `Y`
+1. **Set up and deploy "~/jounce/examples"?** → Press `Y`
 2. **Which scope do you want to deploy to?** → Select your account
 3. **Link to existing project?** → Press `N` (for first deployment)
-4. **What's your project's name?** → `ravensone-analytics-dashboard`
+4. **What's your project's name?** → `jounce-analytics-dashboard`
 5. **In which directory is your code located?** → Press Enter (current directory)
 6. **Want to override the settings?** → Press `N`
 
 Vercel will deploy your application and provide a URL like:
 ```
-https://ravensone-analytics-dashboard.vercel.app
+https://jounce-analytics-dashboard.vercel.app
 ```
 
 #### Deploy to Production
@@ -228,7 +228,7 @@ Visit [vercel.com](https://vercel.com) and log in.
 
 - Click **"Add New..."** → **"Project"**
 - Click **"Import Git Repository"**
-- Select your GitHub repository (`ravensone`)
+- Select your GitHub repository (`jounce`)
 - Click **"Import"**
 
 #### 3. Configure Project
@@ -251,7 +251,7 @@ Visit [vercel.com](https://vercel.com) and log in.
 
 - Click **"Deploy"**
 - Wait 30-60 seconds for deployment to complete
-- You'll get a URL like: `https://ravensone-analytics-dashboard.vercel.app`
+- You'll get a URL like: `https://jounce-analytics-dashboard.vercel.app`
 
 ---
 
@@ -570,7 +570,7 @@ For the demo dashboard: **Free tier is perfect!**
 After deploying:
 
 1. **Share Your App**
-   - Tweet the URL with #RavensOne
+   - Tweet the URL with #Jounce
    - Add to your portfolio
    - Share on LinkedIn
 
@@ -598,14 +598,14 @@ Need help?
 
 - **Vercel Docs**: https://vercel.com/docs
 - **Vercel Community**: https://github.com/vercel/vercel/discussions
-- **RavensOne Issues**: https://github.com/ravensone/ravensone/issues
+- **Jounce Issues**: https://github.com/jounce/jounce/issues
 - **Email Support**: support@vercel.com (for Vercel issues)
 
 ---
 
 ## Success! 🎉
 
-Your RavensOne Analytics Dashboard is now live on Vercel!
+Your Jounce Analytics Dashboard is now live on Vercel!
 
 **What you've accomplished:**
 - ✅ Deployed a production-ready application
@@ -616,7 +616,7 @@ Your RavensOne Analytics Dashboard is now live on Vercel!
 
 **Share your deployment:**
 ```
-🚀 Just deployed RavensOne Analytics Dashboard to Vercel!
+🚀 Just deployed Jounce Analytics Dashboard to Vercel!
 
 Check it out: [YOUR_VERCEL_URL]
 
@@ -626,7 +626,7 @@ Built with:
 - Progressive hydration
 - WebAssembly performance
 
-#RavensOne #WebAssembly #Vercel #WebDev
+#Jounce #WebAssembly #Vercel #WebDev
 ```
 
 ---

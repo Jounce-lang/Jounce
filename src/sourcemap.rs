@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Source map for mapping WASM bytecode back to RavensOne source
+/// Source map for mapping WASM bytecode back to Jounce source
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SourceMap {
     /// Version of the source map format (always 3)
@@ -413,7 +413,7 @@ mod tests {
     fn test_sourcemap_builder() {
         let mut builder = SourceMapBuilder::new("output.wasm".to_string());
 
-        let source_idx = builder.add_source("main.raven".to_string(), "component App() {}".to_string());
+        let source_idx = builder.add_source("main.jnc".to_string(), "component App() {}".to_string());
 
         builder.add_mapping(0, 0, source_idx, 0, 0, Some("App".to_string()));
         builder.add_mapping(0, 10, source_idx, 0, 10, None);
@@ -463,7 +463,7 @@ mod tests {
     fn test_mapping_decode_and_lookup() {
         // Create a source map with known mappings
         let mut builder = SourceMapBuilder::new("output.wasm".to_string());
-        let source_idx = builder.add_source("main.raven".to_string(), "fn main() {}".to_string());
+        let source_idx = builder.add_source("main.jnc".to_string(), "fn main() {}".to_string());
 
         // Add some mappings
         // Line 0, column 0 maps to source line 0, column 0
@@ -494,7 +494,7 @@ mod tests {
     fn test_stack_trace_mapping() {
         // Create a source map
         let mut builder = SourceMapBuilder::new("output.wasm".to_string());
-        let source_idx = builder.add_source("test.raven".to_string(), "fn foo() {}".to_string());
+        let source_idx = builder.add_source("test.jnc".to_string(), "fn foo() {}".to_string());
         builder.add_mapping(5, 10, source_idx, 3, 4, Some("foo".to_string()));
         let sourcemap = builder.build();
 
@@ -504,7 +504,7 @@ mod tests {
 
         assert_eq!(frames.len(), 1);
         assert_eq!(frames[0].function_name, "myFunction");
-        assert_eq!(frames[0].file, "test.raven");
+        assert_eq!(frames[0].file, "test.jnc");
         assert_eq!(frames[0].line, 3);
         assert_eq!(frames[0].column, 4);
     }

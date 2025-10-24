@@ -1,4 +1,4 @@
-/// RavensOne Standard Library
+/// Jounce Standard Library
 ///
 /// Provides batteries-included functionality for building full-stack applications.
 

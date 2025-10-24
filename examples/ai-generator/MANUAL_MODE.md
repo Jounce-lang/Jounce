@@ -1,15 +1,15 @@
 # Manual AI Generator Mode
 
-Use this when you want to generate the code yourself using Claude.ai or any other LLM, then paste it into RavensOne.
+Use this when you want to generate the code yourself using Claude.ai or any other LLM, then paste it into Jounce.
 
 ## Step 1: Copy This Prompt
 
 Use this prompt in Claude.ai, ChatGPT, or any LLM:
 
 ```
-You are an expert RavensOne developer. RavensOne is a reactive web framework with a Rust-like syntax.
+You are an expert Jounce developer. Jounce is a reactive web framework with a Rust-like syntax.
 
-# RavensOne Language Specification
+# Jounce Language Specification
 
 ## Component Structure
 ```raven
@@ -38,7 +38,7 @@ component ComponentName(props: Props) {
 
 ## Your Task
 
-Create a RavensOne project with these details:
+Create a Jounce project with these details:
 
 **Project Name**: [YOUR PROJECT NAME]
 **Description**: [YOUR DESCRIPTION]
@@ -47,8 +47,8 @@ Create a RavensOne project with these details:
 Return ONLY valid JSON with this exact structure:
 {
   "files": [
-    {"path": "src/main.raven", "content": "...full raven code here..."},
-    {"path": "raven.toml", "content": "...toml content..."}
+    {"path": "src/main.jnc", "content": "...full raven code here..."},
+    {"path": "jounce.toml", "content": "...toml content..."}
   ],
   "dependencies": []
 }
@@ -73,11 +73,11 @@ The LLM should return JSON like this:
 {
   "files": [
     {
-      "path": "src/main.raven",
+      "path": "src/main.jnc",
       "content": "use raven::prelude::*;\n\ncomponent App() {\n  ...\n}"
     },
     {
-      "path": "raven.toml",
+      "path": "jounce.toml",
       "content": "[package]\nname = \"my-app\"\n..."
     }
   ],
@@ -115,7 +115,7 @@ This will:
 
 ```bash
 cd generated/my-project
-cat src/main.raven  # Verify it looks good
+cat src/main.jnc  # Verify it looks good
 ```
 
 ---
@@ -124,7 +124,7 @@ cat src/main.raven  # Verify it looks good
 
 ### Your Prompt to LLM:
 ```
-Create a RavensOne project:
+Create a Jounce project:
 Name: counter
 Description: A simple counter with buttons
 Features: increment button, decrement button, reset button, keyboard shortcuts
@@ -137,7 +137,7 @@ Features: increment button, decrement button, reset button, keyboard shortcuts
 {
   "files": [
     {
-      "path": "src/main.raven",
+      "path": "src/main.jnc",
       "content": "component App() { let count = Signal::new(0); ... }"
     },
     ...
@@ -150,7 +150,7 @@ Features: increment button, decrement button, reset button, keyboard shortcuts
 # Save JSON to generated/counter/response.json
 ./parse_manual.sh counter
 cd generated/counter
-cat src/main.raven
+cat src/main.jnc
 ```
 
 ---
@@ -175,16 +175,16 @@ cat src/main.raven
 Here's exactly what to paste into Claude.ai:
 
 ```
-You are an expert RavensOne developer. Create a Hawaiian shirt e-commerce store.
+You are an expert Jounce developer. Create a Hawaiian shirt e-commerce store.
 
 Project Name: hawaiian-shirts
 Description: E-commerce product grid for Hawaiian shirts
 Features: product cards with images, product titles, price display, size selector dropdown, color filter buttons, add to cart button, cart icon with count
 
-Use RavensOne reactive syntax with Signals for state.
+Use Jounce reactive syntax with Signals for state.
 Include beautiful styling with a tropical color scheme.
 
-Return ONLY valid JSON with files array containing src/main.raven and raven.toml.
+Return ONLY valid JSON with files array containing src/main.jnc and jounce.toml.
 No markdown code blocks, just pure JSON.
 ```
 

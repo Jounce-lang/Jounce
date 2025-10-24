@@ -1,4 +1,4 @@
-// Animation System for RavensOne
+// Animation System for Jounce
 // CSS transitions, keyframe animations, spring physics, and gesture support
 
 use crate::reactive::Signal;

@@ -1,7 +1,7 @@
-# RavensOne Reactivity System - Implementation Summary
+# Jounce Reactivity System - Implementation Summary
 
 ## Overview
-We've successfully implemented a **complete reactive programming system** for RavensOne, featuring fine-grained reactivity similar to SolidJS/Svelte with automatic dependency tracking, signal-based state management, and seamless integration between Rust/WASM and JavaScript.
+We've successfully implemented a **complete reactive programming system** for Jounce, featuring fine-grained reactivity similar to SolidJS/Svelte with automatic dependency tracking, signal-based state management, and seamless integration between Rust/WASM and JavaScript.
 
 ## 🎯 Completed Features
 
@@ -155,7 +155,7 @@ addEventListenerWasm(elementId, eventNamePtr, eventNameLen, handlerFnIndex) {
 - `removeEventListener(elementId, eventName)`
 
 **Files Modified:**
-- `runtime/ravensone.js` - Event listener implementation
+- `runtime/jounce.js` - Event listener implementation
 
 ### 7. Dependency Tracking System ✅
 Complete implementation of reactive dependency graph:
@@ -192,13 +192,13 @@ signal_update(signalId, delta)
 
 **Files:**
 - `dist/reactive-runtime.js` - Signal dependency tracking
-- `runtime/ravensone.js` - WASM bridge for signals
+- `runtime/jounce.js` - WASM bridge for signals
 
 ## 📊 Architecture Overview
 
 ### Compilation Pipeline
 ```
-.raven source
+.jnc source
     ↓
 Lexer → Tokens
     ↓
@@ -221,9 +221,9 @@ Browser
     ↓
 reactive-runtime.js (Signal/Computed/Effect)
     ↓
-ravensone.js (WASM bridge)
+jounce.js (WASM bridge)
     ↓
-WASM Module (Compiled .raven code)
+WASM Module (Compiled .jnc code)
     ↓
 DOM Updates
 ```
@@ -358,7 +358,7 @@ component Counter() {
 
 ## 🎉 Key Achievements
 
-1. **First Working Reactive System**: RavensOne now has a production-quality reactive system
+1. **First Working Reactive System**: Jounce now has a production-quality reactive system
 2. **Auto-Magic DX**: Variables are automatically reactive inside components
 3. **Type Safety**: Full type checking for Signal<T> wrappers
 4. **Zero-Cost Abstractions**: Compiles to efficient WASM with minimal overhead
@@ -367,13 +367,13 @@ component Counter() {
 ## 💡 Innovation Highlights
 
 ### 1. Compiler-Driven Reactivity
-Unlike JavaScript frameworks that use proxies or getters/setters, RavensOne's compiler knows exactly which variables are reactive and generates optimal code.
+Unlike JavaScript frameworks that use proxies or getters/setters, Jounce's compiler knows exactly which variables are reactive and generates optimal code.
 
 ### 2. Hybrid Architecture
 Leverages both Rust (safety, speed) and JavaScript (DOM access, reactive runtime) for best of both worlds.
 
 ### 3. Single Source of Truth
-One .raven file compiles to both client and server code - no context switching for AI or humans.
+One .jnc file compiles to both client and server code - no context switching for AI or humans.
 
 ### 4. Human-AI Collaboration
 Every design decision optimized for Claude to understand and generate code quickly.
@@ -398,11 +398,11 @@ Every design decision optimized for Claude to understand and generate code quick
 - ✅ Zero compiler errors
 - ✅ Foundation ready for real apps
 
-## 🔥 The RavensOne Vision
+## 🔥 The Jounce Vision
 
-RavensOne is becoming the **most productive language for human-AI collaboration**:
+Jounce is becoming the **most productive language for human-AI collaboration**:
 
-- **Single File Type**: Only .raven files - no context switching
+- **Single File Type**: Only .jnc files - no context switching
 - **Batteries Included**: HTTP, DB, Auth built into the language
 - **Fast Iteration**: From Claude code generation to production in seconds
 - **Type Safe**: Catch errors at compile time

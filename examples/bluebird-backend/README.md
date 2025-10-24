@@ -1,6 +1,6 @@
 # Bluebird Social Feed - Full-Stack Application
 
-A complete full-stack social media feed application demonstrating RavensOne's capabilities and limitations.
+A complete full-stack social media feed application demonstrating Jounce's capabilities and limitations.
 
 ## Architecture
 
@@ -159,24 +159,24 @@ curl -X POST http://localhost:9000/api/posts/<POST_ID>/comments \
 4. **Data Modeling**: Complex relationships (users, posts, likes, comments)
 5. **Frontend Integration**: Vanilla JS can connect to the API successfully
 
-### ❌ What Doesn't Work (RavensOne Limitations)
+### ❌ What Doesn't Work (Jounce Limitations)
 
-1. **No .raven Frontend**: Can't use RavensOne language for frontend code
+1. **No .jnc Frontend**: Can't use Jounce language for frontend code
 2. **No JSX Parsing**: Compiler doesn't support JSX syntax yet
-3. **No HTTP Client**: RavensOne has no `fetch()` or HTTP library
+3. **No HTTP Client**: Jounce has no `fetch()` or HTTP library
 4. **No State Management**: `Signal`, `Computed`, `Effect` not implemented
-5. **No Reactive System**: Can't build reactive UIs in .raven
+5. **No Reactive System**: Can't build reactive UIs in .jnc
 
 ## Key Learnings
 
 This full-stack application reveals that:
 
 1. **Backend works great** - Rust is excellent for building APIs
-2. **Frontend is blocked** - RavensOne can't be used for real frontends yet
+2. **Frontend is blocked** - Jounce can't be used for real frontends yet
 3. **Infrastructure is solid** - Database, CORS, serialization all work
-4. **Vanilla JS works** - But defeats the purpose of RavensOne framework
+4. **Vanilla JS works** - But defeats the purpose of Jounce framework
 
-For RavensOne to be usable for full-stack apps, we need:
+For Jounce to be usable for full-stack apps, we need:
 - JSX parser in the compiler
 - HTTP client library (`fetch()` equivalent)
 - Working reactive primitives (`Signal`, etc.)
@@ -273,10 +273,10 @@ To make this a production-ready full-stack app:
 5. **Real-time updates** via WebSockets
 6. **Deploy to cloud** (Fly.io, Railway, etc.)
 
-But most importantly: **Wait for RavensOne to support frontend development!**
+But most importantly: **Wait for Jounce to support frontend development!**
 
 ---
 
 **Date Created**: 2025-10-18
-**Purpose**: Demonstrate full-stack capabilities and identify RavensOne gaps
+**Purpose**: Demonstrate full-stack capabilities and identify Jounce gaps
 **Status**: Backend fully functional, frontend using vanilla JS workaround

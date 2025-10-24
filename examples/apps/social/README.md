@@ -1,6 +1,6 @@
 # SocialWave - Full-Stack Social Media Platform
 
-A complete social media application built with **RavensOne**, showcasing real-time updates, complex state management, and rich interactive features.
+A complete social media application built with **Jounce**, showcasing real-time updates, complex state management, and rich interactive features.
 
 ## Features
 
@@ -43,7 +43,7 @@ A complete social media application built with **RavensOne**, showcasing real-ti
 
 ## Tech Stack
 
-- **RavensOne** - Full-stack reactive language
+- **Jounce** - Full-stack reactive language
 - **raven-router** - Client-side routing
 - **raven-store** - Global state management
 - **raven-http** - API calls (ready for external APIs)
@@ -53,9 +53,9 @@ A complete social media application built with **RavensOne**, showcasing real-ti
 
 ```
 social/
-├── main.raven              # Main application (990+ lines)
+├── main.jnc              # Main application (990+ lines)
 ├── README.md              # This file
-└── raven.toml             # Package configuration
+└── jounce.toml             # Package configuration
 ```
 
 ## Quick Start
@@ -65,7 +65,7 @@ social/
 cd examples/apps/social
 
 # Compile the application
-raven compile main.raven
+raven compile main.jnc
 
 # Start development server
 raven dev
@@ -359,11 +359,11 @@ MIT License - Free to use for learning and commercial projects
 
 ## Acknowledgments
 
-Built with RavensOne - demonstrating the power of full-stack reactive programming for complex, real-time applications.
+Built with Jounce - demonstrating the power of full-stack reactive programming for complex, real-time applications.
 
 ---
 
 **Need Help?**
 
-- [RavensOne Docs](../../../GETTING_STARTED.md)
-- [GitHub Issues](https://github.com/yourusername/ravensone/issues)
+- [Jounce Docs](../../../GETTING_STARTED.md)
+- [GitHub Issues](https://github.com/yourusername/jounce/issues)

@@ -136,10 +136,10 @@ The following work in JavaScript but not WASM (18 TODOs found):
 ## Compilation Test Results
 
 ### ✅ Simple Examples (100% Success)
-- `test_const_import_simple.raven` - Compiles ✅
-- `test_namespace_const.raven` - Compiles ✅
-- `test_jsx_ternary_let.raven` - Compiles ✅
-- `test_ternary_let_block.raven` - Compiles ✅
+- `test_const_import_simple.jnc` - Compiles ✅
+- `test_namespace_const.jnc` - Compiles ✅
+- `test_jsx_ternary_let.jnc` - Compiles ✅
+- `test_ternary_let_block.jnc` - Compiles ✅
 
 ### ⚠️ Real-World Apps (33% Success)
 1. **ShopOne (E-commerce)** - Line 413 ❌ (JSX ellipsis)

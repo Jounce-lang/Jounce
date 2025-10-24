@@ -1,6 +1,6 @@
 # Packaging & Publishing Guide
 
-This guide explains how to package and publish the RavensOne VS Code extension.
+This guide explains how to package and publish the Jounce VS Code extension.
 
 ## Prerequisites
 
@@ -16,12 +16,12 @@ Add repository information to `package.json`:
 {
   "repository": {
     "type": "git",
-    "url": "https://github.com/ravensone/ravensone.git"
+    "url": "https://github.com/jounce/jounce.git"
   },
   "bugs": {
-    "url": "https://github.com/ravensone/ravensone/issues"
+    "url": "https://github.com/jounce/jounce/issues"
   },
-  "homepage": "https://github.com/ravensone/ravensone#readme"
+  "homepage": "https://github.com/jounce/jounce#readme"
 }
 ```
 
@@ -45,7 +45,7 @@ npm run package
 npx vsce package
 ```
 
-This will create a file like `ravensone-0.1.0.vsix` that can be:
+This will create a file like `jounce-0.1.0.vsix` that can be:
 - Installed locally for testing
 - Shared with others
 - Published to the VS Code Marketplace
@@ -54,11 +54,11 @@ This will create a file like `ravensone-0.1.0.vsix` that can be:
 
 ### Install Locally
 ```bash
-code --install-extension ravensone-0.1.0.vsix
+code --install-extension jounce-0.1.0.vsix
 ```
 
 ### Test in VS Code
-1. Open a `.raven` file
+1. Open a `.jnc` file
 2. Verify syntax highlighting works
 3. Test LSP features (completions, hover, go-to-def)
 4. Test commands (compile, watch, format)
@@ -84,7 +84,7 @@ npx vsce publish 0.1.0
 ```
 
 ### Update package.json Publisher
-Change the `"publisher"` field in `package.json` from `"ravensone"` to your actual publisher name.
+Change the `"publisher"` field in `package.json` from `"jounce"` to your actual publisher name.
 
 ## Versioning
 
@@ -126,7 +126,7 @@ Target package size: **< 5MB**
 
 Check package size:
 ```bash
-ls -lh ravensone-*.vsix
+ls -lh jounce-*.vsix
 ```
 
 ## Troubleshooting

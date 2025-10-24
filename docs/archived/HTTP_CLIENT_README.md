@@ -1,6 +1,6 @@
-# RavensOne HTTP Client
+# Jounce HTTP Client
 
-A production-ready HTTP client library for RavensOne, built on top of `reqwest`.
+A production-ready HTTP client library for Jounce, built on top of `reqwest`.
 
 ## Features
 
@@ -19,7 +19,7 @@ A production-ready HTTP client library for RavensOne, built on top of `reqwest`.
 ### Simple GET Request
 
 ```rust
-use ravensone_compiler::stdlib::http;
+use jounce_compiler::stdlib::http;
 
 #[tokio::main]
 async fn main() {
@@ -37,7 +37,7 @@ async fn main() {
 ### POST with JSON
 
 ```rust
-use ravensone_compiler::stdlib::http;
+use jounce_compiler::stdlib::http;
 use serde_json::json;
 
 #[tokio::main]
@@ -58,13 +58,13 @@ async fn main() {
 ### Using HttpClient with Base URL
 
 ```rust
-use ravensone_compiler::stdlib::http::HttpClient;
+use jounce_compiler::stdlib::http::HttpClient;
 
 #[tokio::main]
 async fn main() {
     let client = HttpClient::new()
         .with_base_url("https://api.github.com".to_string())
-        .with_header("User-Agent".to_string(), "RavensOne/1.0".to_string());
+        .with_header("User-Agent".to_string(), "Jounce/1.0".to_string());
 
     // Fetch multiple endpoints with the same client
     let user = client.get("/users/octocat").send().await.unwrap();
@@ -226,7 +226,7 @@ HttpError::RequestBuildError(String)
 ### Full CRUD Example
 
 ```rust
-use ravensone_compiler::stdlib::http::HttpClient;
+use jounce_compiler::stdlib::http::HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -281,7 +281,7 @@ async fn main() {
 ### Error Handling Example
 
 ```rust
-use ravensone_compiler::stdlib::http;
+use jounce_compiler::stdlib::http;
 
 #[tokio::main]
 async fn main() {
@@ -306,7 +306,7 @@ async fn main() {
 ### Real-World Example: Bluebird Social Feed
 
 ```rust
-use ravensone_compiler::stdlib::http;
+use jounce_compiler::stdlib::http;
 use serde_json::json;
 
 #[tokio::main]
@@ -409,7 +409,7 @@ cargo run --example http_client_demo
 - [ ] Streaming responses
 - [ ] WebSocket support
 - [ ] HTTP/2 and HTTP/3
-- [ ] Integration with .raven language
+- [ ] Integration with .jnc language
 
 ## Implementation Details
 
@@ -441,7 +441,7 @@ When adding new features to the HTTP client:
 
 ## License
 
-Same as RavensOne project.
+Same as Jounce project.
 
 ---
 

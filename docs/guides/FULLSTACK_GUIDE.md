@@ -1,8 +1,8 @@
-# RavensOne Full-Stack Development Guide
+# Jounce Full-Stack Development Guide
 
 ## Overview
 
-RavensOne's compiler bridge enables you to write full-stack applications in a single `.raven` file. Using `@server` and `@client` annotations, you can mark where code runs, and the compiler automatically:
+Jounce's compiler bridge enables you to write full-stack applications in a single `.jnc` file. Using `@server` and `@client` annotations, you can mark where code runs, and the compiler automatically:
 
 - Splits code into server and client bundles
 - Generates type-safe RPC stubs for client-server communication
@@ -13,7 +13,7 @@ RavensOne's compiler bridge enables you to write full-stack applications in a si
 
 ### 1. Create a New File
 
-Create `my-app.raven`:
+Create `my-app.jnc`:
 
 ```raven
 // Server-side functions (run on Node.js)
@@ -53,18 +53,18 @@ fn validate_input(text: String) -> bool {
 ### 2. Compile
 
 ```bash
-raven compile my-app.raven
+raven compile my-app.jnc
 
 # With minification for production
-raven compile my-app.raven --minify
+raven compile my-app.jnc --minify
 
 # Custom output directory
-raven compile my-app.raven --output build/
+raven compile my-app.jnc --output build/
 ```
 
 Output:
 ```
-🔥 Compiling full-stack application: my-app.raven
+🔥 Compiling full-stack application: my-app.jnc
    📦 Output: server.js + client.js + app.wasm
 
    Parsing...
@@ -187,7 +187,7 @@ fn calculate_tax(price: f64, rate: f64) -> f64 {
 
 ## Automatic RPC Generation
 
-When you call a `@server` function from `@client` code, RavensOne automatically:
+When you call a `@server` function from `@client` code, Jounce automatically:
 
 1. Generates an async client stub
 2. Serializes arguments to JSON
@@ -239,9 +239,9 @@ server.rpc('get_user', async (params) => {
 
 ## Type Safety
 
-RavensOne preserves type information through the compilation process:
+Jounce preserves type information through the compilation process:
 
-| RavensOne Type | TypeScript/JS Type |
+| Jounce Type | TypeScript/JS Type |
 |----------------|-------------------|
 | `i32`, `i64`, `u32`, `u64`, `f32`, `f64` | `number` |
 | `String` | `string` |
@@ -359,7 +359,7 @@ async fn load_user_profile(id: i32) {
 Always compile with `--minify` for production deployments:
 
 ```bash
-raven compile app.raven --minify --output dist/
+raven compile app.jnc --minify --output dist/
 ```
 
 This reduces JavaScript bundle sizes by 30-50% on average.
@@ -371,22 +371,22 @@ This reduces JavaScript bundle sizes by 30-50% on average.
 ```
 my-project/
 ├── src/
-│   ├── main.raven          # Main application file
+│   ├── main.jnc          # Main application file
 │   ├── models/
-│   │   ├── user.raven      # Data models
-│   │   └── post.raven
+│   │   ├── user.jnc      # Data models
+│   │   └── post.jnc
 │   ├── server/
-│   │   ├── database.raven  # Server-only code
-│   │   └── auth.raven
+│   │   ├── database.jnc  # Server-only code
+│   │   └── auth.jnc
 │   └── client/
-│       ├── components.raven # Client-only code
-│       └── ui.raven
+│       ├── components.jnc # Client-only code
+│       └── ui.jnc
 ├── dist/                    # Compiled output
 │   ├── server.js
 │   ├── client.js
 │   ├── app.wasm
 │   └── index.html
-├── raven.toml              # Package manifest
+├── jounce.toml              # Package manifest
 └── README.md
 ```
 
@@ -396,7 +396,7 @@ Compile each file separately or combine them:
 
 ```bash
 # Compile all files
-for file in src/**/*.raven; do
+for file in src/**/*.jnc; do
     raven compile $file --output dist/
 done
 
@@ -408,7 +408,7 @@ raven build --release
 
 ### `raven compile <file>`
 
-Compiles a `.raven` file to full-stack JavaScript.
+Compiles a `.jnc` file to full-stack JavaScript.
 
 **Options:**
 - `-o, --output <dir>` - Output directory (default: `dist/`)
@@ -418,13 +418,13 @@ Compiles a `.raven` file to full-stack JavaScript.
 
 ```bash
 # Basic compilation
-raven compile app.raven
+raven compile app.jnc
 
 # With minification
-raven compile app.raven --minify
+raven compile app.jnc --minify
 
 # Custom output
-raven compile app.raven --output build/
+raven compile app.jnc --output build/
 ```
 
 ### `raven dev`
@@ -479,12 +479,12 @@ Check that client and server agree on types. Recompile after changing function s
 
 - Explore the [examples/](/examples) directory for sample applications
 - Read the [API Documentation](/docs/api.md)
-- Join the [RavensOne community](https://github.com/ravensone)
-- Report issues on [GitHub](https://github.com/ravensone/ravensone/issues)
+- Join the [Jounce community](https://github.com/jounce)
+- Report issues on [GitHub](https://github.com/jounce/jounce/issues)
 
 ## Summary
 
-RavensOne's full-stack compilation makes it easy to build modern web applications:
+Jounce's full-stack compilation makes it easy to build modern web applications:
 
 ✅ Write server and client code in one file
 ✅ Automatic RPC generation

@@ -51,7 +51,7 @@ cd generated/your-project
 mkdir -p dist
 
 # 2. Compile to WASM
-raven compile src/main.raven --output dist/app.wasm
+raven compile src/main.jnc --output dist/app.wasm
 
 # 3. Create index.html (see example below)
 
@@ -114,7 +114,7 @@ Features: product cards, images, price, size selector, add to cart
 ### See the Counter Demo
 ```bash
 cd examples/ai-generator/generated/counter-demo
-cat src/main.raven
+cat src/main.jnc
 ```
 
 This shows exactly what a successful generation produces!
@@ -151,7 +151,7 @@ Save as `dist/index.html`:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RavensOne App</title>
+    <title>Jounce App</title>
 </head>
 <body>
     <div id="app"></div>

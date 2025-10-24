@@ -1,4 +1,4 @@
-# CLAUDE.md - AI Assistant Guide for RavensOne
+# CLAUDE.md - AI Assistant Guide for Jounce
 
 ## 📌 Current Status (Phase 2)
 
@@ -9,16 +9,16 @@
 
 ## Project Overview
 
-**RavensOne** is a revolutionary full-stack programming language that compiles `.raven` source files into JavaScript (server + client) and WebAssembly. The core innovation is **single-file full-stack development** with automatic code splitting via `@server` and `@client` annotations.
+**Jounce** is a revolutionary full-stack programming language that compiles `.jnc` source files into JavaScript (server + client) and WebAssembly. The core innovation is **single-file full-stack development** with automatic code splitting via `@server` and `@client` annotations.
 
 ### Key Innovation
-Write ONE `.raven` file → Get separate `server.js` + `client.js` + `app.wasm` + `index.html` with automatic RPC generation between client and server.
+Write ONE `.jnc` file → Get separate `server.js` + `client.js` + `app.wasm` + `index.html` with automatic RPC generation between client and server.
 
 ## Quick Facts
 
 - **Language**: Rust (compiler/toolchain)
 - **Main Binary**: `raven` (src/main.rs)
-- **Library**: `ravensone_compiler` (src/lib.rs)
+- **Library**: `jounce_compiler` (src/lib.rs)
 - **Version**: 0.1.0
 - **Test Coverage**: 221 tests passing (9 HTTP tests marked as ignored)
 - **Compilation Speed**: 15.2µs average, 65,711 compilations/sec
@@ -29,7 +29,7 @@ Write ONE `.raven` file → Get separate `server.js` + `client.js` + `app.wasm` 
 ## Compiler Pipeline
 
 ```
-.raven source
+.jnc source
     ↓
 [Lexer] (src/lexer.rs) → Tokens
     ↓
@@ -77,7 +77,7 @@ Output: dist/server.js, dist/client.js, dist/app.wasm, dist/index.html
 - **source_map.rs** - Source mapping for debugging
 
 ### Package System
-- **Registry**: https://ravensone-registry.fly.dev
+- **Registry**: https://jounce-registry.fly.dev
 - **Local Packages**: aloha-shirts/ directory
   - raven-ui, raven-router, raven-http, raven-forms, raven-store, raven-i18n
 
@@ -96,11 +96,11 @@ cargo test lexer             # Specific module
 cargo test -- --nocapture    # With output
 ```
 
-### Compiling .raven Files
+### Compiling .jnc Files
 ```bash
-./target/release/raven compile test.raven
-./target/release/raven compile app.raven --minify
-./target/release/raven compile app.raven --output custom-dist/
+./target/release/raven compile test.jnc
+./target/release/raven compile app.jnc --minify
+./target/release/raven compile app.jnc --output custom-dist/
 ```
 
 ### Package Management
@@ -159,7 +159,7 @@ Phase 1 achieved **100% language completeness** through 18 sprints:
 **Example Apps**:
 - TaskBoard: ✅ Parses completely (35 statements)
 - Social: ✅ Parses completely (31 statements)
-- Ecommerce: Uses JS syntax instead of RavensOne structs (app issue, not parser)
+- Ecommerce: Uses JS syntax instead of Jounce structs (app issue, not parser)
 
 ## Phase 2 Focus: Developer Experience
 
@@ -230,12 +230,12 @@ docs: Update Phase 2 roadmap
 1. **Read relevant source first**: Use Read tool on specific files
 2. **Check existing patterns**: Look for similar implementations
 3. **Run tests**: Always run `cargo test` after changes
-4. **Test with examples**: Compile example .raven files
+4. **Test with examples**: Compile example .jnc files
 5. **Update docs**: Modify README.md if user-facing
 
 ### When Fixing Bugs
 1. **Locate error source**: Check errors.rs and diagnostics.rs
-2. **Add test case**: Create minimal .raven file reproducing bug
+2. **Add test case**: Create minimal .jnc file reproducing bug
 3. **Verify fix**: Ensure test passes after fix
 4. **Check regressions**: Run full test suite
 
@@ -254,8 +254,8 @@ docs: Update Phase 2 roadmap
 - **API Reference**: docs/guides/STDLIB_API_REFERENCE.md
 - **Parser Limitations**: docs/guides/PARSER_LIMITATIONS.md
 - **JSX Guides**: docs/guides/JSX_LEXER_USAGE.md, JSX_AST_GUIDE.md
-- **Registry**: https://ravensone-registry.fly.dev
-- **Test Files**: test_*.raven, examples/
+- **Registry**: https://jounce-registry.fly.dev
+- **Test Files**: test_*.jnc, examples/
 
 ---
 
@@ -284,7 +284,7 @@ docs: Update Phase 2 roadmap
 
 **Files to Modify**:
 - `src/lsp/mod.rs` - Add context detection logic
-- Test with various .raven files
+- Test with various .jnc files
 
 **Success Criteria**:
 - ✅ Correctly identifies 6+ context types
@@ -410,7 +410,7 @@ Before completing sprint, verify:
 
 ## ✅ Phase 2 - Sprint 2: Code Formatting (COMPLETE)
 
-**Sprint Goal**: Implement automatic code formatting for .raven files with LSP integration and CLI support
+**Sprint Goal**: Implement automatic code formatting for .jnc files with LSP integration and CLI support
 
 **Status**: ✅ COMPLETE (2025-10-22)
 **Actual Time**: ~6 hours
@@ -418,8 +418,8 @@ Before completing sprint, verify:
 
 ### Sprint Overview
 
-This sprint implements a production-ready code formatter for RavensOne that:
-- Formats .raven files with consistent, opinionated style
+This sprint implements a production-ready code formatter for Jounce that:
+- Formats .jnc files with consistent, opinionated style
 - Integrates with LSP for editor formatting commands
 - Provides CLI command for batch formatting
 - Handles all language features including JSX
@@ -497,9 +497,9 @@ This sprint implements a production-ready code formatter for RavensOne that:
 
 **CLI Design**:
 ```bash
-raven format file.raven              # Show formatted output
-raven format file.raven --write      # Format in place
-raven format src/**/*.raven --write  # Format multiple files
+raven format file.jnc              # Show formatted output
+raven format file.jnc --write      # Format in place
+raven format src/**/*.jnc --write  # Format multiple files
 raven format --check src/            # Check if formatted (CI)
 ```
 
@@ -634,7 +634,7 @@ Before completing sprint, verify:
 5. Preserve comment tokens from lexer
 
 **Configuration** (future enhancement):
-- Could add `.ravenformat` config file
+- Could add `.jncformat` config file
 - Options: indent_size, max_line_length, jsx_bracket_same_line, etc.
 - For now, use opinionated defaults
 
@@ -661,8 +661,8 @@ Before completing sprint, verify:
 
 **CLI Usage**:
 ```bash
-raven fmt file.raven              # Print formatted output
-raven fmt --write file.raven      # Format and save
+raven fmt file.jnc              # Print formatted output
+raven fmt --write file.jnc      # Format and save
 raven fmt --check src/            # Check formatting (CI/CD)
 ```
 
@@ -1589,7 +1589,7 @@ All features integrated seamlessly with the existing Go to Definition functional
 - 100% pass rate across all 288 tests
 
 **Impact**:
-- RavensOne now has professional-grade navigation features
+- Jounce now has professional-grade navigation features
 - Developers can navigate code as efficiently as in mature IDEs
 - Symbol renaming is safe and validated
 - Outline view provides instant file structure overview
@@ -1617,7 +1617,7 @@ This sprint implemented two critical IDE features that provide real-time type in
 - **Hover Type Information** - Show comprehensive type info, signatures, and definitions on hover
 - **Signature Help** - Real-time parameter hints while typing function calls
 
-Both features significantly enhance the developer experience and bring RavensOne's LSP to professional IDE standards.
+Both features significantly enhance the developer experience and bring Jounce's LSP to professional IDE standards.
 
 ### Sprint Tasks
 
@@ -1797,10 +1797,10 @@ Both features significantly enhance the developer experience and bring RavensOne
 - 303 total tests (294 passing, 0 failures, 9 HTTP ignored)
 
 **Impact**:
-- RavensOne now provides professional-grade IDE features matching VS Code, IntelliJ
+- Jounce now provides professional-grade IDE features matching VS Code, IntelliJ
 - Developers get instant type feedback without context switching
 - Function calls are easier with real-time parameter hints
-- Significantly improved developer experience for RavensOne development
+- Significantly improved developer experience for Jounce development
 - Foundation ready for future enhancements (inlay hints, semantic highlighting)
 
 **Performance**:
@@ -2043,7 +2043,7 @@ pub enum InlayHintKind {
 
 ### Sprint Overview
 
-This sprint implements a watch mode that monitors .raven files and automatically recompiles on changes. This provides developers with instant feedback during development, similar to tools like `cargo watch`, `nodemon`, or `tsc --watch`.
+This sprint implements a watch mode that monitors .jnc files and automatically recompiles on changes. This provides developers with instant feedback during development, similar to tools like `cargo watch`, `nodemon`, or `tsc --watch`.
 
 **Key Features**:
 - `raven watch` command that monitors files and directories
@@ -2063,12 +2063,12 @@ This sprint implements a watch mode that monitors .raven files and automatically
 2. Create `src/watcher.rs` module for file watching logic
 3. Implement event handling for file changes
 4. Support watching single files or directories
-5. Filter for .raven file extensions
+5. Filter for .jnc file extensions
 
 **Implementation Strategy**:
 - Use `notify` crate's recommended watcher
 - Handle create, modify, and delete events
-- Ignore non-.raven files
+- Ignore non-.jnc files
 - Provide clean error handling
 
 **Files to Create/Modify**:
@@ -2077,8 +2077,8 @@ This sprint implements a watch mode that monitors .raven files and automatically
 - `src/lib.rs` - Export watcher module
 
 **Success Criteria**:
-- [ ] Detects .raven file changes in real-time
-- [ ] Ignores non-.raven files
+- [ ] Detects .jnc file changes in real-time
+- [ ] Ignores non-.jnc files
 - [ ] Handles errors gracefully
 - [ ] Performance < 50ms to detect changes
 
@@ -2151,11 +2151,11 @@ This sprint implements a watch mode that monitors .raven files and automatically
 
 **CLI Design**:
 ```bash
-raven watch app.raven                    # Watch single file
+raven watch app.jnc                    # Watch single file
 raven watch src/                         # Watch directory
-raven watch app.raven --output build/    # Custom output
-raven watch app.raven --clear            # Clear console
-raven watch app.raven --verbose          # Detailed logs
+raven watch app.jnc --output build/    # Custom output
+raven watch app.jnc --clear            # Clear console
+raven watch app.jnc --verbose          # Detailed logs
 ```
 
 **Console Output Design**:
@@ -2166,7 +2166,7 @@ raven watch app.raven --verbose          # Detailed logs
 
 Watching for changes... (Ctrl+C to stop)
 
-[file changed: app.raven]
+[file changed: app.jnc]
 ⚡ Recompiling...
 ✓ Compiled successfully (8ms)
   Files: 1 compiled, 3 cached
@@ -2205,7 +2205,7 @@ Watching for changes...
 
 Watching for changes... (fix and save to retry)
 
-[file changed: app.raven]
+[file changed: app.jnc]
 ⚡ Recompiling...
 ✓ Errors fixed! Compiled successfully (15ms)
 ```
@@ -2257,7 +2257,7 @@ Watching for changes... (fix and save to retry)
 
 ### Sprint Deliverables
 
-1. **File Watcher** - Real-time .raven file monitoring
+1. **File Watcher** - Real-time .jnc file monitoring
 2. **Debouncing** - Intelligent batching of file changes
 3. **Incremental Cache** - Fast recompilation of changed files
 4. **CLI Command** - `raven watch` with beautiful output
@@ -2334,10 +2334,10 @@ Beautiful Status Display
   - Complete usage examples
   - Feature list
   - Example output
-- `test_watch.raven` - Test file for manual verification
+- `test_watch.jnc` - Test file for manual verification
 
 **Watch Features Implemented**:
-1. **File Watching** - Real-time .raven file monitoring using notify crate
+1. **File Watching** - Real-time .jnc file monitoring using notify crate
 2. **Debouncing** - 150ms default delay, batches rapid successive changes
 3. **Incremental Cache** - Tracks file modification times for faster rebuilds
 4. **CLI Options**:
@@ -2351,15 +2351,15 @@ Beautiful Status Display
    - 👀 Watching status
    - 📊 File statistics (compiled/cached counts)
 6. **Error Recovery** - Continues watching after compilation errors
-7. **Smart Detection** - Only watches .raven files, ignores others
+7. **Smart Detection** - Only watches .jnc files, ignores others
 
 **CLI Usage**:
 ```bash
-raven watch app.raven                    # Watch single file
+raven watch app.jnc                    # Watch single file
 raven watch src/                         # Watch directory
-raven watch app.raven --output build/    # Custom output
-raven watch app.raven --clear            # Clear console
-raven watch app.raven --verbose          # Detailed logs
+raven watch app.jnc --output build/    # Custom output
+raven watch app.jnc --clear            # Clear console
+raven watch app.jnc --verbose          # Detailed logs
 ```
 
 **Performance**:
@@ -2381,15 +2381,15 @@ raven watch app.raven --verbose          # Detailed logs
 - Developers now have instant feedback during development
 - No more manual recompilation after every change
 - Similar workflow to cargo watch, tsc --watch, nodemon
-- Significant productivity boost for RavensOne development
+- Significant productivity boost for Jounce development
 - Foundation laid for more advanced features (HMR integration, etc.)
 
 **Developer Experience**:
 ```
-$ raven watch test_watch.raven
+$ raven watch test_watch.jnc
 
-🔥 RavensOne Watch Mode
-   Path: test_watch.raven
+🔥 Jounce Watch Mode
+   Path: test_watch.jnc
    Output: dist
 
 ✓ Compiled successfully (42ms)
@@ -2410,7 +2410,7 @@ $ raven watch test_watch.raven
 
 ### Sprint Overview
 
-This is the **final sprint of Phase 2**. The goal is to make RavensOne blazingly fast by implementing:
+This is the **final sprint of Phase 2**. The goal is to make Jounce blazingly fast by implementing:
 - **Parallel compilation** for multi-file projects
 - **Advanced caching** with AST persistence
 - **Memory optimization** to reduce allocations
@@ -2463,7 +2463,7 @@ After this sprint, Phase 2 (Developer Experience & Tooling) will be complete, an
 
 **Implementation Strategy**:
 - Add `bincode` or `serde_json` for serialization
-- Create `.raven-cache/` directory
+- Create `.jnc-cache/` directory
 - Hash-based cache keys
 - Metadata tracking (dependencies, timestamps)
 - Background cache cleanup
@@ -2472,7 +2472,7 @@ After this sprint, Phase 2 (Developer Experience & Tooling) will be complete, an
 - `Cargo.toml` - Add serialization dependencies
 - `src/cache.rs` - Create dedicated cache module
 - `src/lib.rs` - Integrate cache into compilation
-- `.gitignore` - Ignore `.raven-cache/`
+- `.gitignore` - Ignore `.jnc-cache/`
 
 **Success Criteria**:
 - [ ] AST cached to disk successfully
@@ -2554,7 +2554,7 @@ After this sprint, Phase 2 (Developer Experience & Tooling) will be complete, an
 
 **CLI Design**:
 ```bash
-raven compile --profile app.raven
+raven compile --profile app.jnc
 # Outputs:
 # Profiling Results:
 #   Lexing:    2ms  (10%)
@@ -2638,7 +2638,7 @@ Dependency Graph Analysis
     ↓
 Parallel Compilation (Rayon)
     ↓ (per file)
-Check Cache (.raven-cache/)
+Check Cache (.jnc-cache/)
     ↓
 Cache Hit? → Load AST → Codegen
     ↓
@@ -2674,7 +2674,7 @@ Output (dist/)
 
 **Profiling Infrastructure**:
 ```bash
-raven compile app.raven --profile
+raven compile app.jnc --profile
 ```
 
 **Example Profiling Output**:
@@ -2696,7 +2696,7 @@ Total:         797.79µs  (  100%)
 - `benches/compiler_bench.rs` - Already existed, utilized for baseline
 - `src/main.rs` - Added `--profile` flag and timing instrumentation (~150 lines)
 - `README.md` - Updated performance section with benchmarks and profiling docs
-- `test_profile.raven` - Test file for profiling validation
+- `test_profile.jnc` - Test file for profiling validation
 
 **Key Insights**:
 1. **Compiler is already blazingly fast** - Sub-millisecond compilation even for large programs
@@ -2724,7 +2724,7 @@ Total:         797.79µs  (  100%)
 
 ### 🎯 Mission Accomplished
 
-Over **11 focused sprints**, we transformed RavensOne from a fast compiler into a **professional-grade development platform** with world-class developer experience.
+Over **11 focused sprints**, we transformed Jounce from a fast compiler into a **professional-grade development platform** with world-class developer experience.
 
 ### 📈 Sprint Timeline
 
@@ -2775,7 +2775,7 @@ Over **11 focused sprints**, we transformed RavensOne from a fast compiler into 
 **Total Diagnostic Tests**: 18 tests (100% passing)
 
 #### **Watch Mode & Auto-Recompile**
-- ✅ **File Watching** - Real-time .raven file monitoring with notify crate
+- ✅ **File Watching** - Real-time .jnc file monitoring with notify crate
 - ✅ **Debouncing** - 150ms intelligent batching of rapid changes
 - ✅ **Incremental Cache** - Fast rebuilds using file modification tracking
 - ✅ **Beautiful Console Output** - Status indicators, timing, file statistics
@@ -2822,7 +2822,7 @@ Over **11 focused sprints**, we transformed RavensOne from a fast compiler into 
 
 ### 🏆 Major Achievements
 
-1. **Professional IDE Integration** - RavensOne now has VS Code/IntelliJ-level features
+1. **Professional IDE Integration** - Jounce now has VS Code/IntelliJ-level features
 2. **Sub-Millisecond Compilation** - One of the fastest compilers ever built
 3. **Beautiful Developer Experience** - From watch mode to inlay hints, everything "just works"
 4. **100% Test Coverage** - Every feature tested, zero regressions
@@ -2832,11 +2832,11 @@ Over **11 focused sprints**, we transformed RavensOne from a fast compiler into 
 
 **Potential Focus Areas**:
 - **Semantic Highlighting** - Token classification for better syntax highlighting
-- **Multi-Project Workspaces** - Manage multiple .raven projects
+- **Multi-Project Workspaces** - Manage multiple .jnc projects
 - **Advanced Caching** - Disk-based AST persistence for instant rebuilds
 - **Parallel Compilation** - Multi-core compilation for large projects
 - **Package Ecosystem Growth** - Expand aloha-shirts/ packages
-- **VS Code Extension** - Publish official RavensOne extension
+- **VS Code Extension** - Publish official Jounce extension
 - **LSP Server Standalone** - Separate LSP server binary for other editors
 
 ### ✨ Phase 2 Summary
@@ -2850,7 +2850,7 @@ Over **11 focused sprints**, we transformed RavensOne from a fast compiler into 
 
 **Grade**: **A+** (Exceptional - exceeded all expectations)
 
-Phase 2 transformed RavensOne from a fast compiler into a **professional development platform** that rivals established languages in developer experience. Every feature works flawlessly, tests pass consistently, and the documentation is comprehensive.
+Phase 2 transformed Jounce from a fast compiler into a **professional development platform** that rivals established languages in developer experience. Every feature works flawlessly, tests pass consistently, and the documentation is comprehensive.
 
 **We're ready for production use.** 🚀
 

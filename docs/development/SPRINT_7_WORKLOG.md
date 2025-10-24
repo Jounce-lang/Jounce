@@ -19,9 +19,9 @@
 3. 🔴 **PipePipe Prefix Parsing** - No prefix function for || (from backlog #B003)
 
 ### Test Results
-- ❌ test_unwrap_or.raven - Fails: "Undefined function: 'Some'"
-- ❌ examples/apps/social/main.raven:495 - Fails: "Illegal('🔔')"
-- ❌ examples/apps/ecommerce/main.raven:297 - Fails: "No prefix parse function for PipePipe"
+- ❌ test_unwrap_or.jnc - Fails: "Undefined function: 'Some'"
+- ❌ examples/apps/social/main.jnc:495 - Fails: "Illegal('🔔')"
+- ❌ examples/apps/ecommerce/main.jnc:297 - Fails: "No prefix parse function for PipePipe"
 
 ---
 
@@ -94,7 +94,7 @@ Parser maintains 2-token buffer (current + peek). When entering JSX mode:
 
 **Test Results**:
 - ✅ Built: cargo build --release
-- ✅ Manual test: test_pipepipe_closure.raven compiles successfully
+- ✅ Manual test: test_pipepipe_closure.jnc compiles successfully
 - ✅ Ecommerce app: Now fails at line 333 (different issue) - progress!
 
 **Completed**: Current

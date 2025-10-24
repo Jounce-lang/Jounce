@@ -1,11 +1,11 @@
 /**
- * RavensOne Debug Helper
+ * Jounce Debug Helper
  *
- * This script helps with debugging RavensOne applications in Chrome DevTools.
+ * This script helps with debugging Jounce applications in Chrome DevTools.
  * It provides source map support and enhanced error messages.
  */
 
-class RavensOneDebugger {
+class JounceDebugger {
     constructor() {
         this.sourceMaps = new Map();
         this.originalErrors = [];
@@ -127,7 +127,7 @@ class RavensOneDebugger {
         });
 
         // Print enhanced error to console
-        console.group('🐛 RavensOne Error');
+        console.group('🐛 Jounce Error');
         console.error('Original error:', error.message);
 
         const mappedStack = this.mapErrorStack(error.stack);
@@ -194,11 +194,11 @@ class RavensOneDebugger {
 }
 
 // Create global debugger instance
-window.RavensOneDebugger = window.RavensOneDebugger || new RavensOneDebugger();
+window.JounceDebugger = window.JounceDebugger || new JounceDebugger();
 
 // Expose helpful debugging utilities
-window.raven = {
-    debug: window.RavensOneDebugger,
+window.jnc = {
+    debug: window.JounceDebugger,
 
     /**
      * Enable verbose logging
@@ -270,6 +270,6 @@ window.raven = {
     }
 };
 
-console.log('🔧 RavensOne Debug Helper loaded');
-console.log('   Use window.raven.debug for debugging utilities');
-console.log('   Use window.raven.enableVerboseLogging() for detailed logs');
+console.log('🔧 Jounce Debug Helper loaded');
+console.log('   Use window.jnc.debug for debugging utilities');
+console.log('   Use window.jnc.enableVerboseLogging() for detailed logs');

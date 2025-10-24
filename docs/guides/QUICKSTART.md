@@ -1,4 +1,4 @@
-# 🚀 RavensOne Quick Start Guide
+# 🚀 Jounce Quick Start Guide
 
 **Get up and running in 5 minutes!**
 
@@ -17,7 +17,7 @@
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd ravensone
+cd jounce
 
 # Install Node dependencies
 npm install
@@ -123,7 +123,7 @@ open http://localhost:3001/
 ## Project Structure (Quick Reference)
 
 ```
-ravensone/
+jounce/
 ├── src/stdlib/          # Rust standard library
 │   ├── http.rs         # HTTP client
 │   ├── db.rs           # Database ORM

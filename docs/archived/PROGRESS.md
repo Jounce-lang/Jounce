@@ -1,4 +1,4 @@
-# RavensOne Progress Report
+# Jounce Progress Report
 
 ## 🎉 Latest Accomplishments
 
@@ -38,7 +38,7 @@ We've built a **complete end-to-end testing infrastructure** and are now ready t
 - `serve.py` - Development HTTP server
 - `test-reactive.html` - Comprehensive test page
 - `test-wasm.html` - Basic WASM test
-- `test-component.raven` - Minimal test component
+- `test-component.jnc` - Minimal test component
 - `TESTING.md` - Testing documentation
 - `PROGRESS.md` - This file
 
@@ -122,7 +122,7 @@ We've built a **complete end-to-end testing infrastructure** and are now ready t
 ### Files
 - **Source Files**: 15 Rust modules
 - **Runtime Files**: 2 JavaScript files
-- **Test Files**: 4 HTML + 3 .raven
+- **Test Files**: 4 HTML + 3 .jnc
 - **Documentation**: 5 markdown files
 
 ## 🏆 Major Milestones
@@ -159,12 +159,12 @@ We've built a **complete end-to-end testing infrastructure** and are now ready t
 
 ### Compilation Flow
 ```
-.raven → Lexer → Parser → Semantic Analyzer → Borrow Checker → WASM Codegen → .wasm
+.jnc → Lexer → Parser → Semantic Analyzer → Borrow Checker → WASM Codegen → .wasm
 ```
 
 ### Runtime Flow
 ```
-Browser → reactive-runtime.js → ravensone.js → WASM → DOM
+Browser → reactive-runtime.js → jounce.js → WASM → DOM
                 ↓                                    ↑
             Signal/Effect ←──────────────────────────┘
 ```
@@ -177,7 +177,7 @@ User Event → WASM Handler → signal_set() → Effect → Re-render → DOM Up
 ## 💡 Innovation Summary
 
 1. **Compiler-Driven Reactivity** - Variables auto-wrap in Signal<T>
-2. **Single File Type** - Only .raven files for full stack
+2. **Single File Type** - Only .jnc files for full stack
 3. **Type-Safe WASM** - Compile-time guarantees
 4. **Fine-Grained Updates** - Only changed values trigger renders
 5. **AI-First Design** - Optimized for Claude code generation
@@ -251,9 +251,9 @@ Exports: TestApp, memory
 
 ## 🔥 The Vision
 
-RavensOne is becoming **the most productive language for human-AI collaboration**:
+Jounce is becoming **the most productive language for human-AI collaboration**:
 
-- ✅ **Single File Type** - Only .raven files
+- ✅ **Single File Type** - Only .jnc files
 - ✅ **Type Safe** - Catch errors at compile time
 - ✅ **Reactive** - Auto-updating UI
 - ✅ **Fast** - WASM performance

@@ -1,17 +1,17 @@
 #!/bin/bash
-# Build RavensOne application for deployment
-# Compiles .raven files to WebAssembly and generates deployable artifacts
+# Build Jounce application for deployment
+# Compiles .jnc files to WebAssembly and generates deployable artifacts
 
 set -e  # Exit on error
 
-echo "🚀 RavensOne Deployment Builder"
+echo "🚀 Jounce Deployment Builder"
 echo "================================"
 echo ""
 
 # Check if source file is provided
 if [ -z "$1" ]; then
-    echo "Usage: ./scripts/build-for-deployment.sh <source.raven>"
-    echo "Example: ./scripts/build-for-deployment.sh examples/analytics_dashboard.raven"
+    echo "Usage: ./scripts/build-for-deployment.sh <source.jnc>"
+    echo "Example: ./scripts/build-for-deployment.sh examples/analytics_dashboard.jnc"
     exit 1
 fi
 
@@ -31,7 +31,7 @@ echo ""
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
-echo "⚙️  Step 1: Compiling RavensOne to WebAssembly..."
+echo "⚙️  Step 1: Compiling Jounce to WebAssembly..."
 # Compile for client (browser)
 cargo run --release -- compile "$SOURCE_FILE" \
     --target client \
@@ -58,8 +58,8 @@ cat > "$OUTPUT_DIR/index.html" << 'EOF'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics Dashboard - RavensOne</title>
-    <meta name="description" content="Real-time analytics dashboard built with RavensOne">
+    <title>Analytics Dashboard - Jounce</title>
+    <meta name="description" content="Real-time analytics dashboard built with Jounce">
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Critical CSS for initial render */
@@ -94,7 +94,7 @@ cat > "$OUTPUT_DIR/index.html" << 'EOF'
                 const bytes = await response.arrayBuffer();
                 const module = await WebAssembly.instantiate(bytes);
 
-                // Initialize RavensOne runtime
+                // Initialize Jounce runtime
                 if (module.instance.exports.init) {
                     module.instance.exports.init();
                 }
@@ -104,9 +104,9 @@ cat > "$OUTPUT_DIR/index.html" << 'EOF'
                     module.instance.exports.hydrate();
                 }
 
-                console.log('✅ RavensOne app loaded and hydrated');
+                console.log('✅ Jounce app loaded and hydrated');
             } catch (error) {
-                console.error('❌ Failed to load RavensOne app:', error);
+                console.error('❌ Failed to load Jounce app:', error);
             }
         }
 
@@ -135,7 +135,7 @@ echo "⚙️  Step 5: Creating Vercel configuration..."
 cat > "$OUTPUT_DIR/vercel.json" << 'EOF'
 {
   "version": 2,
-  "name": "ravensone-app",
+  "name": "jounce-app",
   "builds": [
     {
       "src": "index.html",
@@ -187,9 +187,9 @@ echo ""
 echo "⚙️  Step 6: Creating package.json..."
 cat > "$OUTPUT_DIR/package.json" << 'EOF'
 {
-  "name": "ravensone-app",
+  "name": "jounce-app",
   "version": "1.0.0",
-  "description": "Application built with RavensOne",
+  "description": "Application built with Jounce",
   "private": true,
   "scripts": {
     "deploy": "vercel --prod",
@@ -203,9 +203,9 @@ echo "✅ package.json created"
 echo ""
 echo "⚙️  Step 7: Creating deployment README..."
 cat > "$OUTPUT_DIR/README.md" << 'EOF'
-# RavensOne Application - Deployment Package
+# Jounce Application - Deployment Package
 
-This directory contains the compiled RavensOne application ready for deployment.
+This directory contains the compiled Jounce application ready for deployment.
 
 ## Quick Deploy to Vercel
 
@@ -255,7 +255,7 @@ netlify deploy --prod --dir .
 aws s3 sync . s3://your-bucket
 ```
 
-Built with RavensOne
+Built with Jounce
 EOF
 
 echo "✅ README created"

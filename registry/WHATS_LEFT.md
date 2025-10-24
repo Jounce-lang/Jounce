@@ -1,4 +1,4 @@
-# What's Left to Build Real Apps with RavensOne
+# What's Left to Build Real Apps with Jounce
 
 **Date**: October 19, 2025  
 **Current Status**: 🟡 **80% Complete** - Can build demos, need compiler bridge for production apps
@@ -33,10 +33,10 @@
 
 ### **The Critical Missing Piece: Compiler Bridge**
 
-**Problem**: We can't write `.raven` files and compile them to working apps yet!
+**Problem**: We can't write `.jnc` files and compile them to working apps yet!
 
 **Why**: The compiler exists but doesn't have:
-1. ✅ Parser (DONE - parses .raven syntax)
+1. ✅ Parser (DONE - parses .jnc syntax)
 2. ✅ Type checker (DONE - validates types)
 3. ✅ WASM codegen (DONE - generates WebAssembly)
 4. ❌ **@server/@client annotation system** (NOT DONE)
@@ -45,7 +45,7 @@
 7. ❌ **Runtime linking** (NOT DONE)
 
 **Current State**: 
-- You write `.raven` code → ✅ Compiles to WASM
+- You write `.jnc` code → ✅ Compiles to WASM
 - But: ❌ Can't split server/client code
 - But: ❌ Can't generate RPC calls automatically
 - But: ❌ Can't link to our JavaScript runtimes
@@ -53,14 +53,14 @@
 **What This Means**:
 - ✅ Can test language features (tests pass!)
 - ✅ Can run demos (manually written in JS)
-- ❌ **Can't write a .raven file and get a working full-stack app**
+- ❌ **Can't write a .jnc file and get a working full-stack app**
 
 ---
 
 ## 📋 Remaining Work Breakdown
 
 ### Phase 1: Compiler Bridge (2-3 weeks)
-**Goal**: Write `.raven` → Get working full-stack app
+**Goal**: Write `.jnc` → Get working full-stack app
 
 **Tasks**:
 1. **Annotation Parser** (3 days)
@@ -85,7 +85,7 @@
 
 **Deliverable**: 
 ```bash
-raven compile my-app.raven
+raven compile my-app.jnc
 # → server.js (Node.js backend)
 # → client.js (Browser frontend)
 # → app.wasm (Shared logic)
@@ -96,11 +96,11 @@ open index.html  # Works!
 ---
 
 ### Phase 2: Developer Experience (1 week)
-**Goal**: Make it pleasant to develop RavensOne apps
+**Goal**: Make it pleasant to develop Jounce apps
 
 **Tasks**:
 1. **Hot Module Replacement (HMR)** - ✅ DONE
-   - File watcher for .raven files
+   - File watcher for .jnc files
    - Auto-recompilation on save
    - Live reload in browser
 
@@ -123,7 +123,7 @@ open index.html  # Works!
 **Tasks**:
 1. **TypeScript Interop** (3 days)
    - Import TypeScript types
-   - Export RavensOne types
+   - Export Jounce types
    - Full type checking across boundaries
 
 2. **Environment Variables** (1 day)
@@ -242,7 +242,7 @@ component Checkout(cart: Cart) {
 ### Week 1-2: Compiler Bridge
 **Priority**: HIGHEST  
 **Blockers**: None  
-**Output**: Can write .raven files and run them
+**Output**: Can write .jnc files and run them
 
 ### Week 3: Developer Experience
 **Priority**: HIGH  
@@ -272,10 +272,10 @@ component Checkout(cart: Cart) {
 - Build working full-stack apps ✅
 
 **What Doesn't**:
-- Write `.raven` files ❌
+- Write `.jnc` files ❌
 - Get automatic code splitting ❌
 - Get type-safe RPC ❌
-- Get the "magic" of RavensOne ❌
+- Get the "magic" of Jounce ❌
 
 **Example - What Works Today**:
 ```javascript
@@ -304,7 +304,7 @@ async function loadTodos() {
 
 **Example - What We WANT**:
 ```raven
-// app.raven
+// app.jnc
 @server
 fn get_todos() -> Vec<Todo> {
     db.todos.all()
@@ -318,7 +318,7 @@ component TodoList() {
 ```
 
 ```bash
-raven compile app.raven
+raven compile app.jnc
 node server.js  # Auto-generated, just works!
 ```
 
@@ -330,13 +330,13 @@ node server.js  # Auto-generated, just works!
 
 **Option A: Finish the Vision (Recommended)**
 - Build compiler bridge (2-3 weeks)
-- Ship RavensOne 1.0
-- Build real apps in `.raven` files
+- Ship Jounce 1.0
+- Build real apps in `.jnc` files
 - Market to developers
 
 **Option B: Ship What We Have**
 - Polish existing demos
-- Release as "RavensOne Toolkit" (JS libraries)
+- Release as "Jounce Toolkit" (JS libraries)
 - Build community around JS runtimes
 - Add compiler later
 
@@ -366,7 +366,7 @@ Focus the next 2-3 weeks on **compiler bridge** - it's the only thing between "c
 
 Once that's done, you can write:
 ```raven
-// my-startup.raven
+// my-startup.jnc
 // The entire app in one file!
 ```
 

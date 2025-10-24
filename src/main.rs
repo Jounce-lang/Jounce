@@ -3,11 +3,11 @@ use std::fs;
 use std::path::PathBuf;
 use std::process;
 use std::time::Instant;
-use ravensone_compiler::{Compiler, deployer, BuildTarget}; // FIX: Corrected the import path
-use ravensone_compiler::watcher::{FileWatcher, WatchConfig, CompileStats};
-use ravensone_compiler::lexer::Lexer;
-use ravensone_compiler::parser::Parser;
-use ravensone_compiler::js_emitter::JSEmitter;
+use jounce_compiler::{Compiler, deployer, BuildTarget}; // FIX: Corrected the import path
+use jounce_compiler::watcher::{FileWatcher, WatchConfig, CompileStats};
+use jounce_compiler::lexer::Lexer;
+use jounce_compiler::parser::Parser;
+use jounce_compiler::js_emitter::JSEmitter;
 
 #[derive(ClapParser)]
 #[command(name = "raven", version, about)]
@@ -18,7 +18,7 @@ struct Cli {
 
 #[derive(clap::Subcommand)]
 enum Commands {
-    /// Compiles a RavensOne file
+    /// Compiles a Jounce file
     Compile {
         path: PathBuf,
         #[arg(short, long)]
@@ -28,11 +28,11 @@ enum Commands {
         #[arg(short, long)]
         profile: bool,
     },
-    /// Creates a new RavensOne project
+    /// Creates a new Jounce project
     New {
         name: String,
     },
-    /// Initialize a new RavensOne project in the current directory
+    /// Initialize a new Jounce project in the current directory
     Init {
         #[arg(default_value = ".")]
         path: PathBuf,
@@ -44,7 +44,7 @@ enum Commands {
         #[arg(long)]
         open: bool,
     },
-    /// Diagnose common issues with your RavensOne setup
+    /// Diagnose common issues with your Jounce setup
     Doctor,
     /// Builds and deploys the project to a cloud provider
     Deploy {
@@ -72,7 +72,7 @@ enum Commands {
         #[arg(short, long)]
         watch: bool,
     },
-    /// Format RavensOne source files
+    /// Format Jounce source files
     Fmt {
         #[arg(short, long)]
         check: bool,
@@ -80,7 +80,7 @@ enum Commands {
         write: bool,
         path: Option<PathBuf>,
     },
-    /// Lint RavensOne source files
+    /// Lint Jounce source files
     Lint {
         #[arg(short, long)]
         fix: bool,
@@ -154,10 +154,10 @@ fn main() {
 
     match cli.command {
         Commands::Compile { path, output, minify, profile } => {
-            use ravensone_compiler::lexer::Lexer;
-            use ravensone_compiler::parser::Parser;
-            use ravensone_compiler::js_emitter::JSEmitter;
-            use ravensone_compiler::js_minifier::JSMinifier;
+            use jounce_compiler::lexer::Lexer;
+            use jounce_compiler::parser::Parser;
+            use jounce_compiler::js_emitter::JSEmitter;
+            use jounce_compiler::js_minifier::JSMinifier;
 
             let compile_start = Instant::now();
 
@@ -203,7 +203,7 @@ fn main() {
 
             // Merge imported modules into the AST
             let module_start = Instant::now();
-            use ravensone_compiler::module_loader::ModuleLoader;
+            use jounce_compiler::module_loader::ModuleLoader;
             let mut module_loader = ModuleLoader::new("aloha-shirts");
             if let Err(e) = module_loader.merge_imports(&mut program) {
                 eprintln!("❌ Module import failed: {}", e);
@@ -352,7 +352,7 @@ fn main() {
             println!("✅ Project '{}' created successfully! 🚀", name);
         }
         Commands::Init { path } => {
-            println!("🚀 Initializing RavensOne project...");
+            println!("🚀 Initializing Jounce project...");
             if let Err(e) = init_project(&path) {
                 eprintln!("❌ Initialization failed: {}", e);
                 process::exit(1);
@@ -366,7 +366,7 @@ fn main() {
             }
         }
         Commands::Doctor => {
-            println!("🏥 Running RavensOne diagnostics...\n");
+            println!("🏥 Running Jounce diagnostics...\n");
             run_doctor();
         }
         Commands::Deploy { env } => {
@@ -442,7 +442,7 @@ fn main() {
             }
         }
         Commands::Pkg { command } => {
-            use ravensone_compiler::package_manager::PackageManager;
+            use jounce_compiler::package_manager::PackageManager;
 
             match command {
                 PkgCommands::Init { path } => {
@@ -594,12 +594,12 @@ fn create_new_project(name: &str) -> std::io::Result<()> {
     )?;
 
     fs::write(
-        root.join("src/main.raven"),
-        format!("// Welcome to RavensOne!\n\ncomponent App() {{\n    return <h1>\"Hello, {}!\"</h1>;\n}}\n", name),
+        root.join("src/main.jnc"),
+        format!("// Welcome to Jounce!\n\ncomponent App() {{\n    return <h1>\"Hello, {}!\"</h1>;\n}}\n", name),
     )?;
     
     fs::write(
-        root.join("src/types.raven"),
+        root.join("src/types.jnc"),
         "// Define your shared data structures here.\n",
     )?;
 
@@ -626,7 +626,7 @@ fn watch_and_compile(
     watcher.watch()?;
 
     // Initial compilation
-    println!("🔥 RavensOne Watch Mode");
+    println!("🔥 Jounce Watch Mode");
     println!("   Path: {}", path.display());
     println!("   Output: {}", output.display());
     println!();
@@ -802,10 +802,10 @@ fn run_tests(watch_mode: bool) -> std::io::Result<()> {
         println!("ℹ️  No tests directory found. Creating tests/...");
         fs::create_dir_all(&test_dir)?;
         fs::write(
-            test_dir.join("example.test.raven"),
+            test_dir.join("example.test.jnc"),
             "// Write your tests here\n// Example: test('1 + 1 = 2', () => { ... })\n"
         )?;
-        println!("✅ Created tests/example.test.raven");
+        println!("✅ Created tests/example.test.jnc");
         return Ok(());
     }
 
@@ -877,9 +877,9 @@ enum FormatResult {
 }
 
 fn format_code(path: PathBuf, mode: FormatMode) -> std::io::Result<()> {
-    use ravensone_compiler::formatter::{Formatter, FormatterConfig};
-    use ravensone_compiler::lexer::Lexer;
-    use ravensone_compiler::parser::Parser;
+    use jounce_compiler::formatter::{Formatter, FormatterConfig};
+    use jounce_compiler::lexer::Lexer;
+    use jounce_compiler::parser::Parser;
     let mut formatted_count = 0;
     let mut error_count = 0;
     let mut total_count = 0;
@@ -944,9 +944,9 @@ fn format_code(path: PathBuf, mode: FormatMode) -> std::io::Result<()> {
 }
 
 fn format_file(path: &PathBuf, mode: FormatMode) -> std::io::Result<FormatResult> {
-    use ravensone_compiler::formatter::{Formatter, FormatterConfig};
-    use ravensone_compiler::lexer::Lexer;
-    use ravensone_compiler::parser::Parser;
+    use jounce_compiler::formatter::{Formatter, FormatterConfig};
+    use jounce_compiler::lexer::Lexer;
+    use jounce_compiler::parser::Parser;
 
     let content = fs::read_to_string(path)?;
 
@@ -1133,7 +1133,7 @@ fn build_project(release: bool) -> std::io::Result<()> {
 // New CLI commands
 
 fn init_project(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-    use ravensone_compiler::package_manager::PackageManager;
+    use jounce_compiler::package_manager::PackageManager;
 
     let pkg_mgr = PackageManager::new(path);
     let project_name = path.file_name()
@@ -1142,7 +1142,7 @@ fn init_project(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
 
     pkg_mgr.init(project_name, vec!["Developer <dev@example.com>".to_string()])?;
 
-    println!("✅ Initialized RavensOne project in {}", path.display());
+    println!("✅ Initialized Jounce project in {}", path.display());
     println!("   Created raven.toml");
     println!("\n💡 Next steps:");
     println!("   1. Edit raven.toml to add package metadata");
@@ -1201,7 +1201,7 @@ fn generate_index_html() -> String {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RavensOne App</title>
+    <title>Jounce App</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
@@ -1222,7 +1222,7 @@ fn generate_index_html() -> String {
 </head>
 <body>
     <div id="app">
-        <h1>Loading RavensOne App...</h1>
+        <h1>Loading Jounce App...</h1>
     </div>
     <script type="module" src="client.js"></script>
 </body>
@@ -1230,7 +1230,7 @@ fn generate_index_html() -> String {
 }
 
 fn run_doctor() {
-    println!("🏥 RavensOne Doctor - Checking your setup...\n");
+    println!("🏥 Jounce Doctor - Checking your setup...\n");
 
     let mut issues = 0;
     let mut warnings = 0;
@@ -1315,7 +1315,7 @@ fn run_doctor() {
     // Summary
     println!("\n📊 Summary:");
     if issues == 0 && warnings == 0 {
-        println!("   ✅ All checks passed! Your RavensOne setup looks good.");
+        println!("   ✅ All checks passed! Your Jounce setup looks good.");
     } else {
         if issues > 0 {
             println!("   ❌ {} critical issue(s) found", issues);
@@ -1328,7 +1328,7 @@ fn run_doctor() {
     if issues > 0 {
         println!("\n💡 Recommendations:");
         println!("   - Install Rust from: https://rustup.rs/");
-        println!("   - Rust and Cargo are required for RavensOne to work");
+        println!("   - Rust and Cargo are required for Jounce to work");
     }
 
     if warnings > 0 {

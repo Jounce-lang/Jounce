@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 // For now, create a simple WASM module manually
-// In the future, this would use the full RavensOne compiler
+// In the future, this would use the full Jounce compiler
 
 function createSimpleWasmModule() {
     // This is a hand-coded WASM binary for a simple counter

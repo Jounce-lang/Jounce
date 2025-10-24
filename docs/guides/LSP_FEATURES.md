@@ -2,7 +2,7 @@
 
 ## Overview
 
-RavensOne's Language Server Protocol (LSP) implementation provides intelligent IDE features for enhanced developer experience. The LSP server offers context-aware completions, hover information, and real-time diagnostics.
+Jounce's Language Server Protocol (LSP) implementation provides intelligent IDE features for enhanced developer experience. The LSP server offers context-aware completions, hover information, and real-time diagnostics.
 
 ## Features
 
@@ -276,7 +276,7 @@ let x: i32 = "hello";  // Error: Type mismatch
 ### Vim/Neovim
 
 1. **Install LSP client** (e.g., `coc.nvim`, `vim-lsp`)
-2. **Configure RavensOne LSP**:
+2. **Configure Jounce LSP**:
 ```vim
 " Example with coc.nvim
 {
@@ -285,7 +285,7 @@ let x: i32 = "hello";  // Error: Type mismatch
       "command": "raven",
       "args": ["lsp"],
       "filetypes": ["raven"],
-      "rootPatterns": ["raven.toml"]
+      "rootPatterns": ["jounce.toml"]
     }
   }
 }
@@ -294,7 +294,7 @@ let x: i32 = "hello";  // Error: Type mismatch
 ### Emacs
 
 1. **Install `lsp-mode`**
-2. **Add RavensOne configuration**:
+2. **Add Jounce configuration**:
 ```elisp
 (lsp-register-client
  (make-lsp-client :new-connection (lsp-stdio-connection '("raven" "lsp"))
@@ -557,7 +557,7 @@ use raven_store::Signal;  // Warning: unused import
 
 ## 3. Enhanced Diagnostics & Error Reporting
 
-RavensOne provides beautiful, actionable error messages with:
+Jounce provides beautiful, actionable error messages with:
 - ✅ **Rich formatting** with ANSI colors
 - ✅ **Source code snippets** showing the error location
 - ✅ **Helpful suggestions** for fixing common mistakes
@@ -568,7 +568,7 @@ RavensOne provides beautiful, actionable error messages with:
 
 ```
 error: type mismatch: expected `f64`, found `i32`
-  --> app.raven:42:10
+  --> app.jnc:42:10
    41 | let total: f64 = 100;
    42 | let result = calculate(total);
       |          ^^^^^^^^^^^^^^^^^^^
@@ -629,7 +629,7 @@ use raven_store::{Signa};
 
 ```
 error: cannot find `Signa` in module `raven_store`
-  --> app.raven:1:20
+  --> app.jnc:1:20
    1 | use raven_store::{Signa};
      |                    ^^^^^
   help: did you mean `Signal`?
@@ -703,7 +703,7 @@ Future versions may include configuration options:
 **Request**:
 ```json
 {
-  "textDocument": { "uri": "file:///path/to/file.raven" },
+  "textDocument": { "uri": "file:///path/to/file.jnc" },
   "range": {
     "start": { "line": 0, "character": 0 },
     "end": { "line": 100, "character": 0 }
@@ -734,7 +734,7 @@ Future versions may include configuration options:
 ### Completions Not Working
 
 1. **Check document is open**: LSP requires document to be opened first
-2. **Verify file extension**: Only `.raven` files are processed
+2. **Verify file extension**: Only `.jnc` files are processed
 3. **Check LSP logs**: Look for connection or parsing errors
 
 ### Slow Completions

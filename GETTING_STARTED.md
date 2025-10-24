@@ -1,8 +1,8 @@
-# Getting Started with RavensOne
+# Getting Started with Jounce
 
-> ✅ **Production Ready**: RavensOne language core is 100% complete! All core features working with 417 passing tests. See README.md for full status.
+> ✅ **Production Ready**: Jounce language core is 100% complete! All core features working with 417 passing tests. See README.md for full status.
 
-Welcome to RavensOne! This guide will help you get up and running with the full-stack reactive programming language that compiles to WebAssembly.
+Welcome to Jounce! This guide will help you get up and running with the full-stack reactive programming language that compiles to WebAssembly.
 
 **What works**: Everything! JSX, deeply nested if/else, functions (including recursive), async/await, generics, traits, pattern matching, for loops, and more. Zero known limitations.
 
@@ -29,8 +29,8 @@ Welcome to RavensOne! This guide will help you get up and running with the full-
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ravensone.git
-cd ravensone
+git clone https://github.com/yourusername/jounce.git
+cd jounce
 
 # Build the compiler
 cargo build --release
@@ -43,12 +43,12 @@ export PATH="$PATH:$(pwd)/target/release"
 
 ```bash
 raven --version
-# RavensOne Compiler v3.0
+# Jounce Compiler v3.0
 ```
 
 ## Quick Start
 
-Let's create your first RavensOne application in 5 minutes!
+Let's create your first Jounce application in 5 minutes!
 
 ### 1. Create a New Project
 
@@ -61,15 +61,15 @@ cd my-app
 This creates:
 ```
 my-app/
-├── raven.toml       # Package manifest
+├── jounce.toml       # Package manifest
 ├── src/
-│   └── main.raven   # Entry point
+│   └── main.jnc   # Entry point
 └── dist/            # Output directory
 ```
 
 ### 2. Write Your First Component
 
-Edit `src/main.raven`:
+Edit `src/main.jnc`:
 
 ```rust
 import { Signal } from "raven-reactive"
@@ -97,7 +97,7 @@ fn main() {
 
 ```bash
 # Compile to WebAssembly
-raven compile src/main.raven --output dist/app.wasm
+raven compile src/main.jnc --output dist/app.wasm
 
 # Start development server with Hot Module Replacement
 raven dev
@@ -111,7 +111,7 @@ Your counter app is now running! Try changing the code - the browser updates aut
 
 ### Variables and Types
 
-RavensOne has full Hindley-Milner type inference:
+Jounce has full Hindley-Milner type inference:
 
 ```rust
 // Type inference
@@ -202,7 +202,7 @@ fn check_status(status: Status) -> String {
 
 ### 1. Reactive State Management
 
-RavensOne's reactivity system is built on Signals:
+Jounce's reactivity system is built on Signals:
 
 ```rust
 import { Signal, Computed, Effect } from "raven-reactive"
@@ -337,7 +337,7 @@ Let's build a complete Todo application!
 ### Step 1: Define Data Structures
 
 ```rust
-// src/models.raven
+// src/models.jnc
 struct Todo {
     id: i32,
     text: String,
@@ -354,7 +354,7 @@ enum Filter {
 ### Step 2: Create the Todo Component
 
 ```rust
-// src/components/todo_item.raven
+// src/components/todo_item.jnc
 import { Signal } from "raven-reactive"
 
 component TodoItem(todo: Todo, on_toggle: fn(i32), on_delete: fn(i32)) {
@@ -375,7 +375,7 @@ component TodoItem(todo: Todo, on_toggle: fn(i32), on_delete: fn(i32)) {
 ### Step 3: Create the Main App
 
 ```rust
-// src/main.raven
+// src/main.jnc
 import { Signal, Computed } from "raven-reactive"
 import { TodoItem } from "./components/todo_item"
 
@@ -426,7 +426,7 @@ component TodoApp() {
     };
 
     <div class="todo-app">
-        <h1>"RavensOne Todo"</h1>
+        <h1>"Jounce Todo"</h1>
 
         <div class="input-section">
             <input
@@ -543,7 +543,7 @@ Create `public/style.css`:
 
 ```bash
 # Compile with optimizations
-raven compile src/main.raven --output dist/app.wasm --optimize
+raven compile src/main.jnc --output dist/app.wasm --optimize
 
 # Start dev server
 raven dev
@@ -555,7 +555,7 @@ raven dev
 
 ### Hot Module Replacement (HMR)
 
-RavensOne includes built-in HMR for instant feedback:
+Jounce includes built-in HMR for instant feedback:
 
 ```bash
 # Start HMR server (default: localhost:3000, WS: 3001)
@@ -565,7 +565,7 @@ raven dev
 raven dev --port 8080 --ws-port 8081
 ```
 
-Changes to `.raven` files automatically reload in the browser without losing state!
+Changes to `.jnc` files automatically reload in the browser without losing state!
 
 ### Package Management
 
@@ -596,7 +596,7 @@ raven pkg outdated
 ### Using Community Packages
 
 ```toml
-# raven.toml
+# jounce.toml
 [package]
 name = "my-app"
 version = "0.1.0"
@@ -649,7 +649,7 @@ fn test_signal_updates() {
 
 ```bash
 # Run with profiling enabled
-raven compile src/main.raven --profile
+raven compile src/main.jnc --profile
 
 # View profiler output
 cat profiler_output.json
@@ -659,7 +659,7 @@ cat profiler_output.json
 
 ```bash
 # Generate HTML docs
-raven doc src/main.raven --output docs/
+raven doc src/main.jnc --output docs/
 
 # Open documentation
 open docs/index.html
@@ -671,13 +671,13 @@ open docs/index.html
 
 ```bash
 # Full optimization build
-raven compile src/main.raven \
+raven compile src/main.jnc \
     --output dist/app.wasm \
     --optimize \
     --target client
 
 # Server build
-raven compile src/main.raven \
+raven compile src/main.jnc \
     --output dist/server.js \
     --optimize \
     --target server
@@ -718,7 +718,7 @@ vercel deploy
 
 ```toml
 [build]
-  command = "raven compile src/main.raven --output dist/app.wasm --optimize"
+  command = "raven compile src/main.jnc --output dist/app.wasm --optimize"
   publish = "dist"
 
 [[redirects]]
@@ -751,7 +751,7 @@ WORKDIR /app
 COPY --from=builder /app/target/release/raven /usr/local/bin/
 COPY . .
 
-RUN raven compile src/main.raven --output dist/server.js --target server
+RUN raven compile src/main.jnc --output dist/server.js --target server
 
 EXPOSE 3000
 CMD ["node", "dist/server.js"]
@@ -766,7 +766,7 @@ docker run -p 3000:3000 my-raven-app
 
 ## New in Phase 1 (v0.2.0)
 
-RavensOne v0.2.0 brings 100% language completeness with many powerful features:
+Jounce v0.2.0 brings 100% language completeness with many powerful features:
 
 ### Constants
 ```rust
@@ -841,7 +841,7 @@ For complete details, see:
 
 ## Current Limitations (Phase 4 - In Progress)
 
-**RavensOne is in active development**. The following features are currently broken and being fixed:
+**Jounce is in active development**. The following features are currently broken and being fixed:
 
 ### ❌ Not Working (Being Fixed)
 
@@ -890,7 +890,7 @@ See `CLAUDE.md` for detailed Phase 4 roadmap and `SPRINT3_FINDINGS.md` for techn
 ### Learn More
 
 - **[Language Reference](LANGUAGE_REFERENCE.md)** - Complete syntax guide
-- **[API Documentation](https://ravensone.dev/docs)** - Standard library docs
+- **[API Documentation](https://jounce.dev/docs)** - Standard library docs
 - **[Examples](examples/)** - Sample applications
 - **[Roadmap](ROADMAP_Q1_2026.md)** - Upcoming features
 
@@ -905,9 +905,9 @@ See `CLAUDE.md` for detailed Phase 4 roadmap and `SPRINT3_FINDINGS.md` for techn
 
 ### Join the Community
 
-- GitHub: https://github.com/yourusername/ravensone
-- Discord: https://discord.gg/ravensone
-- Twitter: @ravensone_lang
+- GitHub: https://github.com/yourusername/jounce
+- Discord: https://discord.gg/jounce
+- Twitter: @jounce_lang
 
 ### Build Something Amazing
 
@@ -919,4 +919,4 @@ Now that you know the basics, start building! Here are some project ideas:
 4. **Dashboard** - Data visualization with charts
 5. **Game** - Simple 2D game using Canvas API
 
-Happy coding with RavensOne! 🦅
+Happy coding with Jounce! 🦅

@@ -1,4 +1,4 @@
-# RavensOne Package Registry API Specification
+# Jounce Package Registry API Specification
 
 **Version**: 1.0.0
 **Date**: October 17, 2025
@@ -8,12 +8,12 @@
 
 ## Overview
 
-The RavensOne Package Registry is a centralized service for publishing, discovering, and downloading RavensOne packages. It provides a REST API for the `raven pkg` CLI to interact with.
+The Jounce Package Registry is a centralized service for publishing, discovering, and downloading Jounce packages. It provides a REST API for the `raven pkg` CLI to interact with.
 
 ### Base URL
 
 ```
-Production: https://registry.ravensone.dev/api/v1
+Production: https://registry.jounce.dev/api/v1
 Development: http://localhost:8080/api/v1
 ```
 
@@ -124,7 +124,7 @@ Publish a new package version.
 - `Content-Type: multipart/form-data`
 
 **Request Body** (multipart):
-- `manifest` (JSON): Package manifest (raven.toml as JSON)
+- `manifest` (JSON): Package manifest (jounce.toml as JSON)
 - `tarball` (file): Gzipped tarball of package source
 
 **Manifest Schema**:
@@ -133,7 +133,7 @@ Publish a new package version.
   "name": "raven-ui",
   "version": "1.2.3",
   "authors": ["Alice <alice@example.com>"],
-  "description": "UI component library for RavensOne",
+  "description": "UI component library for Jounce",
   "license": "MIT",
   "repository": "https://github.com/alice/raven-ui",
   "homepage": "https://raven-ui.dev",
@@ -154,7 +154,7 @@ Publish a new package version.
   "name": "raven-ui",
   "version": "1.2.3",
   "published_at": "2025-10-17T12:00:00Z",
-  "download_url": "https://registry.ravensone.dev/packages/raven-ui/1.2.3/download",
+  "download_url": "https://registry.jounce.dev/packages/raven-ui/1.2.3/download",
   "checksum": "sha256:abc123..."
 }
 ```
@@ -176,7 +176,7 @@ Get package metadata.
 ```json
 {
   "name": "raven-ui",
-  "description": "UI component library for RavensOne",
+  "description": "UI component library for Jounce",
   "latest_version": "1.2.3",
   "versions": ["1.0.0", "1.1.0", "1.2.0", "1.2.3"],
   "owner": {
@@ -208,7 +208,7 @@ Get specific version metadata.
 {
   "name": "raven-ui",
   "version": "1.2.3",
-  "description": "UI component library for RavensOne",
+  "description": "UI component library for Jounce",
   "authors": ["Alice <alice@example.com>"],
   "license": "MIT",
   "repository": "https://github.com/alice/raven-ui",
@@ -219,7 +219,7 @@ Get specific version metadata.
     "raven-test": "^0.2.0"
   },
   "published_at": "2025-10-17T12:00:00Z",
-  "download_url": "https://registry.ravensone.dev/packages/raven-ui/1.2.3/download",
+  "download_url": "https://registry.jounce.dev/packages/raven-ui/1.2.3/download",
   "checksum": "sha256:abc123...",
   "size_bytes": 125440
 }
@@ -289,7 +289,7 @@ Search packages by name, keywords, or description.
     {
       "name": "raven-ui",
       "version": "1.2.3",
-      "description": "UI component library for RavensOne",
+      "description": "UI component library for Jounce",
       "keywords": ["ui", "components", "reactive"],
       "downloads": 15234,
       "score": 0.95
@@ -297,7 +297,7 @@ Search packages by name, keywords, or description.
     {
       "name": "raven-forms",
       "version": "0.3.1",
-      "description": "Form handling for RavensOne",
+      "description": "Form handling for Jounce",
       "keywords": ["forms", "validation", "ui"],
       "downloads": 8421,
       "score": 0.78
@@ -688,7 +688,7 @@ Planned webhook support for:
 The `raven pkg` CLI integrates with this API:
 
 ```bash
-# Login (stores token in ~/.raven/credentials)
+# Login (stores token in ~/.jnc/credentials)
 raven pkg login
 
 # Publish package (POST /packages/publish)
@@ -774,4 +774,4 @@ This API follows semantic versioning. Breaking changes will increment the major 
 ---
 
 *Last Updated: October 17, 2025*
-*Maintainer: RavensOne Core Team*
+*Maintainer: Jounce Core Team*

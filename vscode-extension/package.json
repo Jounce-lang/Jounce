@@ -1,17 +1,17 @@
 {
-  "name": "ravensone",
-  "displayName": "RavensOne",
-  "description": "Official VS Code extension for the RavensOne full-stack programming language",
+  "name": "jounce",
+  "displayName": "Jounce",
+  "description": "Official VS Code extension for the Jounce full-stack programming language",
   "version": "0.1.0",
-  "publisher": "ravensone",
+  "publisher": "jounce",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ravensone/ravensone.git"
+    "url": "https://github.com/jounce/jounce.git"
   },
   "bugs": {
-    "url": "https://github.com/ravensone/ravensone/issues"
+    "url": "https://github.com/jounce/jounce/issues"
   },
-  "homepage": "https://github.com/ravensone/ravensone#readme",
+  "homepage": "https://github.com/jounce/jounce#readme",
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -21,8 +21,8 @@
     "Linters"
   ],
   "keywords": [
-    "ravensone",
-    "raven",
+    "jounce",
+    "jnc",
     "full-stack",
     "jsx",
     "wasm"
@@ -34,49 +34,49 @@
   "contributes": {
     "languages": [
       {
-        "id": "raven",
+        "id": "jnc",
         "aliases": [
-          "RavensOne",
-          "raven"
+          "Jounce",
+          "jnc"
         ],
         "extensions": [
-          ".raven"
+          ".jnc"
         ],
         "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
       {
-        "language": "raven",
-        "scopeName": "source.raven",
+        "language": "jnc",
+        "scopeName": "source.jnc",
         "path": "./syntaxes/raven.tmLanguage.json"
       }
     ],
     "commands": [
       {
         "command": "raven.compile",
-        "title": "RavensOne: Compile Current File",
-        "category": "RavensOne"
+        "title": "Jounce: Compile Current File",
+        "category": "Jounce"
       },
       {
         "command": "raven.watch",
-        "title": "RavensOne: Watch Current File",
-        "category": "RavensOne"
+        "title": "Jounce: Watch Current File",
+        "category": "Jounce"
       },
       {
         "command": "raven.format",
-        "title": "RavensOne: Format Document",
-        "category": "RavensOne"
+        "title": "Jounce: Format Document",
+        "category": "Jounce"
       },
       {
         "command": "raven.test",
-        "title": "RavensOne: Run Tests",
-        "category": "RavensOne"
+        "title": "Jounce: Run Tests",
+        "category": "Jounce"
       },
       {
         "command": "raven.profile",
-        "title": "RavensOne: Show Profiling",
-        "category": "RavensOne"
+        "title": "Jounce: Show Profiling",
+        "category": "Jounce"
       }
     ],
     "keybindings": [
@@ -87,34 +87,34 @@
       }
     ],
     "configuration": {
-      "title": "RavensOne",
+      "title": "Jounce",
       "properties": {
-        "ravensone.lspPath": {
+        "jounce.lspPath": {
           "type": "string",
-          "default": "raven",
-          "description": "Path to the RavensOne compiler binary"
+          "default": "jnc",
+          "description": "Path to the Jounce compiler binary"
         },
-        "ravensone.enableInlayHints": {
+        "jounce.enableInlayHints": {
           "type": "boolean",
           "default": true,
           "description": "Enable inlay hints (type hints and parameter hints)"
         },
-        "ravensone.enableTypeHints": {
+        "jounce.enableTypeHints": {
           "type": "boolean",
           "default": true,
           "description": "Show type hints for variables without explicit types"
         },
-        "ravensone.enableParameterHints": {
+        "jounce.enableParameterHints": {
           "type": "boolean",
           "default": true,
           "description": "Show parameter names in function calls"
         },
-        "ravensone.formatOnSave": {
+        "jounce.formatOnSave": {
           "type": "boolean",
           "default": false,
           "description": "Automatically format files on save"
         },
-        "ravensone.trace.server": {
+        "jounce.trace.server": {
           "type": "string",
           "enum": [
             "off",
@@ -122,7 +122,7 @@
             "verbose"
           ],
           "default": "off",
-          "description": "Traces the communication between VS Code and the RavensOne language server"
+          "description": "Traces the communication between VS Code and the Jounce language server"
         }
       }
     }

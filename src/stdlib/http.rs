@@ -1,4 +1,4 @@
-/// HTTP client for RavensOne
+/// HTTP client for Jounce
 ///
 /// Provides type-safe HTTP requests with async/await support
 /// Works on both client (fetch API) and server (native HTTP)
@@ -427,11 +427,11 @@ mod tests {
     fn test_http_client() {
         let client = HttpClient::new()
             .with_base_url("https://api.example.com".to_string())
-            .with_header("User-Agent".to_string(), "RavensOne/1.0".to_string());
+            .with_header("User-Agent".to_string(), "Jounce/1.0".to_string());
 
         let req = client.get("/users");
         assert_eq!(req.url, "https://api.example.com/users");
-        assert_eq!(req.headers.get("User-Agent").unwrap(), "RavensOne/1.0");
+        assert_eq!(req.headers.get("User-Agent").unwrap(), "Jounce/1.0");
     }
 
     // Integration tests (require network access)
@@ -454,7 +454,7 @@ mod tests {
     #[ignore = "requires external service (httpbin.org)"]
     async fn test_post_json() {
         let json_body = serde_json::json!({
-            "name": "RavensOne",
+            "name": "Jounce",
             "version": "1.0"
         });
 
@@ -470,14 +470,14 @@ mod tests {
 
         // Parse response JSON
         let response_json = resp.json().expect("Failed to parse JSON");
-        assert!(response_json["json"]["name"].as_str().unwrap() == "RavensOne");
+        assert!(response_json["json"]["name"].as_str().unwrap() == "Jounce");
     }
 
     #[tokio::test]
     #[ignore = "requires external service (httpbin.org)"]
     async fn test_custom_headers() {
         let resp = HttpRequest::get("https://httpbin.org/headers")
-            .header("X-Custom-Header".to_string(), "RavensOne".to_string())
+            .header("X-Custom-Header".to_string(), "Jounce".to_string())
             .send()
             .await
             .expect("Failed to make request with headers");
@@ -488,7 +488,7 @@ mod tests {
         assert!(response_json["headers"]["X-Custom-Header"]
             .as_str()
             .unwrap()
-            .contains("RavensOne"));
+            .contains("Jounce"));
     }
 
     #[tokio::test]

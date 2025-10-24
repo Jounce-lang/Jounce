@@ -4,7 +4,7 @@
 /// functions that can fail in a predictable way. This is similar to Rust's Result type
 /// and provides a type-safe way to handle errors without exceptions.
 
-/// Result type definition in RavensOne syntax
+/// Result type definition in Jounce syntax
 pub const RESULT_DEFINITION: &str = r#"
 // The Result type - a type that represents either success (Ok) or an error (Err)
 enum Result<T, E> {

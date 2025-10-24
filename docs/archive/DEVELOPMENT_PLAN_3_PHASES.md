@@ -1,4 +1,4 @@
-# RavensOne Development Plan - 3 Phases
+# Jounce Development Plan - 3 Phases
 
 **Created**: 2025-10-20
 **Current Status**: Phase 7 - Building Examples (85% overall complete)
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-RavensOne is 85% complete with a solid compiler foundation, complete standard library, and deployed package ecosystem. However, research reveals critical gaps that must be addressed before v1.0 launch:
+Jounce is 85% complete with a solid compiler foundation, complete standard library, and deployed package ecosystem. However, research reveals critical gaps that must be addressed before v1.0 launch:
 
 ### Critical Issues Discovered
 1. ❌ **Test Suite Failing** - Cargo tests show 6 compilation errors despite STATUS.md claiming 178 passing tests
@@ -31,7 +31,7 @@ This 3-phase plan focuses on:
 - **Standard Library**: 100% complete (9 modules: option, result, vec, json, time, hashmap, string, fs, iterator)
 - **Annotation System**: @server/@client code splitting functional
 - **RPC Generation**: Automatic client/server communication working
-- **Package Ecosystem**: Registry deployed at ravensone-registry.fly.dev with 4 seed packages
+- **Package Ecosystem**: Registry deployed at jounce-registry.fly.dev with 4 seed packages
 - **Developer Tools**: HMR, package manager CLI, VSCode extension, LSP basics
 
 ### ❌ Critical Gaps
@@ -62,7 +62,7 @@ This 3-phase plan focuses on:
 
 ### 📈 Metrics
 - **Total Code**: ~16,000+ lines (compiler + stdlib + packages)
-- **Examples**: 70+ .raven files (many non-functional due to JSX)
+- **Examples**: 70+ .jnc files (many non-functional due to JSX)
 - **Test Coverage**: Unknown (tests currently broken)
 - **Compilation Speed**: 15.2µs average (excellent)
 - **Documentation**: Comprehensive (README, GETTING_STARTED, FULLSTACK_GUIDE)
@@ -203,7 +203,7 @@ component Button(label: String) {
 }
 ```
 
-**Deliverable**: Component compilation working, examples/counter_app.raven compiles
+**Deliverable**: Component compilation working, examples/counter_app.jnc compiles
 
 ### Week 3: Complete Core Features
 
@@ -320,7 +320,7 @@ component Button(label: String) {
 **Example**:
 ```
 error[E042]: Server function called from server context
-  --> src/main.raven:15:20
+  --> src/main.jnc:15:20
    |
 15 |     let data = get_users();  // @server function
    |                ^^^^^^^^^^^^ Cannot call @server from @server
@@ -438,7 +438,7 @@ component LoginForm() { ... }
 ```
 
 **Deliverable**:
-- Full working app deployed at todos.ravensone.dev
+- Full working app deployed at todos.jounce.dev
 - Complete tutorial walkthrough
 - Video demo (5-10 minutes)
 
@@ -455,7 +455,7 @@ component LoginForm() { ... }
 - Syntax highlighting for code blocks
 
 **Deliverable**:
-- Working blog deployed at blog.ravensone.dev
+- Working blog deployed at blog.jounce.dev
 - Tutorial documentation
 
 #### 3.3 E-commerce Store (Days 64-70)
@@ -471,7 +471,7 @@ component LoginForm() { ... }
 - Email notifications
 
 **Deliverable**:
-- Demo store deployed at shop.ravensone.dev
+- Demo store deployed at shop.jounce.dev
 - Integration guide for Stripe
 
 ### Week 10-11: Documentation & Content
@@ -505,7 +505,7 @@ component LoginForm() { ... }
   - From Next.js
 - [ ] Add code examples to all docs (100+ examples)
 
-**Deliverable**: Comprehensive documentation site at docs.ravensone.dev
+**Deliverable**: Comprehensive documentation site at docs.jounce.dev
 
 #### 3.5 Tutorial Content (Days 78-84)
 **Priority**: P0
@@ -516,16 +516,16 @@ component LoginForm() { ... }
 - [ ] Write "Full-Stack Forms Made Easy" guide
 - [ ] Write "Real-time Apps with WebSockets" guide
 - [ ] Create video tutorial series (5-7 videos):
-  1. Introduction to RavensOne (10 min)
+  1. Introduction to Jounce (10 min)
   2. Your First Component (15 min)
   3. Server Functions and RPC (20 min)
   4. Building a Todo App (30 min)
   5. State Management (15 min)
   6. Forms and Validation (20 min)
   7. Deployment to Production (15 min)
-- [ ] Create interactive playground at play.ravensone.dev
+- [ ] Create interactive playground at play.jounce.dev
 - [ ] Write blog post series:
-  - "Introducing RavensOne: Full-Stack in One File"
+  - "Introducing Jounce: Full-Stack in One File"
   - "Why We Built a New Language for AI-Assisted Development"
   - "Compiling to WebAssembly: Lessons Learned"
   - "The Future of Full-Stack Development"
@@ -582,16 +582,16 @@ component LoginForm() { ... }
 - [ ] 10+ tutorial videos
 - [ ] Package registry fully operational
 - [ ] VSCode extension published
-- [ ] Website deployed at ravensone.dev:
+- [ ] Website deployed at jounce.dev:
   - Landing page
   - Documentation
   - Examples
   - Playground
   - Blog
 - [ ] Social media accounts setup:
-  - Twitter: @ravensone_lang
-  - Discord: discord.gg/ravensone
-  - Reddit: r/ravensone
+  - Twitter: @jounce_lang
+  - Discord: discord.gg/jounce
+  - Reddit: r/jounce
 - [ ] Launch blog post written
 - [ ] Press kit prepared
 - [ ] Submit to:
@@ -762,5 +762,5 @@ Complete Phase 1 - Foundation & Stabilization
 
 **Document Status**: Strategic plan created 2025-10-20
 **Next Review**: After Phase 1 completion
-**Owner**: RavensOne Core Team
+**Owner**: Jounce Core Team
 **Priority**: P0 - Execute immediately

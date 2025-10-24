@@ -1,4 +1,4 @@
-# RavensOne Examples
+# Jounce Examples
 
 A comprehensive collection of examples that progress from absolute basics to advanced full-stack applications.
 
@@ -9,91 +9,91 @@ Examples are organized by difficulty and concept, with each category building on
 ### 01-basics/ - Absolute Fundamentals
 **Difficulty**: Beginner | **Lines**: 5-20 per example | **Time**: 30-60 mins total
 
-Start here if you're new to RavensOne! These examples introduce one concept at a time.
+Start here if you're new to Jounce! These examples introduce one concept at a time.
 
-1. **01_hello_world.raven** - Your first program: println! macro
-2. **02_variables_let.raven** - Variable bindings with let
-3. **03_variables_mut.raven** - Mutable variables with mut
-4. **04_integers.raven** - Integer arithmetic (+, -, *, /)
-5. **05_strings.raven** - String literals and formatting
-6. **06_booleans.raven** - Boolean values and comparisons
-7. **07_simple_function.raven** - Functions with parameters
-8. **08_function_return.raven** - Explicit return statements
-9. **09_implicit_return.raven** - Implicit returns (Rust-style)
-10. **10_comments.raven** - Comment syntax and best practices
+1. **01_hello_world.jnc** - Your first program: println! macro
+2. **02_variables_let.jnc** - Variable bindings with let
+3. **03_variables_mut.jnc** - Mutable variables with mut
+4. **04_integers.jnc** - Integer arithmetic (+, -, *, /)
+5. **05_strings.jnc** - String literals and formatting
+6. **06_booleans.jnc** - Boolean values and comparisons
+7. **07_simple_function.jnc** - Functions with parameters
+8. **08_function_return.jnc** - Explicit return statements
+9. **09_implicit_return.jnc** - Implicit returns (Rust-style)
+10. **10_comments.jnc** - Comment syntax and best practices
 
 ### 02-control-flow/ - Making Decisions
 **Difficulty**: Beginner-Intermediate | **Lines**: 20-40 per example | **Time**: 1-2 hours
 
 Learn how to control program flow with conditions and loops.
 
-1. **01_simple_if.raven** - Simple if without else
-2. **02_if_else.raven** - If/else with both branches
-3. **03_if_else_expression.raven** - If/else as an expression
-4. **04_nested_if_2_levels.raven** - Two levels of nested if/else
-5. **05_nested_if_3_levels.raven** - Three levels of nested if/else
-6. **06_for_loop_exclusive.raven** - For loop with exclusive range (1..10)
-7. **07_for_loop_inclusive.raven** - For loop with inclusive range (1..=10)
-8. **08_while_loop.raven** - While loop with counter
-9. **09_match_simple.raven** - Basic match expression
-10. **10_arrays.raven** - Array creation and indexing
+1. **01_simple_if.jnc** - Simple if without else
+2. **02_if_else.jnc** - If/else with both branches
+3. **03_if_else_expression.jnc** - If/else as an expression
+4. **04_nested_if_2_levels.jnc** - Two levels of nested if/else
+5. **05_nested_if_3_levels.jnc** - Three levels of nested if/else
+6. **06_for_loop_exclusive.jnc** - For loop with exclusive range (1..10)
+7. **07_for_loop_inclusive.jnc** - For loop with inclusive range (1..=10)
+8. **08_while_loop.jnc** - While loop with counter
+9. **09_match_simple.jnc** - Basic match expression
+10. **10_arrays.jnc** - Array creation and indexing
 
 ### 03-functions/ - Advanced Functions
 **Difficulty**: Intermediate | **Lines**: 30-50 per example | **Time**: 2-3 hours
 
 Master function concepts including recursion and closures.
 
-1. **01_factorial_recursion.raven** - Classic factorial recursion
-2. **02_fibonacci_recursion.raven** - Fibonacci sequence with recursion
-3. **03_mutual_recursion.raven** - Even/odd with mutual recursion
-4. **04_higher_order_map.raven** - Map pattern (transforming arrays)
-5. **05_higher_order_filter.raven** - Filter pattern (predicates)
-6. **06_closures_basic.raven** - Basic closures and variable capture
-7. **07_closures_typed.raven** - Closures with type annotations
-8. **08_function_composition.raven** - Composing and chaining functions
+1. **01_factorial_recursion.jnc** - Classic factorial recursion
+2. **02_fibonacci_recursion.jnc** - Fibonacci sequence with recursion
+3. **03_mutual_recursion.jnc** - Even/odd with mutual recursion
+4. **04_higher_order_map.jnc** - Map pattern (transforming arrays)
+5. **05_higher_order_filter.jnc** - Filter pattern (predicates)
+6. **06_closures_basic.jnc** - Basic closures and variable capture
+7. **07_closures_typed.jnc** - Closures with type annotations
+8. **08_function_composition.jnc** - Composing and chaining functions
 
 ### 04-patterns/ - Error Handling
 **Difficulty**: Intermediate | **Lines**: 40-60 per example | **Time**: 2-3 hours
 
-Learn RavensOne's powerful pattern matching and error handling.
+Learn Jounce's powerful pattern matching and error handling.
 
-1. **01_option_basic.raven** - Basic Option<T> with Some/None
-2. **02_option_pattern_match.raven** - Pattern matching on Option
-3. **03_result_basic.raven** - Result<T,E> for error handling
-4. **04_result_pattern_match.raven** - Pattern matching with Result
-5. **05_try_operator.raven** - Try operator (?) for error propagation
-6. **06_nested_patterns.raven** - Nested Option<Result<T,E>> patterns
-7. **07_combining_results.raven** - Combining multiple Result operations
-8. **08_real_world_errors.raven** - Real-world error handling pipeline
+1. **01_option_basic.jnc** - Basic Option<T> with Some/None
+2. **02_option_pattern_match.jnc** - Pattern matching on Option
+3. **03_result_basic.jnc** - Result<T,E> for error handling
+4. **04_result_pattern_match.jnc** - Pattern matching with Result
+5. **05_try_operator.jnc** - Try operator (?) for error propagation
+6. **06_nested_patterns.jnc** - Nested Option<Result<T,E>> patterns
+7. **07_combining_results.jnc** - Combining multiple Result operations
+8. **08_real_world_errors.jnc** - Real-world error handling pipeline
 
 ### 05-advanced-types/ - Type System ✅
 **Difficulty**: Advanced | **Lines**: 50-80 per example | **Time**: 2-3 hours
 
-Explore RavensOne's advanced type system features.
+Explore Jounce's advanced type system features.
 
-1. **01_generic_functions.raven** - Generic functions with type parameters
-2. **02_generic_structs.raven** - Generic structs (Box, Pair, Container)
-3. **03_sized_arrays.raven** - Sized arrays [T; N] syntax
-4. **04_generic_algorithms.raven** - Generic algorithms (map, reduce, find)
-5. **05_generics_advanced.raven** - Advanced generics with higher-order functions
-6. **06_real_world_generics.raven** - Real-world leaderboard system
+1. **01_generic_functions.jnc** - Generic functions with type parameters
+2. **02_generic_structs.jnc** - Generic structs (Box, Pair, Container)
+3. **03_sized_arrays.jnc** - Sized arrays [T; N] syntax
+4. **04_generic_algorithms.jnc** - Generic algorithms (map, reduce, find)
+5. **05_generics_advanced.jnc** - Advanced generics with higher-order functions
+6. **06_real_world_generics.jnc** - Real-world leaderboard system
 
 ### 06-async/ - Asynchronous Programming ✅
 **Difficulty**: Advanced | **Lines**: 60-150 per example | **Time**: 2-3 hours
 
 Learn async/await and concurrent programming patterns.
 
-1. **01_async_basic.raven** - Async/await fundamentals (basic syntax)
-2. **02_async_functions.raven** - Async functions with return values
-3. **03_concurrent_operations.raven** - Sequential vs concurrent patterns
-4. **04_async_error_handling.raven** - Async with Result<T,E> and Option<T>
-5. **05_async_loops.raven** - Using async operations in loops
-6. **06_real_world_async.raven** - Complete async data pipeline
+1. **01_async_basic.jnc** - Async/await fundamentals (basic syntax)
+2. **02_async_functions.jnc** - Async functions with return values
+3. **03_concurrent_operations.jnc** - Sequential vs concurrent patterns
+4. **04_async_error_handling.jnc** - Async with Result<T,E> and Option<T>
+5. **05_async_loops.jnc** - Using async operations in loops
+6. **06_real_world_async.jnc** - Complete async data pipeline
 
 ### 07-fullstack/ - Full-Stack Features
 **Difficulty**: Advanced | **Lines**: 100-200 per example
 
-Discover RavensOne's unique full-stack capabilities.
+Discover Jounce's unique full-stack capabilities.
 
 - @server and @client annotations
 - Automatic RPC generation
@@ -120,7 +120,7 @@ Complete applications demonstrating best practices.
 
 ```bash
 # Compile an example
-raven compile examples/01-basics/01_hello_world.raven
+raven compile examples/01-basics/01_hello_world.jnc
 
 # Run the compiled output
 cd dist && node server.js
@@ -130,7 +130,7 @@ cd dist && node server.js
 
 ```bash
 # Test all basics examples
-for file in examples/01-basics/*.raven; do
+for file in examples/01-basics/*.jnc; do
     echo "Running: $file"
     raven compile "$file"
     cd dist && node server.js
@@ -142,7 +142,7 @@ done
 
 ```bash
 # Auto-recompile on file changes
-raven watch examples/01-basics/01_hello_world.raven
+raven watch examples/01-basics/01_hello_world.jnc
 ```
 
 ## 📖 Learning Path
@@ -152,13 +152,13 @@ raven watch examples/01-basics/01_hello_world.raven
 2. Move to **02-control-flow** (if/else, loops)
 3. Practice **03-functions** (recursion, closures)
 
-### Experienced Developer (Learning RavensOne)
+### Experienced Developer (Learning Jounce)
 1. Skim **01-basics** for syntax differences
 2. Focus on **04-patterns** (Option, Result, match)
 3. Explore **05-advanced-types** (generics, traits)
-4. Try **07-fullstack** (unique RavensOne features)
+4. Try **07-fullstack** (unique Jounce features)
 
-### LLM Training (AI Learning RavensOne)
+### LLM Training (AI Learning Jounce)
 1. Process all examples in order (01-basics → 08-apps)
 2. Each example demonstrates one concept clearly
 3. Comments explain WHY not just WHAT
@@ -169,7 +169,7 @@ raven watch examples/01-basics/01_hello_world.raven
 Each example follows a consistent structure:
 
 ```raven
-// examples/category/example_name.raven
+// examples/category/example_name.jnc
 //
 // CONCEPT: What this example teaches
 // DIFFICULTY: Beginner/Intermediate/Advanced
@@ -201,7 +201,7 @@ All examples serve as compiler tests. To verify all examples compile:
 ./scripts/test_examples.sh
 
 # Or manually:
-find examples -name "*.raven" -exec raven compile {} \;
+find examples -name "*.jnc" -exec raven compile {} \;
 ```
 
 ## 📊 Statistics

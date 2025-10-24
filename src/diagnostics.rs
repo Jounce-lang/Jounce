@@ -1,4 +1,4 @@
-// Enhanced Diagnostics and Error Reporting for RavensOne
+// Enhanced Diagnostics and Error Reporting for Jounce
 // Beautiful, helpful error messages with colors, context, and suggestions
 
 use crate::token::Token;
@@ -329,7 +329,7 @@ impl DiagnosticBuilder {
         Diagnostic::error(message)
             .at(location)
             .with_code("E005")
-            .with_note("RavensOne enforces memory safety through borrow checking")
+            .with_note("Jounce enforces memory safety through borrow checking")
     }
 
     /// Invalid JSX error
@@ -670,7 +670,7 @@ mod tests {
     fn test_diagnostic_display() {
         let diag = Diagnostic::error("type mismatch")
             .at(SourceLocation {
-                file: "test.raven".to_string(),
+                file: "test.jnc".to_string(),
                 line: 10,
                 column: 5,
                 length: 3,
@@ -681,7 +681,7 @@ mod tests {
         let output = diag.display(None);
         assert!(output.contains("error"));
         assert!(output.contains("type mismatch"));
-        assert!(output.contains("test.raven:10:5"));
+        assert!(output.contains("test.jnc:10:5"));
         assert!(output.contains("help"));
     }
 
@@ -719,7 +719,7 @@ mod tests {
     fn test_source_snippet_formatting() {
         let source = "let x = 10;\nlet y = 20;\nlet z = x + y;";
         let loc = SourceLocation {
-            file: "test.raven".to_string(),
+            file: "test.jnc".to_string(),
             line: 2,
             column: 5,
             length: 1,

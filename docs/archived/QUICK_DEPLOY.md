@@ -1,6 +1,6 @@
-# 🚀 Quick Deploy Guide - Deploy .raven Files to Vercel
+# 🚀 Quick Deploy Guide - Deploy .jnc Files to Vercel
 
-**Complete step-by-step instructions for compiling and deploying RavensOne source code**
+**Complete step-by-step instructions for compiling and deploying Jounce source code**
 
 ---
 
@@ -10,10 +10,10 @@
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/ravensone.git
-cd ravensone
+git clone https://github.com/YOUR_USERNAME/jounce.git
+cd jounce
 
-# Build the RavensOne compiler
+# Build the Jounce compiler
 cargo build --release
 
 # Verify it works
@@ -22,19 +22,19 @@ cargo build --release
 
 You should see:
 ```
-RavensOne Compiler v0.1.0
+Jounce Compiler v0.1.0
 ```
 
 ---
 
-### Step 2: Compile .raven File to WebAssembly (1 minute)
+### Step 2: Compile .jnc File to WebAssembly (1 minute)
 
 ```bash
 # Run the build script
-./scripts/build-for-deployment.sh examples/analytics_dashboard.raven
+./scripts/build-for-deployment.sh examples/analytics_dashboard.jnc
 ```
 
-This compiles your `.raven` source to:
+This compiles your `.jnc` source to:
 - ✅ Client WebAssembly (`app.wasm`)
 - ✅ Server WebAssembly for SSR (`app_ssr.wasm`)
 - ✅ Optimized HTML with hydration
@@ -42,7 +42,7 @@ This compiles your `.raven` source to:
 
 Output:
 ```
-🚀 RavensOne Deployment Builder
+🚀 Jounce Deployment Builder
 ✅ Build Complete!
 📦 Deployment package created at: dist/deployment
 ```
@@ -65,9 +65,9 @@ vercel login
 vercel --prod
 ```
 
-**Done!** You'll get a URL like: `https://ravensone-app.vercel.app`
+**Done!** You'll get a URL like: `https://jounce-app.vercel.app`
 
-Your `.raven` file is now compiled to WebAssembly and live on the internet! 🎉
+Your `.jnc` file is now compiled to WebAssembly and live on the internet! 🎉
 
 ---
 
@@ -81,7 +81,7 @@ Your `.raven` file is now compiled to WebAssembly and live on the internet! 🎉
    - Click "Add New..." → "Project"
    - Click "Import Git Repository"
    - Authorize GitHub access
-   - Select your `ravensone` repository
+   - Select your `jounce` repository
 
 3. **Configure Deployment**
    - **Root Directory**: Set to `examples`
@@ -99,11 +99,11 @@ Your `.raven` file is now compiled to WebAssembly and live on the internet! 🎉
 ## 🎯 Complete File Structure
 
 ```
-ravensone/
+jounce/
 ├── examples/                          ← Deploy this directory!
 │   ├── run_dashboard.html            ← Main app (entry point)
 │   ├── analytics_dashboard.css       ← Styling
-│   ├── analytics_dashboard.raven     ← Source code (RavensOne)
+│   ├── analytics_dashboard.jnc     ← Source code (Jounce)
 │   ├── vercel.json                   ← Vercel config ✓
 │   ├── package.json                  ← NPM config ✓
 │   ├── README.md                     ← Quick start ✓
@@ -111,7 +111,7 @@ ravensone/
 │   ├── HOW_TO_RUN.md                ← Running instructions ✓
 │   └── ANALYTICS_README.md           ← Architecture details ✓
 │
-├── src/                               ← RavensOne compiler source
+├── src/                               ← Jounce compiler source
 │   ├── reactive.rs                   ← Reactive system (550+ lines)
 │   ├── ssr.rs                        ← SSR engine (292 lines)
 │   ├── hydration.rs                  ← Hydration system (289 lines)
@@ -149,8 +149,8 @@ Before deploying, ensure:
 
 ```bash
 # Clone repository
-git clone https://github.com/YOUR_USERNAME/ravensone.git
-cd ravensone/examples
+git clone https://github.com/YOUR_USERNAME/jounce.git
+cd jounce/examples
 
 # Test locally
 open run_dashboard.html
@@ -164,7 +164,7 @@ vercel --prod
 **Expected Output:**
 ```
 🔍 Inspect: https://vercel.com/...
-✅ Production: https://ravensone-analytics-dashboard.vercel.app
+✅ Production: https://jounce-analytics-dashboard.vercel.app
 ```
 
 ---
@@ -272,8 +272,8 @@ After deployment to Vercel:
 
 **1. Clone and Navigate (0:00 - 0:30)**
 ```bash
-git clone https://github.com/YOUR_USERNAME/ravensone.git
-cd ravensone/examples
+git clone https://github.com/YOUR_USERNAME/jounce.git
+cd jounce/examples
 ls -la
 ```
 
@@ -311,8 +311,8 @@ vercel --prod
 For advanced users:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ravensone.git && \
-cd ravensone/examples && \
+git clone https://github.com/YOUR_USERNAME/jounce.git && \
+cd jounce/examples && \
 npm install -g vercel && \
 vercel login && \
 vercel --prod
@@ -413,7 +413,7 @@ After deployment, verify:
 
 Tweet template:
 ```
-🚀 Just deployed my first RavensOne app to @vercel!
+🚀 Just deployed my first Jounce app to @vercel!
 
 Live demo: [YOUR_URL]
 
@@ -423,7 +423,7 @@ Features:
 ✨ Server-side rendering
 ✨ Progressive hydration
 
-#RavensOne #WebAssembly #Vercel #WebDev
+#Jounce #WebAssembly #Vercel #WebDev
 ```
 
 ---
@@ -434,9 +434,9 @@ Features:
 - Docs: https://vercel.com/docs
 - Support: support@vercel.com
 
-**RavensOne Issues:**
-- GitHub: https://github.com/ravensone/ravensone/issues
-- Discussions: https://github.com/ravensone/ravensone/discussions
+**Jounce Issues:**
+- GitHub: https://github.com/jounce/jounce/issues
+- Discussions: https://github.com/jounce/jounce/discussions
 
 **General Questions:**
 - Check `DEPLOYMENT_GUIDE.md` for detailed instructions
@@ -459,7 +459,7 @@ Features:
 - Add your custom domain
 - Integrate real APIs
 - Share with your team
-- Build more RavensOne apps!
+- Build more Jounce apps!
 
 ---
 
@@ -467,7 +467,7 @@ Features:
 **Cost**: $0 (free tier)
 **Result**: Production-ready app with global CDN
 
-🎉 **Congratulations!** Your RavensOne Analytics Dashboard is live!
+🎉 **Congratulations!** Your Jounce Analytics Dashboard is live!
 
 ---
 

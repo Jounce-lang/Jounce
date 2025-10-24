@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * RavensOne Hot Module Reloading (HMR) Dev Server
+ * Jounce Hot Module Reloading (HMR) Dev Server
  *
  * Watches files for changes and notifies browser clients via WebSocket
  * Enables live updates without losing application state
@@ -26,12 +26,12 @@ class HMRServer {
      * Start the HMR server
      */
     start() {
-        console.log('🔥 Starting RavensOne HMR Server...\n');
+        console.log('🔥 Starting Jounce HMR Server...\n');
 
         // Create HTTP server for WebSocket upgrade
         this.httpServer = http.createServer((req, res) => {
             res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('RavensOne HMR Server Running\n');
+            res.end('Jounce HMR Server Running\n');
         });
 
         // Create WebSocket server

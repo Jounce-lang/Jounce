@@ -1,14 +1,14 @@
-# RavensOne Package Manifest Specification
+# Jounce Package Manifest Specification
 
 **Version**: 1.0.0
 **Format**: TOML
-**Filename**: `raven.toml`
+**Filename**: `jounce.toml`
 
 ---
 
 ## Overview
 
-The `raven.toml` file is the package manifest for RavensOne projects. It defines project metadata, dependencies, build configuration, and deployment settings.
+The `jounce.toml` file is the package manifest for Jounce projects. It defines project metadata, dependencies, build configuration, and deployment settings.
 
 ## File Structure
 
@@ -54,14 +54,14 @@ authors = ["Name <email@example.com>"]  # List of authors
 
 ```toml
 [package]
-description = "A full-stack app built with RavensOne"
+description = "A full-stack app built with Jounce"
 homepage = "https://example.com"
 repository = "https://github.com/user/repo"
 license = "MIT"
 keywords = ["web", "fullstack", "reactive"]
 categories = ["web-programming", "gui"]
 readme = "README.md"
-edition = "2025"             # RavensOne edition (default: 2025)
+edition = "2025"             # Jounce edition (default: 2025)
 ```
 
 ### Example
@@ -139,7 +139,7 @@ Build configuration and compiler options.
 ```toml
 [build]
 target = "wasm32-unknown-unknown"    # Compilation target
-entry = "src/main.raven"             # Entry point file
+entry = "src/main.jnc"             # Entry point file
 output-dir = "dist"                  # Output directory
 
 # Optimization settings
@@ -161,7 +161,7 @@ chunk-size-limit = 500               # Max chunk size in KB
 ```toml
 [build]
 target = "wasm32-unknown-unknown"
-entry = "src/app.raven"
+entry = "src/app.jnc"
 output-dir = "build"
 optimize = true
 minify = true
@@ -242,7 +242,7 @@ inline-threshold = 25             # Inline functions < 25 lines
 name = "ecommerce-app"
 version = "2.1.0"
 authors = ["Dev Team <dev@company.com>"]
-description = "Full-stack e-commerce platform built with RavensOne"
+description = "Full-stack e-commerce platform built with Jounce"
 homepage = "https://shop.example.com"
 repository = "https://github.com/company/ecommerce"
 license = "MIT"
@@ -263,7 +263,7 @@ raven-bench = "^0.3.0"
 
 [build]
 target = "wasm32-unknown-unknown"
-entry = "src/main.raven"
+entry = "src/main.jnc"
 output-dir = "dist"
 optimize = true
 minify = true
@@ -312,7 +312,7 @@ The lock file ensures reproducible builds by locking exact dependency versions.
 [[package]]
 name = "raven-ui"
 version = "1.2.5"
-source = "registry+https://registry.ravensone.dev/"
+source = "registry+https://registry.jounce.dev/"
 checksum = "a3f9b8c7e2d1..."
 dependencies = []
 
@@ -320,7 +320,7 @@ dependencies = []
 name = "my-app"
 version = "2.1.0"
 dependencies = [
-    "raven-ui 1.2.5 (registry+https://registry.ravensone.dev/)",
+    "raven-ui 1.2.5 (registry+https://registry.jounce.dev/)",
 ]
 ```
 
@@ -346,7 +346,7 @@ raven pkg update --latest
 
 For multi-package projects (monorepos).
 
-### Workspace `raven.toml`
+### Workspace `jounce.toml`
 
 ```toml
 [workspace]
@@ -367,7 +367,7 @@ exclude = [
 raven-utils = "0.3.0"
 ```
 
-### Member Package `raven.toml`
+### Member Package `jounce.toml`
 
 ```toml
 [package]
@@ -431,7 +431,7 @@ raven pkg search --keyword reactive
 
 ### Publishing Requirements
 
-1. Valid `raven.toml` with required fields
+1. Valid `jounce.toml` with required fields
 2. Semantic version number
 3. README.md file
 4. License specified
@@ -440,7 +440,7 @@ raven pkg search --keyword reactive
 ### Registry URL
 
 ```
-https://registry.ravensone.dev/
+https://registry.jounce.dev/
 ```
 
 ### Authentication
@@ -497,7 +497,7 @@ raven pkg login
 ```
 
 ```toml
-# raven.toml
+# jounce.toml
 [package]
 name = "my-app"
 version = "1.0.0"
@@ -519,7 +519,7 @@ serde = "1.0"
 ```
 
 ```toml
-# raven.toml (very similar!)
+# jounce.toml (very similar!)
 [package]
 name = "my-app"
 version = "1.0.0"

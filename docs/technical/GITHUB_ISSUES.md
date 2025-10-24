@@ -1,4 +1,4 @@
-# GitHub Issues Tracker - RavensOne TODOs
+# GitHub Issues Tracker - Jounce TODOs
 
 **Generated**: 2025-10-20 (Day 2)
 **Source**: Codebase analysis from DEVELOPMENT_PLAN_3_PHASES.md
@@ -24,9 +24,9 @@ JSX/Component syntax is documented but not implemented. All component-based exam
 - dist/client-runtime.js - Need createElement helpers
 
 **Affected Examples** (15+ files):
-- examples/todo_app.raven
-- examples/analytics_dashboard.raven
-- examples/devboard/src/main.raven
+- examples/todo_app.jnc
+- examples/analytics_dashboard.jnc
+- examples/devboard/src/main.jnc
 - All other component-based examples
 
 **Acceptance Criteria**:

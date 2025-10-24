@@ -1,13 +1,13 @@
 # ShopOne - E-Commerce Platform
 
-A full-featured e-commerce platform built with RavensOne.
+A full-featured e-commerce platform built with Jounce.
 
-![ShopOne](https://img.shields.io/badge/RavensOne-Example-6366f1)
+![ShopOne](https://img.shields.io/badge/Jounce-Example-6366f1)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## 🎯 Overview
 
-ShopOne demonstrates a production-ready e-commerce application built with RavensOne, showcasing:
+ShopOne demonstrates a production-ready e-commerce application built with Jounce, showcasing:
 
 - **Product Catalog** - Browse products with filtering, search, and categories
 - **Shopping Cart** - Add, update, and remove items with persistent state
@@ -28,7 +28,7 @@ ShopOne demonstrates a production-ready e-commerce application built with Ravens
 - **Review System** - Submit and retrieve product reviews
 - **PostgreSQL** - Relational database with proper indexes
 
-### Frontend (RavensOne)
+### Frontend (Jounce)
 - **Product Catalog** - Grid layout with lazy loading
 - **Cart State** - Global cart with raven-store
 - **Checkout Wizard** - Multi-step form with validation
@@ -78,7 +78,7 @@ ShopOne demonstrates a production-ready e-commerce application built with Ravens
 
 - Rust 1.70+
 - PostgreSQL 14+
-- RavensOne CLI
+- Jounce CLI
 
 ### Backend Setup
 
@@ -246,10 +246,10 @@ MIT License - see LICENSE file for details
 
 ## 🔗 Links
 
-- [RavensOne Documentation](https://ravensone-docs.fly.dev)
-- [Package Registry](https://ravensone-registry.fly.dev)
-- [GitHub Repository](https://github.com/ravensone/ravensone)
+- [Jounce Documentation](https://jounce-docs.fly.dev)
+- [Package Registry](https://jounce-registry.fly.dev)
+- [GitHub Repository](https://github.com/jounce/jounce)
 
 ---
 
-Built with ❤️ using [RavensOne](https://ravensone.dev)
+Built with ❤️ using [Jounce](https://jounce.dev)

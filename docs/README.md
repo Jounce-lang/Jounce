@@ -1,12 +1,12 @@
-# RavensOne Documentation Index
+# Jounce Documentation Index
 
-Welcome to the RavensOne documentation! This index helps you navigate all available documentation.
+Welcome to the Jounce documentation! This index helps you navigate all available documentation.
 
 ---
 
 ## 📚 Getting Started
 
-**Start here if you're new to RavensOne:**
+**Start here if you're new to Jounce:**
 
 - [Main README](../README.md) - Project overview and quick start
 - [Getting Started Guide](../GETTING_STARTED.md) - Step-by-step tutorial

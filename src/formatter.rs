@@ -1,6 +1,6 @@
-/// RavensOne Code Formatter
+/// Jounce Code Formatter
 ///
-/// Provides automatic code formatting for .raven files with consistent, opinionated style.
+/// Provides automatic code formatting for .jnc files with consistent, opinionated style.
 /// Formats all language features including JSX, pattern matching, and async/await.
 
 use crate::ast::*;

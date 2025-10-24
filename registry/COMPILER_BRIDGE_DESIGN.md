@@ -1,13 +1,13 @@
 # Compiler Bridge Architecture Design
 
-**Goal**: Enable writing `.raven` files that automatically split into server.js + client.js + app.wasm
+**Goal**: Enable writing `.jnc` files that automatically split into server.js + client.js + app.wasm
 
 ---
 
 ## 🏗️ Architecture Overview
 
 ```
-app.raven
+app.jnc
     ↓
 ┌─────────────────────┐
 │  1. Lexer/Parser    │ → Parse @server/@client annotations
@@ -379,7 +379,7 @@ impl JSEmitter {
     }
 
     fn emit_function(&self, func: &Function) -> String {
-        // Convert RavensOne function to JavaScript
+        // Convert Jounce function to JavaScript
         // This is a simplified version - full implementation would be more complex
         format!("function {}() {{\n    // TODO: Emit function body\n}}\n\n", func.name)
     }
@@ -437,7 +437,7 @@ fn compile_fullstack(input_file: &str) {
 
 ## 🧪 End-to-End Test
 
-**Test File**: `examples/first_fullstack_app.raven`
+**Test File**: `examples/first_fullstack_app.jnc`
 
 ```raven
 // Server function
@@ -470,7 +470,7 @@ component Greeter() {
 
 **Compile**:
 ```bash
-cargo run -- examples/first_fullstack_app.raven
+cargo run -- examples/first_fullstack_app.jnc
 # Generates: server.js, client.js, app.wasm
 ```
 
@@ -485,7 +485,7 @@ node server.js  # Start server on :3000
 
 ## ✅ Success Criteria
 
-1. Can write `.raven` files with `@server` and `@client` annotations
+1. Can write `.jnc` files with `@server` and `@client` annotations
 2. Compiler generates `server.js`, `client.js`, and `app.wasm`
 3. Server functions are accessible via RPC from client
 4. Type checking works across server/client boundary

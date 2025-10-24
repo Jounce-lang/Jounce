@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RavensOne Counter Example</title>
+    <title>Jounce Counter Example</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -67,35 +67,35 @@
 </head>
 <body>
     <div class="header">
-        <h1>🔥 RavensOne</h1>
+        <h1>🔥 Jounce</h1>
         <p>The Full-Stack Language for Human-AI Collaboration</p>
     </div>
 
     <div id="status" class="status">
-        Loading RavensOne runtime...
+        Loading Jounce runtime...
     </div>
 
     <div id="app"></div>
 
     <script src="../dist/reactive-runtime.js"></script>
-    <script src="ravensone.js"></script>
+    <script src="jounce.js"></script>
     <script>
         async function main() {
             try {
-                // Initialize the RavensOne runtime
-                const runtime = new RavensOneRuntime();
+                // Initialize the Jounce runtime
+                const runtime = new JounceRuntime();
                 await runtime.init('../examples/counter-v2.wasm', 'app');
 
                 // Mount the Counter component
                 runtime.mount('Counter');
 
                 // Update status
-                document.getElementById('status').textContent = '✅ RavensOne runtime loaded successfully!';
+                document.getElementById('status').textContent = '✅ Jounce runtime loaded successfully!';
                 document.getElementById('status').style.background = '#d4edda';
 
-                console.log('🔥 RavensOne app mounted successfully!');
+                console.log('🔥 Jounce app mounted successfully!');
             } catch (error) {
-                console.error('Failed to initialize RavensOne:', error);
+                console.error('Failed to initialize Jounce:', error);
                 document.getElementById('status').textContent = '❌ Error: ' + error.message;
                 document.getElementById('status').style.background = '#f8d7da';
                 document.getElementById('status').style.color = '#721c24';

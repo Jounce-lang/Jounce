@@ -1,6 +1,6 @@
-# RavensOne Development Learnings
+# Jounce Development Learnings
 
-This document tracks real problems discovered while building full-stack applications with RavensOne.
+This document tracks real problems discovered while building full-stack applications with Jounce.
 
 ## Session: AI Generator + Full-Stack Social Feed (2025-10-18)
 
@@ -20,10 +20,10 @@ This document tracks real problems discovered while building full-stack applicat
 
 ### Critical Problems Discovered
 
-#### 1. **RavensOne Compiler Limitations**
+#### 1. **Jounce Compiler Limitations**
 
 **Problem:** Compiler doesn't support JSX parsing yet
-- Even `test.raven` (the example file) doesn't compile
+- Even `test.jnc` (the example file) doesn't compile
 - Self-closing tags (`<img />`) cause "No prefix parse function for Slash" errors
 - No support for:
   - `component` keyword
@@ -33,24 +33,24 @@ This document tracks real problems discovered while building full-stack applicat
   - String interpolation with `${}`
   - Reference syntax `&`
 
-**Current Workaround:** Generate static HTML/CSS instead of .raven files
+**Current Workaround:** Generate static HTML/CSS instead of .jnc files
 
-**Impact:** Can't actually use .raven files for real apps yet
+**Impact:** Can't actually use .jnc files for real apps yet
 
 **What This Means:** The compiler needs significant development before the framework is usable
 
 ---
 
-#### 2. **No HTTP/Fetch Support in RavensOne**
+#### 2. **No HTTP/Fetch Support in Jounce**
 
-**Problem:** Can't make API calls from .raven code
+**Problem:** Can't make API calls from .jnc code
 - No `fetch()` equivalent
 - No HTTP client
 - No way to connect frontend to backend
 
-**Current State:** Frontend must be pure static HTML+JS (not .raven)
+**Current State:** Frontend must be pure static HTML+JS (not .jnc)
 
-**Impact:** Can't build real full-stack apps with RavensOne frontend
+**Impact:** Can't build real full-stack apps with Jounce frontend
 
 **What We Need:**
 ```raven
@@ -86,7 +86,7 @@ let liked = Signal::new(false);
 
 **Current Attempt:**
 ```
-ravensone/
+jounce/
 ├── examples/
 │   ├── ai-generator/generated/social-feed/  # Frontend
 │   └── bluebird-backend/                     # Backend (broken structure)
@@ -95,7 +95,7 @@ ravensone/
 **Issues Hit:**
 - `cargo new` created nested directories
 - Binary path confusion
-- No clear "RavensOne way" to structure projects
+- No clear "Jounce way" to structure projects
 
 **What We Need:** Official project template or scaffolding tool
 
@@ -103,8 +103,8 @@ ravensone/
 
 #### 5. **No Deployment Story**
 
-**Problem:** How do you deploy a RavensOne app?
-- .raven files don't compile to WASM yet
+**Problem:** How do you deploy a Jounce app?
+- .jnc files don't compile to WASM yet
 - No official deployment guide
 - Unclear how frontend + backend deploy together
 
@@ -118,8 +118,8 @@ ravensone/
 
 ### Working Solutions (Temporary)
 
-1. **AI Generator:** Works great for generating HTML/CSS/JS (not .raven)
-2. **Backend APIs:** Rust + Axum works perfectly (non-RavensOne code)
+1. **AI Generator:** Works great for generating HTML/CSS/JS (not .jnc)
+2. **Backend APIs:** Rust + Axum works perfectly (non-Jounce code)
 3. **Static Frontends:** Can create beautiful UIs with HTML/CSS/JS
 4. **Database:** PostgreSQL integration works well
 
@@ -143,13 +143,13 @@ ravensone/
    - API built and working
    - Database schema complete
    - Endpoints functional
-   - BUT: Can't connect to .raven frontend (doesn't exist)
+   - BUT: Can't connect to .jnc frontend (doesn't exist)
 
 ---
 
 ## Next Steps / Priorities
 
-To make RavensOne actually usable for full-stack apps, we need:
+To make Jounce actually usable for full-stack apps, we need:
 
 ### Compiler Priorities (Blocking Everything)
 1. ✅ **JSX Parser** - Parse and compile JSX syntax
@@ -166,7 +166,7 @@ To make RavensOne actually usable for full-stack apps, we need:
 ### Tooling Priorities (Blocking Developer Experience)
 9. ✅ **Project Scaffolding** - `raven new myapp --template fullstack`
 10. ✅ **Dev Server** - Hot reload, proxy API calls
-11. ✅ **Build System** - Compile .raven → WASM → deployed app
+11. ✅ **Build System** - Compile .jnc → WASM → deployed app
 12. ✅ **Deployment Guides** - How to actually ship apps
 
 ---
@@ -175,7 +175,7 @@ To make RavensOne actually usable for full-stack apps, we need:
 
 **The AI Generator works great** - we can generate beautiful UIs from prompts.
 
-**But RavensOne can't run them** - the compiler/framework isn't ready yet.
+**But Jounce can't run them** - the compiler/framework isn't ready yet.
 
 This is perfect because now we know EXACTLY what to build:
 1. Get the compiler working (JSX + reactivity)
@@ -210,4 +210,4 @@ The good news: We have clear goals and working examples to test against!
 ---
 
 **Date:** 2025-10-18
-**Conclusion:** We successfully stress-tested RavensOne and found exactly what needs to be built. The AI Generator is production-ready. The compiler/framework needs work. Now we have a clear roadmap!
+**Conclusion:** We successfully stress-tested Jounce and found exactly what needs to be built. The AI Generator is production-ready. The compiler/framework needs work. Now we have a clear roadmap!

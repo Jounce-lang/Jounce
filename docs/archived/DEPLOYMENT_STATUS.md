@@ -1,4 +1,4 @@
-# RavensOne Deployment Status
+# Jounce Deployment Status
 
 **Date**: 2025-10-17
 **Status**: Ready for Manual Deployment
@@ -21,7 +21,7 @@
 ### Files in `examples/` directory:
 1. **`run_dashboard.html`** - Main application entry point
 2. **`analytics_dashboard.css`** - Complete styling
-3. **`analytics_dashboard.raven`** - Source code
+3. **`analytics_dashboard.jnc`** - Source code
 4. **`vercel.json`** - Vercel configuration
 5. **`package.json`** - NPM configuration
 6. **`README.md`** - Quick start guide
@@ -32,7 +32,7 @@
 ```json
 {
   "version": 2,
-  "name": "ravensone-analytics-dashboard",
+  "name": "jounce-analytics-dashboard",
   "builds": [
     {"src": "run_dashboard.html", "use": "@vercel/static"},
     {"src": "analytics_dashboard.css", "use": "@vercel/static"}
@@ -50,7 +50,7 @@
 ### Step 1: Login to Vercel (Required)
 
 ```bash
-cd /Users/jordanhill/Documents/JRez-Soft-Projects/ravensone/examples
+cd /Users/jordanhill/Documents/JRez-Soft-Projects/jounce/examples
 vercel login
 ```
 
@@ -72,14 +72,14 @@ vercel --prod
 ? Set up and deploy "~/examples"? [Y/n] y
 ? Which scope do you want to deploy to? <your-account>
 ? Link to existing project? [y/N] n
-? What's your project's name? ravensone-analytics-dashboard
+? What's your project's name? jounce-analytics-dashboard
 ? In which directory is your code located? ./
 ```
 
 **Expected output:**
 ```
-🔍  Inspect: https://vercel.com/<your-account>/ravensone-analytics-dashboard
-✅  Production: https://ravensone-analytics-dashboard.vercel.app
+🔍  Inspect: https://vercel.com/<your-account>/jounce-analytics-dashboard
+✅  Production: https://jounce-analytics-dashboard.vercel.app
 ```
 
 ### Step 3: Verify Deployment
@@ -116,11 +116,11 @@ After deployment on Vercel's global CDN:
 
 ```bash
 # Push to gh-pages branch
-cd /Users/jordanhill/Documents/JRez-Soft-Projects/ravensone
+cd /Users/jordanhill/Documents/JRez-Soft-Projects/jounce
 git subtree push --prefix examples origin gh-pages
 ```
 
-**Access at**: `https://<username>.github.io/ravensone`
+**Access at**: `https://<username>.github.io/jounce`
 
 ### Option 2: Netlify
 
@@ -137,9 +137,9 @@ netlify deploy --prod
 
 ```bash
 # Sync to S3 bucket
-aws s3 sync . s3://ravensone-dashboard \
+aws s3 sync . s3://jounce-dashboard \
     --exclude "*.md" \
-    --exclude "*.raven"
+    --exclude "*.jnc"
 
 # Invalidate CloudFront cache
 aws cloudfront create-invalidation \
@@ -211,7 +211,7 @@ After successful deployment:
 3. **Social Sharing**
    - Tweet the live demo
    - Share on GitHub discussions
-   - Add to RavensOne examples list
+   - Add to Jounce examples list
 
 4. **Continuous Deployment**
    - Every push to `main` branch will auto-deploy
@@ -268,20 +268,20 @@ After successful deployment:
 - CLI Reference: https://vercel.com/docs/cli
 - Deployments: https://vercel.com/docs/deployments/overview
 
-**RavensOne Documentation:**
-- Main README: `/Users/jordanhill/Documents/JRez-Soft-Projects/ravensone/README.md`
+**Jounce Documentation:**
+- Main README: `/Users/jordanhill/Documents/JRez-Soft-Projects/jounce/README.md`
 - Deployment Guide: `examples/DEPLOYMENT_GUIDE.md`
 - Quick Deploy: `QUICK_DEPLOY.md`
 
 **GitHub Repository:**
-- URL: https://github.com/jrezin1201/RavensOne
-- Issues: https://github.com/jrezin1201/RavensOne/issues
+- URL: https://github.com/jrezin1201/Jounce
+- Issues: https://github.com/jrezin1201/Jounce/issues
 
 ---
 
 ## ✨ Summary
 
-**RavensOne Analytics Dashboard** is ready for deployment!
+**Jounce Analytics Dashboard** is ready for deployment!
 
 All configuration files, documentation, and application code are in place. The only remaining manual step is to run `vercel login` (which requires browser authentication) followed by `vercel --prod` to deploy to production.
 
@@ -291,4 +291,4 @@ All configuration files, documentation, and application code are in place. The o
 
 *Last Updated: 2025-10-17*
 *Version: 1.0*
-*Author: RavensOne Development Team*
+*Author: Jounce Development Team*

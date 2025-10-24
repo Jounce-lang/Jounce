@@ -1,6 +1,6 @@
-# Deploying a .raven File to Production
+# Deploying a .jnc File to Production
 
-**Complete guide for compiling and deploying RavensOne source code to Vercel**
+**Complete guide for compiling and deploying Jounce source code to Vercel**
 
 ---
 
@@ -8,7 +8,7 @@
 
 This guide shows you how to:
 1. Clone the repository
-2. Compile `analytics_dashboard.raven` to WebAssembly
+2. Compile `analytics_dashboard.jnc` to WebAssembly
 3. Deploy the compiled app to Vercel
 
 **Total Time:** 5 minutes
@@ -27,10 +27,10 @@ This guide shows you how to:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/ravensone.git
-cd ravensone
+git clone https://github.com/YOUR_USERNAME/jounce.git
+cd jounce
 
-# Build the RavensOne compiler
+# Build the Jounce compiler
 cargo build --release
 
 # Verify compiler works
@@ -39,22 +39,22 @@ cargo build --release
 
 Expected output:
 ```
-RavensOne Compiler v0.1.0
+Jounce Compiler v0.1.0
 ```
 
 ---
 
-## Step 2: Compile the .raven File (1 minute)
+## Step 2: Compile the .jnc File (1 minute)
 
 ### Option A: Use the Build Script (Recommended)
 
 ```bash
 # Run the deployment build script
-./scripts/build-for-deployment.sh examples/analytics_dashboard.raven
+./scripts/build-for-deployment.sh examples/analytics_dashboard.jnc
 ```
 
 This will:
-- ✅ Compile `analytics_dashboard.raven` to WebAssembly
+- ✅ Compile `analytics_dashboard.jnc` to WebAssembly
 - ✅ Generate client WASM (`app.wasm`)
 - ✅ Generate server WASM for SSR (`app_ssr.wasm`)
 - ✅ Create optimized HTML with hydration
@@ -64,13 +64,13 @@ This will:
 
 **Output:**
 ```
-🚀 RavensOne Deployment Builder
+🚀 Jounce Deployment Builder
 ================================
 
-📄 Source: examples/analytics_dashboard.raven
+📄 Source: examples/analytics_dashboard.jnc
 📦 Output: dist/deployment
 
-⚙️  Step 1: Compiling RavensOne to WebAssembly...
+⚙️  Step 1: Compiling Jounce to WebAssembly...
 ✅ Client WASM compiled
 
 ⚙️  Step 2: Compiling for Server-Side Rendering...
@@ -100,13 +100,13 @@ This will:
 mkdir -p dist/deployment
 
 # Compile for client (browser)
-./target/release/raven compile examples/analytics_dashboard.raven \
+./target/release/raven compile examples/analytics_dashboard.jnc \
     --target client \
     --output dist/deployment/app.wasm \
     --optimize
 
 # Compile for server (SSR)
-./target/release/raven compile examples/analytics_dashboard.raven \
+./target/release/raven compile examples/analytics_dashboard.jnc \
     --target server \
     --output dist/deployment/app_ssr.wasm
 
@@ -165,26 +165,26 @@ vercel --prod
 ```
 
 **Answer the prompts:**
-- Project name: `ravensone-analytics-dashboard`
+- Project name: `jounce-analytics-dashboard`
 - Deploy: `Y`
 - Link to existing project: `N` (first time)
 
 **Result:**
 ```
-✅ Production: https://ravensone-analytics-dashboard.vercel.app
+✅ Production: https://jounce-analytics-dashboard.vercel.app
 ```
 
 ---
 
 ## 🎉 Done!
 
-Your `.raven` file is now compiled to WebAssembly and deployed to production!
+Your `.jnc` file is now compiled to WebAssembly and deployed to production!
 
 ---
 
 ## 📊 What Was Compiled
 
-### Source: `analytics_dashboard.raven`
+### Source: `analytics_dashboard.jnc`
 
 ```raven
 component Dashboard(user: User) {
@@ -227,7 +227,7 @@ component Dashboard(user: User) {
 
 ### What the Compiler Does
 
-1. **Lexical Analysis** - Tokenizes `.raven` source
+1. **Lexical Analysis** - Tokenizes `.jnc` source
 2. **Parsing** - Builds AST from tokens
 3. **Type Checking** - Hindley-Milner type inference
 4. **Semantic Analysis** - Validates program structure
@@ -275,20 +275,20 @@ Create `raven.config.json`:
 Then build:
 
 ```bash
-./target/release/raven build examples/analytics_dashboard.raven --config raven.config.json
+./target/release/raven build examples/analytics_dashboard.jnc --config raven.config.json
 ```
 
 ### Multi-Environment Builds
 
 ```bash
 # Development build (with debugging)
-./scripts/build-for-deployment.sh examples/analytics_dashboard.raven --env development
+./scripts/build-for-deployment.sh examples/analytics_dashboard.jnc --env development
 
 # Staging build
-./scripts/build-for-deployment.sh examples/analytics_dashboard.raven --env staging
+./scripts/build-for-deployment.sh examples/analytics_dashboard.jnc --env staging
 
 # Production build (optimized)
-./scripts/build-for-deployment.sh examples/analytics_dashboard.raven --env production
+./scripts/build-for-deployment.sh examples/analytics_dashboard.jnc --env production
 ```
 
 ---
@@ -322,13 +322,13 @@ Then build:
 **Error: "Type mismatch"**
 ```bash
 # Run type checker
-./target/release/raven check examples/analytics_dashboard.raven
+./target/release/raven check examples/analytics_dashboard.jnc
 ```
 
 **Error: "Undefined variable"**
 ```bash
 # Enable verbose output
-./target/release/raven compile examples/analytics_dashboard.raven --verbose
+./target/release/raven compile examples/analytics_dashboard.jnc --verbose
 ```
 
 ### Deployment Issues
@@ -352,7 +352,7 @@ Then build:
 Create `.github/workflows/deploy.yml`:
 
 ```yaml
-name: Deploy RavensOne App
+name: Deploy Jounce App
 
 on:
   push:
@@ -370,11 +370,11 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Build RavensOne compiler
+      - name: Build Jounce compiler
         run: cargo build --release
 
-      - name: Compile .raven file
-        run: ./scripts/build-for-deployment.sh examples/analytics_dashboard.raven
+      - name: Compile .jnc file
+        run: ./scripts/build-for-deployment.sh examples/analytics_dashboard.jnc
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
@@ -385,11 +385,11 @@ jobs:
           working-directory: ./dist/deployment
 ```
 
-### Auto-rebuild on .raven Changes
+### Auto-rebuild on .jnc Changes
 
 ```bash
 # Watch mode - recompile on file changes
-./target/release/raven watch examples/analytics_dashboard.raven --deploy
+./target/release/raven watch examples/analytics_dashboard.jnc --deploy
 ```
 
 ---
@@ -408,7 +408,7 @@ jobs:
 
 Before deploying to production:
 
-- [ ] Source `.raven` file compiles without errors
+- [ ] Source `.jnc` file compiles without errors
 - [ ] Type checking passes
 - [ ] All tests pass: `cargo test`
 - [ ] WebAssembly optimized: `--optimize` flag used
@@ -424,14 +424,14 @@ Before deploying to production:
 ## 🎯 Summary
 
 **You've learned how to:**
-1. ✅ Build the RavensOne compiler from source
-2. ✅ Compile `.raven` files to WebAssembly
+1. ✅ Build the Jounce compiler from source
+2. ✅ Compile `.jnc` files to WebAssembly
 3. ✅ Generate optimized production builds
 4. ✅ Deploy to Vercel with SSR + hydration
 5. ✅ Set up continuous deployment
 
 **Next Steps:**
-- Modify `analytics_dashboard.raven` and rebuild
+- Modify `analytics_dashboard.jnc` and rebuild
 - Add new components to your app
 - Integrate real backend APIs
 - Scale to production traffic
@@ -440,9 +440,9 @@ Before deploying to production:
 
 **Compilation Time:** ~10 seconds
 **Deployment Time:** ~1 minute
-**Result:** Production WebAssembly app from `.raven` source
+**Result:** Production WebAssembly app from `.jnc` source
 
-🎉 **Your RavensOne application is live!**
+🎉 **Your Jounce application is live!**
 
 ---
 

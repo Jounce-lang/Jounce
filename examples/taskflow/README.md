@@ -1,13 +1,13 @@
 # TaskFlow
 
-A full-stack todo application with authentication built with RavensOne.
+A full-stack todo application with authentication built with Jounce.
 
-![TaskFlow](https://img.shields.io/badge/RavensOne-Example-6366f1)
+![TaskFlow](https://img.shields.io/badge/Jounce-Example-6366f1)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## 🎯 Overview
 
-TaskFlow demonstrates a complete production-ready application built with RavensOne, showcasing:
+TaskFlow demonstrates a complete production-ready application built with Jounce, showcasing:
 
 - **Authentication** - User registration and login with JWT tokens
 - **CRUD Operations** - Create, read, update, and delete todos
@@ -19,8 +19,8 @@ TaskFlow demonstrates a complete production-ready application built with RavensO
 
 ## 🏗️ Architecture
 
-### Frontend (RavensOne)
-- **Framework**: RavensOne with fine-grained reactivity
+### Frontend (Jounce)
+- **Framework**: Jounce with fine-grained reactivity
 - **UI Library**: raven-ui for components
 - **Routing**: raven-router for navigation
 - **HTTP Client**: raven-http for API calls
@@ -63,7 +63,7 @@ TaskFlow demonstrates a complete production-ready application built with RavensO
 
 - Rust 1.70+
 - PostgreSQL 14+
-- RavensOne CLI
+- Jounce CLI
 
 ### Backend Setup
 
@@ -224,14 +224,14 @@ MIT License - see LICENSE file for details
 
 ## 🤝 Contributing
 
-This is an example application. For RavensOne framework contributions, see the main repository.
+This is an example application. For Jounce framework contributions, see the main repository.
 
 ## 🔗 Links
 
-- [RavensOne Documentation](https://ravensone-docs.fly.dev)
-- [Package Registry](https://ravensone-registry.fly.dev)
-- [GitHub Repository](https://github.com/ravensone/ravensone)
+- [Jounce Documentation](https://jounce-docs.fly.dev)
+- [Package Registry](https://jounce-registry.fly.dev)
+- [GitHub Repository](https://github.com/jounce/jounce)
 
 ---
 
-Built with ❤️ using [RavensOne](https://ravensone.dev)
+Built with ❤️ using [Jounce](https://jounce.dev)

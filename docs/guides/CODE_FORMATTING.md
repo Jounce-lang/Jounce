@@ -1,8 +1,8 @@
-# RavensOne Code Formatting Guide
+# Jounce Code Formatting Guide
 
 ## Overview
 
-RavensOne includes a built-in code formatter that enforces consistent, opinionated code style across your entire codebase. The formatter is available through both the CLI (`raven fmt`) and LSP (Language Server Protocol) for seamless editor integration.
+Jounce includes a built-in code formatter that enforces consistent, opinionated code style across your entire codebase. The formatter is available through both the CLI (`raven fmt`) and LSP (Language Server Protocol) for seamless editor integration.
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ RavensOne includes a built-in code formatter that enforces consistent, opinionat
 
 ## Formatting Philosophy
 
-RavensOne's formatter follows these core principles:
+Jounce's formatter follows these core principles:
 
 1. **Consistency Over Preference**: The formatter enforces a single, opinionated style to eliminate debates about code formatting
 2. **Readability First**: Code should be easy to read and understand at a glance
@@ -166,13 +166,13 @@ let app = <div class="container">
 
 ```bash
 # Format and print to stdout (doesn't modify file)
-raven fmt file.raven
+raven fmt file.jnc
 
 # Format and write changes to file
-raven fmt --write file.raven
+raven fmt --write file.jnc
 
 # Format multiple files
-raven fmt --write src/**/*.raven
+raven fmt --write src/**/*.jnc
 
 # Check if files are formatted (useful for CI)
 raven fmt --check src/
@@ -190,10 +190,10 @@ raven fmt --check src/
 
 ```bash
 # Format a single file and save
-raven fmt --write app.raven
+raven fmt --write app.jnc
 
-# Format all .raven files in a directory
-raven fmt --write src/**/*.raven
+# Format all .jnc files in a directory
+raven fmt --write src/**/*.jnc
 
 # Check formatting in CI
 raven fmt --check src/
@@ -209,7 +209,7 @@ fi
 
 ### VS Code / LSP-Compatible Editors
 
-The RavensOne LSP server provides automatic formatting through the `textDocument/formatting` request.
+The Jounce LSP server provides automatic formatting through the `textDocument/formatting` request.
 
 #### Enable Format on Save
 
@@ -220,7 +220,7 @@ Add to your editor settings:
 {
   "editor.formatOnSave": true,
   "[raven]": {
-    "editor.defaultFormatter": "ravensone.lsp"
+    "editor.defaultFormatter": "jounce.lsp"
   }
 }
 ```
@@ -228,7 +228,7 @@ Add to your editor settings:
 **Neovim** (Lua config):
 ```lua
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*.raven",
+  pattern = "*.jnc",
   callback = function()
     vim.lsp.buf.format({ async = false })
   end,
@@ -260,10 +260,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install RavensOne
+      - name: Install Jounce
         run: |
-          curl -L https://ravensone.dev/install.sh | sh
-          echo "$HOME/.ravensone/bin" >> $GITHUB_PATH
+          curl -L https://jounce.dev/install.sh | sh
+          echo "$HOME/.jounce/bin" >> $GITHUB_PATH
 
       - name: Check Formatting
         run: |
@@ -283,10 +283,10 @@ Automatically format files before committing:
 ```bash
 # .git/hooks/pre-commit
 #!/bin/bash
-FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.raven$')
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.jnc$')
 
 if [ -n "$FILES" ]; then
-  echo "Formatting .raven files..."
+  echo "Formatting .jnc files..."
   raven fmt --write $FILES
   git add $FILES
 fi
@@ -312,7 +312,7 @@ trailing_comma: true  // Add trailing commas in multi-line lists
 
 ### Future Configuration
 
-Configuration files (`.ravenfmt.toml`) are planned for future releases to allow customization of:
+Configuration files (`.jncfmt.toml`) are planned for future releases to allow customization of:
 - Indent size
 - Line length
 - JSX formatting preferences
@@ -422,16 +422,16 @@ let form = <Input
 
 ### Formatter Not Working
 
-1. **Check file syntax**: The formatter requires valid RavensOne syntax
+1. **Check file syntax**: The formatter requires valid Jounce syntax
    ```bash
-   raven compile --check file.raven
+   raven compile --check file.jnc
    ```
 
-2. **Check LSP connection**: Ensure your editor is connected to the RavensOne LSP
-   - VS Code: Check "Output" → "RavensOne Language Server"
+2. **Check LSP connection**: Ensure your editor is connected to the Jounce LSP
+   - VS Code: Check "Output" → "Jounce Language Server"
    - Neovim: Run `:LspInfo`
 
-3. **Update RavensOne**: Ensure you're using the latest version
+3. **Update Jounce**: Ensure you're using the latest version
    ```bash
    raven --version
    raven update  # If using package manager
@@ -448,7 +448,7 @@ If the formatter encounters an error:
 
 ## Formatter Implementation Details
 
-The RavensOne formatter:
+The Jounce formatter:
 
 1. **Parses source code** into an Abstract Syntax Tree (AST)
 2. **Traverses the AST** using a visitor pattern
@@ -471,7 +471,7 @@ Planned formatter improvements:
 - [ ] Automatic line wrapping for long lines
 - [ ] Comment formatting and alignment
 - [ ] Import statement sorting
-- [ ] Configuration file support (`.ravenfmt.toml`)
+- [ ] Configuration file support (`.jncfmt.toml`)
 - [ ] Custom formatter plugins
 - [ ] More granular JSX formatting options
 
@@ -483,7 +483,7 @@ Planned formatter improvements:
 - **Getting Started**: [GETTING_STARTED.md](../../GETTING_STARTED.md)
 - **LSP Features**: [LSP_FEATURES.md](./LSP_FEATURES.md)
 - **Parser Limitations**: [PARSER_LIMITATIONS.md](./PARSER_LIMITATIONS.md)
-- **Registry**: https://ravensone-registry.fly.dev
+- **Registry**: https://jounce-registry.fly.dev
 
 ---
 

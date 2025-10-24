@@ -20,13 +20,13 @@ The HTTP client has excellent type definitions but is **missing the actual HTTP 
 
 ## Design Goals
 
-1. **Simple API** - Easy to use from .raven code
+1. **Simple API** - Easy to use from .jnc code
 2. **Async by default** - Modern async/await pattern
 3. **Type-safe** - Leverage Rust's type system
 4. **Cross-platform** - Work in both CLI and WASM contexts
 5. **Ergonomic** - Builder pattern with chaining
 
-## Proposed API (How it should work in .raven)
+## Proposed API (How it should work in .jnc)
 
 ```raven
 // Simple GET request
@@ -48,7 +48,7 @@ let response = http::post("https://api.example.com/users")
 // Using a configured client
 let client = http::Client::new()
     .with_base_url("https://api.example.com")
-    .with_header("User-Agent", "RavensOne/1.0");
+    .with_header("User-Agent", "Jounce/1.0");
 
 let users = client.get("/users").send().await?;
 let user = client.get("/users/123").send().await?;
@@ -128,11 +128,11 @@ pub async fn post_json<T: serde::Serialize>(
 
 ### Phase 5: Integration with Compiler
 
-Make HTTP module available in .raven code:
+Make HTTP module available in .jnc code:
 
 1. Add to stdlib exports
 2. Register in module system
-3. Add type definitions for .raven
+3. Add type definitions for .jnc
 4. Generate proper WASM bindings
 
 ## Technical Challenges
@@ -151,9 +151,9 @@ reqwest = { version = "0.11", features = ["json"] }
 reqwest = { version = "0.11", features = ["json"], default-features = false }
 ```
 
-### Challenge 2: Async Runtime in .raven
+### Challenge 2: Async Runtime in .jnc
 
-**Problem**: .raven doesn't have async/await yet
+**Problem**: .jnc doesn't have async/await yet
 
 **Solution**: For now, provide blocking API, add async later:
 
@@ -168,7 +168,7 @@ pub fn send_blocking(self) -> Result<HttpResponse, HttpError> {
 
 ### Challenge 3: Error Propagation
 
-**Problem**: .raven doesn't have `?` operator yet
+**Problem**: .jnc doesn't have `?` operator yet
 
 **Solution**: Provide `.unwrap()` and `.expect()` helpers:
 
@@ -214,13 +214,13 @@ Test against real APIs:
 
 ### Example Programs
 
-Create example .raven programs:
+Create example .jnc programs:
 
-1. **fetch_users.raven** - Fetch list from API
-2. **post_data.raven** - POST JSON to API
-3. **api_client.raven** - Full CRUD operations
-4. **weather_cli.raven** - Fetch weather data
-5. **github_stats.raven** - Fetch GitHub repo stats
+1. **fetch_users.jnc** - Fetch list from API
+2. **post_data.jnc** - POST JSON to API
+3. **api_client.jnc** - Full CRUD operations
+4. **weather_cli.jnc** - Fetch weather data
+5. **github_stats.jnc** - Fetch GitHub repo stats
 
 ## Success Criteria
 
@@ -246,7 +246,7 @@ Create example .raven programs:
 - Documentation with examples
 
 ✅ **Phase 5 Complete** when:
-- Accessible from .raven code
+- Accessible from .jnc code
 - Example programs run successfully
 - Integrated into stdlib
 
@@ -266,7 +266,7 @@ Create example .raven programs:
 2. Implement `HttpRequest::send()` method
 3. Write basic test against httpbin.org
 4. Verify it works with Bluebird backend
-5. Create first example .raven program
+5. Create first example .jnc program
 
 ---
 
@@ -303,13 +303,13 @@ Create example .raven programs:
 - ✅ Example program against Bluebird backend
 
 **🚧 Phase 6 IN PROGRESS**: Compiler Integration
-- ⏳ Make HTTP module accessible from .raven code
-- ⏳ Add type definitions for .raven
+- ⏳ Make HTTP module accessible from .jnc code
+- ⏳ Add type definitions for .jnc
 - ⏳ Generate WASM bindings
 
 ---
 
-**Status**: Implementation Complete! Ready for .raven integration
+**Status**: Implementation Complete! Ready for .jnc integration
 **Date**: 2025-10-18
 **Lines of Code**: 557 lines (src/stdlib/http.rs)
 **Tests**: 12 passing
@@ -320,7 +320,7 @@ Create example .raven programs:
 ### Rust Code (Working Now!)
 
 ```rust
-use ravensone_compiler::stdlib::http;
+use jounce_compiler::stdlib::http;
 
 // Simple GET request
 let response = http::get("https://api.example.com/users")

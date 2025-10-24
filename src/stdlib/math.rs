@@ -1,4 +1,4 @@
-// Math Standard Library for RavensOne
+// Math Standard Library for Jounce
 // Comprehensive mathematical functions and constants
 
 pub const MATH_DEFINITION: &str = r#"

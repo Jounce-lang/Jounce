@@ -1,6 +1,6 @@
-# RavensOne AI Generator - Quick Start
+# Jounce AI Generator - Quick Start
 
-Generate RavensOne apps from descriptions in under 2 minutes!
+Generate Jounce apps from descriptions in under 2 minutes!
 
 ## ⚡ 60-Second Setup
 
@@ -23,7 +23,7 @@ cd examples/ai-generator
 ```
 $ ./generate.sh
 
-🤖 RavensOne AI Project Generator
+🤖 Jounce AI Project Generator
 ==================================
 
 Project name: counter-app
@@ -32,8 +32,8 @@ Features: persist to local storage, keyboard shortcuts, reset button
 
 🤖 Generating project with Claude...
 
-✅ Created: src/main.raven
-✅ Created: raven.toml
+✅ Created: src/main.jnc
+✅ Created: jounce.toml
 
 🔨 Compiling project...
 ✅ Compilation successful!
@@ -51,8 +51,8 @@ Next steps:
 ```
 generated/counter-app/
 ├── src/
-│   └── main.raven          # Your complete app!
-├── raven.toml              # Project manifest
+│   └── main.jnc          # Your complete app!
+├── jounce.toml              # Project manifest
 ├── dist/
 │   ├── app.wasm            # Compiled WebAssembly
 │   └── index.html          # HTML wrapper
@@ -110,11 +110,11 @@ Features: create, edit, delete notes, search, categories, markdown support
 ```
 User Prompt
     ↓
-Claude API (generates .raven files)
+Claude API (generates .jnc files)
     ↓
 File System (writes files)
     ↓
-RavensOne Compiler (compiles to WASM)
+Jounce Compiler (compiles to WASM)
     ↓
 Ready to Deploy! 🚀
 ```
@@ -176,22 +176,22 @@ sudo apt-get install jq
 
 ### "Compilation failed"
 - Check `generated/[app-name]/generated.json` for errors
-- Verify RavensOne compiler is installed: `raven --version`
+- Verify Jounce compiler is installed: `raven --version`
 - Try regenerating with a simpler description
 
 ## 📚 Next Steps
 
-1. **Customize** - Edit the generated `.raven` files
+1. **Customize** - Edit the generated `.jnc` files
 2. **Style** - Add CSS in the `<style>` section
 3. **Deploy** - See [deployment guide](README.md#deployment)
-4. **Learn** - Study the generated code to learn RavensOne patterns
+4. **Learn** - Study the generated code to learn Jounce patterns
 
 ## 🌟 Advanced Usage
 
 ### Use from Code
 
 ```rust
-use ravensone::ai_generator::*;
+use jounce::ai_generator::*;
 
 let generator = AIGenerator::new(api_key);
 let request = GenerationRequest {
@@ -229,7 +229,7 @@ What the generator creates:
 
 - [Full Documentation](README.md)
 - [Live Demo Walkthrough](DEMO.md)
-- [RavensOne Language Guide](../../docs/GETTING_STARTED.md)
+- [Jounce Language Guide](../../docs/GETTING_STARTED.md)
 - [Example Gallery](../README.md)
 
 ---

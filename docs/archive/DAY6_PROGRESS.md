@@ -193,7 +193,7 @@ img.add_attribute("src".to_string(), Expression::StringLiteral("photo.jpg".to_st
 ### Build Results
 ```
 cargo build --lib
-   Compiling ravensone v0.1.0
+   Compiling jounce v0.1.0
     Finished `dev` profile in 1.02s
 ```
 ✅ Zero warnings (maintained from Days 4-5)
@@ -202,7 +202,7 @@ cargo build --lib
 ### Test Results
 ```
 cargo test --lib
-   Compiling ravensone v0.1.0
+   Compiling jounce v0.1.0
     Finished `test` profile
      Running unittests src/lib.rs
 

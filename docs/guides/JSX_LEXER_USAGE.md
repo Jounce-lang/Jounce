@@ -7,7 +7,7 @@
 
 ## Overview
 
-The RavensOne lexer has full JSX support built-in. The lexer can tokenize JSX elements, text content, expressions, and self-closing tags. **The parser controls when JSX mode is active** using the lexer's public API.
+The Jounce lexer has full JSX support built-in. The lexer can tokenize JSX elements, text content, expressions, and self-closing tags. **The parser controls when JSX mode is active** using the lexer's public API.
 
 ---
 

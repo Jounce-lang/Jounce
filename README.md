@@ -1,10 +1,10 @@
-# ✅ RavensOne (Production Ready!)
+# ✅ Jounce (Production Ready!)
 
 **The Full-Stack Programming Language for Human-AI Collaboration**
 
-> 🎉 **Status**: RavensOne language core is **100% complete**! All core features working with 417 passing tests. See [Current Status](#-current-status) below.
+> 🎉 **Status**: Jounce language core is **100% complete**! All core features working with 417 passing tests. See [Current Status](#-current-status) below.
 
-RavensOne is a revolutionary language where you write **ONE `.raven` file** that automatically compiles into server and client code. Build production applications in seconds with AI assistance using `@server` and `@client` annotations.
+Jounce is a revolutionary language where you write **ONE `.jnc` file** that automatically compiles into server and client code. Build production applications in seconds with AI assistance using `@server` and `@client` annotations.
 
 ```raven
 // Server-side database functions
@@ -27,13 +27,13 @@ fn validate_input(text: String) -> bool {
 
 **Compile to full-stack JavaScript:**
 ```bash
-raven compile app.raven
+raven compile app.jnc
 # Outputs: server.js + client.js + app.wasm + index.html
 ```
 
 ---
 
-## ✨ Why RavensOne?
+## ✨ Why Jounce?
 
 ### **One File, Full Stack**
 - **No context switching** - Server and client code in the same file
@@ -67,8 +67,8 @@ raven compile app.raven
 
 ```bash
 # Clone repository
-git clone https://github.com/jrezin1201/RavensOne
-cd ravensone
+git clone https://github.com/jrezin1201/Jounce
+cd jounce
 
 # Build compiler
 cargo build --release
@@ -79,7 +79,7 @@ cargo install --path .
 
 ### Your First App
 
-Create `hello.raven`:
+Create `hello.jnc`:
 
 ```raven
 @server
@@ -103,10 +103,10 @@ Compile and run:
 
 ```bash
 # Compile (outputs to dist/)
-raven compile hello.raven
+raven compile hello.jnc
 
 # With minification for production
-raven compile hello.raven --minify
+raven compile hello.jnc --minify
 
 # Run server
 cd dist && node server.js
@@ -218,9 +218,9 @@ server.rpc('get_user', async (params) => {
 
 ### 3. Type Safety
 
-RavensOne types map directly to TypeScript/JavaScript:
+Jounce types map directly to TypeScript/JavaScript:
 
-| RavensOne | JavaScript |
+| Jounce | JavaScript |
 |-----------|------------|
 | `i32`, `f64` | `number` |
 | `String` | `string` |
@@ -233,17 +233,17 @@ RavensOne types map directly to TypeScript/JavaScript:
 ## 🛠️ CLI Commands
 
 ### `raven compile <file>`
-Compile a `.raven` file to JavaScript bundles.
+Compile a `.jnc` file to JavaScript bundles.
 
 ```bash
 # Basic compilation
-raven compile app.raven
+raven compile app.jnc
 
 # With minification (30-50% smaller)
-raven compile app.raven --minify
+raven compile app.jnc --minify
 
 # Custom output directory
-raven compile app.raven --output build/
+raven compile app.jnc --output build/
 ```
 
 **Outputs:**
@@ -257,19 +257,19 @@ Watch files and auto-recompile on changes with instant feedback:
 
 ```bash
 # Watch single file
-raven watch app.raven
+raven watch app.jnc
 
 # Watch directory
 raven watch src/
 
 # Custom output directory
-raven watch app.raven --output build/
+raven watch app.jnc --output build/
 
 # Clear console on recompile
-raven watch app.raven --clear
+raven watch app.jnc --clear
 
 # Verbose output
-raven watch app.raven --verbose
+raven watch app.jnc --verbose
 ```
 
 **Features:**
@@ -281,8 +281,8 @@ raven watch app.raven --verbose
 
 **Example Output:**
 ```
-🔥 RavensOne Watch Mode
-   Path: app.raven
+🔥 Jounce Watch Mode
+   Path: app.jnc
    Output: dist
 
 ✓ Compiled successfully (42ms)
@@ -362,7 +362,7 @@ describe("Calculator", || {
 
 ### Package Registry
 
-Live at: **https://ravensone-registry.fly.dev**
+Live at: **https://jounce-registry.fly.dev**
 
 - User authentication with JWT
 - Package versioning with semver
@@ -426,7 +426,7 @@ More examples in `/examples` directory.
 ## 🏗️ Project Structure
 
 ```
-ravensone/
+jounce/
 ├── src/
 │   ├── main.rs                 # CLI entry point
 │   ├── lib.rs                  # Compiler library
@@ -440,7 +440,7 @@ ravensone/
 │
 ├── examples/
 │   ├── test_full_compiler_bridge.rs   # End-to-end test
-│   └── *.raven                        # Example apps
+│   └── *.jnc                        # Example apps
 │
 ├── dist/                       # Compiled output
 ├── aloha-shirts/              # Published packages
@@ -465,7 +465,7 @@ ravensone/
 
 **Profiling Breakdown** (use `--profile` flag):
 ```bash
-raven compile app.raven --profile
+raven compile app.jnc --profile
 ```
 
 Example profiling output:
@@ -485,7 +485,7 @@ Total:         797.79µs  (  100%)
 
 **Watch Mode** (auto-recompile on file changes):
 ```bash
-raven watch app.raven --verbose
+raven watch app.jnc --verbose
 # Debouncing: 150ms
 # Incremental cache for fast rebuilds
 ```
@@ -648,9 +648,9 @@ Built with ❤️ for human-AI collaboration.
 
 ## 📞 Contact & Support
 
-- **GitHub Issues**: https://github.com/jrezin1201/RavensOne/issues
+- **GitHub Issues**: https://github.com/jrezin1201/Jounce/issues
 - **Documentation**: [FULLSTACK_GUIDE.md](FULLSTACK_GUIDE.md)
-- **Package Registry**: https://ravensone-registry.fly.dev
+- **Package Registry**: https://jounce-registry.fly.dev
 
 ---
 

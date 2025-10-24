@@ -1,10 +1,10 @@
-# RavensOne Standard Library Examples
+# Jounce Standard Library Examples
 
 Comprehensive examples demonstrating all major stdlib modules.
 
 ## 📚 Available Examples
 
-### 1. Math Library (`math_examples.raven`)
+### 1. Math Library (`math_examples.jnc`)
 **Lines**: 250+ | **Functions**: 40+
 
 Complete mathematical operations:
@@ -24,7 +24,7 @@ Complete mathematical operations:
 - Degrees to radians conversion
 - Compound interest calculation
 
-### 2. Reactive Library (`reactive_examples.raven`)
+### 2. Reactive Library (`reactive_examples.jnc`)
 **Lines**: 350+ | **Primitives**: Signal, Computed, Effect
 
 Building reactive UIs:
@@ -38,7 +38,7 @@ Building reactive UIs:
 - **Reactive Search**: Live search filtering
 - **Reactive Theme**: Dark/light mode switching
 
-### 3. HTTP Library (`http_examples.raven`)
+### 3. HTTP Library (`http_examples.jnc`)
 **Lines**: 400+ | **Methods**: GET, POST, PUT, DELETE
 
 Complete HTTP client:
@@ -60,14 +60,14 @@ Complete HTTP client:
 
 ```bash
 # Compile and run math examples
-./target/release/raven compile examples/stdlib/math_examples.raven
+./target/release/raven compile examples/stdlib/math_examples.jnc
 cd dist && node server.js
 
 # Compile reactive examples
-./target/release/raven compile examples/stdlib/reactive_examples.raven
+./target/release/raven compile examples/stdlib/reactive_examples.jnc
 
 # Compile HTTP examples (server-side)
-./target/release/raven compile examples/stdlib/http_examples.raven
+./target/release/raven compile examples/stdlib/http_examples.jnc
 ```
 
 ### Use in Your Code
@@ -106,17 +106,17 @@ async fn fetch_data() {
 
 ### Beginners
 
-1. **Start with Math** (`math_examples.raven`)
+1. **Start with Math** (`math_examples.jnc`)
    - Simple, pure functions
    - No async, no side effects
-   - Learn RavensOne basics
+   - Learn Jounce basics
 
-2. **Try Reactive** (`reactive_examples.raven`)
+2. **Try Reactive** (`reactive_examples.jnc`)
    - Understand reactive programming
    - See how UIs update automatically
    - Learn Signal, Computed, Effect
 
-3. **Explore HTTP** (`http_examples.raven`)
+3. **Explore HTTP** (`http_examples.jnc`)
    - Server-side programming
    - Async/await pattern
    - Real-world API integration
@@ -225,13 +225,13 @@ async fn fetch_data() {
 ### By Feature
 
 **Need to calculate angles?**
-→ `math_examples.raven` - Trigonometry section
+→ `math_examples.jnc` - Trigonometry section
 
 **Building a form?**
-→ `reactive_examples.raven` - Reactive Form demo
+→ `reactive_examples.jnc` - Reactive Form demo
 
 **Calling an API?**
-→ `http_examples.raven` - Basic GET or API Client
+→ `http_examples.jnc` - Basic GET or API Client
 
 ### By Use Case
 
@@ -239,19 +239,19 @@ async fn fetch_data() {
 1. Use Signal for count
 2. Use Computed for derived state
 3. Use Effects for side effects
-4. See `reactive_examples.raven` - demo_counter()
+4. See `reactive_examples.jnc` - demo_counter()
 
 **Fetching User Data**:
 1. Use HttpRequest.get()
 2. Handle errors
 3. Parse JSON
-4. See `http_examples.raven` - fetch_user()
+4. See `http_examples.jnc` - fetch_user()
 
 **Form Validation**:
 1. Signals for form fields
 2. Computed for validation rules
 3. Computed for overall validity
-4. See `reactive_examples.raven` - demo_reactive_form()
+4. See `reactive_examples.jnc` - demo_reactive_form()
 
 ## 🛠️ Customization
 
@@ -385,4 +385,4 @@ These examples demonstrate:
 - See `../../docs/guides/`
 - Open an issue on GitHub
 
-**Happy Coding with RavensOne! 🚀**
+**Happy Coding with Jounce! 🚀**

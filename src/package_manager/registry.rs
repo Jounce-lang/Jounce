@@ -1,4 +1,4 @@
-// Registry Client for RavensOne Package Manager
+// Registry Client for Jounce Package Manager
 // Handles authentication, publishing, and downloading packages from the registry
 
 use serde::{Deserialize, Serialize};
@@ -24,11 +24,11 @@ impl RegistryClient {
     /// Create a new registry client
     pub fn new() -> Self {
         let home = dirs::home_dir().expect("Could not find home directory");
-        let raven_dir = home.join(".raven");
+        let raven_dir = home.join(".jnc");
 
         // Check for RAVEN_REGISTRY environment variable, default to production registry
         let base_url = std::env::var("RAVEN_REGISTRY")
-            .unwrap_or_else(|_| "https://ravensone-registry.fly.dev/api/v1".to_string());
+            .unwrap_or_else(|_| "https://jounce-registry.fly.dev/api/v1".to_string());
 
         RegistryClient {
             base_url,
@@ -61,7 +61,7 @@ impl RegistryClient {
 
     /// Save credentials to disk
     fn save_credentials(&self, token: &str, username: &str) -> Result<(), RegistryError> {
-        // Create .raven directory if it doesn't exist
+        // Create .jnc directory if it doesn't exist
         if let Some(parent) = self.credentials_path.parent() {
             fs::create_dir_all(parent)
                 .map_err(|e| RegistryError::IoError(e.to_string()))?;
@@ -95,7 +95,7 @@ impl RegistryClient {
 
     /// Login to the registry
     pub fn login(&mut self) -> Result<LoginResponse, RegistryError> {
-        println!("🔐 RavensOne Package Registry Login");
+        println!("🔐 Jounce Package Registry Login");
         println!();
 
         // Prompt for email
@@ -143,14 +143,14 @@ impl RegistryClient {
 
         println!();
         println!("✅ Successfully logged in as {}", login_response.user.username);
-        println!("📝 Credentials saved to ~/.raven/credentials.json");
+        println!("📝 Credentials saved to ~/.jnc/credentials.json");
 
         Ok(login_response)
     }
 
     /// Register a new user account
     pub fn register(&mut self) -> Result<RegisterResponse, RegistryError> {
-        println!("📝 Create a RavensOne Account");
+        println!("📝 Create a Jounce Account");
         println!();
 
         // Prompt for username
@@ -209,7 +209,7 @@ impl RegistryClient {
         println!();
         println!("✅ Account created successfully!");
         println!("👤 Username: {}", register_response.username);
-        println!("📝 Credentials saved to ~/.raven/credentials.json");
+        println!("📝 Credentials saved to ~/.jnc/credentials.json");
 
         Ok(register_response)
     }

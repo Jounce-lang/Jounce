@@ -60,7 +60,7 @@
 ## 📁 New Structure
 
 ```
-ravensone/
+jounce/
 ├── README.md                        # Main entry point
 ├── CLAUDE.md                        # AI guide
 ├── GETTING_STARTED.md               # Quick start
@@ -106,10 +106,10 @@ ravensone/
 │   ├── features/                    # Feature tests (5 files)
 │   └── legacy/                      # Old tests (10+ files)
 │
-├── test_minimal.raven               # Core tests (4 files in root)
-├── test_simple_func.raven
-├── test_closure.raven
-└── test_closure_complex.raven
+├── test_minimal.jnc               # Core tests (4 files in root)
+├── test_simple_func.jnc
+├── test_closure.jnc
+└── test_closure_complex.jnc
 ```
 
 ---
@@ -144,23 +144,23 @@ ravensone/
 ### Test Files (20+ files moved)
 
 **To test/jsx/** (7 files):
-- test_jsx_simple.raven
-- test_jsx_text.raven
-- test_jsx_attrs.raven
-- test_jsx_one_attr.raven
-- test_jsx_nested.raven
-- test_jsx_expr.raven
-- test_jsx_self_close_attr.raven
+- test_jsx_simple.jnc
+- test_jsx_text.jnc
+- test_jsx_attrs.jnc
+- test_jsx_one_attr.jnc
+- test_jsx_nested.jnc
+- test_jsx_expr.jnc
+- test_jsx_self_close_attr.jnc
 
 **To test/features/** (5 files):
-- test_indirect_call.raven
-- test_indirect_simple.raven
-- test_error.raven
-- test_nofunction.raven
-- test_simple_no_indirect.raven
+- test_indirect_call.jnc
+- test_indirect_simple.jnc
+- test_error.jnc
+- test_nofunction.jnc
+- test_simple_no_indirect.jnc
 
 **To test/legacy/** (10+ files):
-- test-*.raven files (hyphenated naming)
+- test-*.jnc files (hyphenated naming)
 - test-*.wasm files
 - test_lexer_debug.*
 

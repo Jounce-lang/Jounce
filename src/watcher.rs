@@ -1,6 +1,6 @@
-/// File watching and auto-recompilation for RavensOne
+/// File watching and auto-recompilation for Jounce
 ///
-/// This module provides file watching functionality that monitors .raven files
+/// This module provides file watching functionality that monitors .jnc files
 /// and automatically recompiles them when changes are detected.
 
 use notify::{Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher as NotifyWatcher};
@@ -105,7 +105,7 @@ impl CompilationCache {
     }
 }
 
-/// File watcher that monitors .raven files and triggers recompilation
+/// File watcher that monitors .jnc files and triggers recompilation
 pub struct FileWatcher {
     config: WatchConfig,
     cache: CompilationCache,
@@ -140,7 +140,7 @@ impl FileWatcher {
                     // Only process modify and create events
                     match event.kind {
                         EventKind::Modify(_) | EventKind::Create(_) => {
-                            // Filter for .raven files
+                            // Filter for .jnc files
                             for path in event.paths {
                                 if path.extension().and_then(|s| s.to_str()) == Some("raven") {
                                     if verbose {

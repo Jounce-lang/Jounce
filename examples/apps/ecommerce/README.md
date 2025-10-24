@@ -1,6 +1,6 @@
 # ShopOne - Full-Stack E-Commerce Application
 
-A comprehensive e-commerce application built with **RavensOne**, demonstrating production-ready patterns for full-stack reactive development.
+A comprehensive e-commerce application built with **Jounce**, demonstrating production-ready patterns for full-stack reactive development.
 
 ## Features
 
@@ -43,7 +43,7 @@ A comprehensive e-commerce application built with **RavensOne**, demonstrating p
 
 ## Tech Stack
 
-- **RavensOne** - Full-stack reactive language
+- **Jounce** - Full-stack reactive language
 - **raven-router** - Client-side routing (Router, Route, Link)
 - **raven-store** - State management (Store, Signal, computed, persist)
 - **raven-forms** - Form handling (use_form, validators)
@@ -53,15 +53,15 @@ A comprehensive e-commerce application built with **RavensOne**, demonstrating p
 
 ```
 ecommerce/
-├── main.raven              # Main application (800+ lines)
+├── main.jnc              # Main application (800+ lines)
 ├── README.md              # This file
-└── raven.toml             # Package configuration
+└── jounce.toml             # Package configuration
 ```
 
 ## Quick Start
 
 ### Prerequisites
-- RavensOne compiler installed
+- Jounce compiler installed
 - Node.js 18+
 
 ### Installation
@@ -71,7 +71,7 @@ ecommerce/
 cd examples/apps/ecommerce
 
 # Compile the application
-raven compile main.raven
+raven compile main.jnc
 
 # Start development server
 raven dev
@@ -323,11 +323,11 @@ MIT License - Free to use for learning and commercial projects
 
 ## Acknowledgments
 
-Built with RavensOne - showcasing the power of full-stack reactive programming compiled to WebAssembly.
+Built with Jounce - showcasing the power of full-stack reactive programming compiled to WebAssembly.
 
 ---
 
 **Need Help?**
 
-- [RavensOne Docs](../../../GETTING_STARTED.md)
-- [GitHub Issues](https://github.com/yourusername/ravensone/issues)
+- [Jounce Docs](../../../GETTING_STARTED.md)
+- [GitHub Issues](https://github.com/yourusername/jounce/issues)

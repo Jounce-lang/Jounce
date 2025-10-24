@@ -120,7 +120,7 @@ impl RPCGenerator {
     fn format_type(&self, type_expr: &TypeExpression) -> String {
         match type_expr {
             TypeExpression::Named(ident) => {
-                // Map RavensOne types to TypeScript types
+                // Map Jounce types to TypeScript types
                 match ident.value.as_str() {
                     "i32" | "i64" | "u32" | "u64" | "f32" | "f64" => "number".to_string(),
                     "String" => "string".to_string(),

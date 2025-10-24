@@ -31,11 +31,11 @@ impl AIGenerator {
         Self { api_key }
     }
 
-    /// Generate the system prompt that guides Claude to create RavensOne code
+    /// Generate the system prompt that guides Claude to create Jounce code
     pub fn create_system_prompt() -> String {
-        r#"You are an expert RavensOne developer. RavensOne is a reactive web framework with a Rust-like syntax.
+        r#"You are an expert Jounce developer. Jounce is a reactive web framework with a Rust-like syntax.
 
-# RavensOne Language Specification
+# Jounce Language Specification
 
 ## Component Structure
 ```raven
@@ -121,8 +121,8 @@ async fn fetch_data() -> Result<Data, Error> {
 ## Your Task
 When the user describes a project, you should:
 
-1. **Create the main component** in `src/main.raven`
-2. **Create sub-components** in `src/components/*.raven` as needed
+1. **Create the main component** in `src/main.jnc`
+2. **Create sub-components** in `src/components/*.jnc` as needed
 3. **Create a `raven.toml`** manifest file
 4. **Use proper reactive patterns** (Signals, Computed, Effects)
 5. **Include proper styling** with CSS classes
@@ -134,11 +134,11 @@ Return ONLY valid JSON in this exact format:
 {
   "files": [
     {
-      "path": "src/main.raven",
+      "path": "src/main.jnc",
       "content": "component App() { ... }"
     },
     {
-      "path": "src/components/TodoItem.raven",
+      "path": "src/components/TodoItem.jnc",
       "content": "component TodoItem(props: TodoItemProps) { ... }"
     },
     {
@@ -152,7 +152,7 @@ Return ONLY valid JSON in this exact format:
 
 IMPORTANT:
 - Return ONLY the JSON, no markdown code blocks
-- Use proper RavensOne syntax
+- Use proper Jounce syntax
 - Include all necessary files
 - Make the code production-ready"#.to_string()
     }
@@ -160,13 +160,13 @@ IMPORTANT:
     /// Create the user prompt from the generation request
     pub fn create_user_prompt(request: &GenerationRequest) -> String {
         format!(
-            r#"Create a RavensOne project with the following specifications:
+            r#"Create a Jounce project with the following specifications:
 
 Project Name: {}
 Description: {}
 Features: {}
 
-Generate all necessary .raven files for this project. Include:
+Generate all necessary .jnc files for this project. Include:
 - Main application component
 - Any sub-components needed
 - Proper state management with Signals
@@ -261,13 +261,13 @@ Return the complete project structure in JSON format."#,
         Ok(())
     }
 
-    /// Compile the generated RavensOne project
+    /// Compile the generated Jounce project
     pub fn compile_project(&self, project_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
-        println!("🔨 Compiling RavensOne project...");
+        println!("🔨 Compiling Jounce project...");
 
         let output = Command::new("raven")
             .arg("compile")
-            .arg(project_dir.join("src/main.raven"))
+            .arg(project_dir.join("src/main.jnc"))
             .output()?;
 
         if !output.status.success() {

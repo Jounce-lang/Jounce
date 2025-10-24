@@ -1,18 +1,18 @@
-# RavensOne Standard Library Tutorial
+# Jounce Standard Library Tutorial
 
-**Welcome to the RavensOne Standard Library Tutorial!**
+**Welcome to the Jounce Standard Library Tutorial!**
 
-This hands-on guide will teach you how to use RavensOne's powerful standard library to build real applications. We'll start with simple examples and gradually build more complex features.
+This hands-on guide will teach you how to use Jounce's powerful standard library to build real applications. We'll start with simple examples and gradually build more complex features.
 
 ---
 
 ## Prerequisites
 
 - Basic understanding of programming (variables, functions, loops)
-- RavensOne compiler installed (`./target/release/raven`)
+- Jounce compiler installed (`./target/release/raven`)
 - Text editor
 
-**No prior RavensOne experience needed!** We'll learn together.
+**No prior Jounce experience needed!** We'll learn together.
 
 ---
 
@@ -31,25 +31,25 @@ This hands-on guide will teach you how to use RavensOne's powerful standard libr
 
 ## Lesson 1: Getting Started
 
-### Your First RavensOne Program
+### Your First Jounce Program
 
 Let's start with the classic "Hello World" and learn basic concepts.
 
-**Create a file**: `tutorial_01_hello.raven`
+**Create a file**: `tutorial_01_hello.jnc`
 
 ```raven
 fn main() {
-    println!("Hello, RavensOne!");
+    println!("Hello, Jounce!");
 }
 ```
 
 **Compile and run**:
 ```bash
-./target/release/raven compile tutorial_01_hello.raven
+./target/release/raven compile tutorial_01_hello.jnc
 cd dist && node server.js
 ```
 
-**Output**: `Hello, RavensOne!`
+**Output**: `Hello, Jounce!`
 
 ---
 
@@ -106,7 +106,7 @@ Now let's use the Math library to do more interesting calculations.
 
 ### Basic Math Operations
 
-**Create**: `tutorial_02_math.raven`
+**Create**: `tutorial_02_math.jnc`
 
 ```raven
 fn main() {
@@ -262,7 +262,7 @@ fn main() {
 
 A **Signal** is a value that notifies listeners when it changes.
 
-**Create**: `tutorial_03_reactive.raven`
+**Create**: `tutorial_03_reactive.jnc`
 
 ```raven
 fn main() {
@@ -458,7 +458,7 @@ create_effect(|| {
 
 Let's build a real interactive counter component!
 
-**Create**: `tutorial_04_counter.raven`
+**Create**: `tutorial_04_counter.jnc`
 
 ```raven
 component Counter() {
@@ -499,7 +499,7 @@ fn main() {
 
 **Compile and view**:
 ```bash
-./target/release/raven compile tutorial_04_counter.raven
+./target/release/raven compile tutorial_04_counter.jnc
 cd dist && node server.js
 # Open http://localhost:3000 in browser
 ```
@@ -575,7 +575,7 @@ Let's fetch data from the internet!
 
 **Important**: HTTP functions only work on the **server**, so we use `@server`.
 
-**Create**: `tutorial_05_http.raven`
+**Create**: `tutorial_05_http.jnc`
 
 ```raven
 @server
@@ -683,7 +683,7 @@ async fn main() {
 
 ### Combining Client and Server
 
-RavensOne's superpower: **automatic RPC** between client and server!
+Jounce's superpower: **automatic RPC** between client and server!
 
 ```raven
 @server
@@ -744,7 +744,7 @@ fn main() {
 
 **Key Concepts**:
 - `@server` function can be called from `@client` code
-- RavensOne **automatically generates RPC**
+- Jounce **automatically generates RPC**
 - `.then(|result| ...)` handles async result
 - No manual API endpoints needed!
 
@@ -754,7 +754,7 @@ fn main() {
 
 Let's build a login form with validation.
 
-**Create**: `tutorial_06_forms.raven`
+**Create**: `tutorial_06_forms.jnc`
 
 ```raven
 @client
@@ -874,7 +874,7 @@ if password.get() != password_confirm.get() {
 
 Let's build a complete todo list application combining everything we've learned!
 
-**Create**: `tutorial_07_todo.raven`
+**Create**: `tutorial_07_todo.jnc`
 
 ```raven
 struct Todo {
@@ -1317,7 +1317,7 @@ component RegistrationForm() {
 
 Congratulations! You've learned:
 
-✅ Basic RavensOne syntax and functions
+✅ Basic Jounce syntax and functions
 ✅ Math library for calculations
 ✅ Reactive programming with Signal, Computed, Effect
 ✅ Building interactive UIs with components
@@ -1406,7 +1406,7 @@ todos.notify();  // Triggers updates
 ## Tips for Success
 
 1. **Start Small**: Build simple examples before complex apps
-2. **Use Computed Values**: Let RavensOne handle derived state
+2. **Use Computed Values**: Let Jounce handle derived state
 3. **Think Reactively**: Data flows down, events flow up
 4. **Handle Errors**: Always use `match` for Result types
 5. **Test Incrementally**: Compile and test after each feature
@@ -1477,7 +1477,7 @@ let value = Storage::get("key");
 
 ---
 
-**Happy coding with RavensOne! 🚀**
+**Happy coding with Jounce! 🚀**
 
 For more help:
 - API Reference: `docs/guides/STDLIB_API_REFERENCE.md`

@@ -1,8 +1,8 @@
-# RavensOne Example Applications Plan
+# Jounce Example Applications Plan
 
 ## 🎯 Goal
 Create a progressive series of small example applications that:
-1. Teach RavensOne features incrementally
+1. Teach Jounce features incrementally
 2. Fit entirely in an LLM's context window (~30-40k tokens total)
 3. Leave room for LLM to write full applications
 4. Serve as learning material for both humans and AI
@@ -24,7 +24,7 @@ Create a progressive series of small example applications that:
 **Features**: Basic syntax, functions, console output
 ```raven
 fn main() {
-    println!("Hello, RavensOne!");
+    println!("Hello, Jounce!");
 }
 ```
 **Teaches**:
@@ -184,22 +184,22 @@ fn Counter() -> JSX {
 ```
 examples/
 ├── 01-basics/
-│   ├── 01-hello-world.raven          (50 lines)
-│   ├── 02-variables-types.raven      (100 lines)
-│   └── 03-control-flow.raven         (150 lines)
+│   ├── 01-hello-world.jnc          (50 lines)
+│   ├── 02-variables-types.jnc      (100 lines)
+│   └── 03-control-flow.jnc         (150 lines)
 ├── 02-core/
-│   ├── 04-functions-closures.raven   (200 lines)
-│   ├── 05-structs-enums.raven        (250 lines)
-│   └── 06-collections.raven          (250 lines)
+│   ├── 04-functions-closures.jnc   (200 lines)
+│   ├── 05-structs-enums.jnc        (250 lines)
+│   └── 06-collections.jnc          (250 lines)
 ├── 03-reactive/
-│   ├── 07-reactive-state.raven       (200 lines)
-│   └── 08-jsx-basics.raven           (400 lines)
+│   ├── 07-reactive-state.jnc       (200 lines)
+│   └── 08-jsx-basics.jnc           (400 lines)
 ├── 04-fullstack/
-│   ├── 09-counter-app.raven          (400 lines)
-│   └── 10-todo-list.raven            (600 lines)
+│   ├── 09-counter-app.jnc          (400 lines)
+│   └── 10-todo-list.jnc            (600 lines)
 └── 05-advanced/
-    ├── 11-api-integration.raven      (500 lines)
-    └── 12-mini-ecommerce.raven       (900 lines)
+    ├── 11-api-integration.jnc      (500 lines)
+    └── 12-mini-ecommerce.jnc       (900 lines)
 ```
 
 **Total**: ~4,500 lines (~9,000 tokens)

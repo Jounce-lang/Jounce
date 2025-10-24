@@ -1,4 +1,4 @@
-# RavensOne Sprint: Tasks 1-4 Complete 🎉
+# Jounce Sprint: Tasks 1-4 Complete 🎉
 
 **Date**: 2025-10-21
 **Duration**: ~4 hours
@@ -70,7 +70,7 @@ let mod_result = (a % b);
 ### What Was Built
 
 **1. Complete Module Loader** (`src/module_loader.rs` - 300+ lines)
-- Module path resolution: `raven_router` → `aloha-shirts/raven-router/src/lib.raven`
+- Module path resolution: `raven_router` → `aloha-shirts/raven-router/src/lib.jnc`
 - Snake_case to kebab-case conversion
 - Multi-root search (test_modules/, aloha-shirts/, custom paths)
 - Module caching to avoid re-parsing
@@ -91,12 +91,12 @@ let mod_result = (a % b);
 ### How It Works
 
 ```raven
-// test_modules/simple-module/src/lib.raven
+// test_modules/simple-module/src/lib.jnc
 fn add(a: i32, b: i32) -> i32 {
     return a + b;
 }
 
-// test_import_simple.raven
+// test_import_simple.jnc
 use simple_module::{add};
 
 fn main() {
@@ -279,7 +279,7 @@ Added 15 functional programming methods:
 **Side Effects:**
 - `.for_each(f)` - Execute function for each element
 
-**3. Example Application** (`examples/collections_demo.raven` - 130 lines)
+**3. Example Application** (`examples/collections_demo.jnc` - 130 lines)
 Comprehensive demo showing:
 - HashMap usage with insert/get/iterate
 - HashSet usage with set operations
@@ -323,7 +323,7 @@ let result = numbers
 **Files Created**: 3
 - `src/module_loader.rs` (300 lines)
 - `src/stdlib/hashset.rs` (250 lines)
-- `examples/collections_demo.raven` (130 lines)
+- `examples/collections_demo.jnc` (130 lines)
 
 **Files Modified**: 7
 - `src/token.rs`
@@ -360,7 +360,7 @@ Final: 221/221 passing ✅
 
 ---
 
-## 🎯 Impact on RavensOne
+## 🎯 Impact on Jounce
 
 ### Language Completeness
 
@@ -438,7 +438,7 @@ Final: 221/221 passing ✅
 
 ## 🎉 Conclusion
 
-This sprint successfully implemented 4 critical language features, bringing RavensOne from 60% to 80% language completeness. All tests passing, no regressions, and the foundation is now in place for the example applications to compile and run.
+This sprint successfully implemented 4 critical language features, bringing Jounce from 60% to 80% language completeness. All tests passing, no regressions, and the foundation is now in place for the example applications to compile and run.
 
 **Total Impact**:
 - 1,200+ lines of new code
@@ -451,6 +451,6 @@ This sprint successfully implemented 4 critical language features, bringing Rave
 ---
 
 **Sprint Team**: Claude Code (AI Assistant)
-**Project**: RavensOne Full-Stack Language
+**Project**: Jounce Full-Stack Language
 **Version**: 0.1.1
 **Status**: ✅ Success

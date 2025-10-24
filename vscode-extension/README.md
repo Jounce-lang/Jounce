@@ -1,6 +1,6 @@
-# RavensOne for Visual Studio Code
+# Jounce for Visual Studio Code
 
-Official Visual Studio Code extension for the **RavensOne** full-stack programming language.
+Official Visual Studio Code extension for the **Jounce** full-stack programming language.
 
 ## 🚀 Features
 
@@ -50,39 +50,39 @@ Official Visual Studio Code extension for the **RavensOne** full-stack programmi
 - Comments and documentation
 
 ### Extension Commands
-- **RavensOne: Compile Current File** - Compile .raven file to JavaScript
-- **RavensOne: Watch Current File** - Auto-recompile on save
-- **RavensOne: Format Document** - Format code
-- **RavensOne: Run Tests** - Run compiler tests
-- **RavensOne: Show Profiling** - Display compilation timing breakdown
+- **Jounce: Compile Current File** - Compile .jnc file to JavaScript
+- **Jounce: Watch Current File** - Auto-recompile on save
+- **Jounce: Format Document** - Format code
+- **Jounce: Run Tests** - Run compiler tests
+- **Jounce: Show Profiling** - Display compilation timing breakdown
 
 ## 📦 Installation
 
 ### Prerequisites
-You need the RavensOne compiler installed and available in your PATH:
+You need the Jounce compiler installed and available in your PATH:
 
 ```bash
 # Check if raven is installed
 raven --version
 ```
 
-If not installed, follow the [RavensOne Installation Guide](https://github.com/ravensone/ravensone).
+If not installed, follow the [Jounce Installation Guide](https://github.com/jounce/jounce).
 
 ### Install Extension
 1. Open VS Code
 2. Press `Cmd+Shift+X` (Mac) or `Ctrl+Shift+X` (Windows/Linux)
-3. Search for "RavensOne"
+3. Search for "Jounce"
 4. Click "Install"
 
 ## 🎯 Getting Started
 
-1. Create a new `.raven` file
+1. Create a new `.jnc` file
 2. Start typing - you'll get completions automatically
 3. Hover over symbols to see type information
 4. Use `F12` to jump to definitions
 5. Press `Shift+Alt+F` to format your code
 
-### Example RavensOne Code
+### Example Jounce Code
 
 ```raven
 use std::collections::Vec;
@@ -114,20 +114,20 @@ fn render_ui() -> JSX {
 
 This extension contributes the following settings:
 
-- `ravensone.lspPath`: Path to the RavensOne compiler binary (default: `"raven"`)
-- `ravensone.enableInlayHints`: Enable/disable inlay hints (default: `true`)
-- `ravensone.enableTypeHints`: Show type hints for variables (default: `true`)
-- `ravensone.enableParameterHints`: Show parameter names in function calls (default: `true`)
-- `ravensone.formatOnSave`: Automatically format files on save (default: `false`)
-- `ravensone.trace.server`: LSP server trace level - `"off"`, `"messages"`, `"verbose"` (default: `"off"`)
+- `jounce.lspPath`: Path to the Jounce compiler binary (default: `"jnc"`)
+- `jounce.enableInlayHints`: Enable/disable inlay hints (default: `true`)
+- `jounce.enableTypeHints`: Show type hints for variables (default: `true`)
+- `jounce.enableParameterHints`: Show parameter names in function calls (default: `true`)
+- `jounce.formatOnSave`: Automatically format files on save (default: `false`)
+- `jounce.trace.server`: LSP server trace level - `"off"`, `"messages"`, `"verbose"` (default: `"off"`)
 
 ### Example Configuration
 
 ```json
 {
-  "ravensone.lspPath": "/usr/local/bin/raven",
-  "ravensone.enableInlayHints": true,
-  "ravensone.formatOnSave": true
+  "jounce.lspPath": "/usr/local/bin/raven",
+  "jounce.enableInlayHints": true,
+  "jounce.formatOnSave": true
 }
 ```
 
@@ -159,7 +159,7 @@ This extension contributes the following settings:
 
 ## 🐛 Known Issues
 
-- The RavensOne compiler must be installed separately
+- The Jounce compiler must be installed separately
 - LSP server requires `raven lsp` command to be available
 - Icon placeholder (will be updated in next release)
 
@@ -183,7 +183,7 @@ This extension contributes the following settings:
 
 ## 🤝 Contributing
 
-Found a bug or have a feature request? Please open an issue on the [GitHub repository](https://github.com/ravensone/ravensone).
+Found a bug or have a feature request? Please open an issue on the [GitHub repository](https://github.com/jounce/jounce).
 
 ## 📄 License
 
@@ -191,11 +191,11 @@ MIT License - See LICENSE file for details.
 
 ## 🔗 Resources
 
-- [RavensOne Documentation](https://github.com/ravensone/ravensone)
-- [Language Guide](https://github.com/ravensone/ravensone/docs)
-- [Standard Library API](https://github.com/ravensone/ravensone/docs/guides/STDLIB_API_REFERENCE.md)
-- [Report Issues](https://github.com/ravensone/ravensone/issues)
+- [Jounce Documentation](https://github.com/jounce/jounce)
+- [Language Guide](https://github.com/jounce/jounce/docs)
+- [Standard Library API](https://github.com/jounce/jounce/docs/guides/STDLIB_API_REFERENCE.md)
+- [Report Issues](https://github.com/jounce/jounce/issues)
 
 ---
 
-**Made with ❤️ by the RavensOne team**
+**Made with ❤️ by the Jounce team**

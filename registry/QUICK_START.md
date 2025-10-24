@@ -1,4 +1,4 @@
-# RavensOne Registry - Quick Start Deployment
+# Jounce Registry - Quick Start Deployment
 
 ## 🚀 Deploy in 3 Steps
 
@@ -38,7 +38,7 @@ After deployment, update the client:
 **Change:**
 ```rust
 let base_url = std::env::var("RAVEN_REGISTRY")
-    .unwrap_or_else(|_| "https://ravensone-registry.fly.dev/api/v1".to_string());
+    .unwrap_or_else(|_| "https://jounce-registry.fly.dev/api/v1".to_string());
 ```
 
 Then rebuild:
@@ -52,20 +52,20 @@ cargo build --release
 
 ### Test 1: Health Check
 ```bash
-curl https://ravensone-registry.fly.dev/health
+curl https://jounce-registry.fly.dev/health
 # Should return: OK
 ```
 
 ### Test 2: Register a User
 ```bash
-curl -X POST https://ravensone-registry.fly.dev/api/v1/auth/register \
+curl -X POST https://jounce-registry.fly.dev/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","email":"test@example.com","password":"testpass123"}'
 ```
 
 ### Test 3: Search Packages
 ```bash
-curl https://ravensone-registry.fly.dev/api/v1/packages/search?q=raven
+curl https://jounce-registry.fly.dev/api/v1/packages/search?q=raven
 ```
 
 ---
@@ -74,22 +74,22 @@ curl https://ravensone-registry.fly.dev/api/v1/packages/search?q=raven
 
 ### View Logs
 ```bash
-flyctl logs --app ravensone-registry
+flyctl logs --app jounce-registry
 ```
 
 ### Check Status
 ```bash
-flyctl status --app ravensone-registry
+flyctl status --app jounce-registry
 ```
 
 ### SSH into Container
 ```bash
-flyctl ssh console --app ravensone-registry
+flyctl ssh console --app jounce-registry
 ```
 
 ### Database Console
 ```bash
-flyctl postgres connect -a ravensone-registry-db
+flyctl postgres connect -a jounce-registry-db
 ```
 
 ---
@@ -98,30 +98,30 @@ flyctl postgres connect -a ravensone-registry-db
 
 ### Redeploy After Changes
 ```bash
-flyctl deploy --app ravensone-registry
+flyctl deploy --app jounce-registry
 ```
 
 ### Scale Resources
 ```bash
 # Increase memory
-flyctl scale memory 512 --app ravensone-registry
+flyctl scale memory 512 --app jounce-registry
 
 # Increase CPU
-flyctl scale vm shared-cpu-2x --app ravensone-registry
+flyctl scale vm shared-cpu-2x --app jounce-registry
 ```
 
 ### Restart App
 ```bash
-flyctl apps restart ravensone-registry
+flyctl apps restart jounce-registry
 ```
 
 ---
 
 ## 🌐 Production URLs
 
-- **Registry**: https://ravensone-registry.fly.dev
-- **API**: https://ravensone-registry.fly.dev/api/v1
-- **Health**: https://ravensone-registry.fly.dev/health
+- **Registry**: https://jounce-registry.fly.dev
+- **API**: https://jounce-registry.fly.dev/api/v1
+- **Health**: https://jounce-registry.fly.dev/health
 
 ---
 
@@ -143,7 +143,7 @@ flyctl apps restart ravensone-registry
 ### App Won't Start
 ```bash
 # Check logs
-flyctl logs --app ravensone-registry
+flyctl logs --app jounce-registry
 
 # Common issues:
 # - Database connection failed → Check DATABASE_URL secret
@@ -154,7 +154,7 @@ flyctl logs --app ravensone-registry
 ### Database Issues
 ```bash
 # Test connection
-flyctl postgres connect -a ravensone-registry-db
+flyctl postgres connect -a jounce-registry-db
 
 # Check tables
 \dt
@@ -163,7 +163,7 @@ flyctl postgres connect -a ravensone-registry-db
 ### Out of Memory
 ```bash
 # Increase memory
-flyctl scale memory 512 --app ravensone-registry
+flyctl scale memory 512 --app jounce-registry
 ```
 
 ---
@@ -174,7 +174,7 @@ Once deployed, you can:
 1. Use the registry with `raven pkg` commands
 2. Publish your packages
 3. Share packages with others
-4. Build the RavensOne ecosystem!
+4. Build the Jounce ecosystem!
 
 ---
 

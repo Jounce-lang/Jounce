@@ -16,7 +16,7 @@
 - Generates `next()` calls and checks for Some/None
 - Proper loop variable binding
 - Added helper methods `count_required_locals` to track locals needed
-- Created comprehensive example file (examples/for_in_loop.raven)
+- Created comprehensive example file (examples/for_in_loop.jnc)
 
 **Implementation Details**:
 - Modified `src/codegen.rs:449-551`
@@ -36,7 +36,7 @@
 - Heap allocation with proper sizing
 - Element storage with correct offsets
 - Returns pointer to array
-- Created example file (examples/array_literals.raven)
+- Created example file (examples/array_literals.jnc)
 
 **Implementation Details**:
 - Modified `src/codegen.rs:685-731`
@@ -53,7 +53,7 @@
 
 **What was verified**:
 - `raven dev` command already implemented in src/main.rs:51-54, 474-507
-- Starts file watcher for .raven files
+- Starts file watcher for .jnc files
 - Automatically recompiles on file changes  
 - Launches HMR server (scripts/hmr-server.js)
 - Starts HTTP server for development
@@ -103,8 +103,8 @@ Upon investigation, the following tasks were already complete:
 - **Files Modified**: 2 (src/codegen.rs, examples/)
 - **Lines Added**: ~150 lines (for-in + array literals)
 - **Example Files Created**: 2
-  - examples/for_in_loop.raven (95 lines)
-  - examples/array_literals.raven (40 lines)
+  - examples/for_in_loop.jnc (95 lines)
+  - examples/array_literals.jnc (40 lines)
 
 ### Test Results
 - **Total Tests**: 165
@@ -126,7 +126,7 @@ Upon investigation, the following tasks were already complete:
 
 ### 10. Create Comprehensive Getting Started Documentation  
 **Status**: Pending
-**Details**: Need user-facing guide for new RavensOne developers
+**Details**: Need user-facing guide for new Jounce developers
 
 ---
 
@@ -169,12 +169,12 @@ Upon investigation, the following tasks were already complete:
    - Improved `generate_expression` for arrays
    - Added `count_required_locals`, `count_statement_locals`, `count_expression_locals`
 
-2. `examples/for_in_loop.raven` (NEW)
+2. `examples/for_in_loop.jnc` (NEW)
    - Comprehensive for-in loop examples
    - Custom iterator implementation
    - Nested loops demonstration
 
-3. `examples/array_literals.raven` (NEW)
+3. `examples/array_literals.jnc` (NEW)
    - Array literal syntax examples
    - Array operations and indexing
    - Multi-dimensional arrays

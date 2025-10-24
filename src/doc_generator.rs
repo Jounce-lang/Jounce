@@ -1,7 +1,7 @@
 // Documentation Generator
 //
-// Generates HTML documentation from RavensOne source code with doc comments.
-// Similar to rustdoc, but for RavensOne.
+// Generates HTML documentation from Jounce source code with doc comments.
+// Similar to rustdoc, but for Jounce.
 //
 // Features:
 // - Parse /// doc comments

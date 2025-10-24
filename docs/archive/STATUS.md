@@ -1,4 +1,4 @@
-# RavensOne Project Status
+# Jounce Project Status
 
 **Last Updated**: October 20, 2025
 **Current Phase**: Phase 1 - Foundation & Stabilization (Week 1)
@@ -12,7 +12,7 @@
 
 Build the **most useful language ever for human-AI collaboration** where Claude and humans can build production full-stack applications in seconds with:
 
-- **ONE file type** - `.raven` files only
+- **ONE file type** - `.jnc` files only
 - **ZERO context switching** - No jumping between frontend/backend
 - **MAXIMUM velocity** - From idea to production in minutes
 - **Type safety** - Compile-time checking throughout
@@ -71,7 +71,7 @@ Build the **most useful language ever for human-AI collaboration** where Claude 
 ### Compiler Pipeline
 
 ```
-.raven source
+.jnc source
     ↓
 [Lexer] → tokens
     ↓
@@ -140,7 +140,7 @@ fn validate_email(email: String) -> bool {
 ## 🗂️ Project Structure
 
 ```
-ravensone/
+jounce/
 ├── src/
 │   ├── main.rs                 # CLI entry point (1,200 lines)
 │   ├── lib.rs                  # Compiler library (126 lines)
@@ -166,7 +166,7 @@ ravensone/
 │
 ├── examples/
 │   ├── test_full_compiler_bridge.rs    # End-to-end test ✨ NEW
-│   └── *.raven                         # Example apps
+│   └── *.jnc                         # Example apps
 │
 ├── aloha-shirts/                       # Published packages
 │   ├── raven-ui/                       # UI components (2,000 lines)
@@ -235,7 +235,7 @@ ravensone/
 - ✅ std::fs - File system access
 
 **Package Ecosystem:**
-- ✅ Package registry deployed (https://ravensone-registry.fly.dev)
+- ✅ Package registry deployed (https://jounce-registry.fly.dev)
 - ✅ 4 seed packages published
 - ✅ User authentication with JWT
 - ✅ Versioning with semver
@@ -323,9 +323,9 @@ ravensone/
 - Auth providers
 
 **Self-Hosting:**
-- Compiler written in RavensOne
+- Compiler written in Jounce
 - Bootstrap compiler
-- Standard library in RavensOne
+- Standard library in Jounce
 
 ---
 
@@ -354,7 +354,7 @@ ravensone/
 
 ---
 
-## 🔥 What Makes RavensOne Special
+## 🔥 What Makes Jounce Special
 
 ### 1. Single File Development
 Write entire applications in ONE file:
@@ -431,13 +431,13 @@ cargo install --path .
 ### Compile Applications
 ```bash
 # Basic compilation
-raven compile app.raven
+raven compile app.jnc
 
 # With minification
-raven compile app.raven --minify
+raven compile app.jnc --minify
 
 # Custom output directory
-raven compile app.raven --output build/
+raven compile app.jnc --output build/
 
 # Development mode with HMR
 raven dev --port 3000
@@ -471,9 +471,9 @@ raven pkg search http
 - **This Status Doc**: [STATUS.md](STATUS.md)
 
 ### Links
-- **Repository**: https://github.com/jrezin1201/RavensOne
-- **Package Registry**: https://ravensone-registry.fly.dev
-- **Issues**: https://github.com/jrezin1201/RavensOne/issues
+- **Repository**: https://github.com/jrezin1201/Jounce
+- **Package Registry**: https://jounce-registry.fly.dev
+- **Issues**: https://github.com/jrezin1201/Jounce/issues
 
 ### Contributing
 We welcome contributions! See README.md for how to get started.

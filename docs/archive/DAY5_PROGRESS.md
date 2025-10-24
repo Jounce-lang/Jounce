@@ -107,7 +107,7 @@ test result: ok. 197 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out
 
 ### Build Status
 ```
-Compiling ravensone v0.1.0
+Compiling jounce v0.1.0
 Finished `dev` profile in 1.01s
 ```
 ✅ Zero warnings (maintained from Day 4)

@@ -8,7 +8,7 @@ The extension requires a 128x128 PNG icon file named `icon.png` in the root dire
 - **Location**: `vscode-extension/icon.png`
 
 ## Design Suggestions
-- Use the RavensOne logo/branding
+- Use the Jounce logo/branding
 - Keep it simple and recognizable at small sizes
 - Use high contrast colors
 - Consider dark mode compatibility
@@ -17,7 +17,7 @@ The extension requires a 128x128 PNG icon file named `icon.png` in the root dire
 For testing purposes, you can:
 1. Create a simple colored square with "R" text
 2. Use an online icon generator
-3. Extract from existing RavensOne branding materials
+3. Extract from existing Jounce branding materials
 
 ## Tools for Creating Icons
 - Figma (free online design tool)

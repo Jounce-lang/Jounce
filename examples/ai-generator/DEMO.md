@@ -1,4 +1,4 @@
-# RavensOne AI Generator - Live Demo
+# Jounce AI Generator - Live Demo
 
 ## 🎬 Example: Generating a Todo App
 
@@ -9,7 +9,7 @@ Let's walk through generating a complete todo application.
 ```bash
 $ ./generate.sh
 
-🤖 RavensOne AI Project Generator
+🤖 Jounce AI Project Generator
 ==================================
 
 Project name: todo-app
@@ -24,22 +24,22 @@ Features: local storage persistence, filter by status, clear completed tasks
 The system sends this prompt to Claude:
 
 ```
-Create a RavensOne project:
+Create a Jounce project:
 Name: todo-app
 Description: A todo list with add, delete, mark complete, and filtering
 Features: local storage persistence, filter by status, clear completed tasks
 
-Generate all .raven files needed. Return ONLY the JSON.
+Generate all .jnc files needed. Return ONLY the JSON.
 ```
 
 ### Step 3: Files Are Created
 
 ```
-✅ Created: src/main.raven
-✅ Created: src/components/TodoItem.raven
-✅ Created: src/components/TodoInput.raven
-✅ Created: src/components/Filter.raven
-✅ Created: raven.toml
+✅ Created: src/main.jnc
+✅ Created: src/components/TodoItem.jnc
+✅ Created: src/components/TodoInput.jnc
+✅ Created: src/components/Filter.jnc
+✅ Created: jounce.toml
 ```
 
 ### Step 4: Compilation
@@ -56,7 +56,7 @@ Generate all .raven files needed. Return ONLY the JSON.
 
 ## 📝 Generated Code
 
-### `src/main.raven`
+### `src/main.jnc`
 
 ```raven
 use raven::prelude::*;
@@ -188,7 +188,7 @@ struct Todo {
 }
 ```
 
-### `src/components/TodoItem.raven`
+### `src/components/TodoItem.jnc`
 
 ```raven
 use raven::prelude::*;
@@ -219,7 +219,7 @@ component TodoItem(props: TodoItemProps) {
 }
 ```
 
-### `src/components/TodoInput.raven`
+### `src/components/TodoInput.jnc`
 
 ```raven
 use raven::prelude::*;
@@ -249,7 +249,7 @@ component TodoInput(props: TodoInputProps) {
 }
 ```
 
-### `src/components/Filter.raven`
+### `src/components/Filter.jnc`
 
 ```raven
 use raven::prelude::*;
@@ -284,7 +284,7 @@ component Filter(props: FilterProps) {
 }
 ```
 
-### `raven.toml`
+### `jounce.toml`
 
 ```toml
 [package]
@@ -345,12 +345,12 @@ Generated structure:
 ```
 weather-dash/
 ├── src/
-│   ├── main.raven
+│   ├── main.jnc
 │   └── components/
-│       ├── CurrentWeather.raven
-│       ├── HourlyForecast.raven
-│       ├── DailyForecast.raven
-│       └── LocationSearch.raven
+│       ├── CurrentWeather.jnc
+│       ├── HourlyForecast.jnc
+│       ├── DailyForecast.jnc
+│       └── LocationSearch.jnc
 ```
 
 ### Calculator
@@ -365,12 +365,12 @@ Generated structure:
 ```
 calculator/
 ├── src/
-│   ├── main.raven
+│   ├── main.jnc
 │   └── components/
-│       ├── Display.raven
-│       ├── ButtonPad.raven
-│       ├── ScientificPad.raven
-│       └── History.raven
+│       ├── Display.jnc
+│       ├── ButtonPad.jnc
+│       ├── ScientificPad.jnc
+│       └── History.jnc
 ```
 
 ### Timer
@@ -400,7 +400,7 @@ Features: income/expense tracking, categories, charts, monthly summaries
 
 ```
 Description: Make me a website  // Too vague
-Description: An app with AI  // RavensOne is frontend-only
+Description: An app with AI  // Jounce is frontend-only
 Description: Complex 3D game  // Beyond scope
 ```
 

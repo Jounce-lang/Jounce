@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RavensOne Debug Mode</title>
+    <title>Jounce Debug Mode</title>
     <style>
         * {
             margin: 0;
@@ -163,13 +163,13 @@
 <body>
     <div id="app">
         <div id="app-container">
-            <!-- Your RavensOne app will be mounted here -->
+            <!-- Your Jounce app will be mounted here -->
         </div>
     </div>
 
     <div id="debug-panel">
         <div id="debug-header">
-            🔧 RavensOne Debugger
+            🔧 Jounce Debugger
         </div>
 
         <div id="debug-tabs">
@@ -224,7 +224,7 @@
 
         // Update errors display
         function updateErrorsDisplay() {
-            const errors = window.RavensOneDebugger.getErrors();
+            const errors = window.JounceDebugger.getErrors();
             const errorsList = document.getElementById('errors-list');
 
             if (errors.length === 0) {
@@ -307,12 +307,12 @@
 
         // Global functions
         window.clearErrors = () => {
-            window.RavensOneDebugger.clearErrors();
+            window.JounceDebugger.clearErrors();
             updateErrorsDisplay();
         };
 
         window.exportErrors = () => {
-            const data = window.RavensOneDebugger.exportErrors();
+            const data = window.JounceDebugger.exportErrors();
             const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -337,7 +337,7 @@
         updateConsoleDisplay();
 
         // Enable verbose logging by default in debug mode
-        window.raven.enableVerboseLogging();
+        window.jnc.enableVerboseLogging();
 
         console.log('🔧 Debug mode active');
     </script>

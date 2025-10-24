@@ -1,6 +1,6 @@
-# RavensOne Package Registry
+# Jounce Package Registry
 
-Official package registry server for RavensOne packages.
+Official package registry server for Jounce packages.
 
 ## 🚀 Quick Start
 
@@ -13,10 +13,10 @@ Official package registry server for RavensOne packages.
 
 ```bash
 # Create database
-createdb ravensone_registry
+createdb jounce_registry
 
 # Or using psql
-psql -c "CREATE DATABASE ravensone_registry;"
+psql -c "CREATE DATABASE jounce_registry;"
 ```
 
 ### 2. Configure Environment
@@ -160,7 +160,7 @@ See `migrations/20251017_init.sql` for complete schema.
 
 ```bash
 # Build Docker image (TODO: Create Dockerfile)
-docker build -t ravensone-registry .
+docker build -t jounce-registry .
 
 # Run with Docker Compose (TODO: Create docker-compose.yml)
 docker-compose up -d
@@ -171,7 +171,7 @@ docker-compose up -d
 The `raven pkg` CLI integrates with this registry:
 
 ```bash
-# Login (stores token in ~/.raven/credentials)
+# Login (stores token in ~/.jnc/credentials)
 raven pkg login
 
 # Publish package
@@ -207,7 +207,7 @@ raven pkg install raven-ui@1.2.3
 
 ## 🤝 Contributing
 
-This is part of the RavensOne project. See main repository README for contribution guidelines.
+This is part of the Jounce project. See main repository README for contribution guidelines.
 
 ## 📄 License
 
@@ -215,4 +215,4 @@ MIT License - see LICENSE file in main repository
 
 ---
 
-*Part of RavensOne v2.0 - The AI-first full-stack web framework*
+*Part of Jounce v2.0 - The AI-first full-stack web framework*

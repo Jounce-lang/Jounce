@@ -1,4 +1,4 @@
-# RavensOne Testing Guide
+# Jounce Testing Guide
 
 ## Quick Start
 
@@ -51,13 +51,13 @@ This will start a server at `http://localhost:8000`
 
 ```bash
 # Compile test component
-cargo run --bin raven compile test-component.raven --output test-component.wasm
+cargo run --bin raven compile test-component.jnc --output test-component.wasm
 
 # Compile if statement test
-cargo run --bin raven compile test-if.raven --output test-if.wasm
+cargo run --bin raven compile test-if.jnc --output test-if.wasm
 
 # Compile examples
-cargo run --bin raven compile examples/simple-counter.raven --output examples/simple-counter.wasm
+cargo run --bin raven compile examples/simple-counter.jnc --output examples/simple-counter.wasm
 ```
 
 ## Debugging
@@ -148,7 +148,7 @@ WASM setting signal: 0 to: 5
 ## File Structure
 
 ```
-ravensone/
+jounce/
 ├── serve.py                    # Development server
 ├── test-reactive.html          # Comprehensive reactive test
 ├── test-wasm.html              # Basic WASM loading test
@@ -158,7 +158,7 @@ ravensone/
 │   └── reactive-runtime.js     # Reactive Signal/Effect runtime
 └── runtime/
     ├── index.html              # Full app runtime
-    └── ravensone.js            # WASM bridge
+    └── jounce.js            # WASM bridge
 ```
 
 ## Success Criteria

@@ -1,4 +1,4 @@
-// RavensOne Type System
+// Jounce Type System
 // Defines the type representation and type operations
 
 use std::collections::{HashMap, HashSet};

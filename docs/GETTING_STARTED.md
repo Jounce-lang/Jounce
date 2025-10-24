@@ -1,12 +1,12 @@
-# Getting Started with RavensOne
+# Getting Started with Jounce
 
-Welcome to RavensOne! This guide will help you build your first RavensOne application in under 10 minutes.
+Welcome to Jounce! This guide will help you build your first Jounce application in under 10 minutes.
 
 ---
 
-## What is RavensOne?
+## What is Jounce?
 
-RavensOne is a modern full-stack web framework that compiles to WebAssembly. It's designed for AI-assisted development and offers:
+Jounce is a modern full-stack web framework that compiles to WebAssembly. It's designed for AI-assisted development and offers:
 
 - ✅ **Type-safe** with automatic type inference
 - ⚡ **Blazing fast** (65,000+ compilations/second)
@@ -24,22 +24,22 @@ RavensOne is a modern full-stack web framework that compiles to WebAssembly. It'
 - macOS, Linux, or Windows
 - Terminal/Command Prompt access
 
-### Install RavensOne
+### Install Jounce
 
 **macOS/Linux:**
 ```bash
-curl -sSf https://install.ravensone.dev | sh
+curl -sSf https://install.jounce.dev | sh
 ```
 
 **Windows:**
 ```powershell
-iwr https://install.ravensone.dev/windows | iex
+iwr https://install.jounce.dev/windows | iex
 ```
 
 **From Source:**
 ```bash
-git clone https://github.com/jrezin1201/RavensOne
-cd RavensOne
+git clone https://github.com/jrezin1201/Jounce
+cd Jounce
 cargo build --release
 cargo install --path .
 ```
@@ -66,15 +66,15 @@ This creates a project with the following structure:
 
 ```
 my-first-app/
-├── raven.toml          # Package manifest
+├── jounce.toml          # Package manifest
 ├── src/
-│   └── main.raven      # Entry point
+│   └── main.jnc      # Entry point
 └── README.md
 ```
 
-### 2. Edit `src/main.raven`
+### 2. Edit `src/main.jnc`
 
-Open `src/main.raven` and replace its contents with:
+Open `src/main.jnc` and replace its contents with:
 
 ```raven
 component App() {
@@ -85,7 +85,7 @@ component App() {
     };
 
     <div>
-        <h1>Hello, RavensOne!</h1>
+        <h1>Hello, Jounce!</h1>
         <p>Count: {count.get()}</p>
         <button onclick={increment}>Click me!</button>
     </div>
@@ -116,7 +116,7 @@ component App() {
 }
 ```
 
-Components are the building blocks of RavensOne applications. They're declared with the `component` keyword.
+Components are the building blocks of Jounce applications. They're declared with the `component` keyword.
 
 ### Reactive State with Signals
 
@@ -155,7 +155,7 @@ Event handlers are just functions! The `||` syntax creates a lambda (anonymous f
 </div>
 ```
 
-Curly braces `{}` embed RavensOne expressions in JSX.
+Curly braces `{}` embed Jounce expressions in JSX.
 
 ---
 
@@ -205,7 +205,7 @@ let load_user = async || {
 
 ## Package Management
 
-RavensOne has a built-in package manager with a live registry at [ravensone-registry.fly.dev](https://ravensone-registry.fly.dev).
+Jounce has a built-in package manager with a live registry at [jounce-registry.fly.dev](https://jounce-registry.fly.dev).
 
 ### Initialize a New Package
 
@@ -213,7 +213,7 @@ RavensOne has a built-in package manager with a live registry at [ravensone-regi
 raven pkg init
 ```
 
-This creates a `raven.toml` manifest file for your package.
+This creates a `jounce.toml` manifest file for your package.
 
 ### Install Packages
 
@@ -221,7 +221,7 @@ This creates a `raven.toml` manifest file for your package.
 # Install a specific package
 raven pkg add raven-ui
 
-# Install all dependencies from raven.toml
+# Install all dependencies from jounce.toml
 raven pkg install
 ```
 
@@ -370,18 +370,18 @@ let handle_submit = |e| {
 ### Common Issues
 
 **Issue**: `raven: command not found`
-- **Solution**: Make sure RavensOne is in your PATH. Try `source ~/.bashrc` or restart your terminal.
+- **Solution**: Make sure Jounce is in your PATH. Try `source ~/.bashrc` or restart your terminal.
 
 **Issue**: Type errors during compilation
-- **Solution**: Check the error message for line numbers. RavensOne's type inference is smart but may need hints for complex types.
+- **Solution**: Check the error message for line numbers. Jounce's type inference is smart but may need hints for complex types.
 
 **Issue**: Hot reload not working
 - **Solution**: Ensure you're running `raven dev` and your browser has WebSocket support.
 
 ### Getting Help
 
-- **GitHub Issues**: [github.com/jrezin1201/RavensOne/issues](https://github.com/jrezin1201/RavensOne/issues)
-- **Discussions**: [github.com/jrezin1201/RavensOne/discussions](https://github.com/jrezin1201/RavensOne/discussions)
+- **GitHub Issues**: [github.com/jrezin1201/Jounce/issues](https://github.com/jrezin1201/Jounce/issues)
+- **Discussions**: [github.com/jrezin1201/Jounce/discussions](https://github.com/jrezin1201/Jounce/discussions)
 - **Discord**: Coming soon!
 
 ---
@@ -390,9 +390,9 @@ let handle_submit = |e| {
 
 Check out these complete example applications:
 
-- [Counter App](../examples/counter.raven) - Simple reactive counter
-- [Todo List](../examples/todo_app.raven) - Full CRUD with server functions
-- [Analytics Dashboard](../examples/analytics_dashboard.raven) - Complex state, charts, responsive design
+- [Counter App](../examples/counter.jnc) - Simple reactive counter
+- [Todo List](../examples/todo_app.jnc) - Full CRUD with server functions
+- [Analytics Dashboard](../examples/analytics_dashboard.jnc) - Complex state, charts, responsive design
 
 ---
 
@@ -437,11 +437,11 @@ server fn get_data() -> Result<Data, Error> {
 
 ---
 
-## What Makes RavensOne Special?
+## What Makes Jounce Special?
 
 ### 1. AI-First Development
 
-RavensOne is designed to work seamlessly with AI assistants. The syntax is clear, concise, and easy for LLMs to generate.
+Jounce is designed to work seamlessly with AI assistants. The syntax is clear, concise, and easy for LLMs to generate.
 
 ### 2. No Virtual DOM
 
@@ -468,12 +468,12 @@ You now know the basics! Here are some next steps:
 1. **Build the Todo app** - [Tutorial](./tutorials/todo-app.md)
 2. **Explore the examples** - [Examples folder](../examples/)
 3. **Read the API docs** - [API Reference](./api/)
-4. **Join the community** - [GitHub Discussions](https://github.com/jrezin1201/RavensOne/discussions)
+4. **Join the community** - [GitHub Discussions](https://github.com/jrezin1201/Jounce/discussions)
 
-**Happy coding with RavensOne!** 🚀
+**Happy coding with Jounce!** 🚀
 
 ---
 
 *Last Updated: October 19, 2025*
-*RavensOne Version: 0.1.0*
-*Registry: https://ravensone-registry.fly.dev*
+*Jounce Version: 0.1.0*
+*Registry: https://jounce-registry.fly.dev*

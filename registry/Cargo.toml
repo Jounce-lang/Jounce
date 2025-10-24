@@ -1,8 +1,8 @@
 [package]
-name = "ravensone-registry"
+name = "jounce-registry"
 version = "0.1.0"
 edition = "2021"
-authors = ["RavensOne Team"]
+authors = ["Jounce Team"]
 
 [[bin]]
 name = "registry-server"

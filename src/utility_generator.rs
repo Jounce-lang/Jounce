@@ -1,4 +1,4 @@
-// RavensOne Utility Class System - Generator
+// Jounce Utility Class System - Generator
 // Scans AST for utility class names and generates corresponding CSS
 
 use crate::ast::{Expression, JsxChild, Program, Statement};
@@ -175,7 +175,7 @@ impl UtilityGenerator {
 
         // Add header comment (unless minifying)
         if !minify {
-            css.push_str("/* RavensOne Utility Classes */\n\n");
+            css.push_str("/* Jounce Utility Classes */\n\n");
         }
 
         // Generate CSS custom properties for theme (if enabled)

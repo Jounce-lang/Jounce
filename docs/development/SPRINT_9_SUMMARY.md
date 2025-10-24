@@ -19,17 +19,17 @@ Fix 3 critical parser bugs blocking ALL example applications from compiling.
 ### Issues Found
 
 1. 🔴 **CRITICAL** - JSX expressions in elements
-   - File: examples/apps/ecommerce/main.raven:333
+   - File: examples/apps/ecommerce/main.jnc:333
    - Error: `No prefix parse function for JsxText("stock}")`
    - Pattern: `<span>{expr}</span>`
 
 2. 🔴 **CRITICAL** - Unicode emoji support
-   - File: examples/apps/social/main.raven:495
+   - File: examples/apps/social/main.jnc:495
    - Error: `Expected LAngle, found Illegal('🔔')`
    - Pattern: `<span>🔔</span>`
 
 3. 🟡 **HIGH** - Let statements in JSX blocks
-   - File: examples/apps/taskboard/main.raven:483
+   - File: examples/apps/taskboard/main.jnc:483
    - Error: `No prefix parse function for Let`
    - Pattern: `{let x = ...; ...}`
 

@@ -1,6 +1,6 @@
-# RavensOne Package Manager - Complete Guide
+# Jounce Package Manager - Complete Guide
 
-The RavensOne package manager (`raven pkg`) provides a complete solution for managing dependencies, packages, and builds in your RavensOne projects.
+The Jounce package manager (`raven pkg`) provides a complete solution for managing dependencies, packages, and builds in your Jounce projects.
 
 ---
 
@@ -19,13 +19,13 @@ The RavensOne package manager (`raven pkg`) provides a complete solution for man
 
 ### Initializing a New Package
 
-Create a new `raven.toml` manifest in your project:
+Create a new `jounce.toml` manifest in your project:
 
 ```bash
 raven pkg init
 ```
 
-This creates a `raven.toml` file with package metadata:
+This creates a `jounce.toml` file with package metadata:
 
 ```toml
 [package]
@@ -49,7 +49,7 @@ keywords = []
 
 ### Installing Dependencies
 
-Install all dependencies from `raven.toml`:
+Install all dependencies from `jounce.toml`:
 
 ```bash
 raven pkg install
@@ -182,7 +182,7 @@ raven pkg info raven-store
 Fetching package information...
 
 📦 raven-store
-   Advanced state management library for RavensOne applications
+   Advanced state management library for Jounce applications
 
 Latest version: 1.0.0
 
@@ -209,7 +209,7 @@ The package manager includes an intelligent build cache system to speed up compi
 
 Build artifacts are cached in:
 ```
-~/.raven/cache/
+~/.jnc/cache/
 ```
 
 ### Viewing Cache Statistics
@@ -222,7 +222,7 @@ raven pkg cache
 ```
 Build Cache Statistics:
 
-Location: /Users/you/.raven/cache
+Location: /Users/you/.jnc/cache
 Cached packages: 3
 
 Cached builds:
@@ -266,7 +266,7 @@ raven pkg search http
 Found 2 packages:
 
 📦 raven-http @ 0.1.0
-   HTTP client and server for RavensOne
+   HTTP client and server for Jounce
    Keywords: http, client, server, api
    Downloads: 203 | Score: 8.50
 
@@ -297,7 +297,7 @@ raven pkg publish
 ```
 
 **Requirements:**
-- Valid `raven.toml` with all required fields
+- Valid `jounce.toml` with all required fields
 - Unique package name
 - Valid semantic version
 - Source files in `src/` directory
@@ -345,14 +345,14 @@ raven pkg publish
 
 ## File Structure
 
-A typical RavensOne project with dependencies:
+A typical Jounce project with dependencies:
 
 ```
 my-project/
-├── raven.toml          # Package manifest
+├── jounce.toml          # Package manifest
 ├── raven.lock          # Dependency lock file
 ├── src/
-│   └── main.raven      # Source code
+│   └── main.jnc      # Source code
 ├── raven_packages/     # Downloaded dependencies
 │   ├── raven-store/
 │   ├── raven-http/
@@ -363,7 +363,7 @@ my-project/
 Global cache location:
 
 ```
-~/.raven/
+~/.jnc/
 ├── credentials.json    # Registry authentication
 └── cache/              # Build cache
     ├── index.json      # Cache metadata
@@ -379,7 +379,7 @@ Global cache location:
 The package manager automatically resolves and installs transitive dependencies:
 
 ```toml
-# Your raven.toml
+# Your jounce.toml
 [dependencies]
 raven-i18n = "^1.0.0"
 ```
@@ -417,7 +417,7 @@ dependencies = []
 
 [packages.source]
 type = "Registry"
-url = "https://packages.ravensone.dev/raven-store/1.0.0"
+url = "https://packages.jounce.dev/raven-store/1.0.0"
 
 [[packages]]
 name = "raven-i18n"
@@ -426,7 +426,7 @@ dependencies = ["raven-store"]
 
 [packages.source]
 type = "Registry"
-url = "https://packages.ravensone.dev/raven-i18n/1.0.0"
+url = "https://packages.jounce.dev/raven-i18n/1.0.0"
 ```
 
 ---
@@ -515,7 +515,7 @@ raven pkg tree  # See what you're really pulling in
 
 **Solution**:
 - Check available versions: `raven pkg info package`
-- Adjust version requirement in `raven.toml`
+- Adjust version requirement in `jounce.toml`
 - Update dependencies: `raven pkg update`
 
 ---
@@ -540,7 +540,7 @@ The package manager performs several operations in parallel:
 
 ## Comparison with Other Package Managers
 
-| Feature | RavensOne | npm | Cargo | pip |
+| Feature | Jounce | npm | Cargo | pip |
 |---------|-----------|-----|-------|-----|
 | Transitive deps | ✅ | ✅ | ✅ | ✅ |
 | Lock file | ✅ | ✅ | ✅ | ❌ |
@@ -565,11 +565,11 @@ The package manager performs several operations in parallel:
 
 ## Getting Help
 
-- **Documentation**: https://docs.ravensone.dev/package-manager
-- **Registry**: https://packages.ravensone.dev
-- **Issues**: https://github.com/ravensone/ravensone/issues
-- **Discord**: https://discord.gg/ravensone
+- **Documentation**: https://docs.jounce.dev/package-manager
+- **Registry**: https://packages.jounce.dev
+- **Issues**: https://github.com/jounce/jounce/issues
+- **Discord**: https://discord.gg/jounce
 
 ---
 
-**Happy coding with RavensOne! 🚀**
+**Happy coding with Jounce! 🚀**

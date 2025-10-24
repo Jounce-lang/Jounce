@@ -112,13 +112,13 @@ fn parse_jsx_attribute(&mut self) -> Result<JsxAttribute, CompileError> {
 
 Created and tested 6 manual test cases:
 
-1. **test_jsx_simple.raven**: `<div></div>` ✅
-2. **test_jsx_text.raven**: `<div>Hello World</div>` ✅
-3. **test_jsx_one_attr.raven**: `<div class="container"></div>` ✅ (FIXED!)
-4. **test_jsx_attrs.raven**: `<div class="container" id="app"></div>` ✅ (FIXED!)
-5. **test_jsx_self_close_attr.raven**: `<img src="photo.jpg" />` ✅
-6. **test_jsx_nested.raven**: `<div><span>Hello</span></div>` ✅
-7. **test_jsx_expr.raven**: `<div>Hello {name}!</div>` ✅
+1. **test_jsx_simple.jnc**: `<div></div>` ✅
+2. **test_jsx_text.jnc**: `<div>Hello World</div>` ✅
+3. **test_jsx_one_attr.jnc**: `<div class="container"></div>` ✅ (FIXED!)
+4. **test_jsx_attrs.jnc**: `<div class="container" id="app"></div>` ✅ (FIXED!)
+5. **test_jsx_self_close_attr.jnc**: `<img src="photo.jpg" />` ✅
+6. **test_jsx_nested.jnc**: `<div><span>Hello</span></div>` ✅
+7. **test_jsx_expr.jnc**: `<div>Hello {name}!</div>` ✅
 
 **Result**: All compile successfully to WASM + JavaScript!
 
@@ -336,7 +336,7 @@ fn test_jsx_with_single_attribute() {
 
 Evidence:
 ```
-./target/release/raven compile test_jsx_expr.raven
+./target/release/raven compile test_jsx_expr.jnc
 ✨ Compilation complete!
    ✓ dist/server.js
    ✓ dist/client.js

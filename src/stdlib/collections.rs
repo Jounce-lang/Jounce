@@ -1,4 +1,4 @@
-/// Standard collections for RavensOne
+/// Standard collections for Jounce
 ///
 /// RArray<T> - Dynamic array (like Rust Vec)
 /// RMap<K, V> - Hash map (like Rust HashMap)

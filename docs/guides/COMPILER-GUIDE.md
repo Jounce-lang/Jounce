@@ -1,9 +1,9 @@
-# RavensOne Compiler Guide
+# Jounce Compiler Guide
 
 ## Complete Compilation Pipeline Documentation
 
 ### Overview
-The RavensOne compiler transforms `.raven` source code into WebAssembly bytecode.
+The Jounce compiler transforms `.jnc` source code into WebAssembly bytecode.
 
 ---
 
@@ -62,7 +62,7 @@ component Button() {
 
 **Compile:**
 ```bash
-./target/release/raven compile button.raven -o button.wasm
+./target/release/raven compile button.jnc -o button.wasm
 ```
 
 ---
@@ -108,7 +108,7 @@ component Button() {
 
 ```bash
 cargo build --release
-./target/release/raven compile test.raven
+./target/release/raven compile test.jnc
 ```
 
 ---

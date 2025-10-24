@@ -49,7 +49,7 @@ let would_read_only_whitespace = self.ch.is_whitespace() && {
 - src/parser.rs (+18 lines, -7 lines) - Improved self-closing tag handling
 
 **Test Results**:
-- ✅ test_jsx_component_props.raven - compiles successfully
+- ✅ test_jsx_component_props.jnc - compiles successfully
 - ✅ All 221 tests passing (0 failures, 9 ignored) - **100% pass rate**
 - ✅ Ecommerce app: Line 285 → 493 (+208 lines, +73% progress)
 - ✅ Social app: Line 487 → 808 (+321 lines, +66% progress)

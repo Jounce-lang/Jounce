@@ -1,6 +1,6 @@
 # Double Colon (`::`) Operator Support
 
-The `::` operator provides namespace resolution in RavensOne, allowing you to call methods on objects using Rust-style syntax.
+The `::` operator provides namespace resolution in Jounce, allowing you to call methods on objects using Rust-style syntax.
 
 ## Syntax
 
@@ -205,12 +205,12 @@ This error occurs when trying to use `::` in shared functions that compile to WA
 ## Testing
 
 ### Test Files
-- `examples/test_double_colon.raven` - Full example with annotations
-- `examples/test_simple_doublecolon.raven` - Simple parsing test
+- `examples/test_double_colon.jnc` - Full example with annotations
+- `examples/test_simple_doublecolon.jnc` - Simple parsing test
 
 ### Run Tests
 ```bash
-./target/release/raven compile examples/test_double_colon.raven
+./target/release/raven compile examples/test_double_colon.jnc
 ```
 
 ## Technical Notes

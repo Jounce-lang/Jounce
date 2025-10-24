@@ -1,4 +1,4 @@
-// Hot Module Replacement for RavensOne
+// Hot Module Replacement for Jounce
 // Real-time code updates without full page reload
 
 use crate::{Compiler, BuildTarget, errors::CompileError};
@@ -398,7 +398,7 @@ mod tests {
     fn test_update_type_serialization() {
         let update = HmrUpdate {
             update_type: UpdateType::WasmUpdate,
-            file_path: "test.raven".to_string(),
+            file_path: "test.jnc".to_string(),
             timestamp: 12345,
             wasm_url: Some("/hmr/wasm".to_string()),
             css_content: None,
@@ -406,7 +406,7 @@ mod tests {
 
         let json = serde_json::to_string(&update).unwrap();
         assert!(json.contains("WasmUpdate"));
-        assert!(json.contains("test.raven"));
+        assert!(json.contains("test.jnc"));
     }
 
     #[test]

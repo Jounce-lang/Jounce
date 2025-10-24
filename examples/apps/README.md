@@ -1,6 +1,6 @@
 # Real-World JSX Application Examples
 
-This directory contains **three comprehensive, production-ready application examples** built with RavensOne, demonstrating best practices for full-stack reactive development.
+This directory contains **three comprehensive, production-ready application examples** built with Jounce, demonstrating best practices for full-stack reactive development.
 
 ## 📦 Applications
 
@@ -80,7 +80,7 @@ A Kanban-style project management tool with:
 These applications serve multiple purposes:
 
 ### 1. **Target Specifications**
-They demonstrate what RavensOne **should support** for real-world production applications. Features used:
+They demonstrate what Jounce **should support** for real-world production applications. Features used:
 - Package imports: `use raven_router::{Router, Route, Link}`
 - Advanced pattern matching
 - Option/Result types
@@ -138,13 +138,13 @@ They identify features that need implementation:
 When attempting to compile these apps:
 
 ```bash
-./target/release/raven compile examples/apps/ecommerce/main.raven
+./target/release/raven compile examples/apps/ecommerce/main.jnc
 ```
 
 **Expected**: Parsing errors due to unimplemented features
 **Actual**: `ParserError: Expected Identifier, found ...`
 
-This is **expected and intentional**. These apps are aspirational - they show where RavensOne is headed.
+This is **expected and intentional**. These apps are aspirational - they show where Jounce is headed.
 
 ### Simplified Versions
 To create compilable versions:
@@ -170,7 +170,7 @@ To create compilable versions:
 ## 🎓 Learning Path
 
 ### For New Users
-1. Start with simple examples (examples/counter_app.raven)
+1. Start with simple examples (examples/counter_app.jnc)
 2. Study these apps to understand patterns
 3. Read the READMEs for architecture explanations
 4. Adapt patterns for your own apps
@@ -183,7 +183,7 @@ To create compilable versions:
 
 ## 🔄 Migration Plan
 
-As RavensOne features are implemented:
+As Jounce features are implemented:
 
 1. **Phase 1: Package System**
    - Implement `use` statement with imports
@@ -215,12 +215,12 @@ Each app includes:
   - Customization guide
   - Production checklist
 
-- **raven.toml** - Package configuration
+- **jounce.toml** - Package configuration
   - Dependencies
   - Build settings
   - Dev server config
 
-- **main.raven** - Application code
+- **main.jnc** - Application code
   - Well-commented
   - Organized by concern
   - Clear component hierarchy
@@ -242,7 +242,7 @@ These applications:
 1. **Validate JSX Support** - Prove JSX infrastructure works
 2. **Identify Gaps** - Clearly show what's missing
 3. **Guide Development** - Provide roadmap for features
-4. **Demonstrate Vision** - Show RavensOne's potential
+4. **Demonstrate Vision** - Show Jounce's potential
 5. **Help Users** - Serve as learning resources
 
 ## 🚀 Next Steps
@@ -267,4 +267,4 @@ Found an issue or have suggestions?
 **Last Updated**: 2025-10-21
 **Next Milestone**: Package system implementation
 
-These examples represent the **future of RavensOne** - full-stack reactive applications with best-in-class developer experience.
+These examples represent the **future of Jounce** - full-stack reactive applications with best-in-class developer experience.

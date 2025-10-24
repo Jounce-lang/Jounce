@@ -1,12 +1,12 @@
 # Change Log
 
-All notable changes to the "RavensOne" extension will be documented in this file.
+All notable changes to the "Jounce" extension will be documented in this file.
 
 ## [0.1.0] - 2025-10-22
 
 ### Initial Release 🎉
 
-This is the first official release of the RavensOne VS Code extension!
+This is the first official release of the Jounce VS Code extension!
 
 ### Features
 
@@ -72,12 +72,12 @@ This is the first official release of the RavensOne VS Code extension!
 - **Show Profiling** - Display compilation timing
 
 #### Settings (6 Configurable Options)
-- `ravensone.lspPath` - Path to raven binary
-- `ravensone.enableInlayHints` - Toggle inlay hints
-- `ravensone.enableTypeHints` - Toggle type hints
-- `ravensone.enableParameterHints` - Toggle parameter hints
-- `ravensone.formatOnSave` - Auto-format on save
-- `ravensone.trace.server` - LSP trace level
+- `jounce.lspPath` - Path to raven binary
+- `jounce.enableInlayHints` - Toggle inlay hints
+- `jounce.enableTypeHints` - Toggle type hints
+- `jounce.enableParameterHints` - Toggle parameter hints
+- `jounce.formatOnSave` - Auto-format on save
+- `jounce.trace.server` - LSP trace level
 
 ### Performance
 - Activation time: < 500ms
@@ -86,10 +86,10 @@ This is the first official release of the RavensOne VS Code extension!
 
 ### Requirements
 - VS Code 1.80.0 or higher
-- RavensOne compiler (`raven`) in PATH
+- Jounce compiler (`raven`) in PATH
 
 ### Known Limitations
-- Requires separate RavensOne compiler installation
+- Requires separate Jounce compiler installation
 - Icon placeholder (will be updated in future release)
 
 ---
@@ -105,4 +105,4 @@ This is the first official release of the RavensOne VS Code extension!
 
 ---
 
-**Note**: This extension is part of the RavensOne project. For compiler changes, see the main [RavensOne CHANGELOG](https://github.com/ravensone/ravensone/blob/main/CHANGELOG.md).
+**Note**: This extension is part of the Jounce project. For compiler changes, see the main [Jounce CHANGELOG](https://github.com/jounce/jounce/blob/main/CHANGELOG.md).

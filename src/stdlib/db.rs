@@ -1,4 +1,4 @@
-/// Database ORM for RavensOne
+/// Database ORM for Jounce
 ///
 /// Type-safe database queries with zero boilerplate
 /// Supports SQLite, PostgreSQL, and edge databases (Cloudflare D1)

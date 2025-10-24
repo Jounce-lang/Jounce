@@ -1,12 +1,12 @@
-# RavensOne AI Generator
+# Jounce AI Generator
 
-Generate complete RavensOne applications from natural language descriptions using Claude AI.
+Generate complete Jounce applications from natural language descriptions using Claude AI.
 
 ## 🎯 Overview
 
-The RavensOne AI Generator allows you to:
+The Jounce AI Generator allows you to:
 1. Describe your project in plain English
-2. Let Claude generate all `.raven` files
+2. Let Claude generate all `.jnc` files
 3. Automatically compile to WebAssembly
 4. Deploy instantly
 
@@ -14,7 +14,7 @@ The RavensOne AI Generator allows you to:
 
 ### Prerequisites
 
-- RavensOne compiler installed
+- Jounce compiler installed
 - Anthropic API key ([Get one here](https://console.anthropic.com/))
 
 ### Setup
@@ -40,8 +40,8 @@ You'll be prompted for:
 
 The generator will:
 1. ✅ Call Claude API with optimized prompt
-2. ✅ Generate all necessary `.raven` files
-3. ✅ Create `raven.toml` manifest
+2. ✅ Generate all necessary `.jnc` files
+3. ✅ Create `jounce.toml` manifest
 4. ✅ Compile to WebAssembly
 5. ✅ Ready to run!
 
@@ -60,11 +60,11 @@ Features: local storage, filtering by status, clear completed
 ```
 todo-app/
 ├── src/
-│   ├── main.raven           # Main App component
+│   ├── main.jnc           # Main App component
 │   └── components/
-│       ├── TodoItem.raven   # Individual todo component
-│       └── Filter.raven     # Filter component
-├── raven.toml               # Project manifest
+│       ├── TodoItem.jnc   # Individual todo component
+│       └── Filter.jnc     # Filter component
+├── jounce.toml               # Project manifest
 └── dist/
     └── app.wasm             # Compiled output
 ```
@@ -82,12 +82,12 @@ Features: geolocation, 5-day forecast, temperature units toggle, weather icons
 ```
 weather-dash/
 ├── src/
-│   ├── main.raven
+│   ├── main.jnc
 │   └── components/
-│       ├── CurrentWeather.raven
-│       ├── Forecast.raven
-│       └── LocationSearch.raven
-└── raven.toml
+│       ├── CurrentWeather.jnc
+│       ├── Forecast.jnc
+│       └── LocationSearch.jnc
+└── jounce.toml
 ```
 
 ### Example 3: Calculator
@@ -103,7 +103,7 @@ Features: basic operations, scientific functions, calculation history, keyboard 
 
 The AI generator creates production-ready code with:
 
-### 1. Main Component (`src/main.raven`)
+### 1. Main Component (`src/main.jnc`)
 ```raven
 component App() {
     let todos = Signal::new(vec![]);
@@ -143,7 +143,7 @@ component TodoItem(props: TodoItemProps) {
 }
 ```
 
-### 3. Project Manifest (`raven.toml`)
+### 3. Project Manifest (`jounce.toml`)
 ```toml
 [package]
 name = "todo-app"
@@ -173,7 +173,7 @@ SYSTEM_PROMPT='Your custom instructions here...'
 Use the Rust API directly:
 
 ```rust
-use ravensone::ai_generator::{AIGenerator, GenerationRequest};
+use jounce::ai_generator::{AIGenerator, GenerationRequest};
 
 #[tokio::main]
 async fn main() {
@@ -211,7 +211,7 @@ Features: multiple columns, card creation, drag to reorder, persist to local sto
 
 ❌ **DON'T:**
 - Be too vague
-- Request backend APIs (RavensOne is frontend-only)
+- Request backend APIs (Jounce is frontend-only)
 - Expect complex animations
 
 ### Iterating on Generated Code
@@ -230,7 +230,7 @@ Features: multiple columns, card creation, drag to reorder, persist to local sto
 | **State Management** | Signals, Computed values |
 | **Event Handlers** | onClick, onChange, etc. |
 | **Styling** | CSS classes and layout |
-| **Manifest** | raven.toml with dependencies |
+| **Manifest** | jounce.toml with dependencies |
 
 ## 🚀 Deployment
 
@@ -260,7 +260,7 @@ export ANTHROPIC_API_KEY='sk-ant-...'
 ```
 
 ### "Compilation failed"
-Check the generated `src/main.raven` for syntax errors. You may need to:
+Check the generated `src/main.jnc` for syntax errors. You may need to:
 - Fix imports
 - Adjust component structure
 - Verify Signal usage
@@ -306,7 +306,7 @@ MIT License - see [LICENSE](../../LICENSE)
            ▼
 ┌─────────────────────┐
 │  System Prompt      │
-│  (RavensOne syntax, │
+│  (Jounce syntax, │
 │   patterns, rules)  │
 └──────────┬──────────┘
            │
@@ -319,12 +319,12 @@ MIT License - see [LICENSE](../../LICENSE)
            ▼
 ┌─────────────────────┐
 │  Generated Files    │
-│  *.raven, *.toml    │
+│  *.jnc, *.toml    │
 └──────────┬──────────┘
            │
            ▼
 ┌─────────────────────┐
-│  RavensOne Compiler │
+│  Jounce Compiler │
 │  (WASM output)      │
 └──────────┬──────────┘
            │
@@ -338,11 +338,11 @@ MIT License - see [LICENSE](../../LICENSE)
 ## 🌟 Why This is Powerful
 
 1. **Rapid Prototyping**: Go from idea to working app in minutes
-2. **Learn by Example**: See how experienced developers structure RavensOne apps
+2. **Learn by Example**: See how experienced developers structure Jounce apps
 3. **Consistency**: Generated code follows best practices
 4. **Customizable**: Tweak the output to match your needs
 5. **Repeatable**: Generate similar apps with variations
 
 ---
 
-Built with ❤️ using [RavensOne](https://github.com/ravensone/ravensone) and [Claude](https://anthropic.com)
+Built with ❤️ using [Jounce](https://github.com/jounce/jounce) and [Claude](https://anthropic.com)

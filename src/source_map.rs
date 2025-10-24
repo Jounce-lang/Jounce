@@ -1,7 +1,7 @@
 // Source Map Generator
 //
 // Generates source maps for JavaScript and WASM output to enable debugging
-// in browsers and other tools. Maps generated code back to original .raven source.
+// in browsers and other tools. Maps generated code back to original .jnc source.
 //
 // Format: Source Map v3 specification
 // https://sourcemaps.info/spec.html
@@ -279,9 +279,9 @@ mod tests {
         let mut builder = SourceMapBuilder::new("output.js".to_string());
 
         // Add some mappings
-        builder.add_mapping(1, 0, "input.raven", 1, 0, Some("main"));
-        builder.add_mapping(2, 4, "input.raven", 2, 2, Some("x"));
-        builder.add_mapping(3, 4, "input.raven", 3, 2, None);
+        builder.add_mapping(1, 0, "input.jnc", 1, 0, Some("main"));
+        builder.add_mapping(2, 4, "input.jnc", 2, 2, Some("x"));
+        builder.add_mapping(3, 4, "input.jnc", 3, 2, None);
 
         // Generate source map
         let source_map = builder.generate();
@@ -292,13 +292,13 @@ mod tests {
         // Check format with spaces (JSON pretty print adds spaces)
         assert!(source_map.contains("\"version\": 3"));
         assert!(source_map.contains("\"file\": \"output.js\""));
-        assert!(source_map.contains("input.raven"));
+        assert!(source_map.contains("input.jnc"));
     }
 
     #[test]
     fn test_inline_comment() {
         let mut builder = SourceMapBuilder::new("test.js".to_string());
-        builder.add_mapping(1, 0, "test.raven", 1, 0, None);
+        builder.add_mapping(1, 0, "test.jnc", 1, 0, None);
 
         let comment = builder.generate_inline_comment();
         assert!(comment.starts_with("//# sourceMappingURL=data:application/json"));
@@ -339,9 +339,9 @@ mod tests {
         builder.set_source_root("../src".to_string());
 
         // Add mappings for a simple function
-        builder.add_mapping(0, 0, "main.raven", 0, 0, Some("main"));
-        builder.add_mapping(0, 13, "main.raven", 0, 3, Some("x"));
-        builder.add_mapping(1, 2, "main.raven", 1, 2, None);
+        builder.add_mapping(0, 0, "main.jnc", 0, 0, Some("main"));
+        builder.add_mapping(0, 13, "main.jnc", 0, 3, Some("x"));
+        builder.add_mapping(1, 2, "main.jnc", 1, 2, None);
 
         let source_map = builder.generate();
 
@@ -349,7 +349,7 @@ mod tests {
         assert!(source_map.contains("\"version\": 3"));
         assert!(source_map.contains("\"file\": \"bundle.js\""));
         assert!(source_map.contains("\"source_root\": \"../src\""));
-        assert!(source_map.contains("main.raven"));
+        assert!(source_map.contains("main.jnc"));
         assert!(source_map.contains("\"mappings\""));
     }
 }

@@ -270,10 +270,10 @@ fn check_for_in_statement(&mut self, stmt: &ForInStatement) -> Result<(), Compil
 - ✅ **Language Completeness**: 80% → 85%
 
 ### Test Files Created
-1. `test_for_push_struct.raven` - Struct field comparisons in loops
-2. `test_turbofish.raven` - Generic type parameters
-3. `test_chain.raven` - Method chaining on literals
-4. `test_ternary.raven` - Conditional expressions
+1. `test_for_push_struct.jnc` - Struct field comparisons in loops
+2. `test_turbofish.jnc` - Generic type parameters
+3. `test_chain.jnc` - Method chaining on literals
+4. `test_ternary.jnc` - Conditional expressions
 5. All existing parser tests continue to pass
 
 ### Files Modified
@@ -367,7 +367,7 @@ for item in items {
 
 ## Conclusion
 
-The Ecommerce Parser Fixes Sprint successfully implemented 5 critical language features, bringing RavensOne significantly closer to production readiness. The parser now handles complex real-world patterns including method chaining, generic type parameters, conditional expressions, and proper variable scoping.
+The Ecommerce Parser Fixes Sprint successfully implemented 5 critical language features, bringing Jounce significantly closer to production readiness. The parser now handles complex real-world patterns including method chaining, generic type parameters, conditional expressions, and proper variable scoping.
 
 **Zero regressions** and **100% test pass rate** demonstrate the robustness of these additions.
 

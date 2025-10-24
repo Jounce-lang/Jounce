@@ -14,9 +14,9 @@ Issues discovered but not yet fixed, prioritized for future sprints.
 - **Impact**: All apps using Some()/None fail compilation
 - **Error**: `Undefined function: 'Some'`
 - **Locations**:
-  - test_unwrap_or.raven:2
-  - examples/apps/ecommerce/main.raven:126, 129, 431, 443, 447, 457, 536
-  - examples/apps/social/main.raven:72, 119, 131
+  - test_unwrap_or.jnc:2
+  - examples/apps/ecommerce/main.jnc:126, 129, 431, 443, 447, 457, 536
+  - examples/apps/social/main.jnc:72, 119, 131
 - **Complexity**: HIGH
 - **Estimated Effort**: 2-3 hours
 - **Approach**: Add Some/None as keywords (like true/false) or built-in functions
@@ -29,8 +29,8 @@ Issues discovered but not yet fixed, prioritized for future sprints.
 - **Impact**: Blocks social app, taskboard app
 - **Error**: `Expected LAngle, found Illegal('🔔')`
 - **Locations**:
-  - examples/apps/social/main.raven:495 (🔔 bell emoji)
-  - examples/apps/taskboard/main.raven:478 (📋 clipboard emoji)
+  - examples/apps/social/main.jnc:495 (🔔 bell emoji)
+  - examples/apps/taskboard/main.jnc:478 (📋 clipboard emoji)
 - **Complexity**: MEDIUM
 - **Estimated Effort**: 1-2 hours
 - **Approach**: Update lexer to handle multi-byte UTF-8 characters in string literals and JSX text

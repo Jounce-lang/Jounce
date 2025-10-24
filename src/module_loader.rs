@@ -1,4 +1,4 @@
-// Module Loader for RavensOne
+// Module Loader for Jounce
 // Handles compile-time module resolution and import processing
 
 use crate::ast::{Program, Statement, FunctionDefinition, StructDefinition, EnumDefinition, ConstDeclaration, Identifier, UseStatement};
@@ -28,7 +28,7 @@ pub struct Module {
     pub ast: Program,
 }
 
-/// Module loader for resolving and loading RavensOne modules
+/// Module loader for resolving and loading Jounce modules
 pub struct ModuleLoader {
     /// Root directory for package resolution (usually project root or aloha-shirts/)
     package_root: PathBuf,
@@ -51,8 +51,8 @@ impl ModuleLoader {
     /// Resolve a module path to a filesystem path
     ///
     /// Examples:
-    /// - `raven_router` -> `aloha-shirts/raven-router/src/lib.raven`
-    /// - `raven_store::store` -> `aloha-shirts/raven-store/src/store/store.raven`
+    /// - `raven_router` -> `aloha-shirts/raven-router/src/lib.jnc`
+    /// - `raven_store::store` -> `aloha-shirts/raven-store/src/store/store.jnc`
     pub fn resolve_module_path(&self, module_path: &[String]) -> Result<PathBuf, CompileError> {
         if module_path.is_empty() {
             return Err(CompileError::Generic("Empty module path".to_string()));
@@ -80,8 +80,8 @@ impl ModuleLoader {
                 }
                 path = path.with_extension("raven");
             } else {
-                // Just the package name - look for lib.raven
-                path = path.join("src").join("lib.raven");
+                // Just the package name - look for lib.jnc
+                path = path.join("src").join("lib.jnc");
             }
 
             if path.exists() {
@@ -159,7 +159,7 @@ impl ModuleLoader {
         for statement in &program.statements {
             match statement {
                 Statement::Function(func) => {
-                    // In RavensOne, all top-level functions are currently exported
+                    // In Jounce, all top-level functions are currently exported
                     // TODO: Add explicit `pub` keyword support
                     exports.insert(func.name.value.clone(), ExportedSymbol::Function(func.clone()));
                 }
@@ -330,7 +330,7 @@ mod tests {
         assert!(path.is_ok());
         let path = path.unwrap();
         assert!(path.to_string_lossy().contains("raven-router"));
-        assert!(path.to_string_lossy().contains("lib.raven"));
+        assert!(path.to_string_lossy().contains("lib.jnc"));
     }
 
     #[test]

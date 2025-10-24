@@ -1,6 +1,6 @@
 # TaskBoard - Project Management & Collaboration Platform
 
-A full-featured project management application built with **RavensOne**, demonstrating Kanban boards, task tracking, and team collaboration.
+A full-featured project management application built with **Jounce**, demonstrating Kanban boards, task tracking, and team collaboration.
 
 ## Features
 
@@ -49,7 +49,7 @@ A full-featured project management application built with **RavensOne**, demonst
 
 ## Tech Stack
 
-- **RavensOne** - Full-stack reactive language
+- **Jounce** - Full-stack reactive language
 - **raven-router** - Client-side routing
 - **raven-store** - Global state management with persistence
 - **raven-forms** - Form handling and validation
@@ -59,9 +59,9 @@ A full-featured project management application built with **RavensOne**, demonst
 
 ```
 taskboard/
-├── main.raven              # Main application (920+ lines)
+├── main.jnc              # Main application (920+ lines)
 ├── README.md              # This file
-└── raven.toml             # Package configuration
+└── jounce.toml             # Package configuration
 ```
 
 ## Quick Start
@@ -71,7 +71,7 @@ taskboard/
 cd examples/apps/taskboard
 
 # Compile the application
-raven compile main.raven
+raven compile main.jnc
 
 # Start development server
 raven dev
@@ -397,11 +397,11 @@ MIT License - Free to use for learning and commercial projects
 
 ## Acknowledgments
 
-Built with RavensOne - showcasing complex state management, rich interactions, and team collaboration features.
+Built with Jounce - showcasing complex state management, rich interactions, and team collaboration features.
 
 ---
 
 **Need Help?**
 
-- [RavensOne Docs](../../../GETTING_STARTED.md)
-- [GitHub Issues](https://github.com/yourusername/ravensone/issues)
+- [Jounce Docs](../../../GETTING_STARTED.md)
+- [GitHub Issues](https://github.com/yourusername/jounce/issues)

@@ -1,4 +1,4 @@
-# RavensOne Utility Classes - User Guide
+# Jounce Utility Classes - User Guide
 
 **Status**: ✅ Production Ready
 **Version**: Phase 7.5 Sprint 3
@@ -695,7 +695,7 @@ btn-primary = """
 
 ### Custom Utility Classes
 
-RavensOne allows you to define your own utility classes in `raven.config.toml`. This is perfect for:
+Jounce allows you to define your own utility classes in `raven.config.toml`. This is perfect for:
 - **Reusable components**: Create utilities for buttons, cards, badges, etc.
 - **Brand-specific styles**: Define your design system
 - **Complex patterns**: Bundle multiple CSS properties into one class
@@ -1046,7 +1046,7 @@ let styles = css! {
 
 **Solutions**:
 1. Make sure class is in JSX (not a string variable)
-2. Rebuild: `raven compile app.raven`
+2. Rebuild: `raven compile app.jnc`
 3. Check `dist/styles.css` for output
 
 ### CSS File Too Large?
@@ -1100,10 +1100,10 @@ let styles = css! {
 - **Implementation Details**: See `UTILITY_SYSTEM_DESIGN.md`
 - **CSS Syntax Guide**: See `CSS_SYNTAX.md`
 - **Examples**: Check `examples/utilities/` directory
-- **Test Files**: `test_utilities_basic.raven`, `test_utilities_advanced.raven`, `test_utilities_variants.raven`
+- **Test Files**: `test_utilities_basic.jnc`, `test_utilities_advanced.jnc`, `test_utilities_variants.jnc`
 
 ---
 
 **Happy Coding!** 🚀
 
-Build beautiful UIs faster with RavensOne utility classes.
+Build beautiful UIs faster with Jounce utility classes.

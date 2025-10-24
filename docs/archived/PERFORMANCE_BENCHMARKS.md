@@ -1,4 +1,4 @@
-# RavensOne Compiler Performance Benchmarks
+# Jounce Compiler Performance Benchmarks
 
 **Date**: October 17, 2025
 **Compiler Version**: 0.1.0
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The RavensOne compiler demonstrates excellent performance characteristics for small to medium programs, achieving **65,711 compilations/second** for simple programs. The compiler's speed makes it suitable for real-time development workflows, hot module replacement, and rapid iteration.
+The Jounce compiler demonstrates excellent performance characteristics for small to medium programs, achieving **65,711 compilations/second** for simple programs. The compiler's speed makes it suitable for real-time development workflows, hot module replacement, and rapid iteration.
 
 ### Key Findings
 
@@ -172,13 +172,13 @@ For a 100KB project: ~450KB memory usage (acceptable for modern systems)
 
 | Compiler | Language | Speed (ops/sec) | Notes |
 |----------|----------|----------------|-------|
-| **RavensOne** | Raven → WASM | **65,711** | This benchmark |
+| **Jounce** | Raven → WASM | **65,711** | This benchmark |
 | swc | JS/TS → JS | ~50,000 | Rust-based JS compiler |
 | esbuild | JS/TS → JS | ~100,000 | Go-based bundler |
 | rustc | Rust → WASM | ~500-1,000 | Full system compiler |
 | tsc | TypeScript → JS | ~5,000-10,000 | TypeScript compiler |
 
-**Analysis**: RavensOne's compilation speed is competitive with modern fast compilers like swc. While slightly slower than esbuild, it's significantly faster than traditional compilers like tsc. The speed is impressive given the comprehensive analysis phases (type checking, borrow checking, semantic analysis).
+**Analysis**: Jounce's compilation speed is competitive with modern fast compilers like swc. While slightly slower than esbuild, it's significantly faster than traditional compilers like tsc. The speed is impressive given the comprehensive analysis phases (type checking, borrow checking, semantic analysis).
 
 ---
 
@@ -229,7 +229,7 @@ For a typical 50KB project:
 
 ## Conclusion
 
-The RavensOne compiler achieves **exceptional performance** for its feature set:
+The Jounce compiler achieves **exceptional performance** for its feature set:
 
 - ✅ **Sub-millisecond compilation** enables real-time development workflows
 - ✅ **65,000+ ops/sec throughput** surpasses most traditional compilers

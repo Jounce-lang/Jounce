@@ -1,4 +1,4 @@
-// Language Server Protocol implementation for RavensOne
+// Language Server Protocol implementation for Jounce
 // Provides IDE features: autocomplete, hover, diagnostics, etc.
 
 use crate::diagnostics::Diagnostic;
@@ -8,7 +8,7 @@ use crate::semantic_analyzer::SemanticAnalyzer;
 use crate::type_checker::TypeChecker;
 use std::collections::HashMap;
 
-/// LSP Server for RavensOne
+/// LSP Server for Jounce
 pub struct LanguageServer {
     documents: HashMap<String, Document>,
     stdlib_docs: StdlibDocs,
@@ -3141,25 +3141,25 @@ mod tests {
     fn test_language_server_open_document() {
         let mut server = LanguageServer::new();
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             "let x = 10;".to_string(),
             1,
         );
 
-        assert!(server.documents.contains_key("file:///test.raven"));
+        assert!(server.documents.contains_key("file:///test.jnc"));
     }
 
     #[test]
     fn test_get_completions_statement_start() {
         let mut server = LanguageServer::new();
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             "let x = 10;".to_string(),
             1,
         );
 
         // At statement start, should get keywords
-        let completions = server.get_completions("file:///test.raven", Position { line: 0, character: 0 });
+        let completions = server.get_completions("file:///test.jnc", Position { line: 0, character: 0 });
         assert!(!completions.is_empty());
         assert!(completions.iter().any(|c| c.label == "component"));
         assert!(completions.iter().any(|c| c.label == "let"));
@@ -3170,13 +3170,13 @@ mod tests {
     fn test_get_completions_general() {
         let mut server = LanguageServer::new();
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             "let x = ".to_string(),
             1,
         );
 
         // In general context, should get all completions
-        let completions = server.get_completions("file:///test.raven", Position { line: 0, character: 8 });
+        let completions = server.get_completions("file:///test.jnc", Position { line: 0, character: 8 });
         assert!(!completions.is_empty());
         assert!(completions.iter().any(|c| c.label == "Signal::new"));
     }
@@ -3185,13 +3185,13 @@ mod tests {
     fn test_context_detection_namespace() {
         let mut server = LanguageServer::new();
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             "let x = Math::".to_string(),
             1,
         );
 
         // After ::, should get namespace members
-        let completions = server.get_completions("file:///test.raven", Position { line: 0, character: 14 });
+        let completions = server.get_completions("file:///test.jnc", Position { line: 0, character: 14 });
         assert!(!completions.is_empty());
         assert!(completions.iter().any(|c| c.label == "abs"));
         assert!(completions.iter().any(|c| c.label == "sqrt"));
@@ -3203,13 +3203,13 @@ mod tests {
     fn test_context_detection_member_access() {
         let mut server = LanguageServer::new();
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             "let count = Signal::new(0);\nlet val = count.".to_string(),
             1,
         );
 
         // After ., should get member methods
-        let completions = server.get_completions("file:///test.raven", Position { line: 1, character: 16 });
+        let completions = server.get_completions("file:///test.jnc", Position { line: 1, character: 16 });
         assert!(!completions.is_empty());
         assert!(completions.iter().any(|c| c.label == "get"));
         assert!(completions.iter().any(|c| c.label == "set"));
@@ -3219,13 +3219,13 @@ mod tests {
     fn test_context_detection_jsx_tag() {
         let mut server = LanguageServer::new();
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             "component App() { <".to_string(),
             1,
         );
 
         // After <, should get JSX tags
-        let completions = server.get_completions("file:///test.raven", Position { line: 0, character: 19 });
+        let completions = server.get_completions("file:///test.jnc", Position { line: 0, character: 19 });
         assert!(!completions.is_empty());
         assert!(completions.iter().any(|c| c.label == "div"));
         assert!(completions.iter().any(|c| c.label == "button"));
@@ -3235,13 +3235,13 @@ mod tests {
     fn test_context_detection_jsx_attribute() {
         let mut server = LanguageServer::new();
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             "component App() { <div ".to_string(),
             1,
         );
 
         // Inside JSX tag, should get attributes
-        let completions = server.get_completions("file:///test.raven", Position { line: 0, character: 23 });
+        let completions = server.get_completions("file:///test.jnc", Position { line: 0, character: 23 });
         assert!(!completions.is_empty());
         assert!(completions.iter().any(|c| c.label == "class"));
         assert!(completions.iter().any(|c| c.label == "id"));
@@ -3271,7 +3271,7 @@ mod tests {
         let mut server = LanguageServer::new();
         let unformatted = "let x:i32=42;";
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             unformatted.to_string(),
             1,
         );
@@ -3283,7 +3283,7 @@ mod tests {
             insert_final_newline: true,
         };
 
-        let edits = server.format_document("file:///test.raven", options);
+        let edits = server.format_document("file:///test.jnc", options);
 
         assert!(edits.is_some());
         let edits = edits.unwrap();
@@ -3296,7 +3296,7 @@ mod tests {
         let mut server = LanguageServer::new();
         let unformatted = "fn add(a:i32,b:i32){return a+b;}";
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             unformatted.to_string(),
             1,
         );
@@ -3308,7 +3308,7 @@ mod tests {
             insert_final_newline: true,
         };
 
-        let edits = server.format_document("file:///test.raven", options);
+        let edits = server.format_document("file:///test.jnc", options);
 
         assert!(edits.is_some());
         let edits = edits.unwrap();
@@ -3324,7 +3324,7 @@ mod tests {
         let mut server = LanguageServer::new();
         let code = "let x:i32=42;\nlet y:i32=43;";
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -3341,7 +3341,7 @@ mod tests {
             end: Position { line: 0, character: 13 },
         };
 
-        let edits = server.format_range("file:///test.raven", range, options);
+        let edits = server.format_range("file:///test.jnc", range, options);
 
         assert!(edits.is_some());
         let edits = edits.unwrap();
@@ -3355,7 +3355,7 @@ mod tests {
         let mut server = LanguageServer::new();
         let invalid = "let x = ;"; // Invalid syntax
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             invalid.to_string(),
             1,
         );
@@ -3367,7 +3367,7 @@ mod tests {
             insert_final_newline: true,
         };
 
-        let edits = server.format_document("file:///test.raven", options);
+        let edits = server.format_document("file:///test.jnc", options);
 
         // Should return None for invalid syntax
         assert!(edits.is_none());
@@ -3379,7 +3379,7 @@ mod tests {
     fn test_get_code_actions_empty() {
         let mut server = LanguageServer::new();
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             "let x = 10;".to_string(),
             1,
         );
@@ -3389,7 +3389,7 @@ mod tests {
             end: Position { line: 0, character: 11 },
         };
 
-        let actions = server.get_code_actions("file:///test.raven", range);
+        let actions = server.get_code_actions("file:///test.jnc", range);
 
         // Should return empty for valid code with no diagnostics
         assert!(actions.is_empty());
@@ -3491,18 +3491,18 @@ fn calculate(x: i32) -> i32 {
 let result = calculate(10);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Click on "calculate" in the function call (line 5)
         let position = Position { line: 5, character: 13 };
-        let location = server.get_definition("file:///test.raven", position);
+        let location = server.get_definition("file:///test.jnc", position);
 
         assert!(location.is_some());
         let loc = location.unwrap();
-        assert_eq!(loc.uri, "file:///test.raven");
+        assert_eq!(loc.uri, "file:///test.jnc");
         assert_eq!(loc.range.start.line, 1); // Function definition on line 1
     }
 
@@ -3514,18 +3514,18 @@ let count = 0;
 let doubled = count * 2;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Click on "count" in line 2
         let position = Position { line: 2, character: 14 };
-        let location = server.get_definition("file:///test.raven", position);
+        let location = server.get_definition("file:///test.jnc", position);
 
         assert!(location.is_some());
         let loc = location.unwrap();
-        assert_eq!(loc.uri, "file:///test.raven");
+        assert_eq!(loc.uri, "file:///test.jnc");
         assert_eq!(loc.range.start.line, 1); // Variable definition on line 1
         assert_eq!(loc.range.start.character, 4); // "count" starts at column 4
     }
@@ -3543,18 +3543,18 @@ component App() {
 }
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Click on "Counter" in JSX (line 6)
         let position = Position { line: 6, character: 5 };
-        let location = server.get_definition("file:///test.raven", position);
+        let location = server.get_definition("file:///test.jnc", position);
 
         assert!(location.is_some());
         let loc = location.unwrap();
-        assert_eq!(loc.uri, "file:///test.raven");
+        assert_eq!(loc.uri, "file:///test.jnc");
         assert_eq!(loc.range.start.line, 1); // Component definition on line 1
     }
 
@@ -3563,14 +3563,14 @@ component App() {
         let mut server = LanguageServer::new();
         let code = "let x = 10;";
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Click on "y" which doesn't exist
         let position = Position { line: 0, character: 8 };
-        let location = server.get_definition("file:///test.raven", position);
+        let location = server.get_definition("file:///test.jnc", position);
 
         assert!(location.is_none());
     }
@@ -3589,14 +3589,14 @@ let result = calculate(10);
 let result2 = calculate(20);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Find references for "calculate" (on definition line)
         let position = Position { line: 1, character: 3 };
-        let references = server.get_references("file:///test.raven", position, true);
+        let references = server.get_references("file:///test.jnc", position, true);
 
         // Should find 3 occurrences: definition + 2 calls
         assert_eq!(references.len(), 3);
@@ -3614,14 +3614,14 @@ count = count + 1;
 print(count);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Find references for "count"
         let position = Position { line: 1, character: 4 };
-        let references = server.get_references("file:///test.raven", position, true);
+        let references = server.get_references("file:///test.jnc", position, true);
 
         // Should find 4 occurrences: definition + 3 usages
         assert_eq!(references.len(), 4);
@@ -3638,14 +3638,14 @@ fn test() {
 let x = test();
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Find references excluding declaration
         let position = Position { line: 1, character: 3 };
-        let references = server.get_references("file:///test.raven", position, false);
+        let references = server.get_references("file:///test.jnc", position, false);
 
         // Should find only the call, not the definition
         assert_eq!(references.len(), 1);
@@ -3668,14 +3668,14 @@ component App() {
 }
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Find references for "Button"
         let position = Position { line: 1, character: 10 };
-        let references = server.get_references("file:///test.raven", position, true);
+        let references = server.get_references("file:///test.jnc", position, true);
 
         // Should find 3 occurrences: definition + 2 JSX usages
         assert_eq!(references.len(), 3);
@@ -3695,7 +3695,7 @@ let x = oldName();
 let y = oldName();
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -3703,7 +3703,7 @@ let y = oldName();
         // Rename "oldName" to "newName"
         let position = Position { line: 1, character: 3 };
         let edit = server.rename_symbol(
-            "file:///test.raven",
+            "file:///test.jnc",
             position,
             "newName".to_string(),
         );
@@ -3727,7 +3727,7 @@ counter = counter + 1;
 print(counter);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -3735,7 +3735,7 @@ print(counter);
         // Rename "counter" to "total"
         let position = Position { line: 1, character: 4 };
         let edit = server.rename_symbol(
-            "file:///test.raven",
+            "file:///test.jnc",
             position,
             "total".to_string(),
         );
@@ -3755,7 +3755,7 @@ print(counter);
         let mut server = LanguageServer::new();
         let code = "fn test() {}";
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -3763,7 +3763,7 @@ print(counter);
         // Try to rename to invalid identifier
         let position = Position { line: 0, character: 3 };
         let edit = server.rename_symbol(
-            "file:///test.raven",
+            "file:///test.jnc",
             position,
             "123invalid".to_string(),
         );
@@ -3777,7 +3777,7 @@ print(counter);
         let mut server = LanguageServer::new();
         let code = "let x = 10;";
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -3785,7 +3785,7 @@ print(counter);
         // Try to rename on whitespace (position has no symbol)
         let position = Position { line: 0, character: 6 }; // On the space between '=' and '10'
         let edit = server.rename_symbol(
-            "file:///test.raven",
+            "file:///test.jnc",
             position,
             "newName".to_string(),
         );
@@ -3805,12 +3805,12 @@ fn function2() {}
 fn function3() {}
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
-        let symbols = server.get_document_symbols("file:///test.raven");
+        let symbols = server.get_document_symbols("file:///test.jnc");
 
         assert_eq!(symbols.len(), 3);
         assert_eq!(symbols[0].name, "function1");
@@ -3834,12 +3834,12 @@ enum MyEnum {}
 component MyComponent() {}
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
-        let symbols = server.get_document_symbols("file:///test.raven");
+        let symbols = server.get_document_symbols("file:///test.jnc");
 
         assert_eq!(symbols.len(), 6);
 
@@ -3868,12 +3868,12 @@ component MyComponent() {}
         let mut server = LanguageServer::new();
         let code = "// Just a comment";
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
-        let symbols = server.get_document_symbols("file:///test.raven");
+        let symbols = server.get_document_symbols("file:///test.jnc");
 
         assert_eq!(symbols.len(), 0);
     }
@@ -3887,12 +3887,12 @@ fn calculate() {
 }
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
-        let symbols = server.get_document_symbols("file:///test.raven");
+        let symbols = server.get_document_symbols("file:///test.jnc");
 
         assert_eq!(symbols.len(), 1);
         let symbol = &symbols[0];
@@ -3916,13 +3916,13 @@ fn add(x: i32, y: i32) -> i32 {
 let result = add(5, 10);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Hover over function name in definition
-        let hover = server.get_hover("file:///test.raven", Position { line: 1, character: 3 });
+        let hover = server.get_hover("file:///test.jnc", Position { line: 1, character: 3 });
         assert!(hover.is_some());
         let hover_content = hover.unwrap().contents;
         assert!(hover_content.contains("fn add(x: i32, y: i32) -> i32"));
@@ -3938,13 +3938,13 @@ component Button(props: ButtonProps) {
 }
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Hover over component name
-        let hover = server.get_hover("file:///test.raven", Position { line: 1, character: 10 });
+        let hover = server.get_hover("file:///test.jnc", Position { line: 1, character: 10 });
         assert!(hover.is_some());
         let hover_content = hover.unwrap().contents;
         assert!(hover_content.contains("component Button(props: ButtonProps)"));
@@ -3959,13 +3959,13 @@ let count: i32 = 0;
 let value = count + 1;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Hover over variable with type annotation
-        let hover = server.get_hover("file:///test.raven", Position { line: 1, character: 4 });
+        let hover = server.get_hover("file:///test.jnc", Position { line: 1, character: 4 });
         assert!(hover.is_some());
         let hover_content = hover.unwrap().contents;
         assert!(hover_content.contains("let count: i32"));
@@ -3980,13 +3980,13 @@ let value = count + 1;
 let message = "Hello";
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Hover over variable without type annotation
-        let hover = server.get_hover("file:///test.raven", Position { line: 1, character: 4 });
+        let hover = server.get_hover("file:///test.jnc", Position { line: 1, character: 4 });
         assert!(hover.is_some());
         let hover_content = hover.unwrap().contents;
         assert!(hover_content.contains("let message"));
@@ -4000,13 +4000,13 @@ let message = "Hello";
 const MAX_SIZE: usize = 100;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Hover over constant
-        let hover = server.get_hover("file:///test.raven", Position { line: 1, character: 6 });
+        let hover = server.get_hover("file:///test.jnc", Position { line: 1, character: 6 });
         assert!(hover.is_some());
         let hover_content = hover.unwrap().contents;
         assert!(hover_content.contains("const MAX_SIZE: usize"));
@@ -4024,13 +4024,13 @@ struct Point {
 }
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Hover over struct name
-        let hover = server.get_hover("file:///test.raven", Position { line: 1, character: 7 });
+        let hover = server.get_hover("file:///test.jnc", Position { line: 1, character: 7 });
         assert!(hover.is_some());
         let hover_content = hover.unwrap().contents;
         assert!(hover_content.contains("struct Point"));
@@ -4050,13 +4050,13 @@ enum Status {
 }
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Hover over enum name
-        let hover = server.get_hover("file:///test.raven", Position { line: 1, character: 5 });
+        let hover = server.get_hover("file:///test.jnc", Position { line: 1, character: 5 });
         assert!(hover.is_some());
         let hover_content = hover.unwrap().contents;
         assert!(hover_content.contains("enum Status"));
@@ -4073,7 +4073,7 @@ enum Status {
 let result = Math::abs(-5);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -4081,7 +4081,7 @@ let result = Math::abs(-5);
         // Hover over stdlib function
         // Note: stdlib documentation may or may not be loaded, so we just verify
         // the hover mechanism works (returns Some or None based on documentation availability)
-        let hover = server.get_hover("file:///test.raven", Position { line: 1, character: 19 });
+        let hover = server.get_hover("file:///test.jnc", Position { line: 1, character: 19 });
 
         // If hover exists, it should have non-empty contents
         if let Some(h) = hover {
@@ -4097,13 +4097,13 @@ let result = Math::abs(-5);
 let x = 10;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Hover over a non-identifier location (should return None)
-        let hover = server.get_hover("file:///test.raven", Position { line: 1, character: 6 });
+        let hover = server.get_hover("file:///test.jnc", Position { line: 1, character: 6 });
         // Position at "=" should not match anything useful
         assert!(hover.is_none() || hover.unwrap().contents.is_empty());
     }
@@ -4120,13 +4120,13 @@ fn add(x: i32, y: i32) -> i32 {
 let result = add(5, 10);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Cursor at first parameter: add(|
-        let sig_help = server.get_signature_help("file:///test.raven", Position { line: 5, character: 17 });
+        let sig_help = server.get_signature_help("file:///test.jnc", Position { line: 5, character: 17 });
         assert!(sig_help.is_some());
 
         let sig = sig_help.unwrap();
@@ -4151,13 +4151,13 @@ fn multiply(a: f64, b: f64, c: f64) -> f64 {
 let result = multiply(2.0, 3.0, 4.0);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Cursor at second parameter: multiply(2.0, |
-        let sig_help = server.get_signature_help("file:///test.raven", Position { line: 5, character: 27 });
+        let sig_help = server.get_signature_help("file:///test.jnc", Position { line: 5, character: 27 });
         assert!(sig_help.is_some());
 
         let sig = sig_help.unwrap();
@@ -4176,13 +4176,13 @@ fn calculate(x: i32, y: i32, z: i32) -> i32 {
 let result = calculate(1, 2, 3);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Cursor at third parameter: calculate(1, 2, |
-        let sig_help = server.get_signature_help("file:///test.raven", Position { line: 5, character: 30 });
+        let sig_help = server.get_signature_help("file:///test.jnc", Position { line: 5, character: 30 });
         assert!(sig_help.is_some());
 
         let sig = sig_help.unwrap();
@@ -4200,13 +4200,13 @@ fn get_value() -> i32 {
 let val = get_value();
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Cursor inside function call with no parameters
-        let sig_help = server.get_signature_help("file:///test.raven", Position { line: 5, character: 20 });
+        let sig_help = server.get_signature_help("file:///test.jnc", Position { line: 5, character: 20 });
         assert!(sig_help.is_some());
 
         let sig = sig_help.unwrap();
@@ -4223,13 +4223,13 @@ fn foo() {}
 let x = 10;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Cursor not inside a function call
-        let sig_help = server.get_signature_help("file:///test.raven", Position { line: 2, character: 8 });
+        let sig_help = server.get_signature_help("file:///test.jnc", Position { line: 2, character: 8 });
         assert!(sig_help.is_none());
     }
 
@@ -4244,13 +4244,13 @@ fn known_func(x: i32) -> i32 {
 let result = unknown_func(10);
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
 
         // Cursor inside call to unknown function
-        let sig_help = server.get_signature_help("file:///test.raven", Position { line: 5, character: 27 });
+        let sig_help = server.get_signature_help("file:///test.jnc", Position { line: 5, character: 27 });
         // Should return None because function is not defined
         assert!(sig_help.is_none());
     }
@@ -4264,7 +4264,7 @@ let count = 42;
 let value = 100;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -4274,7 +4274,7 @@ let value = 100;
             end: Position { line: 10, character: 0 },
         };
 
-        let hints = server.get_inlay_hints("file:///test.raven", range);
+        let hints = server.get_inlay_hints("file:///test.jnc", range);
 
         // Should have type hints for both variables
         assert_eq!(hints.len(), 2);
@@ -4298,7 +4298,7 @@ let name = "Alice";
 let message = "Hello, World!";
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -4308,7 +4308,7 @@ let message = "Hello, World!";
             end: Position { line: 10, character: 0 },
         };
 
-        let hints = server.get_inlay_hints("file:///test.raven", range);
+        let hints = server.get_inlay_hints("file:///test.jnc", range);
 
         // Should have type hints for both string variables
         assert_eq!(hints.len(), 2);
@@ -4324,7 +4324,7 @@ let is_active = true;
 let is_done = false;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -4334,7 +4334,7 @@ let is_done = false;
             end: Position { line: 10, character: 0 },
         };
 
-        let hints = server.get_inlay_hints("file:///test.raven", range);
+        let hints = server.get_inlay_hints("file:///test.jnc", range);
 
         // Should have type hints for both boolean variables
         assert_eq!(hints.len(), 2);
@@ -4350,7 +4350,7 @@ let pi = 3.14;
 let e = 2.718;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -4360,7 +4360,7 @@ let e = 2.718;
             end: Position { line: 10, character: 0 },
         };
 
-        let hints = server.get_inlay_hints("file:///test.raven", range);
+        let hints = server.get_inlay_hints("file:///test.jnc", range);
 
         // Should have type hints for both float variables
         assert_eq!(hints.len(), 2);
@@ -4376,7 +4376,7 @@ let count: i32 = 42;
 let name: String = "Alice";
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -4386,7 +4386,7 @@ let name: String = "Alice";
             end: Position { line: 10, character: 0 },
         };
 
-        let hints = server.get_inlay_hints("file:///test.raven", range);
+        let hints = server.get_inlay_hints("file:///test.jnc", range);
 
         // Should have NO type hints since types are explicitly declared
         // (only parameter hints from any function calls, but there are none here)
@@ -4401,7 +4401,7 @@ let items = vec![1, 2, 3];
 let names = Vec::new();
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -4411,7 +4411,7 @@ let names = Vec::new();
             end: Position { line: 10, character: 0 },
         };
 
-        let hints = server.get_inlay_hints("file:///test.raven", range);
+        let hints = server.get_inlay_hints("file:///test.jnc", range);
 
         // Should have type hints for Vec types
         assert_eq!(hints.len(), 2);
@@ -4429,7 +4429,7 @@ let active = true;
 let price = 9.99;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -4439,7 +4439,7 @@ let price = 9.99;
             end: Position { line: 10, character: 0 },
         };
 
-        let hints = server.get_inlay_hints("file:///test.raven", range);
+        let hints = server.get_inlay_hints("file:///test.jnc", range);
 
         // Should have type hints for all variables
         assert_eq!(hints.len(), 4);
@@ -4459,7 +4459,7 @@ let c = 3;
 let d = 4;
 "#;
         server.open_document(
-            "file:///test.raven".to_string(),
+            "file:///test.jnc".to_string(),
             code.to_string(),
             1,
         );
@@ -4470,7 +4470,7 @@ let d = 4;
             end: Position { line: 3, character: 0 },
         };
 
-        let hints = server.get_inlay_hints("file:///test.raven", range);
+        let hints = server.get_inlay_hints("file:///test.jnc", range);
 
         // Should only have hints for variables in the range
         assert_eq!(hints.len(), 2);

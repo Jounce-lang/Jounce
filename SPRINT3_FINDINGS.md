@@ -2,7 +2,7 @@
 
 ## Discovery Summary
 
-While attempting to create educational examples for RavensOne, we discovered that **many "core" language features don't actually work**, despite CLAUDE.md claiming "100% complete" and "production ready" status.
+While attempting to create educational examples for Jounce, we discovered that **many "core" language features don't actually work**, despite CLAUDE.md claiming "100% complete" and "production ready" status.
 
 ## Root Cause Analysis
 
@@ -73,7 +73,7 @@ The claim that Phase 1 is "100% complete" is **misleading**. The language suppor
 ## Why This Happened
 
 1. **Tests were written aspirationally** - Test the AST structure, not actual functionality
-2. **No integration tests** - No tests that compile .raven files end-to-end
+2. **No integration tests** - No tests that compile .jnc files end-to-end
 3. **Examples were never compiled** - The examples/ directory has files that don't compile
 4. **Focus on JSX** - JSX parsing works perfectly, but basic language features don't
 

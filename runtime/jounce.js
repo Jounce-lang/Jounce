@@ -1,5 +1,5 @@
 /**
- * RavensOne Runtime - JavaScript bridge for WASM components
+ * Jounce Runtime - JavaScript bridge for WASM components
  *
  * This runtime provides:
  * 1. WASM module loading and instantiation
@@ -8,7 +8,7 @@
  * 4. Event handling
  */
 
-class RavensOneRuntime {
+class JounceRuntime {
     constructor() {
         this.wasmInstance = null;
         this.memory = null;
@@ -278,7 +278,7 @@ class RavensOneRuntime {
 
     log(msgPtr, msgLen) {
         const msg = this.readString(msgPtr, msgLen);
-        console.log('[RavensOne]', msg);
+        console.log('[Jounce]', msg);
     }
 
     // Element storage (temporary solution until we have proper VDOM)
@@ -298,10 +298,10 @@ class RavensOneRuntime {
 
 // Export for use in browser
 if (typeof window !== 'undefined') {
-    window.RavensOneRuntime = RavensOneRuntime;
+    window.JounceRuntime = JounceRuntime;
 }
 
 // Export for Node.js
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = RavensOneRuntime;
+    module.exports = JounceRuntime;
 }

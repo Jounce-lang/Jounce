@@ -1,15 +1,15 @@
-# RavensOne Compiler Pipeline - Status Report
+# Jounce Compiler Pipeline - Status Report
 
 **Date**: 2025-10-18
-**Goal**: Complete the compiler pipeline for end-to-end `.raven` → WASM compilation
+**Goal**: Complete the compiler pipeline for end-to-end `.jnc` → WASM compilation
 
 ---
 
 ## 🎯 Executive Summary
 
-The RavensOne compiler pipeline is **90% complete** and in excellent shape. Only 4 minor TODOs were found, and the critical one (function type checking) has been fixed. The compiler can now:
+The Jounce compiler pipeline is **90% complete** and in excellent shape. Only 4 minor TODOs were found, and the critical one (function type checking) has been fixed. The compiler can now:
 
-- ✅ Lex `.raven` source code
+- ✅ Lex `.jnc` source code
 - ✅ Parse to AST (including JSX)
 - ✅ Perform semantic analysis
 - ✅ Type check with Hindley-Milner inference (NOW including proper function calls!)
@@ -24,7 +24,7 @@ The RavensOne compiler pipeline is **90% complete** and in excellent shape. Only
 ## 📊 Pipeline Components Status
 
 ### 1. **Lexer** (`src/lexer.rs`) - ✅ COMPLETE
-- Tokenizes all RavensOne syntax
+- Tokenizes all Jounce syntax
 - Handles JSX, operators, keywords, identifiers
 - Full error reporting
 
@@ -124,13 +124,13 @@ The RavensOne compiler pipeline is **90% complete** and in excellent shape. Only
 ### 3. **Source Map Lookup** (`sourcemap.rs:265`)
 **Priority**: Low (debugging feature)
 **Status**: TODO
-**What's needed**: Map WASM positions back to `.raven` source
+**What's needed**: Map WASM positions back to `.jnc` source
 
 ```rust
 // TODO: Implement actual source map lookup
 ```
 
-**Impact**: Debugging will show WASM locations instead of original `.raven` code locations.
+**Impact**: Debugging will show WASM locations instead of original `.jnc` code locations.
 
 ### 4. **LSP Local Scope** (`lsp/mod.rs:167`)
 **Priority**: Low (IDE feature)
@@ -153,7 +153,7 @@ The RavensOne compiler pipeline is **90% complete** and in excellent shape. Only
 - ✅ HTTP client tests (12/12 passing)
 
 ### Integration Tests
-- ⏳ **TODO**: End-to-end `.raven` file → WASM compilation test
+- ⏳ **TODO**: End-to-end `.jnc` file → WASM compilation test
 - ⏳ **TODO**: Component rendering test
 - ⏳ **TODO**: Server function RPC test
 
@@ -161,7 +161,7 @@ The RavensOne compiler pipeline is **90% complete** and in excellent shape. Only
 
 ## 🚀 What Works Right Now
 
-You can already compile simple `.raven` programs! Here's what the compiler can handle:
+You can already compile simple `.jnc` programs! Here's what the compiler can handle:
 
 ```raven
 // ✅ Function definitions
@@ -208,7 +208,7 @@ The compiler will:
 ### Immediate (This Session)
 1. ✅ Fix function type checking - **DONE!**
 2. ⏳ Create end-to-end test
-3. ⏳ Test compilation of simple `.raven` program
+3. ⏳ Test compilation of simple `.jnc` program
 
 ### Short Term (Next Session)
 4. Implement effect re-execution (reactive.rs)
@@ -233,7 +233,7 @@ The compiler will:
 
 **Production Readiness**: 85%
 - Need more integration tests
-- Need example `.raven` programs
+- Need example `.jnc` programs
 - Need end-to-end validation
 
 ---
@@ -269,14 +269,14 @@ The compiler will:
 ## 💡 Recommendations
 
 ### For This Week
-1. **Create `.raven` test programs** - Validate end-to-end
+1. **Create `.jnc` test programs** - Validate end-to-end
 2. **Write integration tests** - Ensure pipeline works
 3. **Test against Bluebird** - Real-world validation
 
 ### For Next Week
 4. **Implement effect re-execution** - Complete reactivity
 5. **Build stdlib** - Add db.rs, auth.rs
-6. **Documentation** - API reference for `.raven` syntax
+6. **Documentation** - API reference for `.jnc` syntax
 
 ### For Production
 7. **More examples** - Chat app, todo app, dashboard
@@ -289,4 +289,4 @@ The compiler will:
 **Blockers**: None - all critical functionality is implemented
 **Risk**: Low - only minor enhancements needed
 
-🚀 **Ready to compile `.raven` programs to WASM!**
+🚀 **Ready to compile `.jnc` programs to WASM!**
