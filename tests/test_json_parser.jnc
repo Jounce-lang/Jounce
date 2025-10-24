@@ -1,0 +1,144 @@
+// Test JSON Parser Implementation
+
+// Test basic JSON parsing
+fn test_parse_null() {
+    let json_str = "null";
+    let result = json::parse(json_str);
+
+    match result {
+        Ok(value) => {
+            assert_true(value.is_null(), "Should parse null");
+        },
+        Err(e) => {
+            assert(false, "Failed to parse null");
+        },
+    }
+}
+
+fn test_parse_boolean() {
+    let json_true = "true";
+    let json_false = "false";
+
+    let result_true = json::parse(json_true);
+    let result_false = json::parse(json_false);
+
+    match result_true {
+        Ok(value) => {
+            assert_true(value.is_bool(), "Should parse true");
+            let bool_val = value.as_bool();
+            match bool_val {
+                Ok(b) => assert_true(b, "Should be true"),
+                Err(_) => assert(false, "Failed to extract bool"),
+            }
+        },
+        Err(e) => {
+            assert(false, "Failed to parse true");
+        },
+    }
+}
+
+fn test_parse_number() {
+    let json_int = "42";
+    let json_float = "3.14";
+    let json_negative = "-10";
+
+    let result = json::parse(json_int);
+    match result {
+        Ok(value) => {
+            assert_true(value.is_number(), "Should parse number");
+            let num = value.as_number();
+            match num {
+                Ok(n) => assert_eq(n as int, 42, "Should be 42"),
+                Err(_) => assert(false, "Failed to extract number"),
+            }
+        },
+        Err(e) => {
+            assert(false, "Failed to parse number");
+        },
+    }
+}
+
+fn test_parse_string() {
+    let json_str = "\"hello world\"";
+
+    let result = json::parse(json_str);
+    match result {
+        Ok(value) => {
+            assert_true(value.is_string(), "Should parse string");
+            let str_val = value.as_string();
+            match str_val {
+                Ok(s) => assert_eq(s, "hello world", "Should be 'hello world'"),
+                Err(_) => assert(false, "Failed to extract string"),
+            }
+        },
+        Err(e) => {
+            assert(false, "Failed to parse string");
+        },
+    }
+}
+
+fn test_parse_array() {
+    let json_arr = "[1, 2, 3]";
+
+    let result = json::parse(json_arr);
+    match result {
+        Ok(value) => {
+            assert_true(value.is_array(), "Should parse array");
+            let arr = value.as_array();
+            match arr {
+                Ok(a) => {
+                    let len_result = value.len();
+                    match len_result {
+                        Ok(len) => assert_eq(len, 3, "Array should have 3 elements"),
+                        Err(_) => assert(false, "Failed to get array length"),
+                    }
+                },
+                Err(_) => assert(false, "Failed to extract array"),
+            }
+        },
+        Err(e) => {
+            assert(false, "Failed to parse array");
+        },
+    }
+}
+
+fn test_parse_object() {
+    let json_obj = "{\"name\": \"Alice\", \"age\": 30}";
+
+    let result = json::parse(json_obj);
+    match result {
+        Ok(value) => {
+            assert_true(value.is_object(), "Should parse object");
+
+            // Check if 'name' key exists
+            let has_name = value.has_key("name");
+            assert_true(has_name, "Object should have 'name' key");
+
+            // Get 'name' value
+            let name_value = value.get("name");
+            match name_value {
+                Some(val) => {
+                    let name_str = val.as_string();
+                    match name_str {
+                        Ok(s) => assert_eq(s, "Alice", "Name should be 'Alice'"),
+                        Err(_) => assert(false, "Failed to extract name string"),
+                    }
+                },
+                None => assert(false, "'name' key not found"),
+            }
+        },
+        Err(e) => {
+            assert(false, "Failed to parse object");
+        },
+    }
+}
+
+fn test_stringify() {
+    // Create a JSON object manually
+    let obj = json::object();
+
+    // Would need to implement set operations
+    // For now, just test that stringify doesn't crash
+    let json_str = json::stringify(&obj);
+    assert_eq(json_str, "{}", "Empty object should stringify to '{}'");
+}

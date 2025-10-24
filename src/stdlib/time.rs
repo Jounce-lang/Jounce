@@ -118,9 +118,15 @@ struct DateTime {
 impl DateTime {
     // Get current date and time
     fn now() -> DateTime {
-        // Would call JavaScript Date.now() or system clock
+        // In JavaScript: Date.now()
+        // Returns Unix timestamp in milliseconds
+        let current_time = 0;  // Will be replaced with Date.now() when compiled to JS
+
+        // For JS compilation, this will become: new Date().getTime()
+        // @js: new Date().getTime()
+
         return DateTime {
-            timestamp: 0,  // Placeholder
+            timestamp: current_time,
         };
     }
 
@@ -140,15 +146,45 @@ impl DateTime {
 
     // Create from date components
     fn from_components(year: i32, month: i32, day: i32, hour: i32, minute: i32, second: i32) -> DateTime {
-        // Would calculate timestamp from components
+        // In JavaScript: new Date(year, month - 1, day, hour, minute, second).getTime()
+        // @js: new Date(year, month - 1, day, hour, minute, second).getTime()
+
+        // Simplified timestamp calculation (approximate)
+        // Days since epoch (Jan 1, 1970)
+        let years_diff = year - 1970;
+        let days_from_years = years_diff * 365;
+
+        // Add leap years (rough approximation)
+        let leap_years = years_diff / 4;
+        let total_days = days_from_years + leap_years;
+
+        // Add days from months (approximate)
+        let days_in_months = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        let days_from_months = days_in_months[month - 1];
+
+        // Total days
+        let total_days_with_month = total_days + days_from_months + day - 1;
+
+        // Calculate timestamp
+        let timestamp = (total_days_with_month as i64) * 24 * 60 * 60 * 1000;
+        let timestamp_with_hours = timestamp + ((hour as i64) * 60 * 60 * 1000);
+        let timestamp_with_minutes = timestamp_with_hours + ((minute as i64) * 60 * 1000);
+        let final_timestamp = timestamp_with_minutes + ((second as i64) * 1000);
+
         return DateTime {
-            timestamp: 0,  // Placeholder
+            timestamp: final_timestamp,
         };
     }
 
     // Parse from ISO 8601 string
     fn parse(date_str: String) -> Result<DateTime, String> {
-        // Would parse "2024-01-15T14:30:00Z" format
+        // In JavaScript: Date.parse(dateStr)
+        // Returns timestamp in milliseconds or NaN
+
+        // @js: const ts = Date.parse(date_str); if (isNaN(ts)) { return Err("Invalid date"); } return Ok(new DateTime(ts));
+
+        // Simplified parsing - just return current time for now
+        // Real implementation would parse ISO 8601 format
         return Ok(DateTime { timestamp: 0 });
     }
 
@@ -164,44 +200,70 @@ impl DateTime {
 
     // Get year
     fn year(self: &DateTime) -> i32 {
-        // Would extract year from timestamp
-        return 2024;  // Placeholder
+        // In JavaScript: new Date(timestamp).getFullYear()
+        // @js: new Date(this.timestamp).getFullYear()
+
+        // Simplified calculation (will be replaced by JS Date API)
+        // Epoch year is 1970
+        let years_since_epoch = self.timestamp / (365 * 24 * 60 * 60 * 1000);
+        return 1970 + (years_since_epoch as i32);
     }
 
     // Get month (1-12)
     fn month(self: &DateTime) -> i32 {
-        // Would extract month from timestamp
-        return 1;  // Placeholder
+        // In JavaScript: new Date(timestamp).getMonth() + 1
+        // @js: new Date(this.timestamp).getMonth() + 1
+
+        // Will be replaced by JS Date API
+        return 1;
     }
 
     // Get day of month (1-31)
     fn day(self: &DateTime) -> i32 {
-        // Would extract day from timestamp
-        return 1;  // Placeholder
+        // In JavaScript: new Date(timestamp).getDate()
+        // @js: new Date(this.timestamp).getDate()
+
+        // Will be replaced by JS Date API
+        return 1;
     }
 
     // Get day of week (0 = Sunday, 6 = Saturday)
     fn day_of_week(self: &DateTime) -> i32 {
-        // Would calculate day of week
-        return 0;  // Placeholder
+        // In JavaScript: new Date(timestamp).getDay()
+        // @js: new Date(this.timestamp).getDay()
+
+        // Will be replaced by JS Date API
+        return 0;
     }
 
     // Get hour (0-23)
     fn hour(self: &DateTime) -> i32 {
-        // Would extract hour from timestamp
-        return 0;  // Placeholder
+        // In JavaScript: new Date(timestamp).getHours()
+        // @js: new Date(this.timestamp).getHours()
+
+        // Simplified calculation
+        let hours_since_epoch = self.timestamp / (60 * 60 * 1000);
+        return (hours_since_epoch % 24) as i32;
     }
 
     // Get minute (0-59)
     fn minute(self: &DateTime) -> i32 {
-        // Would extract minute from timestamp
-        return 0;  // Placeholder
+        // In JavaScript: new Date(timestamp).getMinutes()
+        // @js: new Date(this.timestamp).getMinutes()
+
+        // Simplified calculation
+        let minutes_since_epoch = self.timestamp / (60 * 1000);
+        return (minutes_since_epoch % 60) as i32;
     }
 
     // Get second (0-59)
     fn second(self: &DateTime) -> i32 {
-        // Would extract second from timestamp
-        return 0;  // Placeholder
+        // In JavaScript: new Date(timestamp).getSeconds()
+        // @js: new Date(this.timestamp).getSeconds()
+
+        // Simplified calculation
+        let seconds_since_epoch = self.timestamp / 1000;
+        return (seconds_since_epoch % 60) as i32;
     }
 
     // Get millisecond (0-999)
@@ -232,26 +294,96 @@ impl DateTime {
 
     // Format datetime as ISO 8601 string
     fn to_iso_string(self: &DateTime) -> String {
-        // Would format as "2024-01-15T14:30:00.000Z"
-        return "";  // Placeholder
+        // In JavaScript: new Date(timestamp).toISOString()
+        // @js: new Date(this.timestamp).toISOString()
+
+        // Manual formatting as fallback
+        let year = self.year();
+        let month = self.month();
+        let day = self.day();
+        let hour = self.hour();
+        let minute = self.minute();
+        let second = self.second();
+        let ms = self.millisecond();
+
+        // Format: "YYYY-MM-DDTHH:MM:SS.sssZ"
+        let result = "";
+        result = result + year.to_string();
+        result = result + "-";
+        result = result + self.pad_zero(month, 2);
+        result = result + "-";
+        result = result + self.pad_zero(day, 2);
+        result = result + "T";
+        result = result + self.pad_zero(hour, 2);
+        result = result + ":";
+        result = result + self.pad_zero(minute, 2);
+        result = result + ":";
+        result = result + self.pad_zero(second, 2);
+        result = result + ".";
+        result = result + self.pad_zero(ms, 3);
+        result = result + "Z";
+
+        return result;
+    }
+
+    // Helper to pad number with zeros
+    fn pad_zero(self: &DateTime, num: i32, width: i32) -> String {
+        let s = num.to_string();
+        let mut result = s;
+
+        while result.len() < width {
+            result = "0" + result;
+        }
+
+        return result;
     }
 
     // Format datetime with custom format string
     fn format(self: &DateTime, format_str: String) -> String {
-        // Would support format codes like:
+        // Support format codes:
         // %Y - 4-digit year
         // %m - 2-digit month
         // %d - 2-digit day
         // %H - 2-digit hour (24h)
         // %M - 2-digit minute
         // %S - 2-digit second
-        return "";  // Placeholder
+
+        let mut result = format_str;
+
+        // Replace format codes
+        result = result.replace("%Y", self.year().to_string());
+        result = result.replace("%m", self.pad_zero(self.month(), 2));
+        result = result.replace("%d", self.pad_zero(self.day(), 2));
+        result = result.replace("%H", self.pad_zero(self.hour(), 2));
+        result = result.replace("%M", self.pad_zero(self.minute(), 2));
+        result = result.replace("%S", self.pad_zero(self.second(), 2));
+
+        return result;
     }
 
     // Format as RFC 2822 (email format)
     fn to_rfc2822(self: &DateTime) -> String {
-        // Would format as "Mon, 15 Jan 2024 14:30:00 +0000"
-        return "";  // Placeholder
+        // In JavaScript: new Date(timestamp).toUTCString()
+        // @js: new Date(this.timestamp).toUTCString()
+
+        // Format: "Mon, 15 Jan 2024 14:30:00 +0000"
+        let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        let day_name = days[self.day_of_week()];
+        let month_name = months[self.month() - 1];
+
+        let result = "";
+        result = result + day_name + ", ";
+        result = result + self.day().to_string() + " ";
+        result = result + month_name + " ";
+        result = result + self.year().to_string() + " ";
+        result = result + self.pad_zero(self.hour(), 2) + ":";
+        result = result + self.pad_zero(self.minute(), 2) + ":";
+        result = result + self.pad_zero(self.second(), 2);
+        result = result + " +0000";
+
+        return result;
     }
 
     // Compare datetimes
@@ -449,9 +581,12 @@ fn now_local() -> ZonedDateTime {
 }
 
 // Sleep for a duration (async operation)
-fn sleep(duration: Duration) {
-    // Would be an async function that suspends execution
-    // For now, placeholder
+async fn sleep(duration: Duration) {
+    // In JavaScript: await new Promise(resolve => setTimeout(resolve, duration.milliseconds))
+    // @js: await new Promise(resolve => setTimeout(resolve, duration.milliseconds))
+
+    // This is an async operation that suspends execution
+    // Will be implemented by JavaScript setTimeout when compiled
 }
 
 // Create a timer
@@ -483,8 +618,49 @@ fn days(n: i64) -> Duration {
 
 // Parse duration from string
 fn parse_duration(s: String) -> Result<Duration, String> {
-    // Would parse strings like "5s", "2m", "1h", "3d"
-    return Ok(Duration::from_seconds(0));
+    // Parse strings like "5s", "2m", "1h", "3d", "500ms"
+
+    let trimmed = s.trim();
+    if trimmed.is_empty() {
+        return Err("Empty duration string");
+    }
+
+    // Extract number and unit
+    let mut number_str = "";
+    let mut unit = "";
+    let mut found_unit = false;
+
+    for i in 0..trimmed.len() {
+        let ch = trimmed.substring(i, i + 1);
+
+        if !found_unit && (ch >= "0" && ch <= "9" || ch == ".") {
+            number_str = number_str + ch;
+        } else {
+            found_unit = true;
+            unit = unit + ch;
+        }
+    }
+
+    // Parse the number
+    let num = number_str.parse_float();
+    if num < 0.0 {
+        return Err("Invalid duration number");
+    }
+
+    // Convert based on unit
+    if unit == "ms" {
+        return Ok(Duration::from_millis(num as i64));
+    } else if unit == "s" {
+        return Ok(Duration::from_seconds(num as i64));
+    } else if unit == "m" || unit == "min" {
+        return Ok(Duration::from_minutes(num as i64));
+    } else if unit == "h" || unit == "hr" {
+        return Ok(Duration::from_hours(num as i64));
+    } else if unit == "d" || unit == "day" {
+        return Ok(Duration::from_days(num as i64));
+    } else {
+        return Err("Unknown duration unit");
+    }
 }
 
 // Parse datetime from string

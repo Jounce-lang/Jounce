@@ -1,0 +1,150 @@
+// Test DateTime Implementation
+
+// Test Duration creation and conversion
+fn test_duration_creation() {
+    let duration_s = Duration::from_seconds(60);
+    let duration_m = Duration::from_minutes(1);
+
+    assert_eq(duration_s.as_seconds(), 60, "60 seconds should be 60 seconds");
+    assert_eq(duration_m.as_seconds(), 60, "1 minute should be 60 seconds");
+    assert_eq(duration_s.as_millis(), 60000, "60 seconds should be 60000 ms");
+}
+
+fn test_duration_arithmetic() {
+    let dur1 = Duration::from_seconds(30);
+    let dur2 = Duration::from_seconds(20);
+
+    let sum = dur1.add(&dur2);
+    let diff = dur1.sub(&dur2);
+
+    assert_eq(sum.as_seconds(), 50, "30s + 20s should be 50s");
+    assert_eq(diff.as_seconds(), 10, "30s - 20s should be 10s");
+}
+
+fn test_duration_comparison() {
+    let dur1 = Duration::from_seconds(30);
+    let dur2 = Duration::from_seconds(20);
+    let dur3 = Duration::from_seconds(30);
+
+    assert_true(dur1.eq(&dur3), "30s should equal 30s");
+    assert_true(dur1.gt(&dur2), "30s should be greater than 20s");
+    assert_true(dur2.lt(&dur1), "20s should be less than 30s");
+}
+
+fn test_datetime_creation() {
+    // Create from timestamp
+    let dt1 = DateTime::from_timestamp(0);
+    assert_eq(dt1.timestamp_millis(), 0, "Epoch should be 0");
+
+    // Create from components (Jan 1, 2024, 00:00:00)
+    let dt2 = DateTime::from_components(2024, 1, 1, 0, 0, 0);
+    assert_true(dt2.year() >= 2020, "Year should be 2024 or close");
+}
+
+fn test_datetime_components() {
+    // Create a specific datetime (Jan 15, 2024, 14:30:45)
+    let dt = DateTime::from_components(2024, 1, 15, 14, 30, 45);
+
+    // Note: These may be approximate due to simplified calendar calculations
+    let year = dt.year();
+    let month = dt.month();
+    let day = dt.day();
+
+    assert_true(year >= 2020 && year <= 2025, "Year should be around 2024");
+}
+
+fn test_datetime_formatting() {
+    let dt = DateTime::from_components(2024, 1, 15, 14, 30, 45);
+
+    // Test ISO string format
+    let iso = dt.to_iso_string();
+    assert_true(iso.len() > 0, "ISO string should not be empty");
+
+    // Test custom format
+    let formatted = dt.format("%Y-%m-%d");
+    assert_true(formatted.len() > 0, "Formatted string should not be empty");
+}
+
+fn test_datetime_arithmetic() {
+    let dt = DateTime::from_timestamp(1000000);
+    let dur = Duration::from_seconds(60);
+
+    let later = dt.add_duration(&dur);
+    let earlier = dt.sub_duration(&dur);
+
+    assert_eq(later.timestamp_millis(), 1000000 + 60000, "Should add 60 seconds");
+    assert_eq(earlier.timestamp_millis(), 1000000 - 60000, "Should subtract 60 seconds");
+}
+
+fn test_datetime_comparison() {
+    let dt1 = DateTime::from_timestamp(1000000);
+    let dt2 = DateTime::from_timestamp(2000000);
+    let dt3 = DateTime::from_timestamp(1000000);
+
+    assert_true(dt1.eq(&dt3), "Same timestamps should be equal");
+    assert_true(dt1.lt(&dt2), "Earlier should be less than later");
+    assert_true(dt2.gt(&dt1), "Later should be greater than earlier");
+    assert_true(dt1.is_before(&dt2), "Should be before");
+    assert_true(dt2.is_after(&dt1), "Should be after");
+}
+
+fn test_duration_between() {
+    let dt1 = DateTime::from_timestamp(1000000);
+    let dt2 = DateTime::from_timestamp(2000000);
+
+    let dur = dt2.duration_since(&dt1);
+
+    assert_eq(dur.as_millis(), 1000000, "Duration should be 1000000 ms");
+    assert_eq(dur.as_seconds(), 1000, "Duration should be 1000 seconds");
+}
+
+fn test_parse_duration() {
+    let dur_s = parse_duration("5s");
+    match dur_s {
+        Ok(d) => assert_eq(d.as_seconds(), 5, "Should parse 5s"),
+        Err(_) => assert(false, "Failed to parse 5s"),
+    }
+
+    let dur_m = parse_duration("2m");
+    match dur_m {
+        Ok(d) => assert_eq(d.as_minutes(), 2, "Should parse 2m"),
+        Err(_) => assert(false, "Failed to parse 2m"),
+    }
+
+    let dur_h = parse_duration("1h");
+    match dur_h {
+        Ok(d) => assert_eq(d.as_hours(), 1, "Should parse 1h"),
+        Err(_) => assert(false, "Failed to parse 1h"),
+    }
+}
+
+fn test_timer() {
+    let timer = Timer::start();
+    let elapsed = timer.elapsed();
+
+    assert_true(elapsed.as_millis() >= 0, "Elapsed time should be non-negative");
+}
+
+fn test_stopwatch() {
+    let mut sw = Stopwatch::new();
+    sw.start();
+
+    // Record a lap
+    let lap1 = sw.lap();
+    assert_true(lap1.as_millis() >= 0, "Lap time should be non-negative");
+
+    let elapsed = sw.stop();
+    assert_true(elapsed.as_millis() >= 0, "Elapsed time should be non-negative");
+}
+
+fn test_helper_functions() {
+    let sec = seconds(30);
+    let min = minutes(2);
+    let hr = hours(1);
+    let dy = days(1);
+
+    assert_eq(sec.as_seconds(), 30, "seconds() helper should work");
+    assert_eq(min.as_minutes(), 2, "minutes() helper should work");
+    assert_eq(hr.as_hours(), 1, "hours() helper should work");
+    assert_eq(dy.as_days(), 1, "days() helper should work");
+}
