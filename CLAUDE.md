@@ -54,15 +54,17 @@ jnc pkg init/add/remove/tree
   - Encoding: base64_encode/decode, hex_encode/decode
   - Password: hash_password_auto(), PBKDF2 with 100k iterations
   - 25 comprehensive tests
-- ✅ **File I/O Module** (577 lines) - Server-side file operations
+- ✅ **File I/O Module** (577 lines) - Server-side file operations **[Architecture Complete, Temporarily Disabled]**
+  - **Status**: Infrastructure complete, module disabled pending parser enhancements
   - Reading: read_to_string(), read() for bytes
   - Writing: write(), write_bytes(), append()
   - Metadata: exists(), is_file(), is_directory(), metadata()
   - Directories: create_dir(), create_dir_all(), read_dir(), remove_dir()
   - Operations: copy(), rename(), remove_file()
-  - Path utilities: file_name(), extension(), parent(), join()
-  - Node.js fs integration: 15 helper functions + safe wrappers
-  - 11 comprehensive tests created (pending parser enhancements for full support)
+  - Path utilities: file_name(), extension(), parent(), join() *(commented out)*
+  - Node.js fs integration: 15 helper functions + safe wrappers ✅
+  - 11 comprehensive tests created
+  - **Parser Blockers**: Method calls with string literals (.split(".")), static methods (String::new()), method chaining (.as_bytes())
 - ✅ **Compiler Enhancements** (32 major fixes) - **49/49 tests passing (100%)**! 🎉🎉🎉
   - **🔥 Critical Bugs Fixed** (THIS SESSION - 16 fixes):
     1. **Enum variant shadowing** - JsonValue::String was shadowing global String constructor!
@@ -191,8 +193,8 @@ async fn test_async() {
 - All 49 stdlib tests passing!
 
 **Options**:
-1. **Move to Phase 10** - Production readiness, optimization, documentation
-2. **File I/O & YAML** - Complete remaining stdlib modules
+1. **Parser Enhancements** - Enable fs module (method calls with string literals, static methods, method chaining) ⬅️ **NEXT**
+2. **Move to Phase 10** - Production readiness, optimization, documentation
 3. **Documentation sprint** - Document all stdlib APIs
 4. **Performance optimization** - Benchmark and optimize compiler
 
