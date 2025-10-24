@@ -282,12 +282,34 @@ impl JSEmitter {
         output.push_str("// Built-in type extensions\n");
         output.push_str("const Vec = Array; // Vec<T> is Array in JavaScript\n");
         output.push_str("Vec.new = function() { return []; }; // Vec::new() creates empty array\n");
-        output.push_str("String.prototype.len = function() { return this.length; };\n");
-        output.push_str("String.prototype.is_empty = function() { return this.length === 0; };\n");
-        output.push_str("String.prototype.chars = function() { return this.split(''); };\n");
-        output.push_str("Number.prototype.to_string = function() { return this.toString(); };\n");
-        output.push_str("Array.prototype.len = function() { return this.length; };\n");
-        output.push_str("Array.prototype.is_empty = function() { return this.length === 0; };\n\n");
+        output.push_str("// String methods - ensure they work on both primitives and String objects\n");
+        output.push_str("if (!String.prototype.len) {\n");
+        output.push_str("  String.prototype.len = function() { return this.length; };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.is_empty) {\n");
+        output.push_str("  String.prototype.is_empty = function() { return this.length === 0; };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.chars) {\n");
+        output.push_str("  String.prototype.chars = function() { return this.split(''); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.contains) {\n");
+        output.push_str("  String.prototype.contains = function(substr) { return this.includes(substr); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.starts_with) {\n");
+        output.push_str("  String.prototype.starts_with = function(prefix) { return this.startsWith(prefix); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.to_lowercase) {\n");
+        output.push_str("  String.prototype.to_lowercase = function() { return this.toLowerCase(); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!Number.prototype.to_string) {\n");
+        output.push_str("  Number.prototype.to_string = function() { return this.toString(); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!Array.prototype.len) {\n");
+        output.push_str("  Array.prototype.len = function() { return this.length; };\n");
+        output.push_str("}\n");
+        output.push_str("if (!Array.prototype.is_empty) {\n");
+        output.push_str("  Array.prototype.is_empty = function() { return this.length === 0; };\n");
+        output.push_str("}\n\n");
 
         // Generate RPC client stubs
         output.push_str("// RPC Client Setup\n");
@@ -356,6 +378,13 @@ impl JSEmitter {
         output.push_str("  parse: typeof parse !== 'undefined' ? parse : undefined,\n");
         output.push_str("  stringify: typeof stringify !== 'undefined' ? stringify : undefined,\n");
         output.push_str("  stringify_pretty: typeof stringify_pretty !== 'undefined' ? stringify_pretty : undefined,\n");
+        output.push_str("  // Helper functions for creating JSON values\n");
+        output.push_str("  null_: () => ({ variant: 'Null' }),\n");
+        output.push_str("  bool: (b) => ({ variant: 'Bool', data: b }),\n");
+        output.push_str("  number: (n) => ({ variant: 'Number', data: n }),\n");
+        output.push_str("  string: (s) => ({ variant: 'String', data: s }),\n");
+        output.push_str("  array: (arr) => ({ variant: 'Array', data: arr || [] }),\n");
+        output.push_str("  object: (obj) => ({ variant: 'Object', data: obj || {} }),\n");
         output.push_str("};\n\n");
 
         output.push_str("const crypto = {\n");
