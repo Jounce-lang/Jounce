@@ -264,8 +264,11 @@ fn base64_decode(encoded: String) -> Result<String, String> {
     // @js_browser: atob(encoded)
     // @js_node: Buffer.from(encoded, 'base64').toString()
 
-    // Remove padding
-    let data = encoded.replace("=", "");
+    // Remove all padding characters
+    let data = encoded;
+    while data.contains("=") {
+        data = data.replace("=", "");
+    }
 
     // Base64 alphabet lookup
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

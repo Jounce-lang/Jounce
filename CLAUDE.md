@@ -2,10 +2,10 @@
 
 ## 📌 Current Status
 
-**Phase**: Phase 9 Sprint 3 - Standard Library Expansion (**MAJOR MILESTONE!** 🎉)
-**Version**: 0.2.0 | **Tests**: 564 core + 37/49 stdlib (76%) | **Ext**: .jnc
+**Phase**: Phase 9 Sprint 3 - Standard Library Expansion (**81.6% COMPLETE!** 🎉)
+**Version**: 0.2.0 | **Tests**: 564 core + 40/49 stdlib (81.6%) | **Ext**: .jnc
 
-**Latest**: ✅ **37/49 stdlib tests PASSING (76%)!** - Up from 20/49 (41%) - 8 major compiler bugs fixed!
+**Latest**: ✅ **40/49 stdlib tests PASSING (81.6%)!** - Up from 20/49 (41%) - 13 major bugs fixed! 3 modules at 100%!
 
 ## 🎯 What Works
 
@@ -54,8 +54,8 @@ jnc pkg init/add/remove/tree
   - Encoding: base64_encode/decode, hex_encode/decode
   - Password: hash_password_auto(), PBKDF2 with 100k iterations
   - 25 comprehensive tests
-- ✅ **Compiler Enhancements** (24 major fixes) - **37/49 tests passing (76%)**! 🎉
-  - **🔥 Critical Bugs Fixed** (THIS SESSION):
+- ✅ **Compiler Enhancements** (29 major fixes) - **40/49 tests passing (81.6%)**! 🎉
+  - **🔥 Critical Bugs Fixed** (THIS SESSION - 13 fixes):
     1. **Enum variant shadowing** - JsonValue::String was shadowing global String constructor!
        - Solution: Prefix conflicting variants (String → JsonValue_String)
        - Also assign to namespace (JsonValue.String = JsonValue_String)
@@ -72,6 +72,16 @@ jnc pkg init/add/remove/tree
     6. **Missing Array methods** - clone() method
     7. **Missing Object methods** - keys() method
     8. **String.fromCharCode** - Static method not available (from_char_code)
+    9. **Base64 decode bug** - `.replace("=", "")` only removed first padding character
+       - Solution: Loop with `.contains()` to remove all padding
+    10. **Try operator (?) broken** - Generated `.value` instead of `.unwrap()`
+       - Solution: Changed to `(expr).unwrap()` for proper Result handling
+    11. **HashMap.insert() missing** - Map uses `.set()` not `.insert()`
+       - Solution: Added `Map.prototype.insert = function(k,v) { this.set(k,v); }`
+    12. **HashMap.contains_key() missing** - Map uses `.has()` not `.contains_key()`
+       - Solution: Added `Map.prototype.contains_key = function(k) { return this.has(k); }`
+    13. **Option namespace missing** - Code called `Option.Some()` but only `Some()` existed
+       - Solution: Added `Option.Some = Some; Option.None = None;`
   - **Previous Fixes** (16 enhancements):
     - Language features: Unit type (), hex literals (0x), bitwise ops (|&^), bit shifts (<<>>)
     - Control flow: loop/break/continue statements
@@ -83,7 +93,7 @@ jnc pkg init/add/remove/tree
     - Builtin extensions: String.len(), Array.len(), Vec.new(), Number.to_string()
     - Reserved words: JavaScript reserved word escaping (null → null_)
     - Assignment statements: Full assignment target support
-  - **Tests Passing**: JSON (3/7), DateTime (15/15 - 100%!), Crypto (12/25), Basic (7/7 - 100%!)
+  - **Tests Passing**: JSON (7/7 - **100%!**), DateTime (15/15 - **100%!**), Crypto (15/25 - 60%), Basic (7/7 - **100%!**)
 - ⏸️ File I/O (skeleton exists, needs implementation)
 - ⏸️ YAML parsing (not yet started)
 - ⏸️ Documentation (pending)
@@ -139,28 +149,26 @@ async fn test_async() {
 
 ## 🎯 Next Steps
 
-**Sprint 3 Summary**: ✅ **MAJOR MILESTONE ACHIEVED!** 37/49 tests passing (76%)!
+**Sprint 3 Summary**: ✅ **81.6% COMPLETE!** 40/49 tests passing - 3 modules at 100%!
 
-**Session Progress** (20 → 37 tests, +17 fixed! 🚀):
+**Session Progress** (20 → 40 tests, +20 fixed! 🚀):
 - ✅ Survey stdlib implementation (3 modules: JSON, DateTime, Crypto)
-- ✅ JSON parser implementation (605 lines, 7 tests, 3 passing)
+- ✅ JSON parser implementation (605 lines, 7 tests, **7 passing - 100%!**)
 - ✅ DateTime implementation (670 lines, 15 tests, **15 passing - 100%!**)
-- ✅ Crypto module (550+ lines, 25 tests, 12 passing)
-- ✅ Test framework integration (47 tests total, 7 basic tests 100%)
-- ✅ **Critical compiler bugs FIXED** (8 major fixes this session!)
-- ✅ **Runtime debugging mystery SOLVED** (enum shadowing + implicit returns)
+- ✅ Crypto module (550+ lines, 25 tests, 15 passing - 60%)
+- ✅ Test framework integration (47 tests total, **7 basic tests - 100%!**)
+- ✅ **Critical compiler bugs FIXED** (13 major fixes this session!)
+- ✅ **Runtime debugging mysteries SOLVED** (enum shadowing, implicit returns, try operator, HashMap)
 
-**Remaining Issues** (12/49 tests failing - all stdlib implementation, not compiler):
-1. **Crypto placeholders** (4 tests) - sha256/sha1/md5/hmac return empty strings
-   - Need: Node.js crypto module integration in Jounce stdlib
-2. **Random placeholders** (3 tests) - random_bytes/uuid_v4/salt_generation return same values
-   - Need: Proper random number generation
-3. **Password hashing** (2 tests) - PBKDF2 not implemented
-   - Need: Actual password hashing implementation
-4. **Base64 decode** (2 tests) - Implementation bug in decode logic
-   - Need: Fix base64 decoding algorithm
-5. **JSON parse_object** (1 test) - HashMap integration issue
-   - Need: Debug object parsing with HashMap
+**Remaining Issues** (9/49 tests failing - all crypto placeholder implementations):
+1. **Hash placeholders** (4 tests) - sha256/sha1/md5/hmac return empty strings
+   - Need: Node.js crypto module integration (crypto.createHash, crypto.createHmac)
+2. **Random placeholder** (1 test) - random_bytes returns zeros
+   - Need: crypto.randomBytes() integration
+3. **UUID placeholder** (1 test) - uuid_v4 generates non-unique IDs
+   - Need: Proper UUID v4 generation with crypto.randomBytes()
+4. **Password hashing** (3 tests) - PBKDF2 not implemented, salts not random
+   - Need: crypto.pbkdf2Sync() integration
 
 **Compiler Status**: ✅ **PRODUCTION READY** for stdlib execution!
 - All core language features working
@@ -176,5 +184,5 @@ async fn test_async() {
 
 ---
 
-**Last Updated**: 2025-10-23 | **Status**: Phase 9 Sprint 3 - **MILESTONE!** 37/49 stdlib tests (76%), compiler production-ready!
+**Last Updated**: 2025-10-23 | **Status**: Phase 9 Sprint 3 - **81.6% COMPLETE!** 40/49 tests, 3 modules at 100%!
 **Archives**: See `docs/archive/` for full Sprint 1-2 details

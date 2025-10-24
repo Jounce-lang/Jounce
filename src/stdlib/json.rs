@@ -113,7 +113,15 @@ impl JsonValue {
     // Get value from object by key
     fn get(self: &JsonValue, key: String) -> Option<JsonValue> {
         match self {
-            JsonValue::Object(obj) => obj.get(key),
+            JsonValue::Object(obj) => {
+                // HashMap.get() returns undefined if key doesn't exist
+                // We need to check and wrap in Option
+                return if obj.has(key) {
+                    Option::Some(obj.get(key))
+                } else {
+                    Option::None
+                };
+            },
             _ => Option::None,
         }
     }

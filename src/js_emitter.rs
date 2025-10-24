@@ -342,6 +342,8 @@ impl JSEmitter {
         output.push_str("Option.prototype = {};\n");
         output.push_str("function Some(data) { const v = { variant: \"Some\", data: data }; v.__proto__ = Option.prototype; return v; }\n");
         output.push_str("const None = (() => { const v = { variant: \"None\" }; v.__proto__ = Option.prototype; return v; })();\n");
+        output.push_str("Option.Some = Some;\n");
+        output.push_str("Option.None = None;\n");
         output.push_str("Option.prototype.is_some = function() { return this.variant === \"Some\"; };\n");
         output.push_str("Option.prototype.is_none = function() { return this.variant === \"None\"; };\n");
         output.push_str("Option.prototype.unwrap = function() { if (this.variant === \"Some\") return this.data; throw new Error(\"Called unwrap on None\"); };\n");
@@ -350,7 +352,16 @@ impl JSEmitter {
         // HashMap type alias (JavaScript Map)
         output.push_str("// HashMap<K, V> is a JavaScript Map\n");
         output.push_str("const HashMap = Map;\n");
-        output.push_str("HashMap.new = function() { return new Map(); };\n\n");
+        output.push_str("HashMap.new = function() { return new Map(); };\n");
+        output.push_str("if (!Map.prototype.insert) {\n");
+        output.push_str("  Map.prototype.insert = function(k, v) { this.set(k, v); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!Map.prototype.contains_key) {\n");
+        output.push_str("  Map.prototype.contains_key = function(k) { return this.has(k); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!Map.prototype.get_or_default) {\n");
+        output.push_str("  Map.prototype.get_or_default = function(k, def) { return this.has(k) ? this.get(k) : def; };\n");
+        output.push_str("}\n\n");
 
         // Generate RPC client stubs
         output.push_str("// RPC Client Setup\n");
@@ -1127,10 +1138,10 @@ impl JSEmitter {
             }
             Expression::TryOperator(try_expr) => {
                 // Generate JavaScript for ? operator (error propagation)
-                // For now, simple unwrap - proper early return requires statement-level transformation
+                // For now, use unwrap() - proper early return requires statement-level transformation
                 // TODO: Implement proper early return at function body level
                 let inner = self.generate_expression_js(&try_expr.expression);
-                format!("({}.value)", inner)
+                format!("({}.unwrap())", inner)
             }
             Expression::Ternary(ternary) => {
                 // Generate JavaScript ternary expression: condition ? true_expr : false_expr
