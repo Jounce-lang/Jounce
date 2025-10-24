@@ -54,8 +54,8 @@ impl Metadata {
 
     // Check if read-only
     fn is_readonly(self: &Metadata) -> bool {
-        // Check write permission for owner (0o200 = 128 in decimal)
-        return (self.permissions & 128) == 0;
+        // Check write permission for owner
+        return (self.permissions & 0o200) == 0;
     }
 }
 

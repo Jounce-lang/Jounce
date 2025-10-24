@@ -1,0 +1,37 @@
+// Test different number literal formats
+
+fn test_literals() {
+    // Decimal
+    let dec = 42;
+
+    // Hexadecimal
+    let hex = 0xFF;
+    let hex2 = 0x10;
+
+    // Octal
+    let oct = 0o777;
+    let oct2 = 0o200;
+    let oct3 = 0o644;
+
+    // Binary
+    let bin = 0b1010;
+    let bin2 = 0b11111111;
+
+    console::log("Decimal:", dec);
+    console::log("Hex 0xFF:", hex);
+    console::log("Hex 0x10:", hex2);
+    console::log("Octal 0o777:", oct);
+    console::log("Octal 0o200:", oct2);
+    console::log("Octal 0o644:", oct3);
+    console::log("Binary 0b1010:", bin);
+    console::log("Binary 0b11111111:", bin2);
+
+    // Test that they're correct
+    assert_eq(hex, 255);
+    assert_eq(hex2, 16);
+    assert_eq(oct, 511);
+    assert_eq(oct2, 128);
+    assert_eq(oct3, 420);
+    assert_eq(bin, 10);
+    assert_eq(bin2, 255);
+}

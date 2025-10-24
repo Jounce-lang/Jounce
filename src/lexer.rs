@@ -542,15 +542,60 @@ impl Lexer {
         let mut is_float = false;
         let mut is_hex = false;
 
-        // Check for hexadecimal literals (0x...)
-        if self.ch == '0' && (self.peek() == 'x' || self.peek() == 'X') {
-            is_hex = true;
-            self.read_char(); // consume '0'
-            self.read_char(); // consume 'x' or 'X'
+        // Check for different number bases
+        let mut is_octal = false;
+        let mut is_binary = false;
 
-            // Read hex digits (0-9, a-f, A-F)
-            while self.ch.is_ascii_hexdigit() {
-                self.read_char();
+        if self.ch == '0' {
+            match self.peek() {
+                // Hexadecimal: 0x...
+                'x' | 'X' => {
+                    is_hex = true;
+                    self.read_char(); // consume '0'
+                    self.read_char(); // consume 'x' or 'X'
+
+                    // Read hex digits (0-9, a-f, A-F)
+                    while self.ch.is_ascii_hexdigit() {
+                        self.read_char();
+                    }
+                }
+                // Octal: 0o...
+                'o' | 'O' => {
+                    is_octal = true;
+                    self.read_char(); // consume '0'
+                    self.read_char(); // consume 'o' or 'O'
+
+                    // Read octal digits (0-7)
+                    while self.ch >= '0' && self.ch <= '7' {
+                        self.read_char();
+                    }
+                }
+                // Binary: 0b...
+                'b' | 'B' => {
+                    is_binary = true;
+                    self.read_char(); // consume '0'
+                    self.read_char(); // consume 'b' or 'B'
+
+                    // Read binary digits (0-1)
+                    while self.ch == '0' || self.ch == '1' {
+                        self.read_char();
+                    }
+                }
+                _ => {
+                    // Regular decimal starting with 0
+                    while self.ch.is_ascii_digit() {
+                        self.read_char();
+                    }
+
+                    // Check for decimal point
+                    if self.ch == '.' && self.peek().is_ascii_digit() {
+                        is_float = true;
+                        self.read_char(); // consume '.'
+                        while self.ch.is_ascii_digit() {
+                            self.read_char();
+                        }
+                    }
+                }
             }
         } else {
             // Read decimal number
@@ -576,6 +621,16 @@ impl Lexer {
             // Parse hexadecimal (strip "0x" prefix)
             let hex_str = &literal[2..]; // Remove "0x" prefix
             let value = i64::from_str_radix(hex_str, 16).unwrap_or(0);
+            Token::new(TokenKind::Integer(value), literal, self.line, start_col)
+        } else if is_octal {
+            // Parse octal (strip "0o" prefix)
+            let octal_str = &literal[2..]; // Remove "0o" prefix
+            let value = i64::from_str_radix(octal_str, 8).unwrap_or(0);
+            Token::new(TokenKind::Integer(value), literal, self.line, start_col)
+        } else if is_binary {
+            // Parse binary (strip "0b" prefix)
+            let binary_str = &literal[2..]; // Remove "0b" prefix
+            let value = i64::from_str_radix(binary_str, 2).unwrap_or(0);
             Token::new(TokenKind::Integer(value), literal, self.line, start_col)
         } else {
             let value = literal.parse().unwrap_or(0);
@@ -1159,5 +1214,33 @@ mod tests {
         // ;
         let token8 = lexer.next_token();
         assert_eq!(token8.kind, TokenKind::Semicolon);
+    }
+
+    #[test]
+    fn test_octal_literals() {
+        let mut lexer = Lexer::new("0o777 0o200 0o644".to_string());
+
+        let tok1 = lexer.next_token();
+        assert!(matches!(tok1.kind, TokenKind::Integer(511))); // 0o777 = 511
+
+        let tok2 = lexer.next_token();
+        assert!(matches!(tok2.kind, TokenKind::Integer(128))); // 0o200 = 128
+
+        let tok3 = lexer.next_token();
+        assert!(matches!(tok3.kind, TokenKind::Integer(420))); // 0o644 = 420
+    }
+
+    #[test]
+    fn test_binary_literals() {
+        let mut lexer = Lexer::new("0b1010 0b11111111 0b0".to_string());
+
+        let tok1 = lexer.next_token();
+        assert!(matches!(tok1.kind, TokenKind::Integer(10))); // 0b1010 = 10
+
+        let tok2 = lexer.next_token();
+        assert!(matches!(tok2.kind, TokenKind::Integer(255))); // 0b11111111 = 255
+
+        let tok3 = lexer.next_token();
+        assert!(matches!(tok3.kind, TokenKind::Integer(0))); // 0b0 = 0
     }
 }
