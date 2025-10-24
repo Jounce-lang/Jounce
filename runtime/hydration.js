@@ -1,18 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ssr_test</title>
-</head>
-<body>
-  <div id="app" data-component="ssr_test">
-  <div class="hello"><h1>Hello from Jounce SSR!</h1><p>This page was server-rendered.</p><p>Static content is fast and SEO-friendly.</p></div>  </div>
-  <script>
-    // Hydration initial state
-    window.__INITIAL_STATE__ = {};
-  </script>
-  <script>
 /**
  * Jounce Hydration Runtime
  * Enables client-side interactivity for server-rendered components
@@ -250,7 +235,3 @@
         HydrationRuntime.hydrateAll();
     }
 })();
-
-  </script>
-</body>
-</html>

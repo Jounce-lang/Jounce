@@ -1,0 +1,25 @@
+// Interactive SSR component with client-side hydration demo
+
+component Counter() {
+    <div class="counter-app">
+        <h1>Interactive Counter (Hydrated)</h1>
+        <p>This component was server-rendered and will be hydrated on the client.</p>
+        <div class="counter-display">
+            <p>Count: <span id="count">0</span></p>
+            <div class="buttons">
+                <button class="btn primary" onclick="handleIncrement()">
+                    Increment
+                </button>
+                <button class="btn secondary" onclick="handleDecrement()">
+                    Decrement
+                </button>
+                <button class="btn danger" onclick="handleReset()">
+                    Reset
+                </button>
+            </div>
+        </div>
+        <div class="info">
+            <p class="note">Click the buttons above - event handlers will be attached via hydration!</p>
+        </div>
+    </div>
+}

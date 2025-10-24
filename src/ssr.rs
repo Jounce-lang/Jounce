@@ -197,15 +197,22 @@ pub fn render_to_document(
 
     doc.push_str("</head>\n");
     doc.push_str("<body>\n");
-    doc.push_str("  <div id=\"app\">\n");
+    doc.push_str("  <div id=\"app\" data-component=\"");
+    doc.push_str(app_name);
+    doc.push_str("\">\n");
     doc.push_str(&indent_html(&body_html, 2));
     doc.push_str("  </div>\n");
 
-    // Add hydration script
+    // Add hydration data
     doc.push_str("  <script>\n");
-    doc.push_str("    // Hydration data\n");
+    doc.push_str("    // Hydration initial state\n");
     doc.push_str("    window.__INITIAL_STATE__ = {};\n");
     doc.push_str("  </script>\n");
+
+    // Add hydration runtime
+    doc.push_str("  <script>\n");
+    doc.push_str(include_str!("../runtime/hydration.js"));
+    doc.push_str("\n  </script>\n");
 
     // Add preload scripts
     for script in &ctx.preload_scripts {
