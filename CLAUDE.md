@@ -13,6 +13,7 @@
 **CSS**: css! macro, scoped styles, 150+ utilities, responsive/state/dark variants, custom utilities
 **Dev Tools**: LSP (8 features), watch mode, formatter, package manager, error diagnostics, source maps, test framework
 **Stdlib**: JSON (parse/stringify), DateTime (formatting, timers), Crypto (hashing, random, UUID, base64), File I/O (read/write, directories), HTTP client, collections (RArray, RMap)
+**SSR**: Server-side rendering, JSX to HTML, client-side hydration, progressive enhancement, state restoration
 
 ## 🚀 Commands
 
@@ -26,6 +27,9 @@ jnc fmt --write src
 
 # Package Manager
 jnc pkg init/add/remove/tree
+
+# Server-Side Rendering (NEW!)
+jnc ssr component.jnc [--output file.html] [--component Name] [--title "Page Title"]
 ```
 
 ## 📋 Phase 9 Sprint 3 - Standard Library Expansion (IN PROGRESS)
@@ -155,6 +159,46 @@ async fn test_async() {
 ```
 
 **Assertions**: assert, assert_eq, assert_ne, assert_true, assert_false, assert_some, assert_none, assert_ok, assert_err, assert_contains, assert_length, assert_empty, assert_not_empty, assert_approx
+
+## 🎨 Server-Side Rendering (SSR)
+
+**Status**: Tasks 1 & 2 Complete! (67% ✅)
+
+**Features**:
+- ✅ **JSX to VNode Conversion** - Extract and convert component JSX to virtual DOM
+- ✅ **Client-Side Hydration** - 269-line runtime for progressive enhancement
+- ✅ **Event Handler Attachment** - Auto-attach listeners via data attributes
+- ✅ **State Restoration** - Transfer server state to client via `window.__INITIAL_STATE__`
+- ⏸️ **Dev Server** - Watch mode with auto-reload (Task 3)
+- ⏸️ **Production Build** - Streaming, caching, optimization (Task 4)
+
+**Implementation**:
+- `src/ssr.rs` - jsx_to_vnode(), render_to_document() with hydration
+- `runtime/hydration.js` - Full hydration runtime (269 lines)
+- `src/main.rs` - SSR CLI command
+
+**Examples**:
+```bash
+# Render static component
+jnc ssr examples/ssr_test.jnc
+
+# Render complex nested structure
+jnc ssr examples/ssr_complex.jnc
+
+# Interactive component with hydration
+jnc ssr examples/ssr_interactive.jnc
+# Open in browser - buttons work via hydration!
+```
+
+**Hydration API**:
+```javascript
+// Auto-hydration (default)
+JounceHydration.hydrateAll();
+
+// Progressive hydration
+JounceHydration.hydrateWhenVisible('#lazy', 'LazyComp');
+JounceHydration.hydrateWhenIdle('#optional', 'OptionalComp');
+```
 
 ## 📂 Key Files
 
