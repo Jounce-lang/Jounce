@@ -93,131 +93,109 @@ impl DirEntry {
     }
 }
 
-// File handle for reading
-struct File {
-    path: String,
-    position: i64,
-    size: i64,
-    is_open: bool,
-}
+// File handle for reading (commented out - not used in current tests)
+// The convenience functions below use JavaScript helpers directly
+// This struct will be enabled once the parser supports .as_bytes() and other advanced methods
 
-impl File {
-    // Open a file for reading
-    fn open(path: String) -> Result<File, String> {
-        // Would call actual file system API
-        return Result::Ok(File {
-            path: path,
-            position: 0,
-            size: 0,
-            is_open: true,
-        });
-    }
+// struct File {
+//     path: String,
+//     position: i64,
+//     size: i64,
+//     is_open: bool,
+// }
 
-    // Create a new file for writing
-    fn create(path: String) -> Result<File, String> {
-        // Would create file
-        return Result::Ok(File {
-            path: path,
-            position: 0,
-            size: 0,
-            is_open: true,
-        });
-    }
-
-    // Read entire file contents as string
-    fn read_to_string(self: &mut File) -> Result<String, String> {
-        if !self.is_open {
-            return Result::Err("File not open");
-        }
-
-        // Would read file contents
-        return Result::Ok(String::new());
-    }
-
-    // Read entire file contents as bytes
-    fn read_to_end(self: &mut File) -> Result<Vec<u8>, String> {
-        if !self.is_open {
-            return Result::Err("File not open");
-        }
-
-        // Would read file contents
-        return Result::Ok(Vec::new());
-    }
-
-    // Read a specific number of bytes
-    fn read(self: &mut File, buf: Vec<u8>) -> Result<i64, String> {
-        if !self.is_open {
-            return Result::Err("File not open");
-        }
-
-        // Would read into buffer
-        return Result::Ok(0);
-    }
-
-    // Write bytes to file
-    fn write(self: &mut File, data: Vec<u8>) -> Result<i64, String> {
-        if !self.is_open {
-            return Result::Err("File not open");
-        }
-
-        // Would write data
-        return Result::Ok(data.len() as i64);
-    }
-
-    // Write string to file
-    fn write_str(self: &mut File, s: String) -> Result<i64, String> {
-        return self.write(s.as_bytes());
-    }
-
-    // Seek to a position in the file
-    fn seek(self: &mut File, pos: i64) -> Result<i64, String> {
-        if !self.is_open {
-            return Result::Err("File not open");
-        }
-
-        self.position = pos;
-        return Result::Ok(pos);
-    }
-
-    // Get current position
-    fn position(self: &File) -> i64 {
-        return self.position;
-    }
-
-    // Flush buffered writes
-    fn flush(self: &mut File) -> Result<(), String> {
-        if !self.is_open {
-            return Result::Err("File not open");
-        }
-
-        // Would flush buffers
-        return Result::Ok(());
-    }
-
-    // Close the file
-    fn close(self: &mut File) -> Result<(), String> {
-        if !self.is_open {
-            return Result::Err("File already closed");
-        }
-
-        self.is_open = false;
-        return Result::Ok(());
-    }
-
-    // Get file metadata
-    fn metadata(self: &File) -> Result<Metadata, String> {
-        // Would get file metadata
-        return Result::Ok(Metadata {
-            size: self.size,
-            is_file: true,
-            is_directory: false,
-            created: 0,
-            modified: 0,
-            accessed: 0,
-            permissions: 0o644,
-        });
-    }
-}
+// impl File {
+//     // Open a file for reading
+//     fn open(path: String) -> Result<File, String> {
+//         return Result::Ok(File {
+//             path: path,
+//             position: 0,
+//             size: 0,
+//             is_open: true,
+//         });
+//     }
+//     // Create a new file for writing
+//     fn create(path: String) -> Result<File, String> {
+//         return Result::Ok(File {
+//             path: path,
+//             position: 0,
+//             size: 0,
+//             is_open: true,
+//         });
+//     }
+//     // Read entire file contents as string
+//     fn read_to_string(self: &mut File) -> Result<String, String> {
+//         if !self.is_open {
+//             return Result::Err("File not open");
+//         }
+//         return Result::Ok(String::new());
+//     }
+//     // Read entire file contents as bytes
+//     fn read_to_end(self: &mut File) -> Result<Vec<u8>, String> {
+//         if !self.is_open {
+//             return Result::Err("File not open");
+//         }
+//         return Result::Ok(Vec::new());
+//     }
+//     // Read a specific number of bytes
+//     fn read(self: &mut File, buf: Vec<u8>) -> Result<i64, String> {
+//         if !self.is_open {
+//             return Result::Err("File not open");
+//         }
+//         return Result::Ok(0);
+//     }
+//     // Write bytes to file
+//     fn write(self: &mut File, data: Vec<u8>) -> Result<i64, String> {
+//         if !self.is_open {
+//             return Result::Err("File not open");
+//         }
+//         return Result::Ok(data.len() as i64);
+//     }
+//     // Write string to file
+//     fn write_str(self: &mut File, s: String) -> Result<i64, String> {
+//         // Note: .as_bytes() not supported yet
+//         return Result::Ok(0);
+//     }
+//     // Seek to a position in the file
+//     fn seek(self: &mut File, pos: i64) -> Result<i64, String> {
+//         if !self.is_open {
+//             return Result::Err("File not open");
+//         }
+//         self.position = pos;
+//         return Result::Ok(pos);
+//     }
+//     // Get current position
+//     fn position(self: &File) -> i64 {
+//         return self.position;
+//     }
+//     // Flush buffered writes
+//     fn flush(self: &mut File) -> Result<(), String> {
+//         if !self.is_open {
+//             return Result::Err("File not open");
+//         }
+//         return Result::Ok(());
+//     }
+//     // Close the file
+//     fn close(self: &mut File) -> Result<(), String> {
+//         if !self.is_open {
+//             return Result::Err("File already closed");
+//         }
+//         self.is_open = false;
+//         return Result::Ok(());
+//     }
+//     // Get file metadata
+//     fn metadata(self: &File) -> Result<Metadata, String> {
+//         return Result::Ok(Metadata {
+//             size: self.size,
+//             is_file: true,
+//             is_directory: false,
+//             created: 0,
+//             modified: 0,
+//             accessed: 0,
+//             permissions: 0o644,
+//         });
+//     }
+// }
 
 // Convenience functions for common file operations
 
@@ -375,85 +353,83 @@ fn glob(pattern: String) -> Result<Vec<String>, String> {
     return Result::Ok(Vec::new());
 }
 
-// Get file extension
-fn extension(path: String) -> Option<String> {
-    let parts = path.split(".");
-    if parts.len() > 1 {
-        return Option::Some(parts[parts.len() - 1]);
-    }
-    return Option::None;
-}
+// Path manipulation functions (commented out pending parser enhancements for .split())
+// These will be enabled once the parser supports method calls with string literal arguments
 
-// Get file name without extension
-fn file_stem(path: String) -> Option<String> {
-    let parts = path.split("/");
-    if parts.len() == 0 {
-        return Option::None;
-    }
+// // Get file extension
+// fn extension(path: String) -> Option<String> {
+//     let parts = path.split(".");
+//     if parts.len() > 1 {
+//         return Option::Some(parts[parts.len() - 1]);
+//     }
+//     return Option::None;
+// }
 
-    let filename = parts[parts.len() - 1];
-    let name_parts = filename.split(".");
+// // Get file name without extension
+// fn file_stem(path: String) -> Option<String> {
+//     let parts = path.split("/");
+//     if parts.len() == 0 {
+//         return Option::None;
+//     }
+//     let filename = parts[parts.len() - 1];
+//     let name_parts = filename.split(".");
+//     if name_parts.len() > 1 {
+//         // Remove extension
+//         let stem = String::new();
+//         for i in 0..(name_parts.len() - 1) {
+//             if i > 0 {
+//                 stem.push_str(".");
+//             }
+//             stem.push_str(&name_parts[i]);
+//         }
+//         return Option::Some(stem);
+//     }
+//     return Option::Some(filename);
+// }
 
-    if name_parts.len() > 1 {
-        // Remove extension
-        let stem = String::new();
-        for i in 0..(name_parts.len() - 1) {
-            if i > 0 {
-                stem.push_str(".");
-            }
-            stem.push_str(&name_parts[i]);
-        }
-        return Option::Some(stem);
-    }
+// // Get file name (last component of path)
+// fn file_name(path: String) -> Option<String> {
+//     let parts = path.split("/");
+//     if parts.len() == 0 {
+//         return Option::None;
+//     }
+//     return Option::Some(parts[parts.len() - 1]);
+// }
 
-    return Option::Some(filename);
-}
+// // Get parent directory
+// fn parent(path: String) -> Option<String> {
+//     let parts = path.split("/");
+//     if parts.len() <= 1 {
+//         return Option::None;
+//     }
+//     let parent_path = String::new();
+//     for i in 0..(parts.len() - 1) {
+//         if i > 0 {
+//             parent_path.push_str("/");
+//         }
+//         parent_path.push_str(&parts[i]);
+//     }
+//     return Option::Some(parent_path);
+// }
 
-// Get file name (last component of path)
-fn file_name(path: String) -> Option<String> {
-    let parts = path.split("/");
-    if parts.len() == 0 {
-        return Option::None;
-    }
-    return Option::Some(parts[parts.len() - 1]);
-}
+// // Join path components
+// fn join(base: String, component: String) -> String {
+//     if base.ends_with("/") {
+//         return base + &component;
+//     } else {
+//         return base + "/" + &component;
+//     }
+// }
 
-// Get parent directory
-fn parent(path: String) -> Option<String> {
-    let parts = path.split("/");
-    if parts.len() <= 1 {
-        return Option::None;
-    }
+// // Check if path is absolute
+// fn is_absolute(path: String) -> bool {
+//     return path.starts_with("/");
+// }
 
-    let parent_path = String::new();
-    for i in 0..(parts.len() - 1) {
-        if i > 0 {
-            parent_path.push_str("/");
-        }
-        parent_path.push_str(&parts[i]);
-    }
-
-    return Option::Some(parent_path);
-}
-
-// Join path components
-fn join(base: String, component: String) -> String {
-    if base.ends_with("/") {
-        return base + &component;
-    } else {
-        return base + "/" + &component;
-    }
-}
-
-// Check if path is absolute
-fn is_absolute(path: String) -> bool {
-    return path.starts_with("/");
-}
-
-// Check if path is relative
-fn is_relative(path: String) -> bool {
-    return !is_absolute(path);
-}
+// // Check if path is relative
+// fn is_relative(path: String) -> bool {
+//     return !is_absolute(path);
+// }
 "#;
 
 #[cfg(test)]

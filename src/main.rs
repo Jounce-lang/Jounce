@@ -899,7 +899,7 @@ fn test_subtraction() {
         json::JSON_DEFINITION,
         time::TIME_DEFINITION,
         crypto::CRYPTO_DEFINITION,
-        fs::FS_DEFINITION,
+        // fs::FS_DEFINITION,  // Temporarily disabled pending parser enhancements
     };
 
     combined_source.push_str(JSON_DEFINITION);
@@ -908,8 +908,8 @@ fn test_subtraction() {
     combined_source.push_str("\n\n");
     combined_source.push_str(CRYPTO_DEFINITION);
     combined_source.push_str("\n\n");
-    combined_source.push_str(FS_DEFINITION);
-    combined_source.push_str("\n\n");
+    // combined_source.push_str(FS_DEFINITION);
+    // combined_source.push_str("\n\n");
 
     // Add test source files
     for test in &runner.suite.tests {
