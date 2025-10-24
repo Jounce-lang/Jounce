@@ -97,6 +97,20 @@ enum Commands {
         #[arg(short, long)]
         release: bool,
     },
+    /// Server-side render a component to HTML
+    Ssr {
+        /// Path to the component file to render
+        path: PathBuf,
+        #[arg(short, long)]
+        /// Output path for the generated HTML file
+        output: Option<PathBuf>,
+        #[arg(short, long)]
+        /// Component name to render (default: main exported component)
+        component: Option<String>,
+        #[arg(short, long)]
+        /// Page title
+        title: Option<String>,
+    },
     /// Package manager commands
     Pkg {
         #[command(subcommand)]
@@ -446,6 +460,94 @@ fn main() {
                 eprintln!("❌ Build failed: {}", e);
                 process::exit(1);
             }
+        }
+        Commands::Ssr { path, output, component, title } => {
+            use jounce_compiler::lexer::Lexer;
+            use jounce_compiler::parser::Parser;
+            use jounce_compiler::ssr::{SSRContext, render_to_document};
+            use jounce_compiler::vdom::VNode;
+
+            println!("🎨 Server-side rendering: {}", path.display());
+
+            // Read source code
+            let source_code = match fs::read_to_string(&path) {
+                Ok(code) => code,
+                Err(e) => {
+                    eprintln!("❌ Error reading file '{}': {}", path.display(), e);
+                    process::exit(1);
+                }
+            };
+
+            // Parse the source
+            let mut lexer = Lexer::new(source_code.clone());
+            let mut parser = Parser::new(&mut lexer);
+            let program = match parser.parse_program() {
+                Ok(p) => p,
+                Err(e) => {
+                    eprintln!("❌ Parsing failed: {:?}", e);
+                    process::exit(1);
+                }
+            };
+
+            // Create SSR context
+            let mut ctx = SSRContext::new();
+            if let Some(t) = title {
+                ctx.set_title(&t);
+            } else {
+                ctx.set_title(&path.file_stem()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("Jounce App")
+                    .to_string());
+            }
+
+            // For now, create a simple VNode from the component
+            // In a full implementation, this would execute the component and get its VNode
+            let vnode = VNode::Element {
+                tag: "div".to_string(),
+                attrs: vec![
+                    ("class".to_string(), "app".to_string()),
+                    ("data-ssr".to_string(), "true".to_string()),
+                ],
+                children: vec![
+                    VNode::Element {
+                        tag: "h1".to_string(),
+                        attrs: vec![],
+                        children: vec![VNode::Text("Jounce SSR".to_string())],
+                    },
+                    VNode::Element {
+                        tag: "p".to_string(),
+                        attrs: vec![],
+                        children: vec![VNode::Text(format!(
+                            "This page was server-rendered from {}",
+                            path.display()
+                        ))],
+                    },
+                ],
+            };
+
+            // Render to HTML
+            let html = render_to_document(&vnode, &mut ctx,
+                &path.file_stem()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("app")
+            );
+
+            // Determine output path
+            let output_path = output.unwrap_or_else(|| {
+                let mut p = path.clone();
+                p.set_extension("html");
+                p
+            });
+
+            // Write HTML file
+            if let Err(e) = fs::write(&output_path, &html) {
+                eprintln!("❌ Failed to write HTML: {}", e);
+                process::exit(1);
+            }
+
+            println!("✨ Generated: {} ({} bytes)", output_path.display(), html.len());
+            println!("   Component: {}", component.as_deref().unwrap_or("default"));
+            println!("   Title: {}", ctx.metadata.get("title").unwrap_or(&"Jounce App".to_string()));
         }
         Commands::Pkg { command } => {
             use jounce_compiler::package_manager::PackageManager;

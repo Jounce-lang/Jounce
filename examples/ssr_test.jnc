@@ -1,0 +1,9 @@
+// Simple SSR test component
+
+component HelloWorld() {
+    <div class="hello">
+        <h1>Hello from Jounce SSR!</h1>
+        <p>This page was server-rendered.</p>
+        <p>Static content is fast and SEO-friendly.</p>
+    </div>
+}
