@@ -1,4 +1,5 @@
 use clap::Parser as ClapParser;
+use colored::Colorize;
 use std::fs;
 use std::path::PathBuf;
 use std::process;
@@ -269,7 +270,10 @@ fn main() {
             }
 
             // Compile to WASM with caching
-            println!("   Compiling to WebAssembly (with caching)...");
+            println!("   {} {} {}",
+                "⚙️ ".dimmed(),
+                "Compiling to WebAssembly".bold(),
+                "(with caching)".dimmed());
             let wasm_start = Instant::now();
 
             // Initialize compilation cache
@@ -304,7 +308,9 @@ fn main() {
             }
 
             // Write output files
-            println!("\n   Writing output files...");
+            println!("\n   {} {}",
+                "📝".dimmed(),
+                "Writing output files...".bold());
             let write_start = Instant::now();
 
             let server_path = output_dir.join("server.js");
@@ -369,8 +375,26 @@ fn main() {
                 println!();
             }
 
-            println!("\n✨ Compilation complete! ({:.2?})", total_time);
-            println!("   Run: cd {} && node server.js", output_dir.display());
+            println!("\n{} {} {}",
+                "✨".bold(),
+                "Compilation complete!".green().bold(),
+                format!("({:.2?})", total_time).dimmed());
+
+            // Display cache statistics
+            let stats = cache.stats();
+            if stats.hits > 0 || stats.misses > 0 {
+                let hit_rate = stats.hit_rate() * 100.0;
+                println!("   {}: {} hits, {} misses ({:.1}% hit rate)",
+                    "Cache".cyan(),
+                    stats.hits.to_string().green(),
+                    stats.misses.to_string().yellow(),
+                    hit_rate);
+            }
+
+            println!("   {}: {} && {}",
+                "Run".cyan().bold(),
+                format!("cd {}", output_dir.display()).yellow(),
+                "node server.js".yellow());
         }
         Commands::New { name } => {
             // FIX: Added logic for creating a new project

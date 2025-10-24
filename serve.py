@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Simple HTTP server for testing RavensOne WASM modules
+Jounce Development HTTP Server
+Serves WASM modules with proper MIME types and CORS support
 Run with: python3 serve.py
 """
 
@@ -30,14 +31,13 @@ if __name__ == "__main__":
         print(f"""
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
-║   🔥 RavensOne Development Server                         ║
+║   🚀 Jounce Development Server                            ║
 ║                                                            ║
 ║   Running at: http://localhost:{PORT}                       ║
 ║                                                            ║
-║   Test pages:                                              ║
-║   • http://localhost:{PORT}/test-reactive.html              ║
-║   • http://localhost:{PORT}/test-wasm.html                  ║
-║   • http://localhost:{PORT}/runtime/index.html              ║
+║   Dist files: http://localhost:{PORT}/dist/                 ║
+║   Examples:   http://localhost:{PORT}/examples/             ║
+║   Tests:      http://localhost:{PORT}/tests/                ║
 ║                                                            ║
 ║   Press Ctrl+C to stop                                     ║
 ║                                                            ║
