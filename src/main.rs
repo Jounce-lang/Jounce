@@ -2,8 +2,10 @@ use clap::Parser as ClapParser;
 use std::fs;
 use std::path::PathBuf;
 use std::process;
+use std::sync::Arc;
 use std::time::Instant;
 use jounce_compiler::{Compiler, deployer, BuildTarget}; // FIX: Corrected the import path
+use jounce_compiler::cache::{CompilationCache, compile_source_cached};
 use jounce_compiler::watcher::{FileWatcher, WatchConfig, CompileStats};
 use jounce_compiler::lexer::Lexer;
 use jounce_compiler::parser::Parser;
@@ -266,11 +268,18 @@ fn main() {
                 minify_time = minify_start.elapsed();
             }
 
-            // Compile to WASM
-            println!("   Compiling to WebAssembly...");
+            // Compile to WASM with caching
+            println!("   Compiling to WebAssembly (with caching)...");
             let wasm_start = Instant::now();
-            let compiler = Compiler::new();
-            let (wasm_bytes, css_output) = match compiler.compile_source_with_css(&source_code, BuildTarget::Client) {
+
+            // Initialize compilation cache
+            let cache_dir = PathBuf::from(".jounce/cache");
+            if let Err(e) = fs::create_dir_all(&cache_dir) {
+                eprintln!("⚠️  Warning: Could not create cache directory: {}", e);
+            }
+            let cache = Arc::new(CompilationCache::new(cache_dir));
+
+            let (wasm_bytes, css_output) = match compile_source_cached(&source_code, &path, BuildTarget::Client, &cache, false) {
                 Ok((bytes, css)) => {
                     println!("   ✓ Generated WASM module ({} bytes)", bytes.len());
                     if !css.is_empty() {
