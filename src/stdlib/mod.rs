@@ -19,6 +19,7 @@ pub mod string;
 pub mod fs;
 pub mod math;
 pub mod crypto;
+pub mod yaml;
 
 // Re-export commonly used items
 pub use reactive::{Signal, Computed, Effect};

@@ -1,0 +1,253 @@
+// YAML Parser and Serializer Tests
+
+// Test 1: Parse simple scalars
+fn test_parse_scalars() {
+    // Null
+    let null_yaml = yaml::parse("null");
+    assert_ok(&null_yaml);
+    let null_val = null_yaml.unwrap();
+    assert(null_val.is_null(), "Should be null");
+
+    // Boolean
+    let true_yaml = yaml::parse("true");
+    assert_ok(&true_yaml);
+    assert_eq(true_yaml.unwrap().as_bool().unwrap(), true, "Should be true");
+
+    let false_yaml = yaml::parse("false");
+    assert_ok(&false_yaml);
+    assert_eq(false_yaml.unwrap().as_bool().unwrap(), false, "Should be false");
+
+    // Number
+    let num_yaml = yaml::parse("42");
+    assert_ok(&num_yaml);
+    assert_eq(num_yaml.unwrap().as_number().unwrap(), 42.0, "Should be 42");
+
+    // String
+    let str_yaml = yaml::parse("hello");
+    assert_ok(&str_yaml);
+    assert_eq(str_yaml.unwrap().as_string().unwrap(), "hello", "Should be 'hello'");
+}
+
+// Test 2: Parse flow sequences
+fn test_parse_flow_sequence() {
+    let yaml_str = "[1, 2, 3, 4, 5]";
+    let result = yaml::parse(yaml_str);
+
+    assert_ok(&result);
+    let value = result.unwrap();
+    assert(value.is_sequence(), "Should be a sequence");
+
+    let seq = value.as_sequence().unwrap();
+    assert_eq(seq.len() as i64, 5, "Should have 5 elements");
+
+    assert_eq(seq[0].as_number().unwrap(), 1.0, "First element should be 1");
+    assert_eq(seq[1].as_number().unwrap(), 2.0, "Second element should be 2");
+    assert_eq(seq[4].as_number().unwrap(), 5.0, "Fifth element should be 5");
+}
+
+// Test 3: Parse flow mappings
+fn test_parse_flow_mapping() {
+    let yaml_str = "{name: John, age: 30, active: true}";
+    let result = yaml::parse(yaml_str);
+
+    assert_ok(&result);
+    let value = result.unwrap();
+    assert(value.is_mapping(), "Should be a mapping");
+
+    let name = value.get("name").unwrap();
+    assert_eq(name.as_string().unwrap(), "John", "Name should be John");
+
+    let age = value.get("age").unwrap();
+    assert_eq(age.as_number().unwrap(), 30.0, "Age should be 30");
+
+    let active = value.get("active").unwrap();
+    assert_eq(active.as_bool().unwrap(), true, "Active should be true");
+}
+
+// Test 4: Parse nested structures
+fn test_parse_nested() {
+    let yaml_str = "{user: {name: Alice, scores: [95, 87, 92]}}";
+    let result = yaml::parse(yaml_str);
+
+    assert_ok(&result);
+    let value = result.unwrap();
+
+    let user = value.get("user").unwrap();
+    assert(user.is_mapping(), "User should be a mapping");
+
+    let name = user.get("name").unwrap();
+    assert_eq(name.as_string().unwrap(), "Alice", "Name should be Alice");
+
+    let scores = user.get("scores").unwrap();
+    assert(scores.is_sequence(), "Scores should be a sequence");
+    let scores_seq = scores.as_sequence().unwrap();
+    assert_eq(scores_seq.len() as i64, 3, "Should have 3 scores");
+}
+
+// Test 5: Parse mixed sequences
+fn test_parse_mixed_sequence() {
+    let yaml_str = "[42, hello, true, null]";
+    let result = yaml::parse(yaml_str);
+
+    assert_ok(&result);
+    let value = result.unwrap();
+    let seq = value.as_sequence().unwrap();
+
+    assert_eq(seq.len() as i64, 4, "Should have 4 elements");
+    assert(seq[0].is_number(), "First should be number");
+    assert(seq[1].is_string(), "Second should be string");
+    assert(seq[2].is_bool(), "Third should be bool");
+    assert(seq[3].is_null(), "Fourth should be null");
+}
+
+// Test 6: Stringify scalars
+fn test_stringify_scalars() {
+    let null_val = yaml::yaml_null();
+    assert_eq(yaml::stringify(null_val), "null", "Null should stringify to 'null'");
+
+    let bool_val = yaml::yaml_bool(true);
+    assert_eq(yaml::stringify(bool_val), "true", "True should stringify to 'true'");
+
+    let num_val = yaml::yaml_number(42.5);
+    assert_eq(yaml::stringify(num_val), "42.5", "Number should stringify correctly");
+
+    let str_val = yaml::yaml_string("hello");
+    assert_eq(yaml::stringify(str_val), "hello", "String should stringify to itself");
+}
+
+// Test 7: Stringify sequences
+fn test_stringify_sequence() {
+    let mut seq = yaml::yaml_sequence();
+    seq.push(yaml::yaml_number(1.0));
+    seq.push(yaml::yaml_number(2.0));
+    seq.push(yaml::yaml_number(3.0));
+
+    let yaml_str = yaml::stringify(seq);
+    assert(yaml_str.contains("- 1"), "Should contain '- 1'");
+    assert(yaml_str.contains("- 2"), "Should contain '- 2'");
+    assert(yaml_str.contains("- 3"), "Should contain '- 3'");
+}
+
+// Test 8: Stringify mappings
+fn test_stringify_mapping() {
+    let mut map = yaml::yaml_mapping();
+    map.set("name", yaml::yaml_string("Alice"));
+    map.set("age", yaml::yaml_number(25.0));
+
+    let yaml_str = yaml::stringify(map);
+    assert(yaml_str.contains("name:"), "Should contain 'name:'");
+    assert(yaml_str.contains("Alice"), "Should contain 'Alice'");
+    assert(yaml_str.contains("age:"), "Should contain 'age:'");
+    assert(yaml_str.contains("25"), "Should contain '25'");
+}
+
+// Test 9: YamlValue manipulation - sequences
+fn test_yaml_value_sequence_manipulation() {
+    let mut seq = yaml::yaml_sequence();
+    assert_eq(seq.len(), 0, "Should start empty");
+
+    seq.push(yaml::yaml_number(10.0));
+    seq.push(yaml::yaml_string("test"));
+    assert_eq(seq.len(), 2, "Should have 2 elements");
+
+    let first = seq.get_index(0).unwrap();
+    assert_eq(first.as_number().unwrap(), 10.0, "First element should be 10");
+
+    let second = seq.get_index(1).unwrap();
+    assert_eq(second.as_string().unwrap(), "test", "Second element should be 'test'");
+}
+
+// Test 10: YamlValue manipulation - mappings
+fn test_yaml_value_mapping_manipulation() {
+    let mut map = yaml::yaml_mapping();
+    assert_eq(map.len(), 0, "Should start empty");
+
+    map.set("key1", yaml::yaml_string("value1"));
+    map.set("key2", yaml::yaml_number(100.0));
+    assert_eq(map.len(), 2, "Should have 2 keys");
+
+    let keys = map.keys();
+    assert_eq(keys.len() as i64, 2, "Should have 2 keys");
+
+    let val1 = map.get("key1").unwrap();
+    assert_eq(val1.as_string().unwrap(), "value1", "Should get correct value");
+
+    let val2 = map.get("key2").unwrap();
+    assert_eq(val2.as_number().unwrap(), 100.0, "Should get correct number");
+}
+
+// Test 11: Type checking methods
+fn test_type_checking() {
+    let null_val = yaml::yaml_null();
+    assert(null_val.is_null(), "Should be null type");
+    assert(!null_val.is_string(), "Should not be string type");
+
+    let bool_val = yaml::yaml_bool(true);
+    assert(bool_val.is_bool(), "Should be bool type");
+    assert(!bool_val.is_number(), "Should not be number type");
+
+    let num_val = yaml::yaml_number(3.14);
+    assert(num_val.is_number(), "Should be number type");
+    assert(!num_val.is_sequence(), "Should not be sequence type");
+
+    let str_val = yaml::yaml_string("test");
+    assert(str_val.is_string(), "Should be string type");
+    assert(!str_val.is_mapping(), "Should not be mapping type");
+}
+
+// Test 12: Quoted strings
+fn test_quoted_strings() {
+    let yaml_str = "\"hello world\"";
+    let result = yaml::parse(yaml_str);
+
+    assert_ok(&result);
+    let value = result.unwrap();
+    assert_eq(value.as_string().unwrap(), "hello world", "Should parse quoted string");
+}
+
+// Test 13: Empty sequences and mappings
+fn test_empty_collections() {
+    let empty_seq = yaml::parse("[]");
+    assert_ok(&empty_seq);
+    let seq = empty_seq.unwrap();
+    assert(seq.is_sequence(), "Should be a sequence");
+    assert_eq(seq.len(), 0, "Should be empty");
+
+    let empty_map = yaml::parse("{}");
+    assert_ok(&empty_map);
+    let map = empty_map.unwrap();
+    assert(map.is_mapping(), "Should be a mapping");
+    assert_eq(map.len(), 0, "Should be empty");
+}
+
+// Test 14: Stringify empty collections
+fn test_stringify_empty() {
+    let empty_seq = yaml::yaml_sequence();
+    assert_eq(yaml::stringify(empty_seq), "[]", "Empty sequence should stringify to '[]'");
+
+    let empty_map = yaml::yaml_mapping();
+    assert_eq(yaml::stringify(empty_map), "{}", "Empty mapping should stringify to '{}'");
+}
+
+// Test 15: Complex nested structure
+fn test_complex_nested_structure() {
+    let yaml_str = "{database: {host: localhost, port: 5432, credentials: {user: admin, password: secret}}, enabled: true}";
+    let result = yaml::parse(yaml_str);
+
+    assert_ok(&result);
+    let value = result.unwrap();
+
+    let db = value.get("database").unwrap();
+    let host = db.get("host").unwrap();
+    assert_eq(host.as_string().unwrap(), "localhost", "Host should be localhost");
+
+    let port = db.get("port").unwrap();
+    assert_eq(port.as_number().unwrap(), 5432.0, "Port should be 5432");
+
+    let creds = db.get("credentials").unwrap();
+    let user = creds.get("user").unwrap();
+    assert_eq(user.as_string().unwrap(), "admin", "User should be admin");
+
+    let enabled = value.get("enabled").unwrap();
+    assert_eq(enabled.as_bool().unwrap(), true, "Enabled should be true");
+}

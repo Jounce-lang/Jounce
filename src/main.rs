@@ -1031,6 +1031,7 @@ fn test_subtraction() {
         time::TIME_DEFINITION,
         crypto::CRYPTO_DEFINITION,
         fs::FS_DEFINITION,
+        yaml::YAML_DEFINITION,
     };
 
     combined_source.push_str(JSON_DEFINITION);
@@ -1040,6 +1041,8 @@ fn test_subtraction() {
     combined_source.push_str(CRYPTO_DEFINITION);
     combined_source.push_str("\n\n");
     combined_source.push_str(FS_DEFINITION);
+    combined_source.push_str("\n\n");
+    combined_source.push_str(YAML_DEFINITION);
     combined_source.push_str("\n\n");
 
     // Add test source files
