@@ -630,6 +630,12 @@ impl JSEmitter {
                 let body = self.generate_block_js(&while_stmt.body);
                 format!("while ({}) {{\n{}\n  }}", condition, body)
             }
+            Statement::Loop(loop_stmt) => {
+                let body = self.generate_block_js(&loop_stmt.body);
+                format!("while (true) {{\n{}\n  }}", body)
+            }
+            Statement::Break => "break".to_string(),
+            Statement::Continue => "continue".to_string(),
             Statement::Enum(enum_def) => {
                 self.generate_enum_js(enum_def)
             }
@@ -746,18 +752,24 @@ impl JSEmitter {
     fn generate_expression_js(&self, expr: &Expression) -> String {
         match expr {
             Expression::Identifier(ident) => {
-                // Handle namespaced identifiers (e.g., math::PI, console::log)
-                // Strip the namespace since wildcard imports make symbols available globally
-                if let Some(idx) = ident.value.rfind("::") {
-                    ident.value[idx + 2..].to_string()
-                } else {
-                    ident.value.clone()
-                }
+                // Handle namespaced identifiers (e.g., Stopwatch::new, json::parse)
+                // Convert :: to . for JavaScript (e.g., Stopwatch.new, json.parse)
+                ident.value.replace("::", ".")
             }
             Expression::IntegerLiteral(value) => value.to_string(),
             Expression::FloatLiteral(value) => value.clone(),
-            Expression::StringLiteral(value) => format!("\"{}\"", value),
+            Expression::StringLiteral(value) => {
+                // Escape string for JavaScript output
+                let escaped = value
+                    .replace('\\', "\\\\")  // Backslash must be first
+                    .replace('"', "\\\"")   // Escape quotes
+                    .replace('\n', "\\n")   // Escape newlines
+                    .replace('\r', "\\r")   // Escape carriage returns
+                    .replace('\t', "\\t");  // Escape tabs
+                format!("\"{}\"", escaped)
+            }
             Expression::BoolLiteral(value) => value.to_string(),
+            Expression::UnitLiteral => "undefined".to_string(),  // () maps to undefined in JS
             Expression::Infix(infix) => {
                 let left = self.generate_expression_js(&infix.left);
                 let right = self.generate_expression_js(&infix.right);
@@ -991,6 +1003,21 @@ impl JSEmitter {
                 }
                 code
             }
+            Expression::Dereference(deref_expr) => {
+                // In JavaScript, we don't have explicit dereferencing
+                // Just generate the inner expression directly
+                self.generate_expression_js(&deref_expr.expression)
+            }
+            Expression::Borrow(borrow_expr) => {
+                // In JavaScript, we don't have explicit borrowing
+                // Just generate the inner expression directly
+                self.generate_expression_js(&borrow_expr.expression)
+            }
+            Expression::MutableBorrow(borrow_expr) => {
+                // In JavaScript, we don't have explicit mutable borrowing
+                // Just generate the inner expression directly
+                self.generate_expression_js(&borrow_expr.expression)
+            }
             _ => "/* Unsupported expression */".to_string(),
         }
     }
@@ -1070,11 +1097,38 @@ impl JSEmitter {
 
     /// Generates the body for a pattern match, including variable bindings
     fn generate_pattern_body_js(&self, pattern: &Pattern, scrutinee_var: &str, body_expr: &Expression) -> String {
+        // Check if body is a Block expression with multiple statements
+        let is_block = matches!(body_expr, Expression::Block(_));
+
         match pattern {
             Pattern::Identifier(ident) => {
                 // Bind the scrutinee to the identifier
-                let body = self.generate_expression_js(body_expr);
-                format!("(() => {{ const {} = {}; return {}; }})()", ident.value, scrutinee_var, body)
+                if is_block {
+                    // For block bodies, generate statements with binding at the start
+                    if let Expression::Block(block) = body_expr {
+                        let mut code = format!("(() => {{ const {} = {};\n", ident.value, scrutinee_var);
+                        for (i, stmt) in block.statements.iter().enumerate() {
+                            if i == block.statements.len() - 1 {
+                                // Last statement - add return if it's an expression
+                                if let Statement::Expression(expr) = stmt {
+                                    code.push_str(&format!("return {}; }})()", self.generate_expression_js(expr)));
+                                } else {
+                                    code.push_str(&self.generate_statement_js(stmt));
+                                    code.push_str(" })()");
+                                }
+                            } else {
+                                code.push_str(&self.generate_statement_js(stmt));
+                                code.push('\n');
+                            }
+                        }
+                        code
+                    } else {
+                        unreachable!()
+                    }
+                } else {
+                    let body = self.generate_expression_js(body_expr);
+                    format!("(() => {{ const {} = {}; return {}; }})()", ident.value, scrutinee_var, body)
+                }
             }
             Pattern::EnumVariant { fields: Some(field_patterns), .. } => {
                 // Extract fields from enum variant
@@ -1090,16 +1144,62 @@ impl JSEmitter {
                     }
                 }
 
-                let body = self.generate_expression_js(body_expr);
-                if bindings.is_empty() {
-                    body
+                if is_block {
+                    // For block bodies with bindings, generate statements properly
+                    if let Expression::Block(block) = body_expr {
+                        let mut code = format!("(() => {{ {};\n", bindings.join("; "));
+                        for (i, stmt) in block.statements.iter().enumerate() {
+                            if i == block.statements.len() - 1 {
+                                if let Statement::Expression(expr) = stmt {
+                                    code.push_str(&format!("return {}; }})()", self.generate_expression_js(expr)));
+                                } else {
+                                    code.push_str(&self.generate_statement_js(stmt));
+                                    code.push_str(" })()");
+                                }
+                            } else {
+                                code.push_str(&self.generate_statement_js(stmt));
+                                code.push('\n');
+                            }
+                        }
+                        code
+                    } else {
+                        unreachable!()
+                    }
                 } else {
-                    format!("(() => {{ {}; return {}; }})()", bindings.join("; "), body)
+                    let body = self.generate_expression_js(body_expr);
+                    if bindings.is_empty() {
+                        body
+                    } else {
+                        format!("(() => {{ {}; return {}; }})()", bindings.join("; "), body)
+                    }
                 }
             }
             _ => {
-                // No bindings needed, just generate the body
-                self.generate_expression_js(body_expr)
+                // No bindings needed
+                if is_block {
+                    // Generate block with proper returns
+                    if let Expression::Block(block) = body_expr {
+                        let mut code = String::from("(() => {");
+                        for (i, stmt) in block.statements.iter().enumerate() {
+                            code.push('\n');
+                            if i == block.statements.len() - 1 {
+                                if let Statement::Expression(expr) = stmt {
+                                    code.push_str(&format!("return {}; }})()", self.generate_expression_js(expr)));
+                                } else {
+                                    code.push_str(&self.generate_statement_js(stmt));
+                                    code.push_str(" })()");
+                                }
+                            } else {
+                                code.push_str(&self.generate_statement_js(stmt));
+                            }
+                        }
+                        code
+                    } else {
+                        unreachable!()
+                    }
+                } else {
+                    self.generate_expression_js(body_expr)
+                }
             }
         }
     }

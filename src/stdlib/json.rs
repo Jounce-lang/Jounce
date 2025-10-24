@@ -63,7 +63,7 @@ impl JsonValue {
     }
 
     // Extract boolean value
-    fn as_bool(self: &JsonValue) -> Result<bool, String> {
+    fn as_bool(self: &JsonValue) -> Result<(), String> {
         match self {
             JsonValue::Bool(b) => Ok(*b),
             _ => Err("Not a boolean"),

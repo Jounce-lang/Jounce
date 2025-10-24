@@ -17,6 +17,9 @@ pub enum Statement {
     While(WhileStatement),
     For(ForStatement),
     ForIn(ForInStatement),
+    Loop(LoopStatement),
+    Break,
+    Continue,
     MacroInvocation(MacroInvocation),
     Struct(StructDefinition),
     Enum(EnumDefinition),
@@ -85,6 +88,11 @@ pub struct ForInStatement {
     pub variable: Identifier,          // Loop variable (e.g., "item" in "for item in collection")
     pub iterator: Expression,          // The expression to iterate over
     pub body: BlockStatement,
+}
+
+#[derive(Debug, Clone)]
+pub struct LoopStatement {
+    pub body: BlockStatement,  // Infinite loop body
 }
 
 #[derive(Debug, Clone)]
@@ -241,6 +249,7 @@ pub enum Expression {
     FloatLiteral(String),
     StringLiteral(String),
     BoolLiteral(bool),
+    UnitLiteral,  // () - the unit type value
     ArrayLiteral(ArrayLiteral),
     TupleLiteral(TupleLiteral),
     StructLiteral(StructLiteral),

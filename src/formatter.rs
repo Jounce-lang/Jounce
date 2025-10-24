@@ -81,6 +81,12 @@ impl Formatter {
             Statement::While(while_stmt) => self.format_while_statement(while_stmt),
             Statement::For(for_stmt) => self.format_for_statement(for_stmt),
             Statement::ForIn(for_in) => self.format_for_in_statement(for_in),
+            Statement::Loop(loop_stmt) => {
+                self.write("loop ");
+                self.format_block_inline(&loop_stmt.body);
+            }
+            Statement::Break => self.write("break;\n"),
+            Statement::Continue => self.write("continue;\n"),
             Statement::MacroInvocation(macro_inv) => self.format_macro_invocation(macro_inv),
             Statement::Struct(struct_def) => self.format_struct_definition(struct_def),
             Statement::Enum(enum_def) => self.format_enum_definition(enum_def),
@@ -698,6 +704,7 @@ impl Formatter {
                 self.write("\"");
             }
             Expression::BoolLiteral(b) => self.write(if *b { "true" } else { "false" }),
+            Expression::UnitLiteral => self.write("()"),
             Expression::ArrayLiteral(arr) => self.format_array_literal(arr),
             Expression::TupleLiteral(tuple) => self.format_tuple_literal(tuple),
             Expression::StructLiteral(struct_lit) => self.format_struct_literal(struct_lit),

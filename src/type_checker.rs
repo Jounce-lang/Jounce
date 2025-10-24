@@ -353,6 +353,7 @@ impl TypeChecker {
             Expression::FloatLiteral(_) => Ok(Type::Float),
             Expression::StringLiteral(_) => Ok(Type::String),
             Expression::BoolLiteral(_) => Ok(Type::Bool),
+            Expression::UnitLiteral => Ok(Type::Void),  // Unit type () maps to Void
 
             Expression::Identifier(ident) => {
                 // Check if this is a namespaced identifier (e.g., console::log, document::write)

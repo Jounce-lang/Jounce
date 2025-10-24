@@ -891,13 +891,35 @@ fn test_subtraction() {
     let temp_dir = PathBuf::from("dist");
     fs::create_dir_all(&temp_dir)?;
 
-    // Combine all test source files into one
+    // Combine stdlib modules and test source files into one
     let mut combined_source = String::new();
+
+    // Include stdlib modules needed for tests
+    use jounce_compiler::stdlib::{
+        json::JSON_DEFINITION,
+        time::TIME_DEFINITION,
+        crypto::CRYPTO_DEFINITION,
+    };
+
+    combined_source.push_str(JSON_DEFINITION);
+    combined_source.push_str("\n\n");
+    combined_source.push_str(TIME_DEFINITION);
+    combined_source.push_str("\n\n");
+    combined_source.push_str(CRYPTO_DEFINITION);
+    combined_source.push_str("\n\n");
+
+    // Add test source files
     for test in &runner.suite.tests {
         if let Ok(test_source) = fs::read_to_string(&test.file_path) {
             combined_source.push_str(&test_source);
             combined_source.push_str("\n\n");
         }
+    }
+
+    // Save combined source for debugging if verbose
+    if verbose {
+        fs::write(temp_dir.join("combined_source.jnc"), &combined_source)?;
+        println!("📝 Combined source saved to dist/combined_source.jnc");
     }
 
     // Parse and compile combined Jounce code to JavaScript

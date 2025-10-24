@@ -17,7 +17,7 @@ impl Token {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TokenKind {
     // Keywords
-    Let, Const, Fn, Struct, Enum, Impl, Trait, Component, Extern, Return, Server, Client, Async, Await, Use, True, False, If, Else, While, For, In, Match, Mut, As,
+    Let, Const, Fn, Struct, Enum, Impl, Trait, Component, Extern, Return, Server, Client, Async, Await, Use, True, False, If, Else, While, For, In, Match, Mut, As, Loop, Break, Continue,
 
     // Identifiers & Literals
     Identifier,
@@ -45,8 +45,11 @@ pub enum TokenKind {
     Question,    // ?
     Ampersand,   // &
     AmpAmp,      // && (logical AND)
-    Pipe,        // | NEW: For closures
+    Pipe,        // |
     PipePipe,    // || (logical OR)
+    Caret,       // ^ (bitwise XOR)
+    LeftShift,   // << (bitwise left shift)
+    RightShift,  // >> (bitwise right shift)
     Arrow,       // ->
     FatArrow,    // => NEW: For lambda expressions
     DoubleColon, // :: NEW
@@ -118,6 +121,9 @@ lazy_static::lazy_static! {
         map.insert("match", TokenKind::Match);
         map.insert("mut", TokenKind::Mut);
         map.insert("as", TokenKind::As);
+        map.insert("loop", TokenKind::Loop);
+        map.insert("break", TokenKind::Break);
+        map.insert("continue", TokenKind::Continue);
         map
     };
 }

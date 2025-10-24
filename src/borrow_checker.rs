@@ -154,6 +154,15 @@ impl BorrowChecker {
             Statement::While(while_stmt) => self.check_while_statement(while_stmt),
             Statement::For(for_stmt) => self.check_for_statement(for_stmt),
             Statement::ForIn(for_in_stmt) => self.check_for_in_statement(for_in_stmt),
+            Statement::Loop(loop_stmt) => {
+                // Check loop body statements
+                for s in &loop_stmt.body.statements {
+                    self.check_statement(s)?;
+                }
+                Ok(())
+            }
+            Statement::Break => Ok(()),
+            Statement::Continue => Ok(()),
             Statement::MacroInvocation(_) => Ok(()),
             Statement::Function(func_def) => {
                 // Enter new scope for function body
@@ -265,6 +274,7 @@ impl BorrowChecker {
             Expression::IntegerLiteral(_) => Ok(ResolvedType::Integer),
             Expression::FloatLiteral(_) => Ok(ResolvedType::Float),
             Expression::BoolLiteral(_) => Ok(ResolvedType::Bool),
+            Expression::UnitLiteral => Ok(ResolvedType::Unknown),  // Unit type
             Expression::StringLiteral(_) => Ok(ResolvedType::String),
             Expression::Identifier(ident) => {
                 // Check if this is a namespaced identifier (e.g., Math::PI, console::log)

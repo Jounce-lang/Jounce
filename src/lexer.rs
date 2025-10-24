@@ -1,5 +1,6 @@
 use crate::token::{Token, TokenKind, KEYWORDS};
 
+#[derive(Clone)]
 pub struct Lexer {
     input: Vec<char>,
     position: usize,
@@ -300,6 +301,7 @@ impl Lexer {
                 }
             }
             '?' => Token::new(TokenKind::Question, "?".to_string(), self.line, start_col),
+            '^' => Token::new(TokenKind::Caret, "^".to_string(), self.line, start_col),
             '!' => {
                 if self.peek() == '=' {
                     self.read_char();
@@ -354,6 +356,10 @@ impl Lexer {
                     self.read_char();
                     self.read_char();
                     return Token::new(TokenKind::LtEq, "<=".to_string(), self.line, start_col);
+                } else if self.peek() == '<' {
+                    self.read_char();
+                    self.read_char();
+                    return Token::new(TokenKind::LeftShift, "<<".to_string(), self.line, start_col);
                 } else {
                     // Check if this might be JSX: < followed by an alphabetic character or uppercase
                     // This handles <div>, <Component>, etc.
@@ -367,6 +373,10 @@ impl Lexer {
                     self.read_char();
                     self.read_char();
                     return Token::new(TokenKind::GtEq, ">=".to_string(), self.line, start_col);
+                } else if self.peek() == '>' {
+                    self.read_char();
+                    self.read_char();
+                    return Token::new(TokenKind::RightShift, ">>".to_string(), self.line, start_col);
                 } else {
                     // Only mark that we're exiting a tag if we're at the baseline brace depth
                     // This prevents `>` comparison operators inside attribute expressions from incorrectly
@@ -530,17 +540,31 @@ impl Lexer {
         let start_pos = self.position;
         let start_col = self.column;
         let mut is_float = false;
+        let mut is_hex = false;
 
-        while self.ch.is_ascii_digit() {
-            self.read_char();
-        }
+        // Check for hexadecimal literals (0x...)
+        if self.ch == '0' && (self.peek() == 'x' || self.peek() == 'X') {
+            is_hex = true;
+            self.read_char(); // consume '0'
+            self.read_char(); // consume 'x' or 'X'
 
-        // Check for decimal point
-        if self.ch == '.' && self.peek().is_ascii_digit() {
-            is_float = true;
-            self.read_char(); // consume '.'
+            // Read hex digits (0-9, a-f, A-F)
+            while self.ch.is_ascii_hexdigit() {
+                self.read_char();
+            }
+        } else {
+            // Read decimal number
             while self.ch.is_ascii_digit() {
                 self.read_char();
+            }
+
+            // Check for decimal point
+            if self.ch == '.' && self.peek().is_ascii_digit() {
+                is_float = true;
+                self.read_char(); // consume '.'
+                while self.ch.is_ascii_digit() {
+                    self.read_char();
+                }
             }
         }
 
@@ -548,6 +572,11 @@ impl Lexer {
 
         if is_float {
             Token::new(TokenKind::Float(literal.clone()), literal, self.line, start_col)
+        } else if is_hex {
+            // Parse hexadecimal (strip "0x" prefix)
+            let hex_str = &literal[2..]; // Remove "0x" prefix
+            let value = i64::from_str_radix(hex_str, 16).unwrap_or(0);
+            Token::new(TokenKind::Integer(value), literal, self.line, start_col)
         } else {
             let value = literal.parse().unwrap_or(0);
             Token::new(TokenKind::Integer(value), literal, self.line, start_col)

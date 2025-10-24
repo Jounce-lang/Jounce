@@ -957,6 +957,10 @@ impl CodeGenerator {
             Expression::BoolLiteral(val) => {
                 f.instruction(&Instruction::I32Const(if *val { 1 } else { 0 }));
             }
+            Expression::UnitLiteral => {
+                // Unit type () - push 0 as a placeholder (unused in practice)
+                f.instruction(&Instruction::I32Const(0));
+            }
             Expression::Identifier(ident) => {
                 // Check if we're in a lambda and this identifier is a captured variable
                 if let Some(lambda_index) = self.current_lambda_context {
@@ -2112,6 +2116,7 @@ impl CodeGenerator {
             Expression::IntegerLiteral(_)
             | Expression::FloatLiteral(_)
             | Expression::BoolLiteral(_)
+            | Expression::UnitLiteral
             | Expression::StringLiteral(_)
             | Expression::Identifier(_)
             | Expression::Range(_)
@@ -2245,6 +2250,7 @@ impl CodeGenerator {
             Expression::IntegerLiteral(_)
             | Expression::FloatLiteral(_)
             | Expression::BoolLiteral(_)
+            | Expression::UnitLiteral
             | Expression::StringLiteral(_)
             | Expression::Range(_)
             | Expression::TryOperator(_)

@@ -9,8 +9,12 @@ enum Precedence {
     Lowest,
     LogicalOr,   // ||
     LogicalAnd,  // &&
+    BitwiseOr,   // |
+    BitwiseXor,  // ^
+    BitwiseAnd,  // &
     Equals,      // == !=
     LessGreater, // < > <= >=
+    Shift,       // << >>
     Range,       // .. ..=
     Sum,         // + -
     Product,     // * / %
@@ -19,14 +23,19 @@ enum Precedence {
 lazy_static::lazy_static! {
     static ref PRECEDENCES: HashMap<TokenKind, Precedence> = {
         let mut m = HashMap::new();
-        m.insert(TokenKind::PipePipe, Precedence::LogicalOr);  // ||
-        m.insert(TokenKind::AmpAmp, Precedence::LogicalAnd);   // &&
+        m.insert(TokenKind::PipePipe, Precedence::LogicalOr);     // ||
+        m.insert(TokenKind::AmpAmp, Precedence::LogicalAnd);      // &&
+        m.insert(TokenKind::Pipe, Precedence::BitwiseOr);         // |
+        m.insert(TokenKind::Caret, Precedence::BitwiseXor);       // ^
+        m.insert(TokenKind::Ampersand, Precedence::BitwiseAnd);   // &
         m.insert(TokenKind::Eq, Precedence::Equals);
         m.insert(TokenKind::NotEq, Precedence::Equals);
         m.insert(TokenKind::LAngle, Precedence::LessGreater);
         m.insert(TokenKind::RAngle, Precedence::LessGreater);
         m.insert(TokenKind::LtEq, Precedence::LessGreater);
         m.insert(TokenKind::GtEq, Precedence::LessGreater);
+        m.insert(TokenKind::LeftShift, Precedence::Shift);   // <<
+        m.insert(TokenKind::RightShift, Precedence::Shift);  // >>
         m.insert(TokenKind::DotDot, Precedence::Range);  // ..
         m.insert(TokenKind::DotDotEq, Precedence::Range);  // ..=
         m.insert(TokenKind::Plus, Precedence::Sum);
@@ -79,6 +88,15 @@ impl<'a> Parser<'a> {
             TokenKind::Return => self.parse_return_statement().map(Statement::Return),
             TokenKind::If => self.parse_if_statement().map(Statement::If),
             TokenKind::While => self.parse_while_statement().map(Statement::While),
+            TokenKind::Loop => self.parse_loop_statement().map(Statement::Loop),
+            TokenKind::Break => {
+                self.next_token(); // consume 'break'
+                Ok(Statement::Break)
+            },
+            TokenKind::Continue => {
+                self.next_token(); // consume 'continue'
+                Ok(Statement::Continue)
+            },
             TokenKind::For => {
                 // Look ahead to distinguish between for-in and C-style for loop
                 // for item in collection { } vs for (init; cond; update) { }
@@ -737,6 +755,22 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_loop_statement(&mut self) -> Result<LoopStatement, CompileError> {
+        self.expect_and_consume(&TokenKind::Loop)?;
+        self.expect_and_consume(&TokenKind::LBrace)?;
+
+        // Parse loop body
+        let mut body_statements = Vec::new();
+        while self.current_token().kind != TokenKind::RBrace {
+            body_statements.push(self.parse_statement()?);
+        }
+        self.expect_and_consume(&TokenKind::RBrace)?;
+
+        Ok(LoopStatement {
+            body: BlockStatement { statements: body_statements },
+        })
+    }
+
     fn parse_for_statement(&mut self) -> Result<ForStatement, CompileError> {
         self.expect_and_consume(&TokenKind::For)?;
         self.expect_and_consume(&TokenKind::LParen)?;
@@ -933,6 +967,23 @@ impl<'a> Parser<'a> {
                 let expression = self.parse_expression(Precedence::Product)?; // High precedence for prefix ops
                 Expression::Await(AwaitExpression {
                     expression: Box::new(expression),
+                })
+            },
+            TokenKind::Return => {
+                // Parse return as expression (for use in match arms, etc.)
+                // This creates a ReturnStatement wrapped in a block expression
+                self.next_token();
+                let value = if self.current_token().kind == TokenKind::Semicolon
+                           || self.current_token().kind == TokenKind::Comma
+                           || self.current_token().kind == TokenKind::RBrace {
+                    // Bare return - use unit literal
+                    Expression::UnitLiteral
+                } else {
+                    self.parse_expression(Precedence::Lowest)?
+                };
+                // Wrap in a block expression containing the return statement
+                Expression::Block(BlockStatement {
+                    statements: vec![Statement::Return(ReturnStatement { value })],
                 })
             },
             TokenKind::LParen => self.parse_lambda_or_grouped()?,
@@ -1214,8 +1265,8 @@ impl<'a> Parser<'a> {
                     captures: vec![],  // Will be analyzed later
                 }));
             }
-            // Just empty parens, not lambda - error
-            return Err(self.error("Unexpected empty parentheses"));
+            // Just empty parens, not lambda - this is the unit type ()
+            return Ok(Expression::UnitLiteral);
         }
 
         // Check if this might be a typed lambda parameter list: (x: Type, y: Type) =>
@@ -1858,13 +1909,28 @@ impl<'a> Parser<'a> {
     // Check if the tokens ahead look like a struct literal
     // A struct literal after { must have either:
     // - } (empty struct)
-    // - Identifier (field name)
-    // Keywords like if/while/for/let/return indicate a block, not a struct literal
+    // - Identifier followed by : or , or } (field name with colon, shorthand, or single field)
+    // Keywords like if/while/for/let/return or Identifier followed by = indicate a block
     fn is_struct_literal_ahead(&self) -> bool {
         // Current token should be {, peek token tells us what's inside
         match self.peek_token().kind {
             TokenKind::RBrace => true,  // Empty struct literal: Name {}
-            TokenKind::Identifier => true,  // Field name: Name { field: value }
+            TokenKind::Identifier => {
+                // Need to look ahead 2 tokens to distinguish struct literal from block
+                // Clone the lexer to peek ahead without affecting the real one
+                // NOTE: The lexer is positioned AFTER peek, so next_token() gives us
+                // the token that comes after peek (which is the identifier after {)
+                let mut temp_lexer = self.lexer.clone();
+
+                // Get the token after peek (which is after the identifier)
+                let after_ident = temp_lexer.next_token();
+
+                // Check what follows the identifier
+                matches!(
+                    after_ident.kind,
+                    TokenKind::Colon | TokenKind::Comma | TokenKind::RBrace
+                )
+            }
             _ => false,  // Keywords or other tokens: not a struct literal
         }
     }

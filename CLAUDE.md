@@ -3,13 +3,13 @@
 ## 📌 Current Status
 
 **Phase**: Phase 9 Sprint 3 - Standard Library Expansion (IN PROGRESS)
-**Version**: 0.2.0 | **Tests**: 564 passing (100%) | **Ext**: .jnc
+**Version**: 0.2.0 | **Tests**: 564 core + 49 stdlib discovered | **Ext**: .jnc
 
-**Latest**: ✅ JSON, DateTime & Crypto COMPLETE! 3 major stdlib modules + 47 tests!
+**Latest**: ✅ Compiler enhancements! Fixed 11 major issues - stdlib tests now executing!
 
 ## 🎯 What Works
 
-**Language**: JSX, async/await, generics, traits, pattern matching, closures, recursion, try (?), for/while
+**Language**: JSX, async/await, generics, traits, pattern matching, closures, recursion, try (?), for/while/loop, break/continue, unit type (), hex literals (0x), bitwise ops (|&^), bit shifts (<<>>), dereference (*)
 **CSS**: css! macro, scoped styles, 150+ utilities, responsive/state/dark variants, custom utilities
 **Dev Tools**: LSP (8 features), watch mode, formatter, package manager, error diagnostics, source maps, test framework
 **Stdlib**: JSON (parse/stringify), DateTime (formatting, timers), Crypto (hashing, random, UUID, base64), HTTP client, collections (RArray, RMap)
@@ -54,9 +54,14 @@ jnc pkg init/add/remove/tree
   - Encoding: base64_encode/decode, hex_encode/decode
   - Password: hash_password_auto(), PBKDF2 with 100k iterations
   - 25 comprehensive tests
+- 🔄 **Compiler Enhancements** (11 major fixes) - Running stdlib tests
+  - Added: Unit type (), hex literals (0x), bitwise ops (|&^), bit shifts (<<>>)
+  - Added: loop/break/continue statements, dereference/borrow operators
+  - Fixed: String escaping, struct literal lookahead, return as expression
+  - Fixed: Match arm blocks, namespace handling
+  - Progress: 49 tests discovered, executing stdlib code (line 318 → 818)
 - ⏸️ File I/O (skeleton exists, needs implementation)
 - ⏸️ YAML parsing (not yet started)
-- ⏸️ Run comprehensive tests (47 tests ready)
 - ⏸️ Documentation (pending)
 
 **Test Files**:
@@ -110,23 +115,26 @@ async fn test_async() {
 
 ## 🎯 Next Steps
 
-**Sprint 3 Progress**: 5/8 complete (62.5%)
+**Sprint 3 Progress**: 6/8 complete (75%)
 - ✅ Survey stdlib implementation
 - ✅ JSON parser implementation (605 lines, 7 tests)
 - ✅ DateTime implementation (670 lines, 15 tests)
 - ✅ Crypto module (550+ lines, 25 tests)
 - ✅ Test file creation (47 tests total)
+- 🔄 **Compiler fixes for stdlib execution** (11 major enhancements)
 
-**Remaining Options**:
-1. **Run stdlib tests** - Execute 47 tests with `jnc test`
+**Current Focus**: Fixing codegen edge cases to get all 49 stdlib tests passing
+
+**Remaining Tasks**:
+1. 🔄 **Fix remaining codegen issues** - Continue fixing JS generation bugs (in progress)
 2. **File I/O completion** - Implement actual file operations (skeleton exists)
 3. **YAML parsing** - Add YAML support (build on JSON)
 4. **Documentation** - Document JSON, DateTime, Crypto modules
 5. **Phase 10** - Move to next phase (Performance optimization, production readiness, etc.)
 
-**Recommended**: Run tests to validate implementations, then document or move to Phase 10
+**Next**: Continue fixing codegen issues, then validate all 49 tests pass
 
 ---
 
-**Last Updated**: 2025-10-23 | **Status**: Phase 9 Sprint 3 - Crypto complete! 3 modules + 47 tests done!
+**Last Updated**: 2025-10-23 | **Status**: Phase 9 Sprint 3 - Compiler enhancements! 11 major fixes, stdlib tests executing!
 **Archives**: See `docs/archive/` for full Sprint 1-2 details

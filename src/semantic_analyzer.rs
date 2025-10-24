@@ -315,6 +315,15 @@ impl SemanticAnalyzer {
             Statement::While(while_stmt) => self.analyze_while_statement(while_stmt),
             Statement::For(for_stmt) => self.analyze_for_statement(for_stmt),
             Statement::ForIn(for_in_stmt) => self.analyze_for_in_statement(for_in_stmt),
+            Statement::Loop(loop_stmt) => {
+                // Analyze loop body statements
+                for s in &loop_stmt.body.statements {
+                    self.analyze_statement(s)?;
+                }
+                Ok(ResolvedType::Unit)
+            }
+            Statement::Break => Ok(ResolvedType::Unit),
+            Statement::Continue => Ok(ResolvedType::Unit),
             Statement::MacroInvocation(_) => Ok(ResolvedType::Unit),
             Statement::Function(func_def) => {
                 // Enter a new scope for the function body
@@ -650,6 +659,7 @@ impl SemanticAnalyzer {
             Expression::FloatLiteral(_) => Ok(ResolvedType::Float),
             Expression::StringLiteral(_) => Ok(ResolvedType::String),
             Expression::BoolLiteral(_) => Ok(ResolvedType::Bool),
+            Expression::UnitLiteral => Ok(ResolvedType::ComplexType),  // Unit type as generic complex type
             Expression::Identifier(ident) => {
                 if let Some(ty) = self.symbols.lookup(&ident.value) {
                     Ok(ty)
