@@ -1,0 +1,35 @@
+// Complex SSR test with nested elements and attributes
+
+component ComplexSSR() {
+    <div class="container" id="main">
+        <header class="header">
+            <h1>Jounce SSR Framework</h1>
+            <nav>
+                <a href="/" class="nav-link">Home</a>
+                <a href="/docs" class="nav-link">Docs</a>
+                <a href="/about" class="nav-link">About</a>
+            </nav>
+        </header>
+        <main class="content">
+            <article>
+                <h2>Server-Side Rendering</h2>
+                <p>Fast initial page load with full HTML.</p>
+                <ul class="features">
+                    <li>SEO friendly</li>
+                    <li>Fast Time-to-First-Byte</li>
+                    <li>Progressive enhancement</li>
+                </ul>
+            </article>
+            <aside class="sidebar">
+                <h3>Quick Links</h3>
+                <div class="links">
+                    <a href="#section1">Section 1</a>
+                    <a href="#section2">Section 2</a>
+                </div>
+            </aside>
+        </main>
+        <footer class="footer">
+            <p>Powered by Jounce</p>
+        </footer>
+    </div>
+}

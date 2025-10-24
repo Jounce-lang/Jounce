@@ -2,7 +2,91 @@
 // Renders components to HTML on the server
 
 use crate::vdom::VNode;
+use crate::ast::{Expression, JsxChild, JsxElement};
 use std::collections::HashMap;
+
+/// Convert a JSX AST element to a VNode for rendering
+pub fn jsx_to_vnode(jsx: &JsxElement) -> VNode {
+    // Convert tag name
+    let tag = jsx.opening_tag.name.value.clone();
+
+    // Convert attributes
+    let attrs: Vec<(String, String)> = jsx.opening_tag.attributes
+        .iter()
+        .map(|attr| {
+            let key = attr.name.value.clone();
+            let value = expr_to_string(&attr.value);
+            (key, value)
+        })
+        .collect();
+
+    // Convert children
+    let children: Vec<VNode> = jsx.children
+        .iter()
+        .filter_map(jsx_child_to_vnode)
+        .collect();
+
+    VNode::Element { tag, attrs, children }
+}
+
+/// Convert a JSX child to a VNode
+fn jsx_child_to_vnode(child: &JsxChild) -> Option<VNode> {
+    match child {
+        JsxChild::Element(el) => Some(jsx_to_vnode(el)),
+        JsxChild::Text(text) => {
+            // Skip whitespace-only text nodes
+            if text.trim().is_empty() {
+                None
+            } else {
+                Some(VNode::Text(text.clone()))
+            }
+        }
+        JsxChild::Expression(expr) => {
+            // For SSR, we convert expressions to text
+            // In a full implementation, this would evaluate the expression in a runtime context
+            let text = expr_to_string(expr);
+            if text.is_empty() {
+                None
+            } else {
+                Some(VNode::Text(text))
+            }
+        }
+    }
+}
+
+/// Convert an expression to a string for SSR rendering
+fn expr_to_string(expr: &Expression) -> String {
+    match expr {
+        Expression::StringLiteral(s) => s.clone(),
+        Expression::BoolLiteral(b) => {
+            if *b {
+                "true".to_string()
+            } else {
+                // For boolean false, return empty string (HTML convention)
+                String::new()
+            }
+        }
+        Expression::IntegerLiteral(i) => i.to_string(),
+        Expression::FloatLiteral(f) => f.clone(),
+        Expression::Identifier(id) => id.value.clone(),
+        Expression::UnitLiteral => String::new(),
+        // For complex expressions, we'd need a runtime evaluator
+        // For now, return a placeholder that indicates what needs to be evaluated
+        Expression::FunctionCall(call) => {
+            format!("{{{}(...)}}", expr_to_string(&call.function))
+        }
+        Expression::FieldAccess(field) => {
+            format!("{{{}.{}}}",
+                expr_to_string(&field.object),
+                field.field.value
+            )
+        }
+        _ => {
+            // For other expression types, return empty string or placeholder
+            String::new()
+        }
+    }
+}
 
 /// SSR Context - holds server-side state during rendering
 pub struct SSRContext {

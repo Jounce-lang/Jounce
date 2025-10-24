@@ -464,7 +464,8 @@ fn main() {
         Commands::Ssr { path, output, component, title } => {
             use jounce_compiler::lexer::Lexer;
             use jounce_compiler::parser::Parser;
-            use jounce_compiler::ssr::{SSRContext, render_to_document};
+            use jounce_compiler::ssr::{SSRContext, render_to_document, jsx_to_vnode};
+            use jounce_compiler::ast::{Statement, Expression};
             use jounce_compiler::vdom::VNode;
 
             println!("🎨 Server-side rendering: {}", path.display());
@@ -500,29 +501,57 @@ fn main() {
                     .to_string());
             }
 
-            // For now, create a simple VNode from the component
-            // In a full implementation, this would execute the component and get its VNode
-            let vnode = VNode::Element {
-                tag: "div".to_string(),
-                attrs: vec![
-                    ("class".to_string(), "app".to_string()),
-                    ("data-ssr".to_string(), "true".to_string()),
-                ],
-                children: vec![
-                    VNode::Element {
-                        tag: "h1".to_string(),
-                        attrs: vec![],
-                        children: vec![VNode::Text("Jounce SSR".to_string())],
-                    },
-                    VNode::Element {
-                        tag: "p".to_string(),
-                        attrs: vec![],
-                        children: vec![VNode::Text(format!(
-                            "This page was server-rendered from {}",
-                            path.display()
-                        ))],
-                    },
-                ],
+            // Find component definition in the program
+            let mut found_component = None;
+            for statement in &program.statements {
+                if let Statement::Component(comp_def) = statement {
+                    // If component name specified, match it; otherwise use first component
+                    if let Some(ref comp_name) = component {
+                        if comp_def.name.value == *comp_name {
+                            found_component = Some(comp_def);
+                            break;
+                        }
+                    } else {
+                        found_component = Some(comp_def);
+                        break;
+                    }
+                }
+            }
+
+            let comp_def = match found_component {
+                Some(c) => c,
+                None => {
+                    eprintln!("❌ No component found in {}", path.display());
+                    if let Some(comp_name) = component {
+                        eprintln!("   Looking for component: {}", comp_name);
+                    }
+                    process::exit(1);
+                }
+            };
+
+            println!("   Found component: {}", comp_def.name.value);
+
+            // Extract JSX from component body
+            // Component body contains statements, we need to find the JSX expression
+            let mut jsx_element = None;
+            for statement in &comp_def.body.statements {
+                if let Statement::Expression(Expression::JsxElement(jsx)) = statement {
+                    jsx_element = Some(jsx);
+                    break;
+                }
+            }
+
+            let vnode = if let Some(jsx) = jsx_element {
+                // Convert JSX AST to VNode
+                jsx_to_vnode(jsx)
+            } else {
+                // Fallback: empty div if no JSX found
+                eprintln!("⚠️  No JSX found in component body, using empty div");
+                VNode::Element {
+                    tag: "div".to_string(),
+                    attrs: vec![],
+                    children: vec![],
+                }
             };
 
             // Render to HTML
