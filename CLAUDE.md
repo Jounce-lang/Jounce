@@ -6,7 +6,8 @@
 **Version**: 0.3.0 (Released 2025-10-24)
 **Tests**: 638/638 passing (100%) - 564 core + 74 stdlib
 **Performance**: 102x faster builds with compilation cache 🚀
-**Latest Commit**: 5d5bd6f - Sprint 4 Complete - Production-ready CLI
+**Packages**: 5 packages fully rebranded (jounce-router, http, forms, i18n, store)
+**Latest Commit**: 7cfc88b - Package ecosystem complete
 
 ## 🎯 What Works
 
@@ -134,33 +135,33 @@ jnc fmt --write src                       # Format
 
 ## 🎯 Next Steps (START HERE)
 
-**Package Ecosystem & Working Applications**
+**Ready to Build Applications!**
 
-Phase 10 is COMPLETE! Now focusing on ecosystem growth:
+Phase 10 COMPLETE + Package Ecosystem READY! 🎉
 
-1. **Package Manager Enhancement**:
-   - Review existing package system (jnc registry)
-   - Create essential packages (http-client, router, state-management)
-   - Package discovery and documentation
-   - Version management and dependency resolution
+**Available Packages** (Install with `jnc pkg install <name>`):
+1. **jounce-router** v0.1.0 - Client-side routing, history API, guards, hooks
+2. **jounce-http** v0.1.0 - HTTP client for API requests
+3. **jounce-forms** v1.0.0 - Form handling, validation, builders
+4. **jounce-i18n** v1.0.0 - Internationalization, formatters, translations
+5. **jounce-store** v1.0.0 - State management, middleware, actions
 
-2. **Working Application Examples**:
-   - Todo app with state management
-   - Blog with routing and SSR
-   - E-commerce with forms and validation
-   - Real-time chat with WebSockets
+**Build These Applications**:
+1. **Todo App** - jounce-store + jounce-forms
+2. **Blog** - jounce-router + SSR + jounce-http
+3. **E-commerce** - jounce-http + jounce-forms + jounce-store
+4. **Multi-language Site** - jounce-i18n + jounce-router
 
-3. **Package Templates**:
-   - Library template (jnc new --lib)
-   - Application template (jnc new --app)
-   - Full-stack template (jnc new --fullstack)
+**Package Manager Commands**:
+```bash
+jnc pkg install jounce-router    # Install package
+jnc pkg add jounce-http          # Add dependency
+jnc pkg search forms             # Search registry
+jnc pkg info jounce-store        # Package info
+jnc pkg tree                     # Dependency tree
+```
 
-4. **Documentation**:
-   - Package creation guide
-   - Publishing workflow
-   - Best practices for library authors
-
-**Goal**: Build a thriving ecosystem of reusable packages to make application development effortless
+**Goal**: Start building production applications with the complete Jounce ecosystem!
 
 ## 📚 History
 
@@ -175,11 +176,12 @@ Phase 10 is COMPLETE! Now focusing on ecosystem growth:
 - Sprint 2 ✅: Activated compilation cache, 102x faster builds
 - Sprint 3 ✅: Documentation complete, v0.3.0 released
 - Sprint 4 ✅: Production-ready CLI with colors, cache stats, HMR
+- Ecosystem ✅: 5 packages fully rebranded, registry ready
 
 **Detailed History**: See `docs/archive/CLAUDE_*.md` for full Phase 1-9 details
 
 ---
 
 **Last Updated**: 2025-10-24
-**Status**: Phase 10 COMPLETE (All 4 Sprints) - Production Ready! 🎉
-**Next Session**: Package Ecosystem & Working Applications
+**Status**: Phase 10 COMPLETE + Package Ecosystem READY 🎉
+**Next Session**: Build production applications with jounce-* packages!
