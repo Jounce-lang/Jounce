@@ -339,9 +339,9 @@ const client = new RPCClient(window.location.origin + '/_rpc');
 // Client function implementations
 // Shared utility functions
 export function main() {
-  console.log("Testing without imports...");
-  let x = (5 + 3);
-  return console.log(("5 + 3 = " + x.to_string()));
+  console.log("Test: Local imports");
+  let x = 5;
+  return console.log(("Value: " + x.to_string()));
 
 }
 

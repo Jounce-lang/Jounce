@@ -1,0 +1,7 @@
+// Test package import (should work with existing code)
+
+use jounce_http::HttpClient;
+
+fn main() {
+    console.log("Testing package import...");
+}

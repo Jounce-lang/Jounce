@@ -1,0 +1,8 @@
+// Test different import scenarios to document errors
+
+// Scenario 1: Import from local file with relative path
+use ./math;
+
+fn main() {
+    console.log("Testing imports...");
+}

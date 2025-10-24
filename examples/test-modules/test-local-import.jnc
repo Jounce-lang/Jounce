@@ -1,0 +1,15 @@
+// Test 1: Try to import from local file (relative path)
+
+// This should work with Phase 11 implementation
+// use ./math;
+
+// This should also work
+// use ./utils::{double, format_number};
+
+fn main() {
+    console.log("Test: Local imports");
+
+    // For now, just test that file compiles without imports
+    let x = 5;
+    console.log("Value: " + x.to_string());
+}

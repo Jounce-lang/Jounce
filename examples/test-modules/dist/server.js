@@ -18,9 +18,9 @@ const wasmInstance = new WebAssembly.Instance(wasmModule, {
 // Server function implementations
 // Shared utility functions
 module.exports.main = function() {
-  console.log("Testing without imports...");
-  let x = (5 + 3);
-  return console.log(("5 + 3 = " + x.to_string()));
+  console.log("Test: Local imports");
+  let x = 5;
+  return console.log(("Value: " + x.to_string()));
 
 }
 
