@@ -95,6 +95,8 @@ impl Formatter {
             Statement::ExternBlock(extern_block) => self.format_extern_block(extern_block),
             Statement::ImplBlock(impl_block) => self.format_impl_block(impl_block),
             Statement::Trait(trait_def) => self.format_trait_definition(trait_def),
+            Statement::Style(_) => self.write("/* style block */\n"),  // Phase 13: TODO - implement formatter
+            Statement::Theme(_) => self.write("/* theme block */\n"),  // Phase 13: TODO - implement formatter
         }
     }
 

@@ -190,6 +190,8 @@ impl BorrowChecker {
             Statement::Enum(_) => Ok(()),
             Statement::ImplBlock(_) => Ok(()),
             Statement::Trait(_) => Ok(()),
+            Statement::Style(_) => Ok(()),  // Phase 13: Style blocks don't affect borrow checking
+            Statement::Theme(_) => Ok(()),  // Phase 13: Theme blocks don't affect borrow checking
         }
     }
 

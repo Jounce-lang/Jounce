@@ -28,6 +28,8 @@ pub enum Statement {
     ExternBlock(ExternBlock),
     ImplBlock(ImplBlock),
     Trait(TraitDefinition),
+    Style(StyleBlock),       // Phase 13: style Button { ... }
+    Theme(ThemeBlock),       // Phase 13: theme DarkMode { ... }
 }
 
 #[derive(Debug, Clone)]
@@ -240,6 +242,58 @@ pub enum CssValue {
     Function(String, Vec<CssValue>), // calc(100% - 20px)
     Raw(String),             // Unparsed value (for now - Sprint 1)
     Dynamic(Box<Expression>), // {props.color} - Sprint 2 Task 2.4
+}
+
+// Phase 13: Style System AST Nodes
+
+// Style block: style Button { background: blue; &:hover { ... } }
+#[derive(Debug, Clone)]
+pub struct StyleBlock {
+    pub name: Identifier,
+    pub properties: Vec<StyleProperty>,
+    pub nested: Vec<NestedSelector>,
+}
+
+// Theme block: theme DarkMode { primary: #1a1a1a; text: #ffffff; }
+#[derive(Debug, Clone)]
+pub struct ThemeBlock {
+    pub name: Identifier,
+    pub properties: Vec<ThemeProperty>,
+}
+
+// Style property: background: blue; or color: theme.DarkMode.text;
+#[derive(Debug, Clone)]
+pub struct StyleProperty {
+    pub name: String,           // CSS property name (background, padding, etc.)
+    pub value: StyleValue,      // Property value
+}
+
+// Theme property: primary: #1a1a1a;
+#[derive(Debug, Clone)]
+pub struct ThemeProperty {
+    pub name: String,           // Theme variable name (primary, text, etc.)
+    pub value: String,          // CSS value (color, size, etc.)
+}
+
+// Style value: can be a literal or a theme reference
+#[derive(Debug, Clone)]
+pub enum StyleValue {
+    Literal(String),                              // "blue", "12px", "#ff0000"
+    ThemeRef { theme: String, property: String }, // theme.DarkMode.primary
+}
+
+// Nested selector: &:hover { background: red; } or &.active { ... }
+#[derive(Debug, Clone)]
+pub struct NestedSelector {
+    pub selector: SelectorType,
+    pub properties: Vec<StyleProperty>,
+}
+
+// Selector type for nested styles
+#[derive(Debug, Clone)]
+pub enum SelectorType {
+    PseudoClass(String),  // :hover, :focus, :active, :disabled
+    Class(String),        // .active, .disabled
 }
 
 #[derive(Debug, Clone)]

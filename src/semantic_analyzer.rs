@@ -363,6 +363,8 @@ impl SemanticAnalyzer {
             Statement::Enum(_) => Ok(ResolvedType::Unit),
             Statement::ImplBlock(_) => Ok(ResolvedType::Unit),
             Statement::Trait(_) => Ok(ResolvedType::Unit),
+            Statement::Style(_) => Ok(ResolvedType::Unit),  // Phase 13: Style blocks analyzed separately
+            Statement::Theme(_) => Ok(ResolvedType::Unit),  // Phase 13: Theme blocks analyzed separately
         }
     }
 

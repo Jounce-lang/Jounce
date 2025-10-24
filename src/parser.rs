@@ -106,6 +106,8 @@ impl<'a> Parser<'a> {
                     self.parse_for_in_statement().map(Statement::ForIn)
                 }
             },
+            TokenKind::Style => self.parse_style_block().map(Statement::Style),  // Phase 13
+            TokenKind::Theme => self.parse_theme_block().map(Statement::Theme),  // Phase 13
             TokenKind::Identifier => {
                 // Parse as expression first, then check if it's actually an assignment
                 // This handles both simple assignments (x = 5) and complex ones (obj.field = 5, arr[0] = 5)
