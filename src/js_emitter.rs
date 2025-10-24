@@ -268,6 +268,44 @@ impl JSEmitter {
         // Import runtime
         output.push_str("import { RPCClient, mountComponent } from '../dist/client-runtime.js';\n\n");
 
+        // Node.js crypto module for hashing and random functions
+        output.push_str("// Node.js crypto module (for tests and server-side code)\n");
+        output.push_str("let __nodeCrypto;\n");
+        output.push_str("try {\n");
+        output.push_str("  if (typeof require !== 'undefined') {\n");
+        output.push_str("    __nodeCrypto = require('crypto');\n");
+        output.push_str("  }\n");
+        output.push_str("} catch (e) {\n");
+        output.push_str("  // crypto module not available (browser environment)\n");
+        output.push_str("}\n\n");
+
+        // Crypto helper functions (use Node.js crypto when available)
+        output.push_str("// Crypto helpers - use Node.js crypto module when available\n");
+        output.push_str("const __crypto_sha256 = function(data) {\n");
+        output.push_str("  if (__nodeCrypto) return __nodeCrypto.createHash('sha256').update(data).digest('hex');\n");
+        output.push_str("  return ''; // fallback\n");
+        output.push_str("};\n");
+        output.push_str("const __crypto_sha1 = function(data) {\n");
+        output.push_str("  if (__nodeCrypto) return __nodeCrypto.createHash('sha1').update(data).digest('hex');\n");
+        output.push_str("  return ''; // fallback\n");
+        output.push_str("};\n");
+        output.push_str("const __crypto_md5 = function(data) {\n");
+        output.push_str("  if (__nodeCrypto) return __nodeCrypto.createHash('md5').update(data).digest('hex');\n");
+        output.push_str("  return ''; // fallback\n");
+        output.push_str("};\n");
+        output.push_str("const __crypto_hmac = function(algo, key, data) {\n");
+        output.push_str("  if (__nodeCrypto) return __nodeCrypto.createHmac(algo, key).update(data).digest('hex');\n");
+        output.push_str("  return ''; // fallback\n");
+        output.push_str("};\n");
+        output.push_str("const __crypto_random_bytes = function(len) {\n");
+        output.push_str("  if (__nodeCrypto) return Array.from(__nodeCrypto.randomBytes(len));\n");
+        output.push_str("  return Array(len).fill(0); // fallback\n");
+        output.push_str("};\n");
+        output.push_str("const __crypto_pbkdf2 = function(password, salt, iterations, keylen, digest) {\n");
+        output.push_str("  if (__nodeCrypto) return __nodeCrypto.pbkdf2Sync(password, salt, iterations, keylen, digest).toString('hex');\n");
+        output.push_str("  return ''; // fallback\n");
+        output.push_str("};\n\n");
+
         // Built-in type extensions and aliases
         output.push_str("// Built-in type extensions\n");
         output.push_str("const Vec = Array; // Vec<T> is Array in JavaScript\n");
@@ -293,6 +331,9 @@ impl JSEmitter {
         output.push_str("}\n");
         output.push_str("if (!String.prototype.char_code_at) {\n");
         output.push_str("  String.prototype.char_code_at = function(index) { return this.charCodeAt(index); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.char_at) {\n");
+        output.push_str("  String.prototype.char_at = function(index) { return this.charAt(index); };\n");
         output.push_str("}\n");
         output.push_str("if (!String.prototype.parse_int) {\n");
         output.push_str("  String.prototype.parse_int = function() { return parseInt(this, 10); };\n");

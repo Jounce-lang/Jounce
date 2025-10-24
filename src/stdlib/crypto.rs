@@ -57,10 +57,11 @@ fn sha256(data: String) -> Hash {
     // @js_browser: crypto.subtle.digest('SHA-256', new TextEncoder().encode(data)).then(buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join(''))
     // @js_node: require('crypto').createHash('sha256').update(data).digest('hex')
 
-    // Placeholder - will be replaced by JavaScript crypto API
+    // Call JavaScript helper (defined in runtime)
+    let digest = __crypto_sha256(data);
     return Hash {
         algorithm: HashAlgorithm::SHA256,
-        digest: "",
+        digest: digest,
     };
 }
 
@@ -69,9 +70,10 @@ fn sha1(data: String) -> Hash {
     // @js_browser: crypto.subtle.digest('SHA-1', new TextEncoder().encode(data))
     // @js_node: require('crypto').createHash('sha1').update(data).digest('hex')
 
+    let digest = __crypto_sha1(data);
     return Hash {
         algorithm: HashAlgorithm::SHA1,
-        digest: "",
+        digest: digest,
     };
 }
 
@@ -79,9 +81,10 @@ fn sha1(data: String) -> Hash {
 fn md5(data: String) -> Hash {
     // @js_node: require('crypto').createHash('md5').update(data).digest('hex')
 
+    let digest = __crypto_md5(data);
     return Hash {
         algorithm: HashAlgorithm::MD5,
-        digest: "",
+        digest: digest,
     };
 }
 
@@ -98,9 +101,10 @@ fn hash(algorithm: HashAlgorithm, data: String) -> Hash {
 fn hmac_sha256(key: String, data: String) -> Hash {
     // @js_node: require('crypto').createHmac('sha256', key).update(data).digest('hex')
 
+    let digest = __crypto_hmac("sha256", key, data);
     return Hash {
         algorithm: HashAlgorithm::SHA256,
-        digest: "",
+        digest: digest,
     };
 }
 
@@ -111,11 +115,7 @@ fn random_bytes(length: i32) -> Vec<u8> {
     // @js_browser: crypto.getRandomValues(new Uint8Array(length))
     // @js_node: require('crypto').randomBytes(length)
 
-    let result = Vec::new();
-    for i in 0..length {
-        result.push(0);
-    }
-    return result;
+    return __crypto_random_bytes(length);
 }
 
 // Generate secure random integer in range [min, max)
@@ -454,14 +454,12 @@ impl PasswordHash {
 // Hash a password with salt
 fn hash_password(password: String, salt: String, iterations: i32) -> PasswordHash {
     // Use PBKDF2-HMAC-SHA256
-    // @js_node: require('crypto').pbkdf2Sync(password, salt, iterations, 32, 'sha256').toString('hex')
-
-    // Placeholder - will be replaced by JavaScript crypto API
+    let hash = __crypto_pbkdf2(password, salt, iterations, 32, "sha256");
     return PasswordHash {
         algorithm: "PBKDF2-SHA256",
         iterations: iterations,
         salt: salt,
-        hash: "",
+        hash: hash,
     };
 }
 
