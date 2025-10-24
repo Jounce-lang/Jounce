@@ -1,0 +1,13 @@
+// Simple math library for testing module imports
+
+fn add(a: i64, b: i64) -> i64 {
+    return a + b;
+}
+
+fn multiply(a: i64, b: i64) -> i64 {
+    return a * b;
+}
+
+fn is_even(n: i64) -> bool {
+    return n % 2 == 0;
+}

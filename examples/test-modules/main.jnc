@@ -1,0 +1,12 @@
+// Test file to try importing math module
+
+// Try different import styles
+// use ./math;  // Import entire module
+// use ./math::{add, multiply};  // Import specific functions
+
+fn main() {
+    // Test basic functionality first
+    console.log("Testing without imports...");
+    let x = 5 + 3;
+    console.log("5 + 3 = " + x.to_string());
+}
