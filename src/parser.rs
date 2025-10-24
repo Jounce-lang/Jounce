@@ -2833,6 +2833,213 @@ impl<'a> Parser<'a> {
         self.expect_and_consume(&TokenKind::RAngle)?;
         Ok(type_expr)
     }
+
+    // ==================== PHASE 13: STYLE SYSTEM PARSING ====================
+
+    /// Parse a theme block: theme DarkMode { primary: #1a1a1a; text: #ffffff; }
+    fn parse_theme_block(&mut self) -> Result<ThemeBlock, CompileError> {
+        self.expect_and_consume(&TokenKind::Theme)?;
+        let name = self.parse_identifier()?;
+        self.expect_and_consume(&TokenKind::LBrace)?;
+
+        let mut properties = Vec::new();
+
+        while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
+            // Parse property name (identifier)
+            let prop_name = if let TokenKind::Identifier = self.current_token().kind {
+                let name = self.current_token().lexeme.clone();
+                self.next_token();
+                name
+            } else {
+                return Err(CompileError::Generic(format!(
+                    "Expected property name in theme block, got {:?}",
+                    self.current_token().kind
+                )));
+            };
+
+            // Expect colon
+            self.expect_and_consume(&TokenKind::Colon)?;
+
+            // Parse value (read until semicolon)
+            let mut value = String::new();
+            while self.current_token().kind != TokenKind::Semicolon && self.current_token().kind != TokenKind::Eof {
+                value.push_str(&self.current_token().lexeme);
+                value.push(' ');
+                self.next_token();
+            }
+            value = value.trim().to_string();
+
+            // Expect semicolon
+            self.expect_and_consume(&TokenKind::Semicolon)?;
+
+            properties.push(ThemeProperty {
+                name: prop_name,
+                value,
+            });
+        }
+
+        self.expect_and_consume(&TokenKind::RBrace)?;
+
+        Ok(ThemeBlock { name, properties })
+    }
+
+    /// Parse a style block: style Button { background: blue; &:hover { ... } }
+    fn parse_style_block(&mut self) -> Result<StyleBlock, CompileError> {
+        self.expect_and_consume(&TokenKind::Style)?;
+        let name = self.parse_identifier()?;
+        self.expect_and_consume(&TokenKind::LBrace)?;
+
+        let mut properties = Vec::new();
+        let mut nested = Vec::new();
+
+        while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
+            // Check if this is a nested selector (&:hover, &.active)
+            if self.current_token().kind == TokenKind::Ampersand {
+                self.next_token(); // consume &
+
+                // Parse selector type
+                let selector = if self.current_token().kind == TokenKind::Colon {
+                    // Pseudo-class: &:hover
+                    self.next_token(); // consume :
+                    if let TokenKind::Identifier = self.current_token().kind {
+                        let pseudo = self.current_token().lexeme.clone();
+                        self.next_token();
+                        SelectorType::PseudoClass(pseudo)
+                    } else {
+                        return Err(CompileError::Generic(
+                            "Expected pseudo-class name after ':' in style block".to_string()
+                        ));
+                    }
+                } else if self.current_token().kind == TokenKind::Dot {
+                    // Class: &.active
+                    self.next_token(); // consume .
+                    if let TokenKind::Identifier = self.current_token().kind {
+                        let class_name = self.current_token().lexeme.clone();
+                        self.next_token();
+                        SelectorType::Class(class_name)
+                    } else {
+                        return Err(CompileError::Generic(
+                            "Expected class name after '.' in style block".to_string()
+                        ));
+                    }
+                } else {
+                    return Err(CompileError::Generic(format!(
+                        "Expected ':' or '.' after '&' in style block, got {:?}",
+                        self.current_token().kind
+                    )));
+                };
+
+                // Parse nested block { property: value; }
+                self.expect_and_consume(&TokenKind::LBrace)?;
+                let mut nested_properties = Vec::new();
+
+                while self.current_token().kind != TokenKind::RBrace && self.current_token().kind != TokenKind::Eof {
+                    let prop = self.parse_style_property()?;
+                    nested_properties.push(prop);
+                }
+
+                self.expect_and_consume(&TokenKind::RBrace)?;
+
+                nested.push(NestedSelector {
+                    selector,
+                    properties: nested_properties,
+                });
+            } else {
+                // Regular property
+                let prop = self.parse_style_property()?;
+                properties.push(prop);
+            }
+        }
+
+        self.expect_and_consume(&TokenKind::RBrace)?;
+
+        Ok(StyleBlock {
+            name,
+            properties,
+            nested,
+        })
+    }
+
+    /// Parse a single style property: background: blue; or color: theme.DarkMode.text;
+    fn parse_style_property(&mut self) -> Result<StyleProperty, CompileError> {
+        // Parse property name
+        let prop_name = if let TokenKind::Identifier = self.current_token().kind {
+            let name = self.current_token().lexeme.clone();
+            self.next_token();
+
+            // Handle hyphenated properties (e.g., background-color)
+            let mut full_name = name;
+            while self.current_token().kind == TokenKind::Minus {
+                full_name.push('-');
+                self.next_token(); // consume -
+                if let TokenKind::Identifier = self.current_token().kind {
+                    full_name.push_str(&self.current_token().lexeme);
+                    self.next_token();
+                }
+            }
+            full_name
+        } else {
+            return Err(CompileError::Generic(format!(
+                "Expected property name in style block, got {:?}",
+                self.current_token().kind
+            )));
+        };
+
+        // Expect colon
+        self.expect_and_consume(&TokenKind::Colon)?;
+
+        // Parse value - check if it's a theme reference (theme.Name.property)
+        let value = if self.current_token().lexeme == "theme" {
+            self.next_token(); // consume 'theme'
+            self.expect_and_consume(&TokenKind::Dot)?;
+
+            // Parse theme name
+            let theme_name = if let TokenKind::Identifier = self.current_token().kind {
+                let name = self.current_token().lexeme.clone();
+                self.next_token();
+                name
+            } else {
+                return Err(CompileError::Generic(
+                    "Expected theme name after 'theme.'".to_string()
+                ));
+            };
+
+            self.expect_and_consume(&TokenKind::Dot)?;
+
+            // Parse property name
+            let prop = if let TokenKind::Identifier = self.current_token().kind {
+                let name = self.current_token().lexeme.clone();
+                self.next_token();
+                name
+            } else {
+                return Err(CompileError::Generic(
+                    "Expected property name after 'theme.Name.'".to_string()
+                ));
+            };
+
+            StyleValue::ThemeRef {
+                theme: theme_name,
+                property: prop,
+            }
+        } else {
+            // Regular literal value - read until semicolon
+            let mut val = String::new();
+            while self.current_token().kind != TokenKind::Semicolon && self.current_token().kind != TokenKind::Eof {
+                val.push_str(&self.current_token().lexeme);
+                val.push(' ');
+                self.next_token();
+            }
+            StyleValue::Literal(val.trim().to_string())
+        };
+
+        // Expect semicolon
+        self.expect_and_consume(&TokenKind::Semicolon)?;
+
+        Ok(StyleProperty {
+            name: prop_name,
+            value,
+        })
+    }
 }
 
 #[cfg(test)]
