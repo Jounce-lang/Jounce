@@ -54,8 +54,8 @@ impl Metadata {
 
     // Check if read-only
     fn is_readonly(self: &Metadata) -> bool {
-        // Check write permission for owner
-        return (self.permissions & 0o200) == 0;
+        // Check write permission for owner (0o200 = 128 in decimal)
+        return (self.permissions & 128) == 0;
     }
 }
 
@@ -284,7 +284,8 @@ fn read_dir(path: String) -> Result<Vec<DirEntry>, String> {
 fn copy(from: String, to: String) -> Result<i64, String> {
     let contents = read(from)?;
     write_bytes(to, contents.clone())?;
-    return Result::Ok(contents.len() as i64);
+    let size = contents.len() as i64;
+    return Ok(size);
 }
 
 // Rename/move a file or directory

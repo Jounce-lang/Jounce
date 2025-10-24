@@ -1,8 +1,6 @@
 // File System Tests for Jounce
 // Tests basic file and directory operations
 
-use fs;
-
 // Test writing and reading a text file
 fn test_write_and_read() {
     let test_file = "test_temp.txt";

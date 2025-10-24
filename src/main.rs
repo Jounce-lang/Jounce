@@ -899,7 +899,7 @@ fn test_subtraction() {
         json::JSON_DEFINITION,
         time::TIME_DEFINITION,
         crypto::CRYPTO_DEFINITION,
-        // fs::FS_DEFINITION,  // Temporarily disabled pending parser enhancements
+        fs::FS_DEFINITION,
     };
 
     combined_source.push_str(JSON_DEFINITION);
@@ -908,8 +908,8 @@ fn test_subtraction() {
     combined_source.push_str("\n\n");
     combined_source.push_str(CRYPTO_DEFINITION);
     combined_source.push_str("\n\n");
-    // combined_source.push_str(FS_DEFINITION);
-    // combined_source.push_str("\n\n");
+    combined_source.push_str(FS_DEFINITION);
+    combined_source.push_str("\n\n");
 
     // Add test source files
     for test in &runner.suite.tests {
@@ -925,6 +925,9 @@ fn test_subtraction() {
         println!("📝 Combined source saved to dist/combined_source.jnc");
     }
 
+    // Debug: Always save combined source for debugging parse errors
+    fs::write("debug_combined_source.jnc", &combined_source)?;
+
     // Parse and compile combined Jounce code to JavaScript
     let mut lexer = Lexer::new(combined_source.clone());
     let mut parser = Parser::new(&mut lexer);
@@ -932,6 +935,7 @@ fn test_subtraction() {
         Ok(p) => p,
         Err(e) => {
             eprintln!("❌ Failed to parse test files: {:?}", e);
+            eprintln!("📝 Combined source saved to debug_combined_source.jnc for inspection");
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
                 format!("Parser error: {:?}", e)
