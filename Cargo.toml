@@ -53,3 +53,10 @@ dirs = "5.0"
 urlencoding = "2.1"
 colored = "2.1"
 regex = "1.10"
+
+# Performance Optimization (Phase 9 Sprint 1)
+xxhash-rust = { version = "0.8", features = ["xxh64"] }  # Fast hashing for cache keys
+rmp-serde = "1.1"                                         # MessagePack serialization
+rayon = "1.8"                                            # Parallel compilation
+num_cpus = "1.16"                                        # CPU detection
+dashmap = "5.5"                                          # Concurrent HashMap

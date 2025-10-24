@@ -3,6 +3,7 @@ extern crate lazy_static;
 
 pub mod ast;
 pub mod borrow_checker;
+pub mod cache; // Compilation cache (Phase 9 Sprint 1)
 pub mod codegen;
 pub mod css_generator; // CSS generation (Phase 7.5)
 pub mod utility_config; // Utility class configuration (Phase 7.5 Sprint 3)
