@@ -79,11 +79,6 @@ impl JSEmitter {
         output.push_str("const fs = require('fs');\n");
         output.push_str("const path = require('path');\n\n");
 
-        // Built-in Option constructors
-        output.push_str("// Built-in Option<T> constructors\n");
-        output.push_str("function Some(value) { return { variant: 'Some', data: value }; }\n");
-        output.push_str("const None = { variant: 'None' };\n\n");
-
         // Generate struct constructors
         if !self.splitter.structs.is_empty() {
             output.push_str("// Struct definitions\n");
@@ -273,11 +268,6 @@ impl JSEmitter {
         // Import runtime
         output.push_str("import { RPCClient, mountComponent } from '../dist/client-runtime.js';\n\n");
 
-        // Built-in Option constructors
-        output.push_str("// Built-in Option<T> constructors\n");
-        output.push_str("function Some(value) { return { variant: 'Some', data: value }; }\n");
-        output.push_str("const None = { variant: 'None' };\n\n");
-
         // Built-in type extensions and aliases
         output.push_str("// Built-in type extensions\n");
         output.push_str("const Vec = Array; // Vec<T> is Array in JavaScript\n");
@@ -301,6 +291,21 @@ impl JSEmitter {
         output.push_str("if (!String.prototype.to_lowercase) {\n");
         output.push_str("  String.prototype.to_lowercase = function() { return this.toLowerCase(); };\n");
         output.push_str("}\n");
+        output.push_str("if (!String.prototype.char_code_at) {\n");
+        output.push_str("  String.prototype.char_code_at = function(index) { return this.charCodeAt(index); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.parse_int) {\n");
+        output.push_str("  String.prototype.parse_int = function() { return parseInt(this, 10); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.parse_float) {\n");
+        output.push_str("  String.prototype.parse_float = function() { return parseFloat(this); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.index_of) {\n");
+        output.push_str("  String.prototype.index_of = function(substr) { return this.indexOf(substr); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.prototype.clone) {\n");
+        output.push_str("  String.prototype.clone = function() { return this.toString(); };\n");
+        output.push_str("}\n");
         output.push_str("if (!Number.prototype.to_string) {\n");
         output.push_str("  Number.prototype.to_string = function() { return this.toString(); };\n");
         output.push_str("}\n");
@@ -309,7 +314,43 @@ impl JSEmitter {
         output.push_str("}\n");
         output.push_str("if (!Array.prototype.is_empty) {\n");
         output.push_str("  Array.prototype.is_empty = function() { return this.length === 0; };\n");
+        output.push_str("}\n");
+        output.push_str("if (!Array.prototype.clone) {\n");
+        output.push_str("  Array.prototype.clone = function() { return this.slice(); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!Object.prototype.keys) {\n");
+        output.push_str("  Object.prototype.keys = function() { return Object.keys(this); };\n");
+        output.push_str("}\n");
+        output.push_str("if (!String.from_char_code) {\n");
+        output.push_str("  String.from_char_code = function(code) { return String.fromCharCode(code); };\n");
         output.push_str("}\n\n");
+
+        // Built-in Result and Option enums (Rust-style error handling)
+        output.push_str("// Result<T, E> enum - represents success (Ok) or failure (Err)\n");
+        output.push_str("const Result = { __proto__: null };\n");
+        output.push_str("Result.prototype = {};\n");
+        output.push_str("function Ok(data) { const v = { variant: \"Ok\", data: data }; v.__proto__ = Result.prototype; return v; }\n");
+        output.push_str("function Err(data) { const v = { variant: \"Err\", data: data }; v.__proto__ = Result.prototype; return v; }\n");
+        output.push_str("Result.prototype.is_ok = function() { return this.variant === \"Ok\"; };\n");
+        output.push_str("Result.prototype.is_err = function() { return this.variant === \"Err\"; };\n");
+        output.push_str("Result.prototype.unwrap = function() { if (this.variant === \"Ok\") return this.data; throw new Error(\"Called unwrap on Err\"); };\n");
+        output.push_str("Result.prototype.unwrap_err = function() { if (this.variant === \"Err\") return this.data; throw new Error(\"Called unwrap_err on Ok\"); };\n");
+        output.push_str("Result.prototype.unwrap_or = function(default_val) { return this.variant === \"Ok\" ? this.data : default_val; };\n\n");
+
+        output.push_str("// Option<T> enum - represents Some value or None\n");
+        output.push_str("const Option = { __proto__: null };\n");
+        output.push_str("Option.prototype = {};\n");
+        output.push_str("function Some(data) { const v = { variant: \"Some\", data: data }; v.__proto__ = Option.prototype; return v; }\n");
+        output.push_str("const None = (() => { const v = { variant: \"None\" }; v.__proto__ = Option.prototype; return v; })();\n");
+        output.push_str("Option.prototype.is_some = function() { return this.variant === \"Some\"; };\n");
+        output.push_str("Option.prototype.is_none = function() { return this.variant === \"None\"; };\n");
+        output.push_str("Option.prototype.unwrap = function() { if (this.variant === \"Some\") return this.data; throw new Error(\"Called unwrap on None\"); };\n");
+        output.push_str("Option.prototype.unwrap_or = function(default_val) { return this.variant === \"Some\" ? this.data : default_val; };\n\n");
+
+        // HashMap type alias (JavaScript Map)
+        output.push_str("// HashMap<K, V> is a JavaScript Map\n");
+        output.push_str("const HashMap = Map;\n");
+        output.push_str("HashMap.new = function() { return new Map(); };\n\n");
 
         // Generate RPC client stubs
         output.push_str("// RPC Client Setup\n");
@@ -863,8 +904,23 @@ impl JSEmitter {
         // Create a base constructor for the enum to enable prototype methods
         code.push_str(&format!("function {}() {{}}\n", enum_name));
 
+        // List of JavaScript built-in identifiers that should not be shadowed
+        const JS_BUILTINS: &[&str] = &[
+            "String", "Number", "Boolean", "Array", "Object", "Function",
+            "Date", "RegExp", "Error", "Math", "JSON", "Promise",
+            "Map", "Set", "WeakMap", "WeakSet", "Symbol", "BigInt",
+        ];
+
         for variant in &enum_def.variants {
             let variant_name = &variant.name.value;
+
+            // Check if variant name conflicts with JS built-ins
+            let safe_variant_name = if JS_BUILTINS.contains(&variant_name.as_str()) {
+                // Prefix with enum name to avoid shadowing: String → JsonValue_String
+                format!("{}_{}", enum_name, variant_name)
+            } else {
+                variant_name.clone()
+            };
 
             if let Some(fields) = &variant.fields {
                 // Variant with data - generate constructor function
@@ -873,22 +929,26 @@ impl JSEmitter {
                     // Set __proto__ to enable instance methods
                     code.push_str(&format!(
                         "function {}(data) {{ const v = {{ variant: \"{}\", data: data }}; v.__proto__ = {}.prototype; return v; }}\n",
-                        variant_name, variant_name, enum_name
+                        safe_variant_name, variant_name, enum_name
                     ));
                 } else {
                     // Multiple fields - use spread/array
                     code.push_str(&format!(
                         "function {}(...data) {{ const v = {{ variant: \"{}\", data: data }}; v.__proto__ = {}.prototype; return v; }}\n",
-                        variant_name, variant_name, enum_name
+                        safe_variant_name, variant_name, enum_name
                     ));
                 }
+                // Also assign as property on the enum namespace
+                code.push_str(&format!("{}.{} = {};\n", enum_name, variant_name, safe_variant_name));
             } else {
                 // Unit variant - no data
                 // Create object with prototype and variant property
                 code.push_str(&format!(
                     "const {} = (() => {{ const v = {{ variant: \"{}\" }}; v.__proto__ = {}.prototype; return v; }})();\n",
-                    variant_name, variant_name, enum_name
+                    safe_variant_name, variant_name, enum_name
                 ));
+                // Also assign as property on the enum namespace
+                code.push_str(&format!("{}.{} = {};\n", enum_name, variant_name, safe_variant_name));
             }
         }
 
@@ -1432,8 +1492,8 @@ impl JSEmitter {
                 .map(|p| p.name.value.clone())
                 .collect();
 
-            // Generate method body
-            let body = self.generate_block_js(&method.body);
+            // Generate method body (with implicit returns for last expression)
+            let body = self.generate_block_js_impl(&method.body, true);
 
             if has_self {
                 // Instance method - add to prototype
