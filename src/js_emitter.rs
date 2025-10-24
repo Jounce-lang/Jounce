@@ -1569,6 +1569,24 @@ impl JSEmitter {
                 // CSS macro handled separately
                 "/* CSS */".to_string()
             }
+            Expression::Lambda(lambda_expr) => {
+                // Generate JavaScript arrow function: (param1, param2) => body
+                let params = lambda_expr.parameters
+                    .iter()
+                    .map(|p| p.name.value.clone())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+
+                let body = self.generate_expression_js(&lambda_expr.body);
+
+                // If body is a block statement, use braces
+                // Otherwise, use concise arrow function syntax
+                if matches!(*lambda_expr.body, Expression::Block(_)) {
+                    format!("({}) => {}", params, body)
+                } else {
+                    format!("({}) => {}", params, body)
+                }
+            }
             _ => "/* Unsupported expression */".to_string(),
         }
     }

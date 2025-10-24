@@ -18,7 +18,10 @@ const wasmInstance = new WebAssembly.Instance(wasmModule, {
 // Server function implementations
 // Shared utility functions
 module.exports.main = function() {
-  return console.log("Hello, World\\!");
+  let count = signal(0);
+  let doubled = computed(() => (count * 2));
+  effect(() => console.log("Testing reactivity"));
+  return batch(() => console.log("Batched"));
 
 }
 

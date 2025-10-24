@@ -3330,4 +3330,544 @@ mod tests {
         }
         assert!(result.is_ok(), "CSS with complex multi-step keyframes should compile");
     }
+
+    // ====================================================================
+    // Reactivity Integration Tests (Phase 12)
+    // ====================================================================
+
+    #[test]
+    fn test_signal_basic() {
+        let source = r#"
+            fn main() {
+                let count = signal(0);
+                console.log("Initial count");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Basic signal creation should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("signal(0)"), "Should generate signal call");
+        assert!(client_js.contains("import { signal"), "Should import signal from runtime");
+    }
+
+    #[test]
+    fn test_signal_with_type_annotation() {
+        let source = r#"
+            fn main() {
+                let count = signal<int>(42);
+                let message = signal<string>("hello");
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Signal with type annotation should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("signal(42)"), "Should generate signal with int");
+        assert!(client_js.contains("signal(\"hello\")"), "Should generate signal with string");
+    }
+
+    #[test]
+    fn test_computed_basic() {
+        let source = r#"
+            fn main() {
+                let count = signal(5);
+                let doubled = computed(() => count.value * 2);
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Basic computed value should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("computed("), "Should generate computed call");
+        assert!(client_js.contains("import { signal, computed"), "Should import computed from runtime");
+    }
+
+    #[test]
+    fn test_computed_with_multiple_dependencies() {
+        let source = r#"
+            fn main() {
+                let a = signal(10);
+                let b = signal(20);
+                let sum = computed(() => a.value + b.value);
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Computed with multiple dependencies should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("a.value + b.value"), "Should preserve dependency access");
+    }
+
+    #[test]
+    fn test_effect_basic() {
+        let source = r#"
+            fn main() {
+                let count = signal(0);
+                effect(() => {
+                    console.log("Count changed");
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Basic effect should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("effect("), "Should generate effect call");
+        assert!(client_js.contains("import { signal, computed, effect"), "Should import effect from runtime");
+    }
+
+    #[test]
+    fn test_effect_with_signal_access() {
+        let source = r#"
+            fn main() {
+                let count = signal(0);
+                effect(() => {
+                    console.log(count.value);
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Effect with signal access should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("count.value"), "Should preserve signal property access in effect");
+    }
+
+    #[test]
+    fn test_batch_basic() {
+        let source = r#"
+            fn main() {
+                let count = signal(0);
+                batch(() => {
+                    count.value = 5;
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Basic batch should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("batch("), "Should generate batch call");
+        assert!(client_js.contains("import { signal, computed, effect, batch"), "Should import batch from runtime");
+    }
+
+    #[test]
+    fn test_batch_with_multiple_updates() {
+        let source = r#"
+            fn main() {
+                let a = signal(1);
+                let b = signal(2);
+                batch(() => {
+                    a.value = 10;
+                    b.value = 20;
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Batch with multiple updates should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("a.value = 10"), "Should preserve first update");
+        assert!(client_js.contains("b.value = 20"), "Should preserve second update");
+    }
+
+    #[test]
+    fn test_reactivity_counter_app() {
+        let source = r#"
+            fn main() {
+                let count = signal<int>(0);
+                let doubled = computed<int>(() => count.value * 2);
+
+                effect(() => {
+                    console.log("Count: " + count.value.to_string());
+                    console.log("Doubled: " + doubled.value.to_string());
+                });
+
+                count.value = 5;
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Counter app with reactivity should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("signal(0)"), "Should create signal");
+        assert!(client_js.contains("computed("), "Should create computed");
+        assert!(client_js.contains("effect("), "Should create effect");
+        assert!(client_js.contains("count.value = 5"), "Should update signal");
+    }
+
+    #[test]
+    fn test_reactivity_with_conditionals() {
+        let source = r#"
+            fn main() {
+                let enabled = signal(true);
+                let count = signal(0);
+
+                effect(() => {
+                    if enabled.value {
+                        console.log(count.value);
+                    }
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Reactivity with conditionals should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("if (enabled.value)"), "Should preserve conditional in effect");
+    }
+
+    #[test]
+    fn test_nested_computed() {
+        let source = r#"
+            fn main() {
+                let a = signal(2);
+                let b = computed(() => a.value * 2);
+                let c = computed(() => b.value + 10);
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Nested computed values should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("a.value * 2"), "Should preserve first computed");
+        assert!(client_js.contains("b.value + 10"), "Should preserve second computed");
+    }
+
+    #[test]
+    fn test_multiple_effects() {
+        let source = r#"
+            fn main() {
+                let count = signal(0);
+
+                effect(() => {
+                    console.log("Effect 1: " + count.value.to_string());
+                });
+
+                effect(() => {
+                    console.log("Effect 2: " + count.value.to_string());
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Multiple effects should compile");
+    }
+
+    #[test]
+    fn test_signal_in_loop() {
+        let source = r#"
+            fn main() {
+                let signals = [];
+                for i in 0..5 {
+                    signals.push(signal(i));
+                }
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Signal creation in loop should compile");
+    }
+
+    #[test]
+    fn test_reactivity_with_string_concatenation() {
+        let source = r#"
+            fn main() {
+                let first = signal("Hello");
+                let last = signal("World");
+                let full = computed(() => first.value + " " + last.value);
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Reactivity with string concatenation should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("first.value + \" \" + last.value"), "Should preserve string concatenation");
+    }
+
+    #[test]
+    fn test_effect_with_multiple_signals() {
+        let source = r#"
+            fn main() {
+                let a = signal(1);
+                let b = signal(2);
+                let c = signal(3);
+
+                effect(() => {
+                    let sum = a.value + b.value + c.value;
+                    console.log(sum);
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Effect with multiple signals should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("a.value + b.value + c.value"), "Should track all signal dependencies");
+    }
+
+    #[test]
+    fn test_batch_with_effect() {
+        let source = r#"
+            fn main() {
+                let x = signal(0);
+                let y = signal(0);
+
+                effect(() => {
+                    console.log(x.value + y.value);
+                });
+
+                batch(() => {
+                    x.value = 10;
+                    y.value = 20;
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Batch with effect should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("batch("), "Should generate batch");
+        assert!(client_js.contains("effect("), "Should generate effect");
+    }
+
+    #[test]
+    fn test_computed_with_complex_expression() {
+        let source = r#"
+            fn main() {
+                let a = signal(10);
+                let b = signal(5);
+                let result = computed(() => {
+                    if a.value > b.value {
+                        a.value - b.value
+                    } else {
+                        b.value - a.value
+                    }
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Computed with complex expression should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("computed("), "Should generate computed");
+    }
+
+    #[test]
+    fn test_signal_update_in_effect() {
+        let source = r#"
+            fn main() {
+                let a = signal(0);
+                let b = signal(0);
+
+                effect(() => {
+                    b.value = a.value * 2;
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Signal update in effect should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("b.value = a.value * 2"), "Should preserve signal update in effect");
+    }
+
+    #[test]
+    fn test_reactivity_with_function_call() {
+        let source = r#"
+            fn double(n: int) -> int {
+                n * 2
+            }
+
+            fn main() {
+                let count = signal(5);
+                let doubled = computed(() => double(count.value));
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Reactivity with function call should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("double(count.value)"), "Should preserve function call in computed");
+    }
+
+    #[test]
+    fn test_reactivity_todo_app_pattern() {
+        let source = r#"
+            fn main() {
+                let todos = signal([]);
+                let completed_count = computed(() => {
+                    let count = 0;
+                    count
+                });
+
+                effect(() => {
+                    console.log("Total todos: " + todos.value.length.to_string());
+                });
+
+                batch(() => {
+                    todos.value.push("Task 1");
+                    todos.value.push("Task 2");
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Todo app pattern with reactivity should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("signal([])"), "Should create array signal");
+        assert!(client_js.contains("computed("), "Should create computed count");
+        assert!(client_js.contains("effect("), "Should create logging effect");
+        assert!(client_js.contains("batch("), "Should batch updates");
+    }
+
+    #[test]
+    fn test_reactivity_form_validation_pattern() {
+        let source = r#"
+            fn main() {
+                let email = signal("");
+                let is_valid = computed(() => {
+                    email.value.length > 0
+                });
+
+                effect(() => {
+                    if is_valid.value {
+                        console.log("Valid email");
+                    } else {
+                        console.log("Invalid email");
+                    }
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Form validation pattern with reactivity should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("signal(\"\")"), "Should create email signal");
+        assert!(client_js.contains("is_valid.value"), "Should access computed validity");
+    }
+
+    #[test]
+    fn test_reactivity_all_primitives_together() {
+        let source = r#"
+            fn main() {
+                // Signals
+                let count = signal<int>(0);
+                let name = signal<string>("Test");
+
+                // Computed
+                let display = computed<string>(() => {
+                    name.value + ": " + count.value.to_string()
+                });
+
+                // Effect
+                effect(() => {
+                    console.log(display.value);
+                });
+
+                // Batch updates
+                batch(() => {
+                    count.value = 42;
+                    name.value = "Updated";
+                });
+            }
+        "#;
+
+        let result = compile_source(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "All reactivity primitives together should compile");
+
+        let (_, client_js) = result.unwrap();
+        assert!(client_js.contains("signal(0)"), "Should create int signal");
+        assert!(client_js.contains("signal(\"Test\")"), "Should create string signal");
+        assert!(client_js.contains("computed("), "Should create computed");
+        assert!(client_js.contains("effect("), "Should create effect");
+        assert!(client_js.contains("batch("), "Should create batch");
+        assert!(client_js.contains("import { signal, computed, effect, batch }"), "Should import all primitives");
+    }
 }
