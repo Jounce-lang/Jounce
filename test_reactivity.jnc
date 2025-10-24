@@ -1,0 +1,22 @@
+// Test reactivity code generation
+
+fn main() {
+    // Create a signal
+    let count = signal(0);
+
+    // Create computed value
+    let doubled = computed(() => count.value * 2);
+
+    // Create effect
+    effect(() => {
+        console.log("Count: " + count.value.to_string());
+    });
+
+    // Update signal
+    count.value = 5;
+
+    // Batch multiple updates
+    batch(() => {
+        count.value = 10;
+    });
+}

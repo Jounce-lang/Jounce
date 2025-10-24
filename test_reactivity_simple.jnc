@@ -1,0 +1,19 @@
+// Simple test reactivity code generation
+
+fn main() {
+    // Create a signal
+    let count = signal(0);
+
+    // Create computed value
+    let doubled = computed(() => count * 2);
+
+    // Create effect
+    effect(() => {
+        console.log("Testing reactivity");
+    });
+
+    // Batch
+    batch(() => {
+        console.log("Batched");
+    });
+}
