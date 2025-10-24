@@ -134,11 +134,49 @@ impl<'a> Parser<'a> {
 
     fn parse_use_statement(&mut self) -> Result<UseStatement, CompileError> {
         self.expect_and_consume(&TokenKind::Use)?;
-        let mut path = vec![self.parse_identifier()?];
+
+        let mut path = Vec::new();
+
+        // Check for relative path (. or ..)
+        // Handle: ./module or ../module or ../../module
+        if self.current_token().kind == TokenKind::Dot {
+            // Parse relative path segments
+            while self.current_token().kind == TokenKind::Dot || self.current_token().kind == TokenKind::DotDot {
+                if self.current_token().kind == TokenKind::DotDot {
+                    // .. means parent directory
+                    self.next_token();
+                    path.push(Identifier { value: "..".to_string() });
+                } else {
+                    // . means current directory
+                    self.next_token();
+                    path.push(Identifier { value: ".".to_string() });
+                }
+
+                // Consume '/' if present (for ./file or ../file syntax)
+                // Note: In practice, we'll use Dot DoubleColon for consistency (./module::Item)
+                // but we allow Dot Slash for user convenience
+                if self.current_token().kind == TokenKind::Slash {
+                    self.next_token();
+                }
+
+                // If we hit another dot, continue (for ../../ paths)
+                if self.current_token().kind == TokenKind::Dot || self.current_token().kind == TokenKind::DotDot {
+                    continue;
+                }
+
+                // Otherwise, break and parse the module name
+                break;
+            }
+        }
+
+        // Parse the module path (identifiers separated by ::)
+        path.push(self.parse_identifier()?);
         while self.consume_if_matches(&TokenKind::DoubleColon) {
             if self.current_token().kind == TokenKind::LBrace { break; }
             path.push(self.parse_identifier()?);
         }
+
+        // Parse selective imports { A, B, C }
         let mut imports = Vec::new();
         if self.consume_if_matches(&TokenKind::LBrace) {
             while self.current_token().kind != TokenKind::RBrace {
@@ -147,6 +185,7 @@ impl<'a> Parser<'a> {
             }
             self.expect_and_consume(&TokenKind::RBrace)?;
         }
+
         Ok(UseStatement { path, imports })
     }
     

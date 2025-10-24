@@ -1,0 +1,22 @@
+// Complete working example with local imports
+
+use ./math;
+
+fn main() {
+    console.log("=== Testing Local Imports ===");
+
+    // Use imported functions from math.jnc
+    let sum = add(10, 5);
+    console.log("10 + 5 = " + sum.to_string());
+
+    let product = multiply(7, 6);
+    console.log("7 * 6 = " + product.to_string());
+
+    let even_check = is_even(42);
+    console.log("Is 42 even? " + even_check.to_string());
+
+    let odd_check = is_even(13);
+    console.log("Is 13 even? " + odd_check.to_string());
+
+    console.log("=== All imports working! ===");
+}

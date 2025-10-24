@@ -338,10 +338,32 @@ const client = new RPCClient(window.location.origin + '/_rpc');
 // Implementations
 // Client function implementations
 // Shared utility functions
+export function multiply(a, b) {
+  return (a * b);
+
+}
+
+export function is_even(n) {
+  return ((n % 2) == 0);
+
+}
+
+export function add(a, b) {
+  return (a + b);
+
+}
+
 export function main() {
-  console.log("Test: Local imports");
-  let x = 5;
-  return console.log(("Value: " + x.to_string()));
+  console.log("=== Testing Local Imports ===");
+  let sum = add(10, 5);
+  console.log(("10 + 5 = " + sum.to_string()));
+  let product = multiply(7, 6);
+  console.log(("7 * 6 = " + product.to_string()));
+  let even_check = is_even(42);
+  console.log(("Is 42 even? " + even_check.to_string()));
+  let odd_check = is_even(13);
+  console.log(("Is 13 even? " + odd_check.to_string()));
+  return console.log("=== All imports working! ===");
 
 }
 

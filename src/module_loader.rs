@@ -53,11 +53,47 @@ impl ModuleLoader {
     /// Examples:
     /// - `raven_router` -> `aloha-shirts/raven-router/src/lib.jnc`
     /// - `raven_store::store` -> `aloha-shirts/raven-store/src/store/store.jnc`
+    /// - `./math` -> `./math.jnc` (relative to current directory)
+    /// - `../utils/helpers` -> `../utils/helpers.jnc`
     pub fn resolve_module_path(&self, module_path: &[String]) -> Result<PathBuf, CompileError> {
         if module_path.is_empty() {
             return Err(CompileError::Generic("Empty module path".to_string()));
         }
 
+        // Check if this is a relative path (starts with . or ..)
+        let is_relative = module_path[0] == "." || module_path[0] == "..";
+
+        if is_relative {
+            // Resolve relative path from current working directory
+            let mut path = PathBuf::from(".");
+
+            for segment in module_path {
+                if segment == "." {
+                    // Current directory - no-op
+                    continue;
+                } else if segment == ".." {
+                    // Parent directory
+                    path.pop();
+                } else {
+                    // Regular path segment
+                    path.push(segment);
+                }
+            }
+
+            // Add .jnc extension
+            path.set_extension("jnc");
+
+            if path.exists() {
+                return Ok(path);
+            } else {
+                return Err(CompileError::Generic(format!(
+                    "Local module not found: {:?}",
+                    path
+                )));
+            }
+        }
+
+        // Package import (existing logic)
         // Convert module name from snake_case to kebab-case for directory lookup
         // raven_router -> raven-router
         let package_name = module_path[0].replace('_', "-");
