@@ -1,0 +1,12 @@
+// Simple test to see what parser accepts
+
+fn test_method_with_string() {
+    let s = "hello";
+    let parts = s.split(".");
+    return parts;
+}
+
+fn test_static_method() {
+    let empty = String::new();
+    return empty;
+}

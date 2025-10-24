@@ -1,0 +1,18 @@
+struct Metadata {
+    size: i64,
+    is_file: bool,
+}
+
+impl Metadata {
+    fn is_file(self: &Metadata) -> bool {
+        return self.is_file;
+    }
+}
+
+fn read_to_string(path: String) -> Result<String, String> {
+    return __fs_read_to_string_safe(path);
+}
+
+fn current_dir() -> Result<String, String> {
+    return Result::Ok(String::from("/"));
+}

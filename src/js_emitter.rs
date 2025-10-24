@@ -1135,6 +1135,26 @@ impl JSEmitter {
     }
 
     /// Generates JavaScript helper functions for enum variants
+    /// Collect all variant names from all enums to detect conflicts
+    fn collect_variant_conflicts(&self) -> std::collections::HashMap<String, Vec<String>> {
+        use std::collections::HashMap;
+        let mut variant_to_enums: HashMap<String, Vec<String>> = HashMap::new();
+
+        for enum_def in &self.splitter.enums {
+            for variant in &enum_def.variants {
+                let variant_name = variant.name.value.clone();
+                variant_to_enums
+                    .entry(variant_name)
+                    .or_insert_with(Vec::new)
+                    .push(enum_def.name.value.clone());
+            }
+        }
+
+        // Filter to only conflicts (variants used in multiple enums)
+        variant_to_enums.retain(|_, enums| enums.len() > 1);
+        variant_to_enums
+    }
+
     fn generate_enum_js(&self, enum_def: &crate::ast::EnumDefinition) -> String {
         let mut code = String::new();
         let enum_name = &enum_def.name.value;
@@ -1151,12 +1171,20 @@ impl JSEmitter {
             "Map", "Set", "WeakMap", "WeakSet", "Symbol", "BigInt",
         ];
 
+        // Collect cross-enum conflicts
+        let variant_conflicts = self.collect_variant_conflicts();
+
         for variant in &enum_def.variants {
             let variant_name = &variant.name.value;
 
-            // Check if variant name conflicts with JS built-ins
-            let safe_variant_name = if JS_BUILTINS.contains(&variant_name.as_str()) {
-                // Prefix with enum name to avoid shadowing: String → JsonValue_String
+            // Check if variant name conflicts with:
+            // 1. JS built-ins, or
+            // 2. Variants from other enums (cross-enum conflict)
+            let needs_prefix = JS_BUILTINS.contains(&variant_name.as_str())
+                || variant_conflicts.contains_key(variant_name);
+
+            let safe_variant_name = if needs_prefix {
+                // Prefix with enum name to avoid shadowing
                 format!("{}_{}", enum_name, variant_name)
             } else {
                 variant_name.clone()

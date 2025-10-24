@@ -154,10 +154,10 @@ impl TestRunner {
                 code.push_str("    const duration = Date.now() - start_time;\n\n");
                 code.push_str("    if (result === 'passed') {\n");
                 code.push_str("        passed++;\n");
-                code.push_str(&format!("        console.log(`  ✓ {} (${{duration}}ms)`);\n", test_name));
+                code.push_str(&format!("        console.log(`  [PASS] {} (${{duration}}ms)`);\n", test_name));
                 code.push_str("    } else {\n");
                 code.push_str("        failed++;\n");
-                code.push_str(&format!("        console.log(`  ✗ {} (${{duration}}ms)`);\n", test_name));
+                code.push_str(&format!("        console.log(`  [FAIL] {} (${{duration}}ms)`);\n", test_name));
                 code.push_str("        console.log(`    Error: ${result}`);\n");
                 code.push_str("    }\n");
                 code.push_str("})();\n\n");
@@ -174,10 +174,10 @@ impl TestRunner {
                 code.push_str("    const duration = Date.now() - start_time;\n\n");
                 code.push_str("    if (result === 'passed') {\n");
                 code.push_str("        passed++;\n");
-                code.push_str(&format!("        console.log(`  ✓ {} (${{duration}}ms)`);\n", test_name));
+                code.push_str(&format!("        console.log(`  [PASS] {} (${{duration}}ms)`);\n", test_name));
                 code.push_str("    } else {\n");
                 code.push_str("        failed++;\n");
-                code.push_str(&format!("        console.log(`  ✗ {} (${{duration}}ms)`);\n", test_name));
+                code.push_str(&format!("        console.log(`  [FAIL] {} (${{duration}}ms)`);\n", test_name));
                 code.push_str("        console.log(`    Error: ${result}`);\n");
                 code.push_str("    }\n");
                 code.push_str("}\n\n");
