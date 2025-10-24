@@ -51,15 +51,18 @@ impl CachedAST {
             return false;
         }
 
-        // Check file still exists and hasn't been modified
+        // Check file still exists and hasn't been modified (if it exists on disk)
         if let Ok(metadata) = std::fs::metadata(file_path) {
             if let Ok(modified) = metadata.modified() {
                 // Cache is valid if file hasn't been modified since caching
                 return modified <= self.timestamp;
             }
+            // File exists but can't get modified time - invalid
+            return false;
         }
 
-        false
+        // File doesn't exist on disk - rely on hash match only (for in-memory compilation)
+        true
     }
 
     /// Add a dependency to this cached AST

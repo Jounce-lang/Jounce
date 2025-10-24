@@ -1,8 +1,9 @@
 // Cached compilation methods
 // These methods leverage the compilation cache for faster incremental builds
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use rayon::prelude::*;
 
 use crate::borrow_checker::BorrowChecker;
 use crate::cache::CompilationCache;
@@ -122,4 +123,157 @@ pub fn compile_source_cached(
     }
 
     Ok((wasm_bytes, css_output))
+}
+
+/// Compile multiple files in parallel using cached compilation
+/// Uses dependency graph to determine which files can be compiled in parallel
+pub fn compile_project_parallel(
+    files: Vec<(PathBuf, String)>, // Vec of (file_path, source_code)
+    target: BuildTarget,
+    cache: &Arc<CompilationCache>,
+    optimize: bool,
+) -> Result<Vec<(PathBuf, Vec<u8>, String)>, CompileError> {
+    println!("   - Starting parallel compilation for {} files", files.len());
+
+    // Build dependency graph by analyzing imports
+    // For now, we'll compile files independently (no dependencies)
+    // TODO: Implement proper dependency analysis from import statements
+
+    // Get dependency levels for parallel compilation
+    let dependency_levels = {
+        let deps = cache.dependencies();
+        deps.lock().unwrap().topological_levels()
+    };
+
+    if dependency_levels.is_empty() {
+        // No dependencies registered, compile all files in parallel
+        println!("   - No dependencies detected, compiling all files in parallel");
+
+        let results: Vec<Result<(PathBuf, Vec<u8>, String), CompileError>> = files
+            .par_iter()
+            .map(|(path, source)| {
+                compile_source_cached(source, path, target, cache, optimize)
+                    .map(|(wasm, css)| (path.clone(), wasm, css))
+            })
+            .collect();
+
+        // Collect results and check for errors
+        let mut compiled = Vec::new();
+        for result in results {
+            compiled.push(result?);
+        }
+
+        Ok(compiled)
+    } else {
+        // Compile level by level (respecting dependencies)
+        println!("   - Compiling in {} levels (respecting dependencies)", dependency_levels.len());
+
+        let mut compiled = Vec::new();
+
+        for (level_idx, level_files) in dependency_levels.iter().enumerate() {
+            println!("   - Level {}: {} files", level_idx + 1, level_files.len());
+
+            // Find source for files in this level
+            let level_sources: Vec<_> = level_files
+                .iter()
+                .filter_map(|path| {
+                    files.iter()
+                        .find(|(p, _)| p == path)
+                        .map(|(p, s)| (p.clone(), s.clone()))
+                })
+                .collect();
+
+            // Compile this level in parallel
+            let results: Vec<Result<(PathBuf, Vec<u8>, String), CompileError>> = level_sources
+                .par_iter()
+                .map(|(path, source)| {
+                    compile_source_cached(source, path, target, cache, optimize)
+                        .map(|(wasm, css)| (path.clone(), wasm, css))
+                })
+                .collect();
+
+            // Collect results
+            for result in results {
+                compiled.push(result?);
+            }
+        }
+
+        Ok(compiled)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parallel_compilation_simple() {
+        let cache = Arc::new(CompilationCache::default());
+
+        let files = vec![
+            (
+                PathBuf::from("test1.jnc"),
+                "fn main() { let x = 42; }".to_string(),
+            ),
+            (
+                PathBuf::from("test2.jnc"),
+                "fn main() { let y = 10; }".to_string(),
+            ),
+            (
+                PathBuf::from("test3.jnc"),
+                "fn main() { let z = 5; }".to_string(),
+            ),
+        ];
+
+        let result = compile_project_parallel(files, BuildTarget::Client, &cache, false);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok());
+
+        let compiled = result.unwrap();
+        assert_eq!(compiled.len(), 3);
+
+        // Verify cache statistics
+        let stats = cache.stats();
+        assert_eq!(stats.misses, 3); // All files should be cache misses on first compile
+        assert_eq!(stats.hits, 0);
+    }
+
+    #[test]
+    fn test_parallel_compilation_with_cache() {
+        let cache = Arc::new(CompilationCache::default());
+
+        let files = vec![
+            (
+                PathBuf::from("cached1.jnc"),
+                "fn main() { let a = 10; let b = 20; }".to_string(),
+            ),
+            (
+                PathBuf::from("cached2.jnc"),
+                "fn main() { let x = 5; let y = 15; }".to_string(),
+            ),
+        ];
+
+        // First compilation (cold cache)
+        let result1 = compile_project_parallel(files.clone(), BuildTarget::Client, &cache, false);
+        if let Err(ref e) = result1 {
+            eprintln!("First compilation error: {:?}", e);
+        }
+        assert!(result1.is_ok());
+
+        let stats1 = cache.stats();
+        eprintln!("After first compilation: misses={}, hits={}", stats1.misses, stats1.hits);
+        assert_eq!(stats1.misses, 2);
+        assert_eq!(stats1.hits, 0);
+
+        // Second compilation (warm cache)
+        let result2 = compile_project_parallel(files, BuildTarget::Client, &cache, false);
+        assert!(result2.is_ok());
+
+        let stats2 = cache.stats();
+        eprintln!("After second compilation: misses={}, hits={}", stats2.misses, stats2.hits);
+        assert_eq!(stats2.misses, 2); // Same as before
+        assert_eq!(stats2.hits, 2);   // Both should hit cache
+    }
 }

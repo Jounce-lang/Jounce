@@ -6,8 +6,8 @@ pub mod compile_cached;
 pub mod dependency_graph;
 pub mod disk_cache;
 
-// Re-export the cached compilation function for convenience
-pub use compile_cached::compile_source_cached;
+// Re-export cached compilation functions for convenience
+pub use compile_cached::{compile_source_cached, compile_project_parallel};
 
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -180,6 +180,11 @@ impl CompilationCache {
         if let Ok(mut deps) = self.dependencies.lock() {
             deps.add_dependency(file, depends_on);
         }
+    }
+
+    /// Get access to the dependency graph
+    pub fn dependencies(&self) -> &Arc<Mutex<dependency_graph::DependencyGraph>> {
+        &self.dependencies
     }
 }
 
