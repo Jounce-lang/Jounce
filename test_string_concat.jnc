@@ -1,0 +1,5 @@
+fn main() {
+    let first = signal("Hello");
+    let last = signal("World");
+    let full = computed(() => first.value + " " + last.value);
+}

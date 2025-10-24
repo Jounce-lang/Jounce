@@ -340,10 +340,9 @@ const client = new RPCClient(window.location.origin + '/_rpc');
 // Client function implementations
 // Shared utility functions
 export function main() {
-  let count = signal(0);
-  let doubled = computed(() => (count * 2));
-  effect(() => console.log("Testing reactivity"));
-  return batch(() => console.log("Batched"));
+  let first = signal("Hello");
+  let last = signal("World");
+  let full = computed(() => ((first.value + " ") + last.value));
 
 }
 
