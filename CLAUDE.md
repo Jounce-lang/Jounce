@@ -5,7 +5,7 @@
 **Phase**: Phase 9 Sprint 3 - Standard Library Expansion (IN PROGRESS)
 **Version**: 0.2.0 | **Tests**: 564 core + 49 stdlib discovered | **Ext**: .jnc
 
-**Latest**: ✅ Compiler enhancements! Fixed 11 major issues - stdlib tests now executing!
+**Latest**: ✅ 20/49 stdlib tests PASSING! (41%) - 16 major compiler fixes complete!
 
 ## 🎯 What Works
 
@@ -54,12 +54,18 @@ jnc pkg init/add/remove/tree
   - Encoding: base64_encode/decode, hex_encode/decode
   - Password: hash_password_auto(), PBKDF2 with 100k iterations
   - 25 comprehensive tests
-- 🔄 **Compiler Enhancements** (11 major fixes) - Running stdlib tests
-  - Added: Unit type (), hex literals (0x), bitwise ops (|&^), bit shifts (<<>>)
-  - Added: loop/break/continue statements, dereference/borrow operators
-  - Fixed: String escaping, struct literal lookahead, return as expression
-  - Fixed: Match arm blocks, namespace handling
-  - Progress: 49 tests discovered, executing stdlib code (line 318 → 818)
+- ✅ **Compiler Enhancements** (16 major fixes) - **20/49 tests passing (41%)**!
+  - **Language features**: Unit type (), hex literals (0x), bitwise ops (|&^), bit shifts (<<>>)
+  - **Control flow**: loop/break/continue statements
+  - **Memory ops**: Dereference/borrow operators (transparent in JS)
+  - **Codegen fixes**: String escaping, struct literal → constructor calls
+  - **Method generation**: Static vs instance methods, self→this binding
+  - **Namespace support**: json::parse, crypto::sha256 module objects
+  - **Enum ordering**: Enums generated BEFORE impl blocks (CodeSplitter enhancement)
+  - **Builtin extensions**: String.len(), Array.len(), Vec.new(), Number.to_string()
+  - **Reserved words**: JavaScript reserved word escaping (null → null_)
+  - **Assignment statements**: Full assignment target support
+  - **Tests passing**: Duration (8), DateTime (3), Crypto (1), Basic (7), Helper (1)
 - ⏸️ File I/O (skeleton exists, needs implementation)
 - ⏸️ YAML parsing (not yet started)
 - ⏸️ Documentation (pending)

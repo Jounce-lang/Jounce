@@ -16,6 +16,7 @@ pub struct CodeSplitter {
     pub client_components: Vec<ComponentDefinition>,
     pub shared_constants: Vec<crate::ast::ConstDeclaration>,
     pub structs: Vec<crate::ast::StructDefinition>,
+    pub enums: Vec<crate::ast::EnumDefinition>,
     pub impl_blocks: Vec<crate::ast::ImplBlock>,
 }
 
@@ -34,6 +35,7 @@ impl CodeSplitter {
             client_components: Vec::new(),
             shared_constants: Vec::new(),
             structs: Vec::new(),
+            enums: Vec::new(),
             impl_blocks: Vec::new(),
         }
     }
@@ -56,11 +58,15 @@ impl CodeSplitter {
                     // Structs are shared across server and client
                     self.structs.push(struct_def.clone());
                 }
+                Statement::Enum(enum_def) => {
+                    // Enums are shared across server and client
+                    self.enums.push(enum_def.clone());
+                }
                 Statement::ImplBlock(impl_block) => {
                     // Impl blocks are shared across server and client
                     self.impl_blocks.push(impl_block.clone());
                 }
-                // Other statements (enums, traits, etc.) are currently ignored
+                // Other statements (traits, etc.) are currently ignored
                 // In the future, we may want to handle these differently
                 _ => {}
             }

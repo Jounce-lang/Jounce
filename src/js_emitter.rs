@@ -45,6 +45,26 @@ impl JSEmitter {
         }
     }
 
+    /// Escape JavaScript reserved words by adding underscore suffix
+    fn escape_js_reserved_word(name: &str) -> String {
+        // JavaScript reserved words and global identifiers that can't be used as function names
+        const RESERVED: &[&str] = &[
+            "null", "undefined", "true", "false",
+            "break", "case", "catch", "continue", "debugger", "default", "delete", "do",
+            "else", "finally", "for", "function", "if", "in", "instanceof", "new",
+            "return", "switch", "this", "throw", "try", "typeof", "var", "void", "while", "with",
+            "class", "const", "enum", "export", "extends", "import", "super",
+            "let", "static", "yield", "await", "async",
+            "eval", "arguments"
+        ];
+
+        if RESERVED.contains(&name) {
+            format!("{}_", name)
+        } else {
+            name.to_string()
+        }
+    }
+
     /// Generates the complete server.js file
     pub fn generate_server_js(&self) -> String {
         let mut output = String::new();
@@ -63,6 +83,43 @@ impl JSEmitter {
         output.push_str("// Built-in Option<T> constructors\n");
         output.push_str("function Some(value) { return { variant: 'Some', data: value }; }\n");
         output.push_str("const None = { variant: 'None' };\n\n");
+
+        // Generate struct constructors
+        if !self.splitter.structs.is_empty() {
+            output.push_str("// Struct definitions\n");
+            for struct_def in &self.splitter.structs {
+                let params: Vec<String> = struct_def.fields.iter()
+                    .map(|(name, _)| name.value.clone())
+                    .collect();
+                output.push_str(&format!(
+                    "function {}({}) {{\n",
+                    struct_def.name.value,
+                    params.join(", ")
+                ));
+                for (field_name, _) in &struct_def.fields {
+                    output.push_str(&format!("  this.{} = {};\n", field_name.value, field_name.value));
+                }
+                output.push_str("}\n\n");
+            }
+        }
+
+        // Generate enum definitions (BEFORE impl blocks!)
+        if !self.splitter.enums.is_empty() {
+            output.push_str("// Enum definitions\n");
+            for enum_def in &self.splitter.enums {
+                output.push_str(&self.generate_enum_js(enum_def));
+                output.push_str("\n");
+            }
+        }
+
+        // Generate impl blocks (after enums and structs are defined)
+        if !self.splitter.impl_blocks.is_empty() {
+            output.push_str("// Implementations\n");
+            for impl_block in &self.splitter.impl_blocks {
+                output.push_str(&self.generate_impl_block_js(impl_block));
+            }
+            output.push_str("\n");
+        }
 
         // Load WASM module
         output.push_str("// Load WebAssembly module\n");
@@ -221,6 +278,17 @@ impl JSEmitter {
         output.push_str("function Some(value) { return { variant: 'Some', data: value }; }\n");
         output.push_str("const None = { variant: 'None' };\n\n");
 
+        // Built-in type extensions and aliases
+        output.push_str("// Built-in type extensions\n");
+        output.push_str("const Vec = Array; // Vec<T> is Array in JavaScript\n");
+        output.push_str("Vec.new = function() { return []; }; // Vec::new() creates empty array\n");
+        output.push_str("String.prototype.len = function() { return this.length; };\n");
+        output.push_str("String.prototype.is_empty = function() { return this.length === 0; };\n");
+        output.push_str("String.prototype.chars = function() { return this.split(''); };\n");
+        output.push_str("Number.prototype.to_string = function() { return this.toString(); };\n");
+        output.push_str("Array.prototype.len = function() { return this.length; };\n");
+        output.push_str("Array.prototype.is_empty = function() { return this.length === 0; };\n\n");
+
         // Generate RPC client stubs
         output.push_str("// RPC Client Setup\n");
         let rpc_gen = RPCGenerator::new(self.splitter.server_functions.clone());
@@ -237,8 +305,8 @@ impl JSEmitter {
             output.push_str("\n");
         }
 
-        // Generate struct constructors and impl blocks
-        output.push_str("// Struct definitions and implementations\n");
+        // Generate struct constructors
+        output.push_str("// Struct definitions\n");
         for struct_def in &self.splitter.structs {
             // Generate constructor function
             let params: Vec<String> = struct_def.fields.iter()
@@ -254,6 +322,16 @@ impl JSEmitter {
             }
             output.push_str("}\n\n");
         }
+
+        // Generate enum definitions (BEFORE impl blocks!)
+        output.push_str("// Enum definitions\n");
+        for enum_def in &self.splitter.enums {
+            output.push_str(&self.generate_enum_js(enum_def));
+            output.push_str("\n");
+        }
+
+        // Generate impl blocks (after enums and structs are defined)
+        output.push_str("// Implementations\n");
         for impl_block in &self.splitter.impl_blocks {
             output.push_str(&self.generate_impl_block_js(impl_block));
         }
@@ -271,6 +349,34 @@ impl JSEmitter {
             output.push_str(&self.generate_function_impl(func, false));
             output.push_str("\n\n");
         }
+
+        // Create namespace objects for stdlib modules
+        output.push_str("// Stdlib module namespaces\n");
+        output.push_str("const json = {\n");
+        output.push_str("  parse: typeof parse !== 'undefined' ? parse : undefined,\n");
+        output.push_str("  stringify: typeof stringify !== 'undefined' ? stringify : undefined,\n");
+        output.push_str("  stringify_pretty: typeof stringify_pretty !== 'undefined' ? stringify_pretty : undefined,\n");
+        output.push_str("};\n\n");
+
+        output.push_str("const crypto = {\n");
+        output.push_str("  sha256: typeof sha256 !== 'undefined' ? sha256 : undefined,\n");
+        output.push_str("  sha1: typeof sha1 !== 'undefined' ? sha1 : undefined,\n");
+        output.push_str("  md5: typeof md5 !== 'undefined' ? md5 : undefined,\n");
+        output.push_str("  hmac_sha256: typeof hmac_sha256 !== 'undefined' ? hmac_sha256 : undefined,\n");
+        output.push_str("  random_bytes: typeof random_bytes !== 'undefined' ? random_bytes : undefined,\n");
+        output.push_str("  random_int: typeof random_int !== 'undefined' ? random_int : undefined,\n");
+        output.push_str("  random_float: typeof random_float !== 'undefined' ? random_float : undefined,\n");
+        output.push_str("  random_string: typeof random_string !== 'undefined' ? random_string : undefined,\n");
+        output.push_str("  random_alphanumeric: typeof random_alphanumeric !== 'undefined' ? random_alphanumeric : undefined,\n");
+        output.push_str("  random_hex: typeof random_hex !== 'undefined' ? random_hex : undefined,\n");
+        output.push_str("  uuid_v4: typeof uuid_v4 !== 'undefined' ? uuid_v4 : undefined,\n");
+        output.push_str("  base64_encode: typeof base64_encode !== 'undefined' ? base64_encode : undefined,\n");
+        output.push_str("  base64_decode: typeof base64_decode !== 'undefined' ? base64_decode : undefined,\n");
+        output.push_str("  hex_encode: typeof hex_encode !== 'undefined' ? hex_encode : undefined,\n");
+        output.push_str("  hex_decode: typeof hex_decode !== 'undefined' ? hex_decode : undefined,\n");
+        output.push_str("  hash_password_auto: typeof hash_password_auto !== 'undefined' ? hash_password_auto : undefined,\n");
+        output.push_str("  generate_salt: typeof generate_salt !== 'undefined' ? generate_salt : undefined,\n");
+        output.push_str("};\n\n");
 
         // Generate component implementations
         output.push_str("// UI Components\n");
@@ -419,10 +525,10 @@ impl JSEmitter {
 
     /// Generates a JavaScript function implementation from AST
     fn generate_function_impl(&self, func: &FunctionDefinition, is_server: bool) -> String {
-        let name = &func.name.value;
+        let name = Self::escape_js_reserved_word(&func.name.value);
         let params = func.parameters
             .iter()
-            .map(|p| p.name.value.clone())
+            .map(|p| Self::escape_js_reserved_word(&p.name.value))
             .collect::<Vec<_>>()
             .join(", ");
 
@@ -447,10 +553,10 @@ impl JSEmitter {
 
     /// Generates a JavaScript component implementation from AST
     fn generate_component_impl(&self, comp: &ComponentDefinition) -> String {
-        let name = &comp.name.value;
+        let name = Self::escape_js_reserved_word(&comp.name.value);
         let params = comp.parameters
             .iter()
-            .map(|p| p.name.value.clone())
+            .map(|p| Self::escape_js_reserved_word(&p.name.value))
             .collect::<Vec<_>>()
             .join(", ");
 
@@ -604,6 +710,11 @@ impl JSEmitter {
                 let value = self.generate_expression_js(&const_decl.value);
                 format!("const {} = {};", const_decl.name.value, value)
             }
+            Statement::Assignment(assign_stmt) => {
+                let target = self.generate_expression_js(&assign_stmt.target);
+                let value = self.generate_expression_js(&assign_stmt.value);
+                format!("{} = {};", target, value)
+            }
             Statement::Return(ret_stmt) => {
                 let value = self.generate_expression_js(&ret_stmt.value);
                 format!("return {};", value)
@@ -716,7 +827,12 @@ impl JSEmitter {
     /// Generates JavaScript helper functions for enum variants
     fn generate_enum_js(&self, enum_def: &crate::ast::EnumDefinition) -> String {
         let mut code = String::new();
-        code.push_str(&format!("// Enum: {}\n", enum_def.name.value));
+        let enum_name = &enum_def.name.value;
+
+        code.push_str(&format!("// Enum: {}\n", enum_name));
+
+        // Create a base constructor for the enum to enable prototype methods
+        code.push_str(&format!("function {}() {{}}\n", enum_name));
 
         for variant in &enum_def.variants {
             let variant_name = &variant.name.value;
@@ -725,22 +841,24 @@ impl JSEmitter {
                 // Variant with data - generate constructor function
                 if fields.len() == 1 {
                     // Single field - simple constructor
+                    // Set __proto__ to enable instance methods
                     code.push_str(&format!(
-                        "function {}(data) {{ return {{ variant: \"{}\", data: data }}; }}\n",
-                        variant_name, variant_name
+                        "function {}(data) {{ const v = {{ variant: \"{}\", data: data }}; v.__proto__ = {}.prototype; return v; }}\n",
+                        variant_name, variant_name, enum_name
                     ));
                 } else {
                     // Multiple fields - use spread/array
                     code.push_str(&format!(
-                        "function {}(...data) {{ return {{ variant: \"{}\", data: data }}; }}\n",
-                        variant_name, variant_name
+                        "function {}(...data) {{ const v = {{ variant: \"{}\", data: data }}; v.__proto__ = {}.prototype; return v; }}\n",
+                        variant_name, variant_name, enum_name
                     ));
                 }
             } else {
                 // Unit variant - no data
+                // Create object with prototype and variant property
                 code.push_str(&format!(
-                    "const {} = {{ variant: \"{}\" }};\n",
-                    variant_name, variant_name
+                    "const {} = (() => {{ const v = {{ variant: \"{}\" }}; v.__proto__ = {}.prototype; return v; }})();\n",
+                    variant_name, variant_name, enum_name
                 ));
             }
         }
@@ -896,14 +1014,15 @@ impl JSEmitter {
                 format!("[{}]", elements)
             }
             Expression::StructLiteral(struct_lit) => {
-                let fields = struct_lit.fields
+                // Generate constructor call: new StructName(field1, field2, ...)
+                // Extract field values in the order they appear
+                let struct_name = &struct_lit.name.value;
+                let field_values = struct_lit.fields
                     .iter()
-                    .map(|(name, value)| {
-                        format!("{}: {}", name.value, self.generate_expression_js(value))
-                    })
+                    .map(|(_name, value)| self.generate_expression_js(value))
                     .collect::<Vec<_>>()
                     .join(", ");
-                format!("{{ {} }}", fields)
+                format!("new {}({})", struct_name, field_values)
             }
             Expression::FieldAccess(field) => {
                 let object = self.generate_expression_js(&field.object);
@@ -1106,6 +1225,11 @@ impl JSEmitter {
                 if is_block {
                     // For block bodies, generate statements with binding at the start
                     if let Expression::Block(block) = body_expr {
+                        if block.statements.is_empty() {
+                            // Empty block with binding - just return undefined
+                            return "undefined".to_string();
+                        }
+
                         let mut code = format!("(() => {{ const {} = {};\n", ident.value, scrutinee_var);
                         for (i, stmt) in block.statements.iter().enumerate() {
                             if i == block.statements.len() - 1 {
@@ -1147,6 +1271,11 @@ impl JSEmitter {
                 if is_block {
                     // For block bodies with bindings, generate statements properly
                     if let Expression::Block(block) = body_expr {
+                        if block.statements.is_empty() {
+                            // Empty block - just return undefined
+                            return "undefined".to_string();
+                        }
+
                         let mut code = format!("(() => {{ {};\n", bindings.join("; "));
                         for (i, stmt) in block.statements.iter().enumerate() {
                             if i == block.statements.len() - 1 {
@@ -1179,6 +1308,11 @@ impl JSEmitter {
                 if is_block {
                     // Generate block with proper returns
                     if let Expression::Block(block) = body_expr {
+                        if block.statements.is_empty() {
+                            // Empty block - just return undefined
+                            return "undefined".to_string();
+                        }
+
                         let mut code = String::from("(() => {");
                         for (i, stmt) in block.statements.iter().enumerate() {
                             code.push('\n');
@@ -1256,6 +1390,9 @@ impl JSEmitter {
         for method in &impl_block.methods {
             let method_name = &method.name.value;
 
+            // Check if method is static (no self parameter)
+            let has_self = method.parameters.iter().any(|p| p.name.value == "self");
+
             // Generate parameter list (skip first param if it's self/Self)
             let params: Vec<String> = method.parameters.iter()
                 .skip_while(|p| {
@@ -1269,14 +1406,26 @@ impl JSEmitter {
             // Generate method body
             let body = self.generate_block_js(&method.body);
 
-            // Add method to prototype (for both inherent and trait impls)
-            js.push_str(&format!(
-                "{}.prototype.{} = function({}) {{\n{}\n}};\n\n",
-                type_name,
-                method_name,
-                params.join(", "),
-                body
-            ));
+            if has_self {
+                // Instance method - add to prototype
+                // Add "const self = this;" at the start of the method body
+                js.push_str(&format!(
+                    "{}.prototype.{} = function({}) {{\n  const self = this;\n{}\n}};\n\n",
+                    type_name,
+                    method_name,
+                    params.join(", "),
+                    body
+                ));
+            } else {
+                // Static method - add directly to constructor
+                js.push_str(&format!(
+                    "{}.{} = function({}) {{\n{}\n}};\n\n",
+                    type_name,
+                    method_name,
+                    params.join(", "),
+                    body
+                ));
+            }
         }
 
         js
