@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "RavensOne",
-  "scopeName": "source.raven",
+  "name": "Jounce",
+  "scopeName": "source.jnc",
   "patterns": [
     {
       "include": "#comments"
@@ -35,11 +35,11 @@
     "comments": {
       "patterns": [
         {
-          "name": "comment.line.double-slash.raven",
+          "name": "comment.line.double-slash.jnc",
           "match": "//.*$"
         },
         {
-          "name": "comment.block.raven",
+          "name": "comment.block.jnc",
           "begin": "/\\*",
           "end": "\\*/"
         }
@@ -48,19 +48,19 @@
     "keywords": {
       "patterns": [
         {
-          "name": "keyword.control.raven",
+          "name": "keyword.control.jnc",
           "match": "\\b(if|else|for|while|loop|break|continue|return|match)\\b"
         },
         {
-          "name": "keyword.declaration.raven",
+          "name": "keyword.declaration.jnc",
           "match": "\\b(let|const|fn|component|use|server|client)\\b"
         },
         {
-          "name": "keyword.other.raven",
+          "name": "keyword.other.jnc",
           "match": "\\b(await|async|pub|mod)\\b"
         },
         {
-          "name": "storage.modifier.raven",
+          "name": "storage.modifier.jnc",
           "match": "\\b(mut|ref)\\b"
         }
       ]
@@ -68,12 +68,12 @@
     "strings": {
       "patterns": [
         {
-          "name": "string.quoted.double.raven",
+          "name": "string.quoted.double.jnc",
           "begin": "\"",
           "end": "\"",
           "patterns": [
             {
-              "name": "constant.character.escape.raven",
+              "name": "constant.character.escape.jnc",
               "match": "\\\\."
             },
             {
@@ -82,12 +82,12 @@
           ]
         },
         {
-          "name": "string.quoted.single.raven",
+          "name": "string.quoted.single.jnc",
           "begin": "'",
           "end": "'",
           "patterns": [
             {
-              "name": "constant.character.escape.raven",
+              "name": "constant.character.escape.jnc",
               "match": "\\\\."
             }
           ]
@@ -97,7 +97,7 @@
     "string-interpolation": {
       "patterns": [
         {
-          "name": "meta.embedded.expression.raven",
+          "name": "meta.embedded.expression.jnc",
           "begin": "\\{",
           "end": "\\}",
           "patterns": [
@@ -111,15 +111,15 @@
     "numbers": {
       "patterns": [
         {
-          "name": "constant.numeric.float.raven",
+          "name": "constant.numeric.float.jnc",
           "match": "\\b\\d+\\.\\d+([eE][+-]?\\d+)?\\b"
         },
         {
-          "name": "constant.numeric.integer.raven",
+          "name": "constant.numeric.integer.jnc",
           "match": "\\b\\d+\\b"
         },
         {
-          "name": "constant.numeric.hex.raven",
+          "name": "constant.numeric.hex.jnc",
           "match": "\\b0x[0-9a-fA-F]+\\b"
         }
       ]
@@ -127,11 +127,11 @@
     "types": {
       "patterns": [
         {
-          "name": "support.type.primitive.raven",
+          "name": "support.type.primitive.jnc",
           "match": "\\b(Int|Float|String|Bool|Array|Map|Set|Option|Result|Any)\\b"
         },
         {
-          "name": "entity.name.type.raven",
+          "name": "entity.name.type.jnc",
           "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
         }
       ]
@@ -139,11 +139,11 @@
     "functions": {
       "patterns": [
         {
-          "name": "entity.name.function.raven",
+          "name": "entity.name.function.jnc",
           "match": "\\b([a-z_][a-zA-Z0-9_]*)\\s*(?=\\()"
         },
         {
-          "name": "support.function.builtin.raven",
+          "name": "support.function.builtin.jnc",
           "match": "\\b(print|println|console\\.log|console\\.error|console\\.warn)\\b"
         }
       ]
@@ -151,14 +151,14 @@
     "components": {
       "patterns": [
         {
-          "name": "meta.component.raven",
+          "name": "meta.component.jnc",
           "begin": "\\b(component)\\s+([A-Z][a-zA-Z0-9_]*)",
           "beginCaptures": {
             "1": {
-              "name": "keyword.declaration.raven"
+              "name": "keyword.declaration.jnc"
             },
             "2": {
-              "name": "entity.name.type.component.raven"
+              "name": "entity.name.type.component.jnc"
             }
           },
           "end": "(?<=\\})",
@@ -173,11 +173,11 @@
     "jsx": {
       "patterns": [
         {
-          "name": "meta.jsx.element.raven",
+          "name": "meta.jsx.element.jnc",
           "begin": "<([a-z][a-zA-Z0-9_-]*|[A-Z][a-zA-Z0-9_]*)",
           "beginCaptures": {
             "1": {
-              "name": "entity.name.tag.jsx.raven"
+              "name": "entity.name.tag.jsx.jnc"
             }
           },
           "end": "(/?>)",
@@ -188,17 +188,17 @@
           ]
         },
         {
-          "name": "meta.jsx.closing-tag.raven",
+          "name": "meta.jsx.closing-tag.jnc",
           "begin": "</([a-z][a-zA-Z0-9_-]*|[A-Z][a-zA-Z0-9_]*)",
           "beginCaptures": {
             "1": {
-              "name": "entity.name.tag.jsx.raven"
+              "name": "entity.name.tag.jsx.jnc"
             }
           },
           "end": ">"
         },
         {
-          "name": "meta.jsx.expression.raven",
+          "name": "meta.jsx.expression.jnc",
           "begin": "\\{",
           "end": "\\}",
           "patterns": [
@@ -212,7 +212,7 @@
     "jsx-attributes": {
       "patterns": [
         {
-          "name": "entity.other.attribute-name.jsx.raven",
+          "name": "entity.other.attribute-name.jsx.jnc",
           "match": "([a-zA-Z_][a-zA-Z0-9_-]*)(?==)"
         },
         {
@@ -226,11 +226,11 @@
     "reactive": {
       "patterns": [
         {
-          "name": "support.class.reactive.raven",
+          "name": "support.class.reactive.jnc",
           "match": "\\b(Signal|Computed|Effect|Resource|Store)\\b"
         },
         {
-          "name": "support.function.reactive.raven",
+          "name": "support.function.reactive.jnc",
           "match": "\\b(get|set|update|subscribe|unsubscribe)\\b"
         }
       ]

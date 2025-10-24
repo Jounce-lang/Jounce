@@ -1,10 +1,10 @@
-# RavensOne Documentation Site
+# Jounce Documentation Site
 
-Modern, responsive documentation site for the RavensOne web framework.
+Modern, responsive documentation site for the Jounce web framework.
 
 ## 🌐 Live Site
 
-**https://ravensone-docs.fly.dev**
+**https://jounce-docs.fly.dev**
 
 ## 📁 Structure
 
@@ -29,7 +29,7 @@ docs-site/
 
 Deploy to Fly.io:
 ```bash
-flyctl deploy --app ravensone-docs
+flyctl deploy --app jounce-docs
 ```
 
 ## 💰 Cost

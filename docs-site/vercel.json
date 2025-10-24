@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "ravensone-docs",
+  "name": "jounce-docs",
   "builds": [
     {
       "src": "public/**",

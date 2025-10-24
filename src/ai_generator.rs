@@ -265,7 +265,7 @@ Return the complete project structure in JSON format."#,
     pub fn compile_project(&self, project_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
         println!("🔨 Compiling Jounce project...");
 
-        let output = Command::new("raven")
+        let output = Command::new("jnc")
             .arg("compile")
             .arg(project_dir.join("src/main.jnc"))
             .output()?;

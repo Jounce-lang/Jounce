@@ -1,8 +1,8 @@
 // Benchmark for utility class generation performance
 // Target: < 10ms for 100 utilities
 
-use ravensone_compiler::utility_config::UtilityConfig;
-use ravensone_compiler::utility_generator::UtilityGenerator;
+use jounce_compiler::utility_config::UtilityConfig;
+use jounce_compiler::utility_generator::UtilityGenerator;
 use std::time::Instant;
 
 fn benchmark_utility_generation(num_utilities: usize) -> (std::time::Duration, usize, usize) {

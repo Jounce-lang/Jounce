@@ -169,7 +169,7 @@ impl HmrServer {
                 match event.kind {
                     EventKind::Modify(_) | EventKind::Create(_) => {
                         for path in event.paths {
-                            if path.extension().and_then(|s| s.to_str()) == Some("raven") {
+                            if path.extension().and_then(|s| s.to_str()) == Some("jnc") {
                                 let _ = tx.send(path);
                             }
                         }

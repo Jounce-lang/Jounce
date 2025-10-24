@@ -220,7 +220,7 @@ impl RegistryClient {
         let token = self.token.as_ref().ok_or(RegistryError::NotAuthenticated)?;
 
         // Load package manifest
-        let manifest_path = package_dir.join("raven.toml");
+        let manifest_path = package_dir.join("jounce.toml");
         if !manifest_path.exists() {
             return Err(RegistryError::ManifestNotFound);
         }
@@ -437,7 +437,7 @@ impl RegistryClient {
         self.extract_tarball(&tarball_path, &temp_dir)?;
 
         // Read manifest
-        let manifest_path = temp_dir.join("raven.toml");
+        let manifest_path = temp_dir.join("jounce.toml");
         let manifest_content = fs::read_to_string(&manifest_path)
             .map_err(|e| RegistryError::IoError(e.to_string()))?;
 
@@ -475,7 +475,7 @@ impl RegistryClient {
 
         // Add manifest
         archive
-            .append_path_with_name(package_dir.join("raven.toml"), "raven.toml")
+            .append_path_with_name(package_dir.join("jounce.toml"), "jounce.toml")
             .map_err(|e| RegistryError::IoError(e.to_string()))?;
 
         // Add README if exists
@@ -638,7 +638,7 @@ impl std::fmt::Display for RegistryError {
             }
             RegistryError::AuthenticationFailed(msg) => write!(f, "Login failed: {}", msg),
             RegistryError::RegistrationFailed(msg) => write!(f, "Registration failed: {}", msg),
-            RegistryError::ManifestNotFound => write!(f, "raven.toml not found"),
+            RegistryError::ManifestNotFound => write!(f, "jounce.toml not found"),
             RegistryError::IoError(e) => write!(f, "IO error: {}", e),
             RegistryError::NetworkError(e) => write!(f, "Network error: {}", e),
             RegistryError::ParseError(e) => write!(f, "Parse error: {}", e),

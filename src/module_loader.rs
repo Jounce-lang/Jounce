@@ -78,7 +78,7 @@ impl ModuleLoader {
                 for segment in &module_path[1..] {
                     path = path.join(segment);
                 }
-                path = path.with_extension("raven");
+                path = path.with_extension("jnc");
             } else {
                 // Just the package name - look for lib.jnc
                 path = path.join("src").join("lib.jnc");

@@ -1,11 +1,11 @@
-# RavensOne Language Support for VSCode
+# Jounce Language Support for VSCode
 
-Official VSCode extension for the RavensOne programming language - the AI-first full-stack web framework.
+Official VSCode extension for the Jounce programming language - the AI-first full-stack web framework.
 
 ## Features
 
 ### Syntax Highlighting ✨
-Beautiful syntax highlighting for `.raven` files with support for:
+Beautiful syntax highlighting for `.jnc` files with support for:
 - Keywords (`component`, `let`, `fn`, `server`, `client`)
 - Types (`Int`, `Float`, `String`, `Bool`, etc.)
 - Reactive primitives (`Signal`, `Computed`, `Effect`, `Resource`)
@@ -37,7 +37,7 @@ Fold/unfold regions for better code organization
 ### From VSCode Marketplace (Coming Soon)
 1. Open VSCode
 2. Press `Ctrl+P` (or `Cmd+P` on Mac)
-3. Type `ext install ravensone.raven-lang`
+3. Type `ext install jounce.jnc-lang`
 4. Press Enter
 
 ### From Source
@@ -51,23 +51,23 @@ npm run compile
 ## Requirements
 
 - VSCode 1.80.0 or higher
-- RavensOne compiler installed (optional, for compilation features)
+- Jounce compiler installed (optional, for compilation features)
 
 ## Extension Settings
 
 This extension contributes the following settings:
 
-* `raven.compilerPath`: Path to the RavensOne compiler executable (default: `raven`)
+* `raven.compilerPath`: Path to the Jounce compiler executable (default: `raven`)
 * `raven.enableLinting`: Enable real-time linting (default: `true`)
 * `raven.formatOnSave`: Automatically format on save (default: `false`)
 * `raven.trace.server`: Traces communication with language server (default: `off`)
 
 ## Commands
 
-- **RavensOne: Compile File** - Compile the current `.raven` file
-- **RavensOne: Type Check** - Run type checker without compiling
-- **RavensOne: Format Document** - Format the current document
-- **RavensOne: New Component** - Create a new component from template
+- **Jounce: Compile File** - Compile the current `.jnc` file
+- **Jounce: Type Check** - Run type checker without compiling
+- **Jounce: Format Document** - Format the current document
+- **Jounce: New Component** - Create a new component from template
 
 ## Roadmap
 
@@ -99,7 +99,7 @@ This extension contributes the following settings:
 
 ## Contributing
 
-Contributions are welcome! Please check out our [GitHub repository](https://github.com/jrezin1201/RavensOne).
+Contributions are welcome! Please check out our [GitHub repository](https://github.com/jrezin1201/Jounce).
 
 1. Fork the repository
 2. Create a feature branch
@@ -110,17 +110,17 @@ Contributions are welcome! Please check out our [GitHub repository](https://gith
 
 ### 0.1.0 (Initial Release)
 
-- ✨ Syntax highlighting for `.raven` files
+- ✨ Syntax highlighting for `.jnc` files
 - 📝 Code snippets for common patterns
 - 🎯 Auto-closing brackets and tags
 - 📂 Code folding support
-- 🎨 RavensOne Dark theme
+- 🎨 Jounce Dark theme
 
 ---
 
-## About RavensOne
+## About Jounce
 
-RavensOne is a modern full-stack web framework designed for AI-assisted development. It features:
+Jounce is a modern full-stack web framework designed for AI-assisted development. It features:
 
 - **Type-safe** with Hindley-Milner type inference
 - **Reactive** state management with Signals
@@ -129,7 +129,7 @@ RavensOne is a modern full-stack web framework designed for AI-assisted developm
 - **Single-file components** with JSX-like syntax
 - **Server functions** for seamless full-stack development
 
-Learn more at [ravensone.dev](https://ravensone.dev) (coming soon)
+Learn more at [jounce.dev](https://jounce.dev) (coming soon)
 
 ## License
 
@@ -137,4 +137,4 @@ MIT License - see LICENSE file for details
 
 ---
 
-**Enjoy coding with RavensOne!** 🎉
+**Enjoy coding with Jounce!** 🎉

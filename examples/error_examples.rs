@@ -1,7 +1,7 @@
 // Example demonstrating RavensOne's beautiful error messages
 // Run with: cargo run --example error_examples
 
-use ravensone_compiler::diagnostics::*;
+use jounce_compiler::diagnostics::*;
 
 fn main() {
     println!("🎨 RavensOne Enhanced Diagnostics Demo\n");

@@ -1,12 +1,12 @@
 // Complete end-to-end test for the RavensOne Compiler Bridge
 // Tests the full pipeline: parse → split → RPC generation → JS emission
 
-use ravensone_compiler::lexer::Lexer;
-use ravensone_compiler::parser::Parser;
-use ravensone_compiler::code_splitter::CodeSplitter;
-use ravensone_compiler::rpc_generator::RPCGenerator;
-use ravensone_compiler::js_emitter::JSEmitter;
-use ravensone_compiler::token::TokenKind;
+use jounce_compiler::lexer::Lexer;
+use jounce_compiler::parser::Parser;
+use jounce_compiler::code_splitter::CodeSplitter;
+use jounce_compiler::rpc_generator::RPCGenerator;
+use jounce_compiler::js_emitter::JSEmitter;
+use jounce_compiler::token::TokenKind;
 
 fn main() {
     println!("=== RavensOne Compiler Bridge - Complete Test ===\n");

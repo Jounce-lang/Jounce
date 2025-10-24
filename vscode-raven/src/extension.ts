@@ -1,4 +1,4 @@
-// VSCode Extension for RavensOne Language Support
+// VSCode Extension for Jounce Language Support
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { spawn } from 'child_process';
@@ -6,10 +6,10 @@ import { spawn } from 'child_process';
 let outputChannel: vscode.OutputChannel;
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('RavensOne extension activated');
+    console.log('Jounce extension activated');
 
-    outputChannel = vscode.window.createOutputChannel('RavensOne');
-    outputChannel.appendLine('RavensOne extension activated!');
+    outputChannel = vscode.window.createOutputChannel('Jounce');
+    outputChannel.appendLine('Jounce extension activated!');
 
     // Register commands
     registerCompileCommand(context);
@@ -33,12 +33,12 @@ function registerCompileCommand(context: vscode.ExtensionContext) {
 
         const document = editor.document;
         if (document.languageId !== 'raven') {
-            vscode.window.showErrorMessage('Current file is not a RavensOne file');
+            vscode.window.showErrorMessage('Current file is not a Jounce file');
             return;
         }
 
         const filePath = document.uri.fsPath;
-        const outputPath = filePath.replace(/\.raven$/, '.wasm');
+        const outputPath = filePath.replace(/\.jnc$/, '.wasm');
 
         outputChannel.show();
         outputChannel.appendLine(`\n🔥 Compiling ${path.basename(filePath)}...`);
@@ -78,7 +78,7 @@ function registerCheckCommand(context: vscode.ExtensionContext) {
 
         const document = editor.document;
         if (document.languageId !== 'raven') {
-            vscode.window.showErrorMessage('Current file is not a RavensOne file');
+            vscode.window.showErrorMessage('Current file is not a Jounce file');
             return;
         }
 
@@ -120,7 +120,7 @@ function registerFormatCommand(context: vscode.ExtensionContext) {
 
         const document = editor.document;
         if (document.languageId !== 'raven') {
-            vscode.window.showErrorMessage('Current file is not a RavensOne file');
+            vscode.window.showErrorMessage('Current file is not a Jounce file');
             return;
         }
 
@@ -174,7 +174,7 @@ function registerNewComponentCommand(context: vscode.ExtensionContext) {
         }
 
         const componentsDir = path.join(workspaceFolder.uri.fsPath, 'src', 'components');
-        const componentFile = path.join(componentsDir, `${componentName}.raven`);
+        const componentFile = path.join(componentsDir, `${componentName}.jnc`);
 
         const template = `// ${componentName} Component
 component ${componentName}() {

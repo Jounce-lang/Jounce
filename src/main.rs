@@ -10,7 +10,7 @@ use jounce_compiler::parser::Parser;
 use jounce_compiler::js_emitter::JSEmitter;
 
 #[derive(ClapParser)]
-#[command(name = "raven", version, about)]
+#[command(name = "jnc", version, about)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -100,7 +100,7 @@ enum Commands {
 
 #[derive(clap::Subcommand)]
 enum PkgCommands {
-    /// Initialize a new package manifest (raven.toml)
+    /// Initialize a new package manifest (jounce.toml)
     Init {
         #[arg(default_value = ".")]
         path: PathBuf,
@@ -581,7 +581,7 @@ fn create_new_project(name: &str) -> std::io::Result<()> {
     fs::create_dir_all(root.join("src/server"))?;
 
     fs::write(
-        root.join("raven.toml"),
+        root.join("jounce.toml"),
         format!(
             "[package]\nname = \"{}\"\nversion = \"0.1.0\"\n",
             name
@@ -816,7 +816,7 @@ fn run_tests(watch_mode: bool) -> std::io::Result<()> {
 
     for entry in fs::read_dir(test_dir)?.flatten() {
         let path = entry.path();
-        if path.extension().map_or(false, |ext| ext == "raven") {
+        if path.extension().map_or(false, |ext| ext == "jnc") {
             println!("  Testing {}...", path.file_name().unwrap().to_string_lossy());
 
             // Compile test file
@@ -901,7 +901,7 @@ fn format_code(path: PathBuf, mode: FormatMode) -> std::io::Result<()> {
     } else if path.is_dir() {
         // Recursively walk directory
         visit_dirs(&path, &mut |entry_path: &PathBuf| {
-            if entry_path.extension().map_or(false, |ext| ext == "raven") {
+            if entry_path.extension().map_or(false, |ext| ext == "jnc") {
                 total_count += 1;
                 match format_file(entry_path, mode) {
                     Ok(FormatResult::Changed) => formatted_count += 1,
@@ -1020,7 +1020,7 @@ fn lint_code(path: PathBuf, fix: bool) -> std::io::Result<()> {
     } else {
         for entry in fs::read_dir(path)?.flatten() {
             let entry_path = entry.path();
-            if entry_path.extension().map_or(false, |ext| ext == "raven") {
+            if entry_path.extension().map_or(false, |ext| ext == "jnc") {
                 let result = lint_file(&entry_path, fix)?;
                 issues += result.0;
                 fixed += result.1;
@@ -1091,7 +1091,7 @@ fn build_project(release: bool) -> std::io::Result<()> {
 
     for entry in fs::read_dir(src_dir)?.flatten() {
         let path = entry.path();
-        if path.extension().map_or(false, |ext| ext == "raven") {
+        if path.extension().map_or(false, |ext| ext == "jnc") {
             println!("  Compiling {}...", path.file_name().unwrap().to_string_lossy());
 
             if let Ok(source) = fs::read_to_string(&path) {
@@ -1143,11 +1143,11 @@ fn init_project(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     pkg_mgr.init(project_name, vec!["Developer <dev@example.com>".to_string()])?;
 
     println!("✅ Initialized Jounce project in {}", path.display());
-    println!("   Created raven.toml");
+    println!("   Created jounce.toml");
     println!("\n💡 Next steps:");
-    println!("   1. Edit raven.toml to add package metadata");
-    println!("   2. Run 'raven build' to compile your project");
-    println!("   3. Run 'raven serve' to start a local development server");
+    println!("   1. Edit jounce.toml to add package metadata");
+    println!("   2. Run 'jnc build' to compile your project");
+    println!("   3. Run 'jnc serve' to start a local development server");
 
     Ok(())
 }
@@ -1291,16 +1291,16 @@ fn run_doctor() {
             warnings += 1;
         }
     } else {
-        println!("⚠️  NOT FOUND (optional - needed for 'raven serve')");
+        println!("⚠️  NOT FOUND (optional - needed for 'jnc serve')");
         warnings += 1;
     }
 
     // Check project structure
     print!("  Checking project structure... ");
-    if PathBuf::from("raven.toml").exists() {
-        println!("✅ raven.toml found");
+    if PathBuf::from("jounce.toml").exists() {
+        println!("✅ jounce.toml found");
     } else {
-        println!("⚠️  No raven.toml (run 'raven init' to create one)");
+        println!("⚠️  No jounce.toml (run 'jnc init' to create one)");
         warnings += 1;
     }
 
@@ -1334,7 +1334,7 @@ fn run_doctor() {
     if warnings > 0 {
         println!("\n💡 Optional improvements:");
         println!("   - Install Node.js for HMR support: https://nodejs.org/");
-        println!("   - Install Python for 'raven serve' command");
-        println!("   - Run 'raven init' to create a new project");
+        println!("   - Install Python for 'jnc serve' command");
+        println!("   - Run 'jnc init' to create a new project");
     }
 }

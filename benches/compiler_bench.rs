@@ -1,7 +1,7 @@
 // Benchmark suite for RavensOne compiler performance
 // Measures compilation speed, memory usage, and throughput
 
-use ravensone_compiler::{Compiler, BuildTarget};
+use jounce_compiler::{Compiler, BuildTarget};
 use std::time::{Duration, Instant};
 
 /// Sample RavensOne programs for benchmarking

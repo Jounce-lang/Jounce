@@ -142,7 +142,7 @@ impl FileWatcher {
                         EventKind::Modify(_) | EventKind::Create(_) => {
                             // Filter for .jnc files
                             for path in event.paths {
-                                if path.extension().and_then(|s| s.to_str()) == Some("raven") {
+                                if path.extension().and_then(|s| s.to_str()) == Some("jnc") {
                                     if verbose {
                                         println!("[watch] File changed: {}", path.display());
                                     }

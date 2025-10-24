@@ -1,5 +1,5 @@
-# Fly.io configuration for RavensOne Documentation Site
-app = "ravensone-docs"
+# Fly.io configuration for Jounce Documentation Site
+app = "jounce-docs"
 primary_region = "sjc"
 
 [build]

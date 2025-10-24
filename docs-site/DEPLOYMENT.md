@@ -1,8 +1,8 @@
-# RavensOne Documentation Site - Deployment Guide
+# Jounce Documentation Site - Deployment Guide
 
 ## Quick Deploy to Vercel
 
-The RavensOne documentation site is configured for one-command deployment to Vercel.
+The Jounce documentation site is configured for one-command deployment to Vercel.
 
 ### Prerequisites
 
@@ -32,17 +32,17 @@ The RavensOne documentation site is configured for one-command deployment to Ver
    - Set up and deploy? **Y**
    - Which scope? Select your account
    - Link to existing project? **N**
-   - What's your project's name? **ravensone-docs**
+   - What's your project's name? **jounce-docs**
    - In which directory is your code located? **./public**
 
-   You'll get a preview URL like `https://ravensone-docs-xxx.vercel.app`
+   You'll get a preview URL like `https://jounce-docs-xxx.vercel.app`
 
 4. **Deploy to production**:
    ```bash
    vercel --prod
    ```
 
-   Your site is now live at `https://ravensone-docs.vercel.app`!
+   Your site is now live at `https://jounce-docs.vercel.app`!
 
 ### Automatic Deployments
 
@@ -51,7 +51,7 @@ To enable automatic deployments on every push:
 1. **Connect to GitHub**:
    - Go to [vercel.com/dashboard](https://vercel.com/dashboard)
    - Click "Add New..." → "Project"
-   - Import your `RavensOne` repository
+   - Import your `Jounce` repository
    - Set **Root Directory** to `docs-site`
    - Click "Deploy"
 
@@ -66,7 +66,7 @@ To enable automatic deployments on every push:
 
 1. Go to your project settings on Vercel
 2. Navigate to "Domains"
-3. Add your custom domain (e.g., `docs.ravensone.dev`)
+3. Add your custom domain (e.g., `docs.jounce.dev`)
 4. Follow DNS configuration instructions
 
 Vercel automatically provisions SSL certificates.
@@ -78,7 +78,7 @@ The included `vercel.json` configures:
 ```json
 {
   "version": 2,
-  "name": "ravensone-docs",
+  "name": "jounce-docs",
   "builds": [
     {
       "src": "public/**",
@@ -218,7 +218,7 @@ vercel login  # first time only
 vercel --prod
 ```
 
-**Production URL**: `https://ravensone-docs.vercel.app`
+**Production URL**: `https://jounce-docs.vercel.app`
 
 **Update frequency**: Deploy on every feature addition or docs update
 

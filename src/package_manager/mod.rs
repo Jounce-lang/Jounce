@@ -11,7 +11,7 @@ use semver::{Version, VersionReq};
 use registry::RegistryClient;
 use std::time::SystemTime;
 
-/// Package manifest (raven.toml)
+/// Package manifest (jounce.toml)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PackageManifest {
     pub package: PackageInfo,
@@ -77,7 +77,7 @@ fn default_target() -> String {
     "wasm32-unknown-unknown".to_string()
 }
 
-/// Lock file (raven.lock)
+/// Lock file (jounce.lock)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LockFile {
     pub version: String,
@@ -177,8 +177,8 @@ impl PackageManager {
         let cache_dir = home.join(".jnc").join("cache");
 
         PackageManager {
-            manifest_path: project_root.join("raven.toml"),
-            lock_path: project_root.join("raven.lock"),
+            manifest_path: project_root.join("jounce.toml"),
+            lock_path: project_root.join("jounce.lock"),
             packages_dir: project_root.join("raven_packages"),
             cache_dir,
             registry,
@@ -214,7 +214,7 @@ impl PackageManager {
         fs::write(&self.manifest_path, toml)
             .map_err(|e| PackageError::IoError(e.to_string()))?;
 
-        println!("✅ Created raven.toml for package '{}'", name);
+        println!("✅ Created jounce.toml for package '{}'", name);
         Ok(())
     }
 
@@ -812,7 +812,7 @@ impl PackageManager {
                 .map_err(|e| PackageError::IoError(e.to_string()))?).flatten()
             {
                 let path = entry.path();
-                if path.extension().is_some_and(|ext| ext == "raven") {
+                if path.extension().is_some_and(|ext| ext == "jnc") {
                     if let Ok(content) = fs::read_to_string(&path) {
                         content.hash(&mut hasher);
                     }
@@ -1013,9 +1013,9 @@ pub enum PackageError {
 impl std::fmt::Display for PackageError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PackageError::ManifestNotFound => write!(f, "raven.toml not found"),
-            PackageError::ManifestExists => write!(f, "raven.toml already exists"),
-            PackageError::LockFileNotFound => write!(f, "raven.lock not found. Run 'raven pkg install' first."),
+            PackageError::ManifestNotFound => write!(f, "jounce.toml not found"),
+            PackageError::ManifestExists => write!(f, "jounce.toml already exists"),
+            PackageError::LockFileNotFound => write!(f, "jounce.lock not found. Run 'raven pkg install' first."),
             PackageError::IoError(e) => write!(f, "IO error: {}", e),
             PackageError::ParseError(e) => write!(f, "Parse error: {}", e),
             PackageError::SerializationError(e) => write!(f, "Serialization error: {}", e),

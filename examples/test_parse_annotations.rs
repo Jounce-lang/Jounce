@@ -1,7 +1,7 @@
-use ravensone_compiler::lexer::Lexer;
-use ravensone_compiler::parser::Parser;
-use ravensone_compiler::token::TokenKind;
-use ravensone_compiler::ast::Statement;
+use jounce_compiler::lexer::Lexer;
+use jounce_compiler::parser::Parser;
+use jounce_compiler::token::TokenKind;
+use jounce_compiler::ast::Statement;
 use std::fs;
 
 fn main() {

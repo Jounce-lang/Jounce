@@ -9,7 +9,7 @@
 /// - Bluebird backend must be running on http://localhost:9000
 /// - Run: cd examples/bluebird-backend && ./target/release/bluebird-backend
 
-use ravensone_compiler::stdlib::http;
+use jounce_compiler::stdlib::http;
 use serde_json::json;
 
 #[tokio::main]
