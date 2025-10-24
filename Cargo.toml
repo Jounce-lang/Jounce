@@ -30,6 +30,11 @@ name = "utility_generation"
 path = "benches/utility_generation.rs"
 harness = false
 
+[[bench]]
+name = "cache_performance"
+path = "benches/cache_performance.rs"
+harness = false
+
 [dependencies]
 lazy_static = "1.4.0"
 clap = { version = "4.5.4", features = ["derive"] }

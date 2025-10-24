@@ -2,8 +2,12 @@
 // Phase 9 Sprint 1 - Performance Optimization
 
 pub mod ast_cache;
+pub mod compile_cached;
 pub mod dependency_graph;
 pub mod disk_cache;
+
+// Re-export the cached compilation function for convenience
+pub use compile_cached::compile_source_cached;
 
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};

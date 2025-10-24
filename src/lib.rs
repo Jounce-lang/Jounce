@@ -44,6 +44,7 @@ pub mod formatter; // Code formatter for consistent style
 pub mod watcher; // File watching and auto-recompilation
 
 use borrow_checker::BorrowChecker;
+use cache::CompilationCache;
 use codegen::CodeGenerator;
 use errors::CompileError;
 use lexer::Lexer;
@@ -52,6 +53,7 @@ use semantic_analyzer::SemanticAnalyzer;
 use type_checker::TypeChecker;
 use token::{Token, TokenKind};
 use wasm_optimizer::WasmOptimizer;
+use std::sync::Arc;
 
 // This enum is now public so the deployer can use it.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -62,6 +64,7 @@ pub enum BuildTarget {
 
 pub struct Compiler {
     pub optimize: bool,
+    cache: Option<Arc<CompilationCache>>,
 }
 
 impl Default for Compiler {
@@ -74,6 +77,7 @@ impl Compiler {
     pub fn new() -> Self {
         Compiler {
             optimize: true,  // Enable optimizations by default
+            cache: None,     // Caching disabled by default (opt-in)
         }
     }
 
@@ -81,7 +85,21 @@ impl Compiler {
     pub fn without_optimization() -> Self {
         Compiler {
             optimize: false,
+            cache: None,
         }
+    }
+
+    /// Create a compiler with caching enabled
+    pub fn with_cache(cache: Arc<CompilationCache>) -> Self {
+        Compiler {
+            optimize: true,
+            cache: Some(cache),
+        }
+    }
+
+    /// Enable caching for this compiler
+    pub fn enable_cache(&mut self, cache: Arc<CompilationCache>) {
+        self.cache = Some(cache);
     }
 
     // FIX: The function now takes the target as a required argument.

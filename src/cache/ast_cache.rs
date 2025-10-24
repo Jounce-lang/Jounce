@@ -3,14 +3,15 @@
 
 use std::path::PathBuf;
 use std::time::SystemTime;
-use serde::{Deserialize, Serialize};
 
 use crate::ast::Program;
 
 /// Cached AST with metadata
-#[derive(Clone, Serialize, Deserialize)]
+/// Note: We don't serialize the AST itself (would require Serialize/Deserialize on all AST nodes)
+/// Instead, we keep it in memory for the current session
+#[derive(Clone)]
 pub struct CachedAST {
-    /// The parsed AST
+    /// The parsed AST (in-memory only)
     pub ast: Program,
 
     /// Source file hash (for validation)
