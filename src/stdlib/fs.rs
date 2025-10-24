@@ -145,7 +145,7 @@ impl File {
     }
 
     // Read a specific number of bytes
-    fn read(self: &mut File, buf: &mut [u8]) -> Result<i64, String> {
+    fn read(self: &mut File, buf: Vec<u8>) -> Result<i64, String> {
         if !self.is_open {
             return Result::Err("File not open");
         }
@@ -155,7 +155,7 @@ impl File {
     }
 
     // Write bytes to file
-    fn write(self: &mut File, data: &[u8]) -> Result<i64, String> {
+    fn write(self: &mut File, data: Vec<u8>) -> Result<i64, String> {
         if !self.is_open {
             return Result::Err("File not open");
         }
@@ -165,7 +165,7 @@ impl File {
     }
 
     // Write string to file
-    fn write_str(self: &mut File, s: &str) -> Result<i64, String> {
+    fn write_str(self: &mut File, s: String) -> Result<i64, String> {
         return self.write(s.as_bytes());
     }
 
@@ -223,52 +223,32 @@ impl File {
 
 // Read entire file to string
 fn read_to_string(path: String) -> Result<String, String> {
-    let mut file = File::open(path)?;
-    let contents = file.read_to_string()?;
-    file.close()?;
-    return Result::Ok(contents);
+    return __fs_read_to_string_safe(path);
 }
 
 // Read entire file to bytes
 fn read(path: String) -> Result<Vec<u8>, String> {
-    let mut file = File::open(path)?;
-    let contents = file.read_to_end()?;
-    file.close()?;
-    return Result::Ok(contents);
+    return __fs_read_bytes_safe(path);
 }
 
 // Write string to file
-fn write(path: String, contents: &str) -> Result<(), String> {
-    let mut file = File::create(path)?;
-    file.write_str(contents)?;
-    file.flush()?;
-    file.close()?;
-    return Result::Ok(());
+fn write(path: String, contents: String) -> Result<(), String> {
+    return __fs_write_string_safe(path, contents);
 }
 
 // Write bytes to file
-fn write_bytes(path: String, data: &[u8]) -> Result<(), String> {
-    let mut file = File::create(path)?;
-    file.write(data)?;
-    file.flush()?;
-    file.close()?;
-    return Result::Ok(());
+fn write_bytes(path: String, data: Vec<u8>) -> Result<(), String> {
+    return __fs_write_bytes_safe(path, data);
 }
 
 // Append string to file
-fn append(path: String, contents: &str) -> Result<(), String> {
-    // Would open in append mode
-    let mut file = File::create(path)?;
-    file.write_str(contents)?;
-    file.flush()?;
-    file.close()?;
-    return Result::Ok(());
+fn append(path: String, contents: String) -> Result<(), String> {
+    return __fs_append_string_safe(path, contents);
 }
 
 // Check if file exists
 fn exists(path: String) -> bool {
-    // Would check file existence
-    return true;  // Placeholder
+    return __fs_exists(path);
 }
 
 // Check if path is a file
@@ -289,65 +269,49 @@ fn is_directory(path: String) -> bool {
 
 // Get file/directory metadata
 fn metadata(path: String) -> Result<Metadata, String> {
-    // Would get metadata
-    return Result::Ok(Metadata {
-        size: 0,
-        is_file: true,
-        is_directory: false,
-        created: 0,
-        modified: 0,
-        accessed: 0,
-        permissions: 0o644,
-    });
+    return __fs_metadata_safe(path);
 }
 
 // Create a directory
 fn create_dir(path: String) -> Result<(), String> {
-    // Would create directory
-    return Result::Ok(());
+    return __fs_create_dir_safe(path);
 }
 
 // Create directory and all parent directories
 fn create_dir_all(path: String) -> Result<(), String> {
-    // Would create directory tree
-    return Result::Ok(());
+    return __fs_create_dir_all_safe(path);
 }
 
 // Remove a file
 fn remove_file(path: String) -> Result<(), String> {
-    // Would remove file
-    return Result::Ok(());
+    return __fs_remove_file_safe(path);
 }
 
 // Remove an empty directory
 fn remove_dir(path: String) -> Result<(), String> {
-    // Would remove directory
-    return Result::Ok(());
+    return __fs_remove_dir_safe(path);
 }
 
 // Remove directory and all contents
 fn remove_dir_all(path: String) -> Result<(), String> {
-    // Would remove directory tree
-    return Result::Ok(());
+    return __fs_remove_dir_all_safe(path);
 }
 
 // Read directory contents
 fn read_dir(path: String) -> Result<Vec<DirEntry>, String> {
-    // Would read directory
-    return Result::Ok(Vec::new());
+    return __fs_read_dir_safe(path);
 }
 
 // Copy a file
 fn copy(from: String, to: String) -> Result<i64, String> {
     let contents = read(from)?;
-    write_bytes(to, &contents)?;
+    write_bytes(to, contents.clone())?;
     return Result::Ok(contents.len() as i64);
 }
 
 // Rename/move a file or directory
 fn rename(from: String, to: String) -> Result<(), String> {
-    // Would rename file
-    return Result::Ok(());
+    return __fs_rename_safe(from, to);
 }
 
 // Get current working directory

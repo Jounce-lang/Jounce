@@ -306,6 +306,146 @@ impl JSEmitter {
         output.push_str("  return ''; // fallback\n");
         output.push_str("};\n\n");
 
+        // Node.js fs module for file system operations
+        output.push_str("// Node.js fs module (for server-side file I/O)\n");
+        output.push_str("let __nodeFs;\n");
+        output.push_str("try {\n");
+        output.push_str("  if (typeof require !== 'undefined') {\n");
+        output.push_str("    __nodeFs = require('fs');\n");
+        output.push_str("  }\n");
+        output.push_str("} catch (e) {\n");
+        output.push_str("  // fs module not available (browser environment)\n");
+        output.push_str("}\n\n");
+
+        // File system helper functions
+        output.push_str("// File system helpers - use Node.js fs module when available\n");
+        output.push_str("const __fs_read_to_string = function(path) {\n");
+        output.push_str("  if (__nodeFs) return __nodeFs.readFileSync(path, 'utf8');\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_read_bytes = function(path) {\n");
+        output.push_str("  if (__nodeFs) return Array.from(__nodeFs.readFileSync(path));\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_write_string = function(path, data) {\n");
+        output.push_str("  if (__nodeFs) { __nodeFs.writeFileSync(path, data, 'utf8'); return; }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_write_bytes = function(path, data) {\n");
+        output.push_str("  if (__nodeFs) { __nodeFs.writeFileSync(path, Buffer.from(data)); return; }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_append_string = function(path, data) {\n");
+        output.push_str("  if (__nodeFs) { __nodeFs.appendFileSync(path, data, 'utf8'); return; }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_exists = function(path) {\n");
+        output.push_str("  if (__nodeFs) return __nodeFs.existsSync(path);\n");
+        output.push_str("  return false;\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_metadata = function(path) {\n");
+        output.push_str("  if (__nodeFs) {\n");
+        output.push_str("    const stats = __nodeFs.statSync(path);\n");
+        output.push_str("    return {\n");
+        output.push_str("      size: stats.size,\n");
+        output.push_str("      is_file: stats.isFile(),\n");
+        output.push_str("      is_directory: stats.isDirectory(),\n");
+        output.push_str("      created: stats.birthtimeMs,\n");
+        output.push_str("      modified: stats.mtimeMs,\n");
+        output.push_str("      accessed: stats.atimeMs,\n");
+        output.push_str("      permissions: stats.mode & 0o777\n");
+        output.push_str("    };\n");
+        output.push_str("  }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_read_dir = function(path) {\n");
+        output.push_str("  if (__nodeFs) {\n");
+        output.push_str("    const entries = __nodeFs.readdirSync(path, { withFileTypes: true });\n");
+        output.push_str("    return entries.map(entry => {\n");
+        output.push_str("      const fullPath = path + '/' + entry.name;\n");
+        output.push_str("      const stats = __nodeFs.statSync(fullPath);\n");
+        output.push_str("      return {\n");
+        output.push_str("        name: entry.name,\n");
+        output.push_str("        path: fullPath,\n");
+        output.push_str("        metadata: {\n");
+        output.push_str("          size: stats.size,\n");
+        output.push_str("          is_file: stats.isFile(),\n");
+        output.push_str("          is_directory: stats.isDirectory(),\n");
+        output.push_str("          created: stats.birthtimeMs,\n");
+        output.push_str("          modified: stats.mtimeMs,\n");
+        output.push_str("          accessed: stats.atimeMs,\n");
+        output.push_str("          permissions: stats.mode & 0o777\n");
+        output.push_str("        }\n");
+        output.push_str("      };\n");
+        output.push_str("    });\n");
+        output.push_str("  }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_create_dir = function(path) {\n");
+        output.push_str("  if (__nodeFs) { __nodeFs.mkdirSync(path); return; }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_create_dir_all = function(path) {\n");
+        output.push_str("  if (__nodeFs) { __nodeFs.mkdirSync(path, { recursive: true }); return; }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_remove_file = function(path) {\n");
+        output.push_str("  if (__nodeFs) { __nodeFs.unlinkSync(path); return; }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_remove_dir = function(path) {\n");
+        output.push_str("  if (__nodeFs) { __nodeFs.rmdirSync(path); return; }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_remove_dir_all = function(path) {\n");
+        output.push_str("  if (__nodeFs) { __nodeFs.rmSync(path, { recursive: true, force: true }); return; }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_rename = function(from, to) {\n");
+        output.push_str("  if (__nodeFs) { __nodeFs.renameSync(from, to); return; }\n");
+        output.push_str("  throw new Error('File I/O not available in browser');\n");
+        output.push_str("};\n");
+        // Safe wrappers that return Result types
+        output.push_str("const __fs_read_to_string_safe = function(path) {\n");
+        output.push_str("  try { return Ok(__fs_read_to_string(path)); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_read_bytes_safe = function(path) {\n");
+        output.push_str("  try { return Ok(__fs_read_bytes(path)); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_write_string_safe = function(path, data) {\n");
+        output.push_str("  try { __fs_write_string(path, data); return Ok(undefined); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_write_bytes_safe = function(path, data) {\n");
+        output.push_str("  try { __fs_write_bytes(path, data); return Ok(undefined); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_append_string_safe = function(path, data) {\n");
+        output.push_str("  try { __fs_append_string(path, data); return Ok(undefined); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_metadata_safe = function(path) {\n");
+        output.push_str("  try { return Ok(__fs_metadata(path)); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_read_dir_safe = function(path) {\n");
+        output.push_str("  try { return Ok(__fs_read_dir(path)); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_create_dir_safe = function(path) {\n");
+        output.push_str("  try { __fs_create_dir(path); return Ok(undefined); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_create_dir_all_safe = function(path) {\n");
+        output.push_str("  try { __fs_create_dir_all(path); return Ok(undefined); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_remove_file_safe = function(path) {\n");
+        output.push_str("  try { __fs_remove_file(path); return Ok(undefined); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_remove_dir_safe = function(path) {\n");
+        output.push_str("  try { __fs_remove_dir(path); return Ok(undefined); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_remove_dir_all_safe = function(path) {\n");
+        output.push_str("  try { __fs_remove_dir_all(path); return Ok(undefined); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n");
+        output.push_str("const __fs_rename_safe = function(from, to) {\n");
+        output.push_str("  try { __fs_rename(from, to); return Ok(undefined); } catch (e) { return Err(e.message); }\n");
+        output.push_str("};\n\n");
+
         // Built-in type extensions and aliases
         output.push_str("// Built-in type extensions\n");
         output.push_str("const Vec = Array; // Vec<T> is Array in JavaScript\n");
@@ -825,7 +965,12 @@ impl JSEmitter {
                     _ => "_".to_string(),  // Other patterns become wildcards
                 };
 
-                format!("let {} = {};", pattern_str, value)
+                // Special case: if pattern is "_", just execute the expression (discard result)
+                if pattern_str == "_" {
+                    format!("{};", value)
+                } else {
+                    format!("let {} = {};", pattern_str, value)
+                }
             }
             Statement::Const(const_decl) => {
                 // Emit const declarations as JavaScript const

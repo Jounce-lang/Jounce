@@ -1,0 +1,219 @@
+// File System Tests for Jounce
+// Tests basic file and directory operations
+
+use fs;
+
+// Test writing and reading a text file
+fn test_write_and_read() {
+    let test_file = "test_temp.txt";
+    let content = "Hello, Jounce File I/O!";
+
+    // Write file
+    let write_result = fs::write(test_file, content);
+    assert_true(write_result.is_ok(), "Should write file successfully");
+
+    // Read file
+    let read_result = fs::read_to_string(test_file);
+    assert_true(read_result.is_ok(), "Should read file successfully");
+
+    let read_content = read_result.unwrap();
+    assert_eq(read_content, content, "Content should match");
+
+    // Clean up
+    let _ = fs::remove_file(test_file);
+}
+
+// Test file exists check
+fn test_file_exists() {
+    let test_file = "test_exists.txt";
+
+    // File should not exist initially
+    assert_false(fs::exists(test_file), "File should not exist initially");
+
+    // Create file
+    let _ = fs::write(test_file, "test");
+
+    // File should exist now
+    assert_true(fs::exists(test_file), "File should exist after creation");
+
+    // Clean up
+    let _ = fs::remove_file(test_file);
+}
+
+// Test file metadata
+fn test_metadata() {
+    let test_file = "test_metadata.txt";
+    let content = "Hello World";
+
+    // Create file
+    let _ = fs::write(test_file, content);
+
+    // Get metadata
+    let meta_result = fs::metadata(test_file);
+    assert_true(meta_result.is_ok(), "Should get metadata");
+
+    let meta = meta_result.unwrap();
+    assert_true(meta.is_file(), "Should be a file");
+    assert_false(meta.is_directory(), "Should not be a directory");
+    assert_true(meta.len() > 0, "File size should be greater than 0");
+
+    // Clean up
+    let _ = fs::remove_file(test_file);
+}
+
+// Test appending to file
+fn test_append() {
+    let test_file = "test_append.txt";
+
+    // Write initial content
+    let _ = fs::write(test_file, "Line 1\n");
+
+    // Append more content
+    let append_result = fs::append(test_file, "Line 2\n");
+    assert_true(append_result.is_ok(), "Should append successfully");
+
+    // Read and verify
+    let content = fs::read_to_string(test_file).unwrap();
+    assert_true(content.contains("Line 1"), "Should contain Line 1");
+    assert_true(content.contains("Line 2"), "Should contain Line 2");
+
+    // Clean up
+    let _ = fs::remove_file(test_file);
+}
+
+// Test directory creation
+fn test_create_directory() {
+    let test_dir = "test_temp_dir";
+
+    // Create directory
+    let create_result = fs::create_dir(test_dir);
+    assert_true(create_result.is_ok(), "Should create directory");
+
+    // Check it exists
+    assert_true(fs::exists(test_dir), "Directory should exist");
+
+    // Get metadata
+    let meta = fs::metadata(test_dir).unwrap();
+    assert_true(meta.is_directory(), "Should be a directory");
+    assert_false(meta.is_file(), "Should not be a file");
+
+    // Clean up
+    let _ = fs::remove_dir(test_dir);
+}
+
+// Test reading directory contents
+fn test_read_directory() {
+    let test_dir = "test_read_dir";
+    let test_file1 = "test_read_dir/file1.txt";
+    let test_file2 = "test_read_dir/file2.txt";
+
+    // Create directory
+    let _ = fs::create_dir(test_dir);
+
+    // Create files in directory
+    let _ = fs::write(test_file1, "File 1");
+    let _ = fs::write(test_file2, "File 2");
+
+    // Read directory
+    let entries_result = fs::read_dir(test_dir);
+    assert_true(entries_result.is_ok(), "Should read directory");
+
+    let entries = entries_result.unwrap();
+    assert_eq(entries.len(), 2, "Should have 2 entries");
+
+    // Check entry names
+    let entry1 = entries[0];
+    let entry2 = entries[1];
+    assert_true(entry1.is_file(), "Entry should be a file");
+    assert_true(entry2.is_file(), "Entry should be a file");
+
+    // Clean up
+    let _ = fs::remove_file(test_file1);
+    let _ = fs::remove_file(test_file2);
+    let _ = fs::remove_dir(test_dir);
+}
+
+// Test file removal
+fn test_remove_file() {
+    let test_file = "test_remove.txt";
+
+    // Create file
+    let _ = fs::write(test_file, "Remove me");
+    assert_true(fs::exists(test_file), "File should exist");
+
+    // Remove file
+    let remove_result = fs::remove_file(test_file);
+    assert_true(remove_result.is_ok(), "Should remove file");
+
+    // Verify removed
+    assert_false(fs::exists(test_file), "File should not exist");
+}
+
+// Test copying files
+fn test_copy_file() {
+    let source = "test_source.txt";
+    let dest = "test_dest.txt";
+    let content = "Copy me!";
+
+    // Create source file
+    let _ = fs::write(source, content);
+
+    // Copy file
+    let copy_result = fs::copy(source, dest);
+    assert_true(copy_result.is_ok(), "Should copy file");
+
+    // Verify both files exist
+    assert_true(fs::exists(source), "Source should exist");
+    assert_true(fs::exists(dest), "Destination should exist");
+
+    // Verify content matches
+    let dest_content = fs::read_to_string(dest).unwrap();
+    assert_eq(dest_content, content, "Content should match");
+
+    // Clean up
+    let _ = fs::remove_file(source);
+    let _ = fs::remove_file(dest);
+}
+
+// Test renaming files
+fn test_rename_file() {
+    let old_name = "test_old.txt";
+    let new_name = "test_new.txt";
+    let content = "Rename me!";
+
+    // Create file
+    let _ = fs::write(old_name, content);
+
+    // Rename file
+    let rename_result = fs::rename(old_name, new_name);
+    assert_true(rename_result.is_ok(), "Should rename file");
+
+    // Verify old name doesn't exist
+    assert_false(fs::exists(old_name), "Old file should not exist");
+
+    // Verify new name exists
+    assert_true(fs::exists(new_name), "New file should exist");
+
+    // Verify content preserved
+    let new_content = fs::read_to_string(new_name).unwrap();
+    assert_eq(new_content, content, "Content should be preserved");
+
+    // Clean up
+    let _ = fs::remove_file(new_name);
+}
+
+// Test creating nested directories
+fn test_create_dir_all() {
+    let nested_dir = "test_parent/test_child";
+
+    // Create nested directories
+    let create_result = fs::create_dir_all(nested_dir);
+    assert_true(create_result.is_ok(), "Should create nested directories");
+
+    // Verify both exist
+    assert_true(fs::exists("test_parent"), "Parent directory should exist");
+    assert_true(fs::exists(nested_dir), "Child directory should exist");
+
+    // Clean up
+    let _ = fs::remove_dir_all("test_parent");
+}
