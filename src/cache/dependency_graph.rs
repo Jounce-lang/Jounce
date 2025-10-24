@@ -100,11 +100,20 @@ impl DependencyGraph {
     pub fn topological_levels(&self) -> Vec<Vec<PathBuf>> {
         let mut levels = Vec::new();
         let mut in_degree: HashMap<PathBuf, usize> = HashMap::new();
-        let mut remaining: HashSet<PathBuf> = self.dependencies.keys().cloned().collect();
 
-        // Calculate in-degrees
+        // Collect all files from both dependencies and dependents
+        let mut remaining: HashSet<PathBuf> = HashSet::new();
+        remaining.extend(self.dependencies.keys().cloned());
+        remaining.extend(self.dependents.keys().cloned());
+
+        // Calculate in-degrees (files not in dependencies have in-degree 0)
         for (file, deps) in &self.dependencies {
             in_degree.insert(file.clone(), deps.len());
+        }
+
+        // Ensure all files have an entry (leaf nodes have in-degree 0)
+        for file in &remaining {
+            in_degree.entry(file.clone()).or_insert(0);
         }
 
         // Process levels
