@@ -1,0 +1,35 @@
+// Counter App - Demonstrates Jounce Reactivity
+//
+// NOTE: This example demonstrates reactivity patterns.
+// Reactivity is JavaScript/client-side only in Jounce v0.4.0.
+//
+// This example shows:
+// - Creating reactive signals
+// - Computed values that auto-update
+// - Effects that run when dependencies change
+// - Batching multiple updates
+
+fn main() {
+    console.log("=== Jounce Counter App ===");
+
+    // Create a reactive signal for the count
+    let count = signal(0);
+
+    // Create computed values that automatically update
+    let doubled = computed(() => count.value * 2);
+    let isPositive = computed(() => count.value > 0);
+
+    // Create an effect that logs whenever count changes
+    effect(() => {
+        console.log("Count: " + count.value.to_string());
+        console.log("Doubled: " + doubled.value.to_string());
+    });
+
+    console.log("Counter initialized with reactive state!");
+    console.log("In a real app, you would update count.value in response to user events.");
+    console.log("");
+    console.log("Example patterns:");
+    console.log("  count.value = 5;      // Updates signal");
+    console.log("  doubled.value;        // Always = count * 2");
+    console.log("  effect runs automatically when count changes");
+}

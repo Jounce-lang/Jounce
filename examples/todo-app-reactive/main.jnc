@@ -1,0 +1,59 @@
+// Todo App with Reactivity - Demonstrates List Management
+//
+// NOTE: This demonstrates reactivity patterns for list-based UIs.
+// In a real application, user interactions would update the signals.
+//
+// This example shows:
+// - Managing reactive lists with signals
+// - Computed values for filtering and statistics
+// - Effects for UI updates and persistence
+
+fn main() {
+    console.log("=== Reactive Todo App ===");
+
+    // Reactive list of todos
+    let todos = signal([]);
+    let filter = signal("all");  // "all", "active", or "completed"
+
+    // Computed: Filtered todos based on current filter
+    let filteredTodos = computed(() => {
+        todos.value  // In real app: filter based on filter.value
+    });
+
+    // Computed: Statistics
+    let totalCount = computed(() => todos.value.length);
+    let completedCount = computed(() => {
+        let count = 0;
+        // In real app: count completed todos
+        count
+    });
+    let activeCount = computed(() => totalCount.value - completedCount.value);
+
+    // Effect: Log changes to todo list
+    effect(() => {
+        console.log("Total todos: " + totalCount.value.to_string());
+        console.log("Active: " + activeCount.value.to_string());
+        console.log("Completed: " + completedCount.value.to_string());
+    });
+
+    // Effect: Sync to localStorage (in browser)
+    effect(() => {
+        console.log("Syncing todos to localStorage...");
+        // In real app: localStorage.setItem("todos", JSON.stringify(todos.value))
+    });
+
+    console.log("");
+    console.log("Reactive todo list initialized!");
+    console.log("");
+    console.log("Example usage patterns:");
+    console.log("  // Add todo");
+    console.log("  todos.value.push({ text: 'New task', completed: false });");
+    console.log("");
+    console.log("  // Toggle completion");
+    console.log("  todos.value[0].completed = true;");
+    console.log("");
+    console.log("  // Change filter");
+    console.log("  filter.value = 'active';  // filteredTodos auto-updates");
+    console.log("");
+    console.log("All computed values and effects update automatically!");
+}

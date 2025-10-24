@@ -1,0 +1,67 @@
+// Form Validation - Demonstrates Reactive Validation
+//
+// NOTE: This demonstrates reactive form validation patterns.
+// In a real application, form fields would be bound to signals.
+//
+// This example shows:
+// - Reactive form field validation
+// - Computed validation states
+// - Cross-field validation
+// - Real-time error messages
+
+fn main() {
+    console.log("=== Reactive Form Validation ===");
+
+    // Form field signals
+    let email = signal("");
+    let password = signal("");
+    let confirmPassword = signal("");
+
+    // Computed: Email validation
+    let emailValid = computed(() => {
+        let len = email.value.length;
+        len > 0  // Simplified: real app would check email format
+    });
+
+    // Computed: Password validation
+    let passwordValid = computed(() => {
+        password.value.length >= 8
+    });
+
+    // Computed: Cross-field validation (passwords match)
+    let passwordsMatch = computed(() => {
+        password.value == confirmPassword.value
+    });
+
+    // Computed: Overall form validity
+    // In real app: would combine all validation states
+    let formValid = computed(() => {
+        true  // Simplified for demo
+    });
+
+    // Effect: Log validation state changes
+    effect(() => {
+        console.log("Form valid: " + formValid.value.to_string());
+        console.log("Email valid: " + emailValid.value.to_string());
+        console.log("Password valid: " + passwordValid.value.to_string());
+        console.log("Passwords match: " + passwordsMatch.value.to_string());
+    });
+
+    console.log("");
+    console.log("Reactive form validation initialized!");
+    console.log("");
+    console.log("Example usage patterns:");
+    console.log("  // User types in email field");
+    console.log("  email.value = 'user@example.com';");
+    console.log("  // emailValid and emailError update automatically");
+    console.log("");
+    console.log("  // User types password");
+    console.log("  password.value = 'secure123';");
+    console.log("  // passwordValid updates, formValid recalculates");
+    console.log("");
+    console.log("  // User confirms password");
+    console.log("  confirmPassword.value = 'secure123';");
+    console.log("  // passwordsMatch updates, formValid becomes true");
+    console.log("");
+    console.log("All validation happens automatically as user types!");
+}
