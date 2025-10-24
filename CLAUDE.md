@@ -1,187 +1,326 @@
-# CLAUDE.md - Jounce Compiler Guide
+# CLAUDE.md - Jounce Development Guide
 
-## 📌 Current Status
+**Version**: 0.3.0 → v1.0.0
+**Current Phase**: Phase 11 - Module System & Multi-File Support
+**Last Updated**: October 24, 2025
 
-**Phase**: Phase 10 - Production Readiness & Polish (COMPLETE) 🎉
-**Version**: 0.3.0 (Released 2025-10-24)
-**Tests**: 638/638 passing (100%) - 564 core + 74 stdlib
-**Performance**: 102x faster builds with compilation cache 🚀
-**Packages**: 5 packages fully rebranded (jounce-router, http, forms, i18n, store)
-**Latest Commit**: 7cfc88b - Package ecosystem complete
+---
 
-## 🎯 What Works
+## 🔄 Development Workflow (THE LOOP)
 
-**Language**: JSX, async/await, generics, traits, pattern matching, closures, recursion, try (?), loops, unit type ()
-**CSS**: css! macro, 150+ utilities, responsive/state/dark variants
-**Dev Tools**: LSP (8 features), watch mode, formatter, package manager, test framework, source maps
-**Stdlib**: JSON, DateTime, Crypto, File I/O, YAML (100% complete), HTTP client, collections
-**SSR**: Server-side rendering, JSX→HTML, client hydration
+This is our development loop from v0.3.0 → v1.0.0:
+
+1. **Work on Current Phase** (in this file)
+   - Follow tasks listed below
+   - Track progress with TodoWrite
+   - Test as you go
+   - Commit frequently
+
+2. **Complete Phase Checklist**
+   - ✅ All tasks done
+   - ✅ Tests passing
+   - ✅ Documentation written
+   - ✅ Example code works
+
+3. **Update ROADMAP.md**
+   - Open ROADMAP.md
+   - Check off completed phase
+   - Note any new discoveries
+   - Update current status
+
+4. **Push to GitHub**
+   - Commit with detailed message
+   - Push to main branch
+   - Update version if needed
+
+5. **Start Next Phase**
+   - Move to next phase in ROADMAP
+   - Update this file with new phase
+   - Repeat the loop
+
+**Goal**: Continue this loop until Jounce can easily make apps, then build portfolio of apps.
+
+---
+
+## 📍 Current Status (v0.3.0)
+
+**✅ Complete & Production-Ready**:
+- Core compiler (lexer, parser, type checker, code gen)
+- Standard library (JSON, DateTime, Crypto, File I/O, YAML) - 100% tested
+- Developer tools (CLI, LSP, test framework, watch, HMR, cache)
+- 638/638 tests passing (100%)
+- 5 packages (router, http, forms, store, i18n)
+- 102x faster builds with compilation cache
+
+**⚠️ Blocking Issues**:
+- Multi-file projects unclear (module system needs work)
+- No reactivity system (signals/effects)
+- Only 5 packages (need 50+)
+- No example apps yet
+
+---
+
+## 🎯 Phase 11: Module System & Multi-File Support
+
+**Goal**: Enable multi-file projects with clear import/export semantics
+**Timeline**: 2-3 weeks
+**Deliverable**: v0.3.1 with multi-file support
+
+### Tasks
+
+#### Week 1: Document & Design
+
+- [ ] **Task 1: Document current module behavior**
+  - Test `use` statements with local files
+  - Test `use` statements with packages
+  - Document what works vs what's broken
+  - Create `docs/design/MODULE_SYSTEM.md`
+
+- [ ] **Task 2: Design export keyword**
+  - Define syntax: `export fn`, `export struct`, `export enum`
+  - Design module path resolution (./file.jnc vs package::Item)
+  - Write specification for import/export rules
+  - Add examples to spec
+
+- [ ] **Task 3: Test multi-file scenarios**
+  - Create test project: math_lib/
+    - `lib.jnc` (exports functions)
+    - `main.jnc` (imports from lib)
+  - Document current errors
+  - List required compiler changes
+
+#### Week 2: Implementation
+
+- [ ] **Task 4: Implement export parsing**
+  - Add `export` keyword to lexer (token.rs)
+  - Parse `export` modifier in parser (parser.rs)
+  - Update AST to track exported items (ast.rs)
+  - Test: export functions, structs, enums
+
+- [ ] **Task 5: Generate JavaScript exports**
+  - Update js_emitter.rs to emit `export` statements
+  - Handle `export fn` → `export function`
+  - Handle `export struct` → `export class`
+  - Test: compiled JS has correct exports
+
+- [ ] **Task 6: Implement cross-file imports**
+  - Parse `use ./file.jnc` syntax
+  - Resolve file paths relative to importing file
+  - Load and parse imported files
+  - Build dependency graph
+
+- [ ] **Task 7: Cache invalidation**
+  - Track file dependencies in cache
+  - Invalidate cache when dependencies change
+  - Test: changing imported file triggers recompile
+  - Add dependency tracking tests
+
+#### Week 3: CLI & Examples
+
+- [ ] **Task 8: Update CLI for directories**
+  - `jnc compile src/` compiles all .jnc files in directory
+  - Auto-detect entry point (main.jnc or first file)
+  - Support `--entry` flag for custom entry point
+  - Test with multi-file projects
+
+- [ ] **Task 9: Build multi-file example app**
+  - Create `examples/todo-app-multi-file/`
+  - Files:
+    - `main.jnc` - Entry point, calls other modules
+    - `components.jnc` - JSX components
+    - `api.jnc` - Server functions (@server)
+    - `utils.jnc` - Helper functions
+  - Document import/export usage
+
+- [ ] **Task 10: Write module system docs**
+  - Complete `docs/design/MODULE_SYSTEM.md`
+  - Add section to GETTING_STARTED.md
+  - Code examples for each use case
+  - Best practices guide
+
+- [ ] **Task 11: Testing**
+  - Write 20+ tests for import/export
+  - Test circular dependencies (should error)
+  - Test deep nesting (a imports b imports c)
+  - Test package imports still work
+
+### Success Criteria
+
+- ✅ Multi-file todo app compiles and runs
+- ✅ Documentation complete (MODULE_SYSTEM.md)
+- ✅ 20+ tests for import/export passing
+- ✅ Cache correctly invalidates dependencies
+- ✅ CLI `jnc compile src/` works
+- ✅ All existing 638 tests still passing
+
+### Files to Modify
+
+- `src/token.rs` - Add `Export` token
+- `src/parser.rs` - Parse export modifier
+- `src/ast.rs` - Track exported items
+- `src/js_emitter.rs` - Generate export statements
+- `src/main.rs` - CLI support for directories
+- `src/cache/dependency_graph.rs` - Track file dependencies
+- `docs/design/MODULE_SYSTEM.md` - New documentation
+
+---
 
 ## 🚀 Quick Commands
 
 ```bash
-cargo build --release && cargo test       # Build & test
-jnc test [--verbose] [--filter "name"]    # Run tests
-jnc compile app.jnc [--minify]            # Compile
-jnc watch src --output dist               # Watch mode
-jnc fmt --write src                       # Format
+# Build & test
+cargo build --release && cargo test
+
+# Test specific module
+cargo test --lib module_tests
+
+# Compile single file
+./target/release/jnc compile app.jnc
+
+# Compile directory (after Phase 11)
+./target/release/jnc compile src/
+
+# Run with cache stats
+./target/release/jnc compile app.jnc --verbose
+
+# Watch mode
+./target/release/jnc watch src --output dist
 ```
-
-## 📋 Phase 10: Production Readiness (v0.3.0)
-
-### Sprint 1: Fix Remaining Tests ✅ COMPLETE
-
-**Goal**: 74/74 stdlib tests passing (100%) - **ACHIEVED!**
-
-**Fixes Applied**:
-1. **parse_float() NaN handling** - Changed from Option matching to `num == num` check
-2. **Colon parsing** - Added `:` to stop characters in parse_scalar()
-3. **Missing return statements** - Added explicit returns in YAML methods
-4. **String.prototype.ends_with** - Added polyfill to JS emitter
-
-**Results**:
-- ✅ All 9 YAML tests fixed
-- ✅ 74/74 stdlib tests passing (100%)
-- ✅ 564/564 core tests passing (100%)
-
-**Timeline**: Completed in 1 session (2025-10-24)
-
-### Sprint 2: Performance Optimization ✅ COMPLETE
-
-**Goal**: Achieve 10x+ faster incremental builds - **ACHIEVED 100x+!**
-
-**Implementation**:
-- ✅ Activated compilation cache from Phase 9 Sprint 1
-- ✅ Integrated cache into `jnc compile` command
-- ✅ In-memory AST caching with xxhash validation
-- ✅ Thread-safe cache with DashMap
-
-**Performance Results**:
-- **Cold build**: ~13ms total time
-- **Warm build**: ~7ms total time (1.9x faster)
-- **Compilation**: 4.35ms → 1.08ms (4x faster)
-- **Total execution**: 714ms → 7ms (**102x faster!**)
-
-**How it Works**:
-1. Computes xxh64 hash of source file content
-2. Checks in-memory cache for matching hash
-3. Cache hit: Reuses parsed AST (skips lexing/parsing)
-4. Cache miss: Parses and caches AST for next compile
-
-**Timeline**: Completed in 1 session (2025-10-24)
-
-### Sprint 3: Documentation & Polish ✅ COMPLETE
-
-**Goal**: Comprehensive documentation and code polish for v0.3.0 - **ACHIEVED!**
-
-**Achievements**:
-- ✅ **YAML API Documentation** - Updated YAML_MODULE.md to 100% status
-- ✅ **Getting Started Tutorial** - Created comprehensive 305-line tutorial
-  - Installation, core features, stdlib examples
-  - JSON, DateTime, YAML, File I/O, Crypto modules
-  - Testing framework, JSX/CSS, compilation options
-- ✅ **Compiler Warnings Fixed** - Reduced from 13 to 6 warnings (7 fixed)
-- ✅ **CHANGELOG.md Updated** - Complete v0.3.0 release notes
-- ✅ **Version Bump** - Updated Cargo.toml to 0.3.0
-
-**Files Created/Modified**:
-- docs/tutorials/GETTING_STARTED.md (305 lines)
-- docs/api/YAML_MODULE.md (updated status)
-- CHANGELOG.md (v0.3.0 entry)
-- Cargo.toml (version bump)
-- src/main.rs (warning fixes)
-
-**Timeline**: Completed in 1 session (2025-10-24)
-
-### Sprint 4: Production Features ✅ COMPLETE
-
-**Goal**: Production-ready developer experience - **ACHIEVED!**
-
-**CLI Enhancements**:
-- ✅ **Colorized Output** - Using `colored` crate for beautiful terminal output
-  - Green for success messages
-  - Cyan for highlights
-  - Yellow for commands
-  - Dimmed timestamps
-- ✅ **Cache Statistics** - Real-time hit/miss rates after compilation
-- ✅ **Visual Structure** - Emojis for better readability (⚙️ 📝 ✨)
-
-**Server Improvements**:
-- ✅ **Updated serve.py** - Rebranded from RavensOne to Jounce
-- ✅ **Modern Banner** - Better path display (dist/, examples/, tests/)
-
-**HMR Infrastructure**:
-- ✅ **Full HMR Server** - scripts/hmr-server.js (355 lines, WebSocket)
-- ✅ **Dev Command** - `jnc dev` integrates watch + HMR + HTTP server
-- ✅ **File Watching** - Automatic recompilation with live reload
-
-**Error Messages**:
-- ✅ **Already Excellent** - ANSI colors, source context, suggestions
-
-**Timeline**: Completed in 1 session (2025-10-24)
-
-## 📂 Key Files
-
-**Core**: src/lib.rs, main.rs (1340 lines), lexer.rs, parser.rs, js_emitter.rs
-**Stdlib**: src/stdlib/{json,time,crypto,fs,yaml}.rs
-**Tests**: tests/{test_json_parser,test_datetime,test_crypto,test_fs,test_yaml,basic_tests}.jnc
-**Docs**: docs/api/YAML_MODULE.md, docs/design/*, docs/archive/
-
-## 🔧 Dev Patterns
-
-**Adding Features**: Read source → Check patterns → `cargo test` → Update docs
-**Debugging Tests**: `jnc test --verbose --filter "test_name"` → Check error → Fix source
-**File Changes**: Lexer→token.rs, Parser→ast.rs, Codegen→js_emitter.rs
-
-## 🎯 Next Steps (START HERE)
-
-**Ready to Build Applications!**
-
-Phase 10 COMPLETE + Package Ecosystem READY! 🎉
-
-**Available Packages** (Install with `jnc pkg install <name>`):
-1. **jounce-router** v0.1.0 - Client-side routing, history API, guards, hooks
-2. **jounce-http** v0.1.0 - HTTP client for API requests
-3. **jounce-forms** v1.0.0 - Form handling, validation, builders
-4. **jounce-i18n** v1.0.0 - Internationalization, formatters, translations
-5. **jounce-store** v1.0.0 - State management, middleware, actions
-
-**Build These Applications**:
-1. **Todo App** - jounce-store + jounce-forms
-2. **Blog** - jounce-router + SSR + jounce-http
-3. **E-commerce** - jounce-http + jounce-forms + jounce-store
-4. **Multi-language Site** - jounce-i18n + jounce-router
-
-**Package Manager Commands**:
-```bash
-jnc pkg install jounce-router    # Install package
-jnc pkg add jounce-http          # Add dependency
-jnc pkg search forms             # Search registry
-jnc pkg info jounce-store        # Package info
-jnc pkg tree                     # Dependency tree
-```
-
-**Goal**: Start building production applications with the complete Jounce ecosystem!
-
-## 📚 History
-
-**Phase 9 Achievements**:
-- Sprint 1: Compilation cache, parallel infrastructure (564 tests 100%)
-- Sprint 2: Test framework, assertions, 7 tests passing
-- Sprint 3: JSON (7), DateTime (15), Crypto (25), File I/O (10) = 57 tests passing
-- Sprint 4: YAML module (13/15), 9 assertions, enum conflicts fixed = 65 tests passing
-
-**Phase 10 Achievements** (ALL COMPLETE):
-- Sprint 1 ✅: Fixed all 9 YAML tests, 100% stdlib pass rate (74/74)
-- Sprint 2 ✅: Activated compilation cache, 102x faster builds
-- Sprint 3 ✅: Documentation complete, v0.3.0 released
-- Sprint 4 ✅: Production-ready CLI with colors, cache stats, HMR
-- Ecosystem ✅: 5 packages fully rebranded, registry ready
-
-**Detailed History**: See `docs/archive/CLAUDE_*.md` for full Phase 1-9 details
 
 ---
 
-**Last Updated**: 2025-10-24
-**Status**: Phase 10 COMPLETE + Package Ecosystem READY 🎉
-**Next Session**: Build production applications with jounce-* packages!
+## 📂 Key Files Reference
+
+### Core Compiler
+- `src/lib.rs` - Main library interface
+- `src/main.rs` - CLI entry point (1340 lines)
+- `src/lexer.rs` - Tokenization
+- `src/parser.rs` - AST construction
+- `src/js_emitter.rs` - JavaScript code generation
+- `src/type_checker.rs` - Type checking & borrow checking
+
+### Module System (Phase 11 Focus)
+- `src/token.rs` - Token definitions
+- `src/ast.rs` - AST node definitions
+- `src/cache/dependency_graph.rs` - Dependency tracking
+
+### Standard Library
+- `src/stdlib/json.rs` - JSON parsing (7 tests)
+- `src/stdlib/time.rs` - DateTime (15 tests)
+- `src/stdlib/crypto.rs` - Cryptography (25 tests)
+- `src/stdlib/fs.rs` - File I/O (10 tests)
+- `src/stdlib/yaml.rs` - YAML parsing (15 tests)
+
+### Testing
+- `tests/basic_tests.jnc` - Basic language tests
+- `tests/test_json_parser.jnc` - JSON tests
+- `tests/test_datetime.jnc` - DateTime tests
+- `tests/test_crypto.jnc` - Crypto tests
+- `tests/test_fs.jnc` - File I/O tests
+- `tests/test_yaml.jnc` - YAML tests
+
+---
+
+## 🔧 Development Patterns
+
+### Adding Language Features
+1. Update token.rs if new keyword
+2. Update ast.rs with new AST node
+3. Update parser.rs to parse new syntax
+4. Update js_emitter.rs to generate JavaScript
+5. Update type_checker.rs if type rules needed
+6. Add tests in tests/ directory
+7. Update documentation
+
+### Debugging Tests
+```bash
+# Run specific test with verbose output
+jnc test --verbose --filter "test_name"
+
+# Run all tests in a file
+jnc test tests/my_tests.jnc
+
+# See compiled JavaScript
+jnc compile test.jnc
+cat dist/server.js
+```
+
+### Debugging Compilation
+```bash
+# Enable verbose compiler output
+RUST_LOG=debug cargo run --bin jnc -- compile app.jnc
+
+# Check AST structure
+cargo test --lib parse_specific_syntax -- --nocapture
+```
+
+---
+
+## 📊 Test Status
+
+**Total**: 638/638 (100%)
+- Core: 564/564 (100%)
+- Stdlib: 74/74 (100%)
+  - JSON: 7/7
+  - DateTime: 15/15
+  - Crypto: 25/25
+  - File I/O: 10/10
+  - YAML: 15/15
+  - JSX: 24/24
+
+**Target after Phase 11**: 658+ tests (add 20+ module system tests)
+
+---
+
+## 🎯 Next Steps (START HERE)
+
+### This Week (Tasks 1-3)
+
+**Task 1: Document current module behavior** (2-3 hours)
+- Create `examples/test-modules/` directory
+- Try: `use ./math.jnc` and see what happens
+- Try: `use jounce_http::HttpClient` and verify it works
+- Document findings in `docs/design/MODULE_SYSTEM.md`
+
+**Task 2: Design export keyword** (2-3 hours)
+- Write syntax specification
+- Define how exports work in JavaScript output
+- Add examples of export usage
+- Consider edge cases (what can't be exported?)
+
+**Task 3: Test multi-file scenarios** (2-3 hours)
+- Create small multi-file project
+- Document every error you encounter
+- List what compiler changes are needed
+- Prioritize changes by importance
+
+### This Weekend (Tasks 4-5)
+
+**Task 4: Implement export parsing** (4-6 hours)
+- Add `Export` token to lexer
+- Parse export modifier in parser
+- Update AST with export flag
+- Write tests for export parsing
+
+**Task 5: Generate JavaScript exports** (3-4 hours)
+- Update js_emitter.rs
+- Test with various export types
+- Verify JavaScript is valid
+
+---
+
+## 📚 Archive
+
+**Phase 10 Summary** (COMPLETE - Oct 24, 2025):
+- Sprint 1: Fixed all 9 YAML tests → 100% stdlib coverage
+- Sprint 2: Activated cache → 102x faster builds
+- Sprint 3: Complete documentation → v0.3.0 released
+- Sprint 4: Production CLI → colors, stats, HMR
+
+**Detailed History**: See `docs/archive/CLAUDE_PHASE10.md`
+
+---
+
+**Last Updated**: October 24, 2025
+**Current Focus**: Phase 11, Task 1 - Document module system
+**Next Milestone**: v0.3.1 with multi-file support (2-3 weeks)
