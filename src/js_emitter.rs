@@ -481,6 +481,9 @@ impl JSEmitter {
         output.push_str("if (!String.prototype.starts_with) {\n");
         output.push_str("  String.prototype.starts_with = function(prefix) { return this.startsWith(prefix); };\n");
         output.push_str("}\n");
+        output.push_str("if (!String.prototype.ends_with) {\n");
+        output.push_str("  String.prototype.ends_with = function(suffix) { return this.endsWith(suffix); };\n");
+        output.push_str("}\n");
         output.push_str("if (!String.prototype.to_lowercase) {\n");
         output.push_str("  String.prototype.to_lowercase = function() { return this.toLowerCase(); };\n");
         output.push_str("}\n");
