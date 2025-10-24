@@ -732,6 +732,35 @@ impl Formatter {
                 // CSS formatting will be implemented in Sprint 1 Task 1.6
                 self.write("css! { /* formatting not yet implemented */ }")
             }
+            // Reactivity primitives (Phase 12)
+            Expression::Signal(signal_expr) => {
+                self.write("signal");
+                if let Some(_type_ann) = &signal_expr.type_annotation {
+                    self.write("<T>");  // Simplified for now
+                }
+                self.write("(");
+                self.format_expression(&signal_expr.initial_value);
+                self.write(")");
+            }
+            Expression::Computed(computed_expr) => {
+                self.write("computed");
+                if let Some(_type_ann) = &computed_expr.type_annotation {
+                    self.write("<T>");  // Simplified for now
+                }
+                self.write("(");
+                self.format_expression(&computed_expr.computation);
+                self.write(")");
+            }
+            Expression::Effect(effect_expr) => {
+                self.write("effect(");
+                self.format_expression(&effect_expr.callback);
+                self.write(")");
+            }
+            Expression::Batch(batch_expr) => {
+                self.write("batch(");
+                self.format_expression(&batch_expr.body);
+                self.write(")");
+            }
         }
     }
 

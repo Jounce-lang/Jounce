@@ -459,6 +459,23 @@ impl BorrowChecker {
                 // CSS is checked separately in Sprint 1 Task 1.6
                 Ok(ResolvedType::Unknown)
             }
+            // Reactivity primitives (Phase 12)
+            Expression::Signal(signal_expr) => {
+                self.check_expression(&signal_expr.initial_value)?;
+                Ok(ResolvedType::Unknown)  // Signal<T>
+            }
+            Expression::Computed(computed_expr) => {
+                self.check_expression(&computed_expr.computation)?;
+                Ok(ResolvedType::Unknown)  // Computed<T>
+            }
+            Expression::Effect(effect_expr) => {
+                self.check_expression(&effect_expr.callback)?;
+                Ok(ResolvedType::Unknown)  // Effect (returns disposer)
+            }
+            Expression::Batch(batch_expr) => {
+                self.check_expression(&batch_expr.body)?;
+                Ok(ResolvedType::Unknown)  // Returns function result
+            }
         }
     }
 }

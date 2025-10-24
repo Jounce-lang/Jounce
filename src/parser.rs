@@ -944,7 +944,24 @@ impl<'a> Parser<'a> {
         let mut expr = match &token.kind {
             TokenKind::Identifier => {
                 self.next_token();
-                let ident = Identifier { value: token.lexeme };
+                let ident = Identifier { value: token.lexeme.clone() };
+
+                // Check for reactivity primitives (Phase 12)
+                match token.lexeme.as_str() {
+                    "signal" => {
+                        return self.parse_signal_expression();
+                    },
+                    "computed" => {
+                        return self.parse_computed_expression();
+                    },
+                    "effect" => {
+                        return self.parse_effect_expression();
+                    },
+                    "batch" => {
+                        return self.parse_batch_expression();
+                    },
+                    _ => {}
+                }
 
                 // Check if this is a struct literal (Identifier { field: value, ... })
                 if allow_struct_literals && self.current_token().kind == TokenKind::LBrace && self.is_struct_literal_ahead() {
@@ -2721,6 +2738,98 @@ impl<'a> Parser<'a> {
         } else {
             Ok(CssSelector::Element(s.to_string()))
         }
+    }
+
+    // ========================================================================
+    // Reactivity Expression Parsing (Phase 12)
+    // ========================================================================
+
+    /// Parse signal expression: signal<T>(initial_value) or signal(initial_value)
+    fn parse_signal_expression(&mut self) -> Result<Expression, CompileError> {
+        // Optional type annotation: signal<int>() or signal()
+        let type_annotation = if self.current_token().kind == TokenKind::LAngle {
+            Some(self.parse_type_parameters_single()?)
+        } else {
+            None
+        };
+
+        // Expect opening parenthesis
+        self.expect_and_consume(&TokenKind::LParen)?;
+
+        // Parse initial value expression
+        let initial_value = self.parse_expression(Precedence::Lowest)?;
+
+        // Expect closing parenthesis
+        self.expect_and_consume(&TokenKind::RParen)?;
+
+        Ok(Expression::Signal(SignalExpression {
+            type_annotation,
+            initial_value: Box::new(initial_value),
+        }))
+    }
+
+    /// Parse computed expression: computed<T>(() => expr) or computed(() => expr)
+    fn parse_computed_expression(&mut self) -> Result<Expression, CompileError> {
+        // Optional type annotation: computed<int>() or computed()
+        let type_annotation = if self.current_token().kind == TokenKind::LAngle {
+            Some(self.parse_type_parameters_single()?)
+        } else {
+            None
+        };
+
+        // Expect opening parenthesis
+        self.expect_and_consume(&TokenKind::LParen)?;
+
+        // Parse computation function (must be a lambda/closure)
+        let computation = self.parse_expression(Precedence::Lowest)?;
+
+        // Expect closing parenthesis
+        self.expect_and_consume(&TokenKind::RParen)?;
+
+        Ok(Expression::Computed(ComputedExpression {
+            type_annotation,
+            computation: Box::new(computation),
+        }))
+    }
+
+    /// Parse effect expression: effect(() => { ... })
+    fn parse_effect_expression(&mut self) -> Result<Expression, CompileError> {
+        // Expect opening parenthesis
+        self.expect_and_consume(&TokenKind::LParen)?;
+
+        // Parse callback function (must be a lambda/closure)
+        let callback = self.parse_expression(Precedence::Lowest)?;
+
+        // Expect closing parenthesis
+        self.expect_and_consume(&TokenKind::RParen)?;
+
+        Ok(Expression::Effect(EffectExpression {
+            callback: Box::new(callback),
+        }))
+    }
+
+    /// Parse batch expression: batch(() => { ... })
+    fn parse_batch_expression(&mut self) -> Result<Expression, CompileError> {
+        // Expect opening parenthesis
+        self.expect_and_consume(&TokenKind::LParen)?;
+
+        // Parse body function (must be a lambda/closure)
+        let body = self.parse_expression(Precedence::Lowest)?;
+
+        // Expect closing parenthesis
+        self.expect_and_consume(&TokenKind::RParen)?;
+
+        Ok(Expression::Batch(BatchExpression {
+            body: Box::new(body),
+        }))
+    }
+
+    /// Parse a single type parameter for signal/computed (helper function)
+    fn parse_type_parameters_single(&mut self) -> Result<TypeExpression, CompileError> {
+        self.expect_and_consume(&TokenKind::LAngle)?;
+        let type_expr = self.parse_type_expression()?;
+        self.expect_and_consume(&TokenKind::RAngle)?;
+        Ok(type_expr)
     }
 }
 

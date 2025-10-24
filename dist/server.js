@@ -17,10 +17,8 @@ const wasmInstance = new WebAssembly.Instance(wasmModule, {
 
 // Server function implementations
 // Shared utility functions
-module.exports.test_method_with_string = function() {
-  let s = "hello";
-  let parts = s.split(".");
-  return parts;
+module.exports.main = function() {
+  return console.log("Hello, World\\!");
 
 }
 

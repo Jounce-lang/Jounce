@@ -1491,6 +1491,13 @@ impl CodeGenerator {
                 // Return placeholder for now
                 f.instruction(&Instruction::I32Const(0));
             }
+            // Reactivity primitives (Phase 12) - Not supported in WASM backend yet
+            Expression::Signal(_) | Expression::Computed(_) |
+            Expression::Effect(_) | Expression::Batch(_) => {
+                // Reactivity is JavaScript-only for now
+                // Return placeholder for WASM backend
+                f.instruction(&Instruction::I32Const(0));
+            }
         }
         Ok(())
     }
@@ -2112,6 +2119,19 @@ impl CodeGenerator {
             Expression::CssMacro(_) => {
                 // CSS macro doesn't contain lambdas
             }
+            // Reactivity primitives (Phase 12) - Collect lambdas from callbacks
+            Expression::Signal(signal_expr) => {
+                self.collect_lambdas_from_expression(&signal_expr.initial_value);
+            }
+            Expression::Computed(computed_expr) => {
+                self.collect_lambdas_from_expression(&computed_expr.computation);
+            }
+            Expression::Effect(effect_expr) => {
+                self.collect_lambdas_from_expression(&effect_expr.callback);
+            }
+            Expression::Batch(batch_expr) => {
+                self.collect_lambdas_from_expression(&batch_expr.body);
+            }
             // Base cases - no nested expressions to search
             Expression::IntegerLiteral(_)
             | Expression::FloatLiteral(_)
@@ -2245,6 +2265,19 @@ impl CodeGenerator {
             }
             Expression::CssMacro(_) => {
                 // CSS macro doesn't contain variable references
+            }
+            // Reactivity primitives (Phase 12) - Collect variable references
+            Expression::Signal(signal_expr) => {
+                self.collect_variable_references(&signal_expr.initial_value, vars);
+            }
+            Expression::Computed(computed_expr) => {
+                self.collect_variable_references(&computed_expr.computation, vars);
+            }
+            Expression::Effect(effect_expr) => {
+                self.collect_variable_references(&effect_expr.callback, vars);
+            }
+            Expression::Batch(batch_expr) => {
+                self.collect_variable_references(&batch_expr.body, vars);
             }
             // Base cases - no variable references
             Expression::IntegerLiteral(_)

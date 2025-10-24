@@ -2360,36 +2360,36 @@ impl YamlValue {
     // Conversion methods
     fn as_bool(self: &YamlValue) -> Option<bool> {
         match self {
-            YamlValue::Bool(b) => Option::Some(*b),
-            _ => Option::None,
+            YamlValue::Bool(b) => return Option::Some(*b),
+            _ => return Option::None,
         }
     }
 
     fn as_number(self: &YamlValue) -> Option<f64> {
         match self {
-            YamlValue::Number(n) => Option::Some(*n),
-            _ => Option::None,
+            YamlValue::Number(n) => return Option::Some(*n),
+            _ => return Option::None,
         }
     }
 
     fn as_string(self: &YamlValue) -> Option<String> {
         match self {
-            YamlValue::String(s) => Option::Some(s.clone()),
-            _ => Option::None,
+            YamlValue::String(s) => return Option::Some(*s),
+            _ => return Option::None,
         }
     }
 
     fn as_sequence(self: &YamlValue) -> Option<Vec<YamlValue> > {
         match self {
-            YamlValue::Sequence(seq) => Option::Some(seq.clone()),
-            _ => Option::None,
+            YamlValue::Sequence(seq) => return Option::Some(*seq),
+            _ => return Option::None,
         }
     }
 
     fn as_mapping(self: &YamlValue) -> Option<HashMap<String, YamlValue> > {
         match self {
-            YamlValue::Mapping(map) => Option::Some(map.clone()),
-            _ => Option::None,
+            YamlValue::Mapping(map) => return Option::Some(*map),
+            _ => return Option::None,
         }
     }
 
@@ -2398,12 +2398,12 @@ impl YamlValue {
         match self {
             YamlValue::Mapping(map) => {
                 if map.contains_key(&key) {
-                    Option::Some(map.get(&key).clone())
+                    return Option::Some(map.get(&key));
                 } else {
-                    Option::None
+                    return Option::None;
                 }
             }
-            _ => Option::None,
+            _ => return Option::None,
         }
     }
 
@@ -2435,12 +2435,12 @@ impl YamlValue {
         match self {
             YamlValue::Sequence(seq) => {
                 if index >= 0 && (index as usize) < seq.len() {
-                    Option::Some(seq[index as usize].clone())
+                    return Option::Some(seq[index as usize]);
                 } else {
-                    Option::None
+                    return Option::None;
                 }
             }
-            _ => Option::None,
+            _ => return Option::None,
         }
     }
 
@@ -2582,10 +2582,10 @@ impl YamlParser {
         let start = self.position;
         let mut value = String::new();
 
-        // Read until newline, comma, or end of input
+        // Read until newline, comma, colon, or end of input
         loop {
             let ch = self.current_char();
-            if ch.is_empty() || ch == "\n" || ch == "," || ch == "]" || ch == "}" {
+            if ch.is_empty() || ch == "\n" || ch == "," || ch == "]" || ch == "}" || ch == ":" {
                 break;
             }
             if ch == "#" {
@@ -2612,12 +2612,10 @@ impl YamlParser {
         }
 
         // Try to parse as number
-        let num_opt = value.parse_float();
-        match num_opt {
-            Option::Some(num) => {
-                return Result::Ok(YamlValue::Number(num));
-            }
-            Option::None => {}
+        let num = value.parse_float();
+        // In JavaScript, NaN !== NaN, so we check if num equals itself
+        if num == num {
+            return Result::Ok(YamlValue::Number(num));
         }
 
         // Remove quotes if present

@@ -960,6 +960,23 @@ impl SemanticAnalyzer {
                 // Returns a styles object mapping class names to scoped names
                 Ok(ResolvedType::Unknown)
             }
+            // Reactivity primitives (Phase 12)
+            Expression::Signal(signal_expr) => {
+                self.analyze_expression_with_expected(&signal_expr.initial_value, None)?;
+                Ok(ResolvedType::ComplexType)  // Signal<T>
+            }
+            Expression::Computed(computed_expr) => {
+                self.analyze_expression_with_expected(&computed_expr.computation, None)?;
+                Ok(ResolvedType::ComplexType)  // Computed<T>
+            }
+            Expression::Effect(effect_expr) => {
+                self.analyze_expression_with_expected(&effect_expr.callback, None)?;
+                Ok(ResolvedType::ComplexType)  // Effect (returns disposer)
+            }
+            Expression::Batch(batch_expr) => {
+                let result_type = self.analyze_expression_with_expected(&batch_expr.body, None)?;
+                Ok(result_type)  // Returns function result
+            }
         }
     }
 

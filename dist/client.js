@@ -77,14 +77,23 @@ const __fs_exists = function(path) {
 const __fs_metadata = function(path) {
   if (__nodeFs) {
     const stats = __nodeFs.statSync(path);
+    const _size = stats.size;
+    const _is_file = stats.isFile();
+    const _is_directory = stats.isDirectory();
+    const _created = stats.birthtimeMs;
+    const _modified = stats.mtimeMs;
+    const _accessed = stats.atimeMs;
+    const _permissions = stats.mode & 0o777;
     return {
-      size: stats.size,
-      is_file: stats.isFile(),
-      is_directory: stats.isDirectory(),
-      created: stats.birthtimeMs,
-      modified: stats.mtimeMs,
-      accessed: stats.atimeMs,
-      permissions: stats.mode & 0o777
+      size: _size,
+      is_file: () => _is_file,
+      is_directory: () => _is_directory,
+      created: _created,
+      modified: _modified,
+      accessed: _accessed,
+      permissions: _permissions,
+      len: () => _size,
+      is_readonly: () => (_permissions & 128) === 0
     };
   }
   throw new Error('File I/O not available in browser');
@@ -95,18 +104,24 @@ const __fs_read_dir = function(path) {
     return entries.map(entry => {
       const fullPath = path + '/' + entry.name;
       const stats = __nodeFs.statSync(fullPath);
+      const _size = stats.size;
+      const _is_file = stats.isFile();
+      const _is_directory = stats.isDirectory();
+      const metadata = {
+        size: _size,
+        is_file: _is_file,
+        is_directory: _is_directory,
+        created: stats.birthtimeMs,
+        modified: stats.mtimeMs,
+        accessed: stats.atimeMs,
+        permissions: stats.mode & 0o777
+      };
       return {
         name: entry.name,
         path: fullPath,
-        metadata: {
-          size: stats.size,
-          is_file: stats.isFile(),
-          is_directory: stats.isDirectory(),
-          created: stats.birthtimeMs,
-          modified: stats.mtimeMs,
-          accessed: stats.atimeMs,
-          permissions: stats.mode & 0o777
-        }
+        metadata: metadata,
+        is_file: () => _is_file,
+        is_directory: () => _is_directory
       };
     });
   }
@@ -195,6 +210,9 @@ if (!String.prototype.contains) {
 if (!String.prototype.starts_with) {
   String.prototype.starts_with = function(prefix) { return this.startsWith(prefix); };
 }
+if (!String.prototype.ends_with) {
+  String.prototype.ends_with = function(suffix) { return this.endsWith(suffix); };
+}
 if (!String.prototype.to_lowercase) {
   String.prototype.to_lowercase = function() { return this.toLowerCase(); };
 }
@@ -216,6 +234,12 @@ if (!String.prototype.index_of) {
 if (!String.prototype.clone) {
   String.prototype.clone = function() { return this.toString(); };
 }
+if (!String.prototype.push_str) {
+  String.prototype.push_str = function(s) { return this + s; };
+}
+if (!String.prototype.to_string) {
+  String.prototype.to_string = function() { return this.toString(); };
+}
 if (!Number.prototype.to_string) {
   Number.prototype.to_string = function() { return this.toString(); };
 }
@@ -231,8 +255,31 @@ if (!Array.prototype.clone) {
 if (!Object.prototype.keys) {
   Object.prototype.keys = function() { return Object.keys(this); };
 }
+if (!Object.prototype.clone) {
+  Object.prototype.clone = function() { return JSON.parse(JSON.stringify(this)); };
+}
 if (!String.from_char_code) {
   String.from_char_code = function(code) { return String.fromCharCode(code); };
+}
+if (!String.new) {
+  String.new = function() {
+    const sb = { __value: "" };
+    sb.push_str = function(s) { this.__value += s; };
+    sb.toString = function() { return this.__value; };
+    sb.valueOf = function() { return this.__value; };
+    sb.clone = function() { return this.__value; };
+    sb.len = function() { return this.__value.length; };
+    sb.is_empty = function() { return this.__value.length === 0; };
+    sb.contains = function(s) { return this.__value.includes(s); };
+    sb.trim = function() { return this.__value.trim(); };
+    sb.starts_with = function(s) { return this.__value.startsWith(s); };
+    sb.ends_with = function(s) { return this.__value.endsWith(s); };
+    sb.substring = function(start, end) { return this.__value.substring(start, end); };
+    return sb;
+  };
+}
+if (!String.from) {
+  String.from = function(s) { return String(s); };
 }
 
 // Result<T, E> enum - represents success (Ok) or failure (Err)
@@ -245,6 +292,8 @@ Result.prototype.is_err = function() { return this.variant === "Err"; };
 Result.prototype.unwrap = function() { if (this.variant === "Ok") return this.data; throw new Error("Called unwrap on Err"); };
 Result.prototype.unwrap_err = function() { if (this.variant === "Err") return this.data; throw new Error("Called unwrap_err on Ok"); };
 Result.prototype.unwrap_or = function(default_val) { return this.variant === "Ok" ? this.data : default_val; };
+Result.Ok = Ok;
+Result.Err = Err;
 
 // Option<T> enum - represents Some value or None
 const Option = { __proto__: null };
@@ -270,6 +319,12 @@ if (!Map.prototype.contains_key) {
 if (!Map.prototype.get_or_default) {
   Map.prototype.get_or_default = function(k, def) { return this.has(k) ? this.get(k) : def; };
 }
+if (!Map.prototype.len) {
+  Map.prototype.len = function() { return this.size; };
+}
+if (!Map.prototype.is_empty) {
+  Map.prototype.is_empty = function() { return this.size === 0; };
+}
 
 // RPC Client Setup
 // Auto-generated RPC client stubs
@@ -283,10 +338,8 @@ const client = new RPCClient(window.location.origin + '/_rpc');
 // Implementations
 // Client function implementations
 // Shared utility functions
-export function test_method_with_string() {
-  let s = "hello";
-  let parts = s.split(".");
-  return parts;
+export function main() {
+  return console.log("Hello, World\\!");
 
 }
 
@@ -322,6 +375,46 @@ const crypto = {
   hex_decode: typeof hex_decode !== 'undefined' ? hex_decode : undefined,
   hash_password_auto: typeof hash_password_auto !== 'undefined' ? hash_password_auto : undefined,
   generate_salt: typeof generate_salt !== 'undefined' ? generate_salt : undefined,
+};
+
+const fs = {
+  read_to_string: typeof read_to_string !== 'undefined' ? read_to_string : undefined,
+  read: typeof read !== 'undefined' ? read : undefined,
+  write: typeof write !== 'undefined' ? write : undefined,
+  write_bytes: typeof write_bytes !== 'undefined' ? write_bytes : undefined,
+  append: typeof append !== 'undefined' ? append : undefined,
+  exists: typeof exists !== 'undefined' ? exists : undefined,
+  is_file: typeof is_file !== 'undefined' ? is_file : undefined,
+  is_directory: typeof is_directory !== 'undefined' ? is_directory : undefined,
+  metadata: typeof metadata !== 'undefined' ? metadata : undefined,
+  create_dir: typeof create_dir !== 'undefined' ? create_dir : undefined,
+  create_dir_all: typeof create_dir_all !== 'undefined' ? create_dir_all : undefined,
+  remove_file: typeof remove_file !== 'undefined' ? remove_file : undefined,
+  remove_dir: typeof remove_dir !== 'undefined' ? remove_dir : undefined,
+  remove_dir_all: typeof remove_dir_all !== 'undefined' ? remove_dir_all : undefined,
+  read_dir: typeof read_dir !== 'undefined' ? read_dir : undefined,
+  copy: typeof copy !== 'undefined' ? copy : undefined,
+  rename: typeof rename !== 'undefined' ? rename : undefined,
+  current_dir: typeof current_dir !== 'undefined' ? current_dir : undefined,
+  set_current_dir: typeof set_current_dir !== 'undefined' ? set_current_dir : undefined,
+  canonicalize: typeof canonicalize !== 'undefined' ? canonicalize : undefined,
+  symlink: typeof symlink !== 'undefined' ? symlink : undefined,
+  read_link: typeof read_link !== 'undefined' ? read_link : undefined,
+  set_permissions: typeof set_permissions !== 'undefined' ? set_permissions : undefined,
+  walk_dir: typeof walk_dir !== 'undefined' ? walk_dir : undefined,
+  glob: typeof glob !== 'undefined' ? glob : undefined,
+};
+
+const yaml = {
+  parse: typeof yaml_parse !== 'undefined' ? yaml_parse : undefined,
+  stringify: typeof yaml_stringify !== 'undefined' ? yaml_stringify : undefined,
+  // Helper functions for creating YAML values
+  yaml_null: typeof yaml_null !== 'undefined' ? yaml_null : undefined,
+  yaml_bool: typeof yaml_bool !== 'undefined' ? yaml_bool : undefined,
+  yaml_number: typeof yaml_number !== 'undefined' ? yaml_number : undefined,
+  yaml_string: typeof yaml_string !== 'undefined' ? yaml_string : undefined,
+  yaml_sequence: typeof yaml_sequence !== 'undefined' ? yaml_sequence : undefined,
+  yaml_mapping: typeof yaml_mapping !== 'undefined' ? yaml_mapping : undefined,
 };
 
 // UI Components

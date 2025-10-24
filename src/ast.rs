@@ -274,6 +274,11 @@ pub enum Expression {
     Await(AwaitExpression),  // await expr (async/await)
     Block(BlockStatement),  // { statements... } as an expression (for match arms, etc.)
     CssMacro(CssExpression),  // css! { ... } macro for styles
+    // Reactivity primitives (Phase 12)
+    Signal(SignalExpression),  // signal<T>(initial_value)
+    Computed(ComputedExpression),  // computed<T>(() => expr)
+    Effect(EffectExpression),  // effect(() => { })
+    Batch(BatchExpression),  // batch(() => { })
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -714,4 +719,38 @@ pub struct TraitMethod {
     pub name: Identifier,
     pub parameters: Vec<FunctionParameter>,
     pub return_type: Option<TypeExpression>,
+}
+
+// ============================================================================
+// Reactivity Expressions (Phase 12)
+// ============================================================================
+
+/// Signal expression: signal<T>(initial_value)
+/// Creates a reactive signal with an initial value
+#[derive(Debug, Clone)]
+pub struct SignalExpression {
+    pub type_annotation: Option<TypeExpression>,  // Optional type parameter: signal<int>()
+    pub initial_value: Box<Expression>,            // The initial value
+}
+
+/// Computed expression: computed<T>(() => expr)
+/// Creates a derived reactive value that automatically updates
+#[derive(Debug, Clone)]
+pub struct ComputedExpression {
+    pub type_annotation: Option<TypeExpression>,  // Optional type parameter: computed<int>()
+    pub computation: Box<Expression>,              // Must be a lambda/closure
+}
+
+/// Effect expression: effect(() => { ... })
+/// Creates a side effect that re-runs when dependencies change
+#[derive(Debug, Clone)]
+pub struct EffectExpression {
+    pub callback: Box<Expression>,  // Must be a lambda/closure
+}
+
+/// Batch expression: batch(() => { ... })
+/// Batches multiple signal updates to prevent redundant effect executions
+#[derive(Debug, Clone)]
+pub struct BatchExpression {
+    pub body: Box<Expression>,  // Must be a lambda/closure
 }

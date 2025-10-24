@@ -706,6 +706,25 @@ impl TypeChecker {
                 // CSS macro returns a styles object (handled in Sprint 1 Task 1.6)
                 Ok(Type::Any)
             }
+            // Reactivity primitives (Phase 12)
+            Expression::Signal(signal_expr) => {
+                let _inner_type = self.infer_expression(&signal_expr.initial_value)?;
+                // For now, return Any - proper typing will be added later
+                Ok(Type::Any)
+            }
+            Expression::Computed(computed_expr) => {
+                let _inner_type = self.infer_expression(&computed_expr.computation)?;
+                // For now, return Any - proper typing will be added later
+                Ok(Type::Any)
+            }
+            Expression::Effect(_) => {
+                // Effect returns a disposer function
+                Ok(Type::Any)
+            }
+            Expression::Batch(batch_expr) => {
+                // Batch returns the result of the function
+                self.infer_expression(&batch_expr.body)
+            }
         }
     }
 

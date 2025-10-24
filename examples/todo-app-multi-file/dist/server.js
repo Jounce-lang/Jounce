@@ -39,11 +39,6 @@ module.exports.create_todo = function(id, title) {
 
 }
 
-module.exports.is_valid_id = function(id) {
-  return (id > 0);
-
-}
-
 module.exports.generate_id = function() {
   return 42;
 
@@ -55,6 +50,11 @@ module.exports.format_count = function(count) {
 
   }
   return (count.to_string() + " items");
+
+}
+
+module.exports.is_valid_id = function(id) {
+  return (id > 0);
 
 }
 
@@ -74,13 +74,13 @@ module.exports.format_todo = function(todo) {
 
 }
 
-module.exports.get_sample_todo = function() {
-  return create_todo(1, "Sample task");
+module.exports.mark_completed = function(todo) {
+  return new Todo(todo.id, todo.title, true);
 
 }
 
-module.exports.mark_completed = function(todo) {
-  return new Todo(todo.id, todo.title, true);
+module.exports.get_sample_todo = function() {
+  return create_todo(1, "Sample task");
 
 }
 
