@@ -228,6 +228,7 @@ fn main() {
             let module_start = Instant::now();
             use jounce_compiler::module_loader::ModuleLoader;
             let mut module_loader = ModuleLoader::new("aloha-shirts");
+            module_loader.set_current_file(&path);
             match module_loader.merge_imports(&mut program) {
                 Ok(_imported_files) => {
                     // Dependencies tracked if using cached compilation

@@ -36,6 +36,8 @@ pub struct ModuleLoader {
     module_cache: HashMap<String, Module>,
     /// Set of module paths currently being loaded (for cycle detection)
     loading_stack: HashSet<String>,
+    /// Current file being processed (for relative path resolution)
+    current_file: Option<PathBuf>,
 }
 
 impl ModuleLoader {
@@ -45,7 +47,13 @@ impl ModuleLoader {
             package_root: package_root.as_ref().to_path_buf(),
             module_cache: HashMap::new(),
             loading_stack: HashSet::new(),
+            current_file: None,
         }
+    }
+
+    /// Set the current file being processed (for relative path resolution)
+    pub fn set_current_file<P: AsRef<Path>>(&mut self, file_path: P) {
+        self.current_file = Some(file_path.as_ref().to_path_buf());
     }
 
     /// Resolve a module path to a filesystem path
@@ -64,8 +72,18 @@ impl ModuleLoader {
         let is_relative = module_path[0] == "." || module_path[0] == "..";
 
         if is_relative {
-            // Resolve relative path from current working directory
-            let mut path = PathBuf::from(".");
+            // Resolve relative path from the current file's directory
+            let base_path = if let Some(ref current) = self.current_file {
+                // Get the directory of the current file
+                current.parent()
+                    .map(|p| p.to_path_buf())
+                    .unwrap_or_else(|| PathBuf::from("."))
+            } else {
+                // Fallback to current working directory if no context
+                PathBuf::from(".")
+            };
+
+            let mut path = base_path;
 
             for segment in module_path {
                 if segment == "." {
@@ -156,6 +174,10 @@ impl ModuleLoader {
         // Resolve the file path
         let file_path = self.resolve_module_path(module_path)?;
 
+        // Set current file context for nested imports
+        let previous_file = self.current_file.clone();
+        self.current_file = Some(file_path.clone());
+
         // Read the file
         let source = fs::read_to_string(&file_path)
             .map_err(|e| CompileError::Generic(format!(
@@ -166,10 +188,16 @@ impl ModuleLoader {
         // Parse the module
         let mut lexer = Lexer::new(source);
         let mut parser = Parser::new(&mut lexer);
-        let ast = parser.parse_program()?;
+        let mut ast = parser.parse_program()?;
+
+        // Process imports in this module (recursive)
+        let _nested_imports = self.merge_imports(&mut ast)?;
 
         // Extract exports
         let exports = self.extract_exports(&ast)?;
+
+        // Restore previous file context
+        self.current_file = previous_file;
 
         // Create the module
         let module = Module {

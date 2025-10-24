@@ -59,6 +59,7 @@ pub fn compile_source_cached(
 
     // Module import resolution and dependency tracking
     let mut module_loader = module_loader::ModuleLoader::new("aloha-shirts");
+    module_loader.set_current_file(file_path);
     let imported_files = module_loader.merge_imports(&mut program_ast)?;
 
     // Track dependencies in cache for smart invalidation
