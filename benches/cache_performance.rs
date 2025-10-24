@@ -29,7 +29,7 @@ fn App() -> JSX {
 }
 
 fn main() {
-    println("Hello from Jounce!");
+    let greeting = "Hello from Jounce!";
 }
 "#;
 

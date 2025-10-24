@@ -65,3 +65,6 @@ rmp-serde = "1.1"                                         # MessagePack serializ
 rayon = "1.8"                                            # Parallel compilation
 num_cpus = "1.16"                                        # CPU detection
 dashmap = "5.5"                                          # Concurrent HashMap
+
+[dev-dependencies]
+criterion = "0.5"
