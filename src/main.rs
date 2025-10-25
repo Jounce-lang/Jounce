@@ -350,6 +350,17 @@ fn main() {
                 println!("   ✓ {}", css_path.display());
             }
 
+            // Copy server-runtime.js to dist/
+            let runtime_source = std::path::PathBuf::from("runtime/server-runtime.js");
+            if runtime_source.exists() {
+                let runtime_dest = output_dir.join("server-runtime.js");
+                if let Err(e) = fs::copy(&runtime_source, &runtime_dest) {
+                    eprintln!("⚠️  Warning: Failed to copy server-runtime.js: {}", e);
+                } else {
+                    println!("   ✓ {}", runtime_dest.display());
+                }
+            }
+
             // Create index.html
             let html_content = generate_index_html();
             let html_path = output_dir.join("index.html");
