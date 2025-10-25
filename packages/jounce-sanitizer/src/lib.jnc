@@ -1,0 +1,434 @@
+// Security utilities and input sanitization for Jounce
+// Prevents XSS, SQL injection, path traversal, and other security vulnerabilities
+
+// ============================================================================
+// HTML Sanitization (XSS Prevention)
+// ============================================================================
+
+pub struct HtmlSanitizer {
+    pub allow_tags: Array<string>,
+    pub allow_attributes: Array<string>,
+}
+
+impl HtmlSanitizer {
+    pub fn new() -> HtmlSanitizer {
+        HtmlSanitizer {
+            allow_tags: [],
+            allow_attributes: [],
+        }
+    }
+
+    pub fn strict() -> HtmlSanitizer {
+        // No HTML allowed - escape everything
+        HtmlSanitizer::new()
+    }
+
+    pub fn basic() -> HtmlSanitizer {
+        // Allow safe formatting tags
+        let mut sanitizer = HtmlSanitizer::new();
+        sanitizer.allow_tags = ["p", "br", "strong", "em", "u", "i", "b"];
+        sanitizer
+    }
+
+    pub fn with_tag(mut self, tag: string) -> HtmlSanitizer {
+        self.allow_tags.push(tag);
+        self
+    }
+
+    pub fn with_attribute(mut self, attr: string) -> HtmlSanitizer {
+        self.allow_attributes.push(attr);
+        self
+    }
+
+    pub fn sanitize(&self, html: string) -> string {
+        // Escape all HTML entities
+        html.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&#39;")
+    }
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+pub fn escape_html(text: string) -> string {
+    text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\"", "&quot;")
+        .replace("'", "&#39;")
+}
+
+pub fn unescape_html(text: string) -> string {
+    text.replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'")
+        .replace("&amp;", "&")
+}
+
+pub fn strip_html(html: string) -> string {
+    // Simple tag removal - in production would use proper HTML parser
+    let mut result = html.clone();
+    let mut i = 0;
+
+    while i < result.len() {
+        if result.char_at(i) == '<' {
+            let mut end = i;
+            while end < result.len() && result.char_at(end) != '>' {
+                end = end + 1;
+            }
+            if end < result.len() {
+                let before = result.substring(0, i);
+                let after = result.substring(end + 1, result.len());
+                result = before + after;
+            }
+        } else {
+            i = i + 1;
+        }
+    }
+
+    result
+}
+
+// ============================================================================
+// SQL Injection Prevention
+// ============================================================================
+
+pub fn escape_sql(value: string) -> string {
+    value.replace("'", "''")
+        .replace("\\", "\\\\")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t")
+}
+
+pub fn quote_sql_identifier(identifier: string) -> string {
+    "\"" + identifier.replace("\"", "\"\"") + "\""
+}
+
+pub fn is_safe_sql_identifier(identifier: string) -> bool {
+    if identifier.len() == 0 {
+        return false;
+    }
+
+    // Check if contains only alphanumeric and underscore
+    let mut i = 0;
+    while i < identifier.len() {
+        let ch = identifier.char_at(i);
+        if !(ch >= 'a' && ch <= 'z') &&
+           !(ch >= 'A' && ch <= 'Z') &&
+           !(ch >= '0' && ch <= '9') &&
+           ch != '_' {
+            return false;
+        }
+        i = i + 1;
+    }
+
+    true
+}
+
+// ============================================================================
+// Path Traversal Prevention
+// ============================================================================
+
+pub fn sanitize_path(path: string) -> string {
+    // Remove path traversal attempts
+    path.replace("../", "")
+        .replace("..\\", "")
+        .replace("./", "")
+        .replace(".\\", "")
+}
+
+pub fn is_safe_filename(filename: string) -> bool {
+    if filename.len() == 0 {
+        return false;
+    }
+
+    // Check for path traversal
+    if filename.contains("..") || filename.contains("/") || filename.contains("\\") {
+        return false;
+    }
+
+    // Check for null bytes
+    if filename.contains("\0") {
+        return false;
+    }
+
+    true
+}
+
+pub fn sanitize_filename(filename: string) -> string {
+    // Remove unsafe characters
+    let mut result = "";
+    let mut i = 0;
+
+    while i < filename.len() {
+        let ch = filename.char_at(i);
+
+        if (ch >= 'a' && ch <= 'z') ||
+           (ch >= 'A' && ch <= 'Z') ||
+           (ch >= '0' && ch <= '9') ||
+           ch == '.' || ch == '-' || ch == '_' {
+            result = result + ch.to_string();
+        }
+
+        i = i + 1;
+    }
+
+    result
+}
+
+// ============================================================================
+// URL Sanitization
+// ============================================================================
+
+pub fn is_safe_url(url: string) -> bool {
+    // Check if URL starts with safe protocols
+    if url.starts_with("http://") || url.starts_with("https://") {
+        return true;
+    }
+
+    // Reject javascript:, data:, etc.
+    if url.starts_with("javascript:") ||
+       url.starts_with("data:") ||
+       url.starts_with("vbscript:") ||
+       url.starts_with("file:") {
+        return false;
+    }
+
+    // Relative URLs are okay
+    if url.starts_with("/") || url.starts_with("./") || url.starts_with("../") {
+        return true;
+    }
+
+    // Default to unsafe
+    false
+}
+
+pub fn sanitize_url(url: string) -> string {
+    if is_safe_url(url.clone()) {
+        url
+    } else {
+        ""
+    }
+}
+
+pub fn encode_url_component(value: string) -> string {
+    // URL encode special characters
+    value.replace(" ", "%20")
+        .replace("!", "%21")
+        .replace("#", "%23")
+        .replace("$", "%24")
+        .replace("&", "%26")
+        .replace("'", "%27")
+        .replace("(", "%28")
+        .replace(")", "%29")
+        .replace("*", "%2A")
+        .replace("+", "%2B")
+        .replace(",", "%2C")
+        .replace("/", "%2F")
+        .replace(":", "%3A")
+        .replace(";", "%3B")
+        .replace("=", "%3D")
+        .replace("?", "%3F")
+        .replace("@", "%40")
+        .replace("[", "%5B")
+        .replace("]", "%5D")
+}
+
+// ============================================================================
+// Header Injection Prevention
+// ============================================================================
+
+pub fn sanitize_header_value(value: string) -> string {
+    // Remove CRLF to prevent header injection
+    value.replace("\r", "")
+        .replace("\n", "")
+}
+
+pub fn is_safe_header_value(value: string) -> bool {
+    !value.contains("\r") && !value.contains("\n")
+}
+
+// ============================================================================
+// Command Injection Prevention
+// ============================================================================
+
+pub fn escape_shell_arg(arg: string) -> string {
+    // Escape shell special characters
+    "'" + arg.replace("'", "'\\''") + "'"
+}
+
+pub fn is_safe_shell_arg(arg: string) -> bool {
+    // Check for dangerous characters
+    if arg.contains(";") || arg.contains("|") || arg.contains("&") ||
+       arg.contains("$") || arg.contains("`") || arg.contains("(") ||
+       arg.contains(")") || arg.contains(">") || arg.contains("<") {
+        return false;
+    }
+
+    true
+}
+
+// ============================================================================
+// Input Validation
+// ============================================================================
+
+pub struct InputValidator {
+    pub min_length: int,
+    pub max_length: int,
+    pub pattern: string,
+    pub allow_empty: bool,
+}
+
+impl InputValidator {
+    pub fn new() -> InputValidator {
+        InputValidator {
+            min_length: 0,
+            max_length: 10000,
+            pattern: "",
+            allow_empty: true,
+        }
+    }
+
+    pub fn with_min_length(mut self, min: int) -> InputValidator {
+        self.min_length = min;
+        self
+    }
+
+    pub fn with_max_length(mut self, max: int) -> InputValidator {
+        self.max_length = max;
+        self
+    }
+
+    pub fn with_pattern(mut self, pattern: string) -> InputValidator {
+        self.pattern = pattern;
+        self
+    }
+
+    pub fn require_non_empty(mut self) -> InputValidator {
+        self.allow_empty = false;
+        self
+    }
+
+    pub fn validate(&self, input: string) -> ValidationResult {
+        if !self.allow_empty && input.len() == 0 {
+            return ValidationResult::invalid("Input cannot be empty");
+        }
+
+        if input.len() < self.min_length {
+            return ValidationResult::invalid("Input too short");
+        }
+
+        if input.len() > self.max_length {
+            return ValidationResult::invalid("Input too long");
+        }
+
+        ValidationResult::valid()
+    }
+}
+
+pub struct ValidationResult {
+    pub valid: bool,
+    pub error: string,
+}
+
+impl ValidationResult {
+    pub fn valid() -> ValidationResult {
+        ValidationResult {
+            valid: true,
+            error: "",
+        }
+    }
+
+    pub fn invalid(error: string) -> ValidationResult {
+        ValidationResult {
+            valid: false,
+            error: error,
+        }
+    }
+}
+
+// ============================================================================
+// Common Patterns
+// ============================================================================
+
+pub fn is_alphanumeric(text: string) -> bool {
+    if text.len() == 0 {
+        return false;
+    }
+
+    let mut i = 0;
+    while i < text.len() {
+        let ch = text.char_at(i);
+        if !((ch >= 'a' && ch <= 'z') ||
+             (ch >= 'A' && ch <= 'Z') ||
+             (ch >= '0' && ch <= '9')) {
+            return false;
+        }
+        i = i + 1;
+    }
+
+    true
+}
+
+pub fn is_email(email: string) -> bool {
+    email.contains("@") && email.contains(".")
+}
+
+pub fn is_numeric(text: string) -> bool {
+    if text.len() == 0 {
+        return false;
+    }
+
+    let mut i = 0;
+    while i < text.len() {
+        let ch = text.char_at(i);
+        if !(ch >= '0' && ch <= '9') {
+            return false;
+        }
+        i = i + 1;
+    }
+
+    true
+}
+
+// ============================================================================
+// Sanitizer Presets
+// ============================================================================
+
+pub struct Sanitizer {}
+
+impl Sanitizer {
+    pub fn html(text: string) -> string {
+        escape_html(text)
+    }
+
+    pub fn sql(value: string) -> string {
+        escape_sql(value)
+    }
+
+    pub fn url(url: string) -> string {
+        sanitize_url(url)
+    }
+
+    pub fn path(path: string) -> string {
+        sanitize_path(path)
+    }
+
+    pub fn filename(filename: string) -> string {
+        sanitize_filename(filename)
+    }
+
+    pub fn header(value: string) -> string {
+        sanitize_header_value(value)
+    }
+
+    pub fn shell(arg: string) -> string {
+        escape_shell_arg(arg)
+    }
+}

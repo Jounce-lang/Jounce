@@ -1,0 +1,199 @@
+// Tests for input validation and common patterns
+use jounce_sanitizer::{InputValidator, is_alphanumeric, is_email, is_numeric, Sanitizer};
+
+// ============================================================================
+// InputValidator Tests
+// ============================================================================
+
+#[test]
+fn test_input_validator_creation() {
+    let validator = InputValidator::new();
+
+    assert_eq!(validator.min_length, 0, "Default min should be 0");
+    assert_eq!(validator.max_length, 10000, "Default max should be 10000");
+}
+
+#[test]
+fn test_input_validator_with_min_length() {
+    let validator = InputValidator::new()
+        .with_min_length(5);
+
+    assert_eq!(validator.min_length, 5, "Min length should be 5");
+}
+
+#[test]
+fn test_input_validator_with_max_length() {
+    let validator = InputValidator::new()
+        .with_max_length(100);
+
+    assert_eq!(validator.max_length, 100, "Max length should be 100");
+}
+
+#[test]
+fn test_input_validator_require_non_empty() {
+    let validator = InputValidator::new()
+        .require_non_empty();
+
+    assert!(!validator.allow_empty, "Should not allow empty");
+}
+
+#[test]
+fn test_input_validator_validate_valid() {
+    let validator = InputValidator::new()
+        .with_min_length(3)
+        .with_max_length(10);
+
+    let result = validator.validate("hello");
+
+    assert!(result.valid, "Should be valid");
+}
+
+#[test]
+fn test_input_validator_validate_too_short() {
+    let validator = InputValidator::new()
+        .with_min_length(5);
+
+    let result = validator.validate("hi");
+
+    assert!(!result.valid, "Should be invalid - too short");
+    assert_eq!(result.error, "Input too short", "Error should match");
+}
+
+#[test]
+fn test_input_validator_validate_too_long() {
+    let validator = InputValidator::new()
+        .with_max_length(5);
+
+    let result = validator.validate("toolongtext");
+
+    assert!(!result.valid, "Should be invalid - too long");
+    assert_eq!(result.error, "Input too long", "Error should match");
+}
+
+#[test]
+fn test_input_validator_validate_empty_allowed() {
+    let validator = InputValidator::new();
+
+    let result = validator.validate("");
+
+    assert!(result.valid, "Empty should be allowed by default");
+}
+
+#[test]
+fn test_input_validator_validate_empty_not_allowed() {
+    let validator = InputValidator::new()
+        .require_non_empty();
+
+    let result = validator.validate("");
+
+    assert!(!result.valid, "Empty should not be allowed");
+    assert_eq!(result.error, "Input cannot be empty", "Error should match");
+}
+
+// ============================================================================
+// Common Pattern Tests
+// ============================================================================
+
+#[test]
+fn test_is_alphanumeric_valid() {
+    assert!(is_alphanumeric("abc123"), "Should be alphanumeric");
+    assert!(is_alphanumeric("ABC"), "Should be alphanumeric");
+    assert!(is_alphanumeric("123"), "Should be alphanumeric");
+}
+
+#[test]
+fn test_is_alphanumeric_invalid() {
+    assert!(!is_alphanumeric("abc 123"), "Space should be invalid");
+    assert!(!is_alphanumeric("abc-123"), "Dash should be invalid");
+    assert!(!is_alphanumeric("abc_123"), "Underscore should be invalid");
+}
+
+#[test]
+fn test_is_alphanumeric_empty() {
+    assert!(!is_alphanumeric(""), "Empty should be invalid");
+}
+
+#[test]
+fn test_is_email_valid() {
+    assert!(is_email("user@example.com"), "Should be valid email");
+    assert!(is_email("test@test.co.uk"), "Should be valid email");
+}
+
+#[test]
+fn test_is_email_invalid() {
+    assert!(!is_email("notanemail"), "Should be invalid");
+    assert!(!is_email("missing@domain"), "Should be invalid");
+    assert!(!is_email("@example.com"), "Should be invalid");
+}
+
+#[test]
+fn test_is_numeric_valid() {
+    assert!(is_numeric("123"), "Should be numeric");
+    assert!(is_numeric("0"), "Should be numeric");
+    assert!(is_numeric("999999"), "Should be numeric");
+}
+
+#[test]
+fn test_is_numeric_invalid() {
+    assert!(!is_numeric("12.3"), "Decimal should be invalid");
+    assert!(!is_numeric("abc"), "Letters should be invalid");
+    assert!(!is_numeric("12a"), "Mixed should be invalid");
+}
+
+#[test]
+fn test_is_numeric_empty() {
+    assert!(!is_numeric(""), "Empty should be invalid");
+}
+
+// ============================================================================
+// Sanitizer Preset Tests
+// ============================================================================
+
+#[test]
+fn test_sanitizer_html() {
+    let sanitized = Sanitizer::html("<script>alert('xss')</script>");
+
+    assert!(!sanitized.contains("<script>"), "Should sanitize HTML");
+}
+
+#[test]
+fn test_sanitizer_sql() {
+    let sanitized = Sanitizer::sql("O'Reilly");
+
+    assert_eq!(sanitized, "O''Reilly", "Should sanitize SQL");
+}
+
+#[test]
+fn test_sanitizer_url() {
+    let sanitized = Sanitizer::url("javascript:alert('xss')");
+
+    assert_eq!(sanitized, "", "Should sanitize unsafe URL");
+}
+
+#[test]
+fn test_sanitizer_path() {
+    let sanitized = Sanitizer::path("../../../etc/passwd");
+
+    assert!(!sanitized.contains(".."), "Should sanitize path");
+}
+
+#[test]
+fn test_sanitizer_filename() {
+    let sanitized = Sanitizer::filename("file!@#$.pdf");
+
+    assert_eq!(sanitized, "file.pdf", "Should sanitize filename");
+}
+
+#[test]
+fn test_sanitizer_header() {
+    let sanitized = Sanitizer::header("value\r\nX-Injected: evil");
+
+    assert!(!sanitized.contains("\r"), "Should sanitize header");
+}
+
+#[test]
+fn test_sanitizer_shell() {
+    let sanitized = Sanitizer::shell("hello world");
+
+    assert!(sanitized.contains("'"), "Should sanitize shell arg");
+}

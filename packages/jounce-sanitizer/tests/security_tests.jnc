@@ -1,0 +1,283 @@
+// Tests for SQL, path, URL, and shell sanitization
+use jounce_sanitizer::{escape_sql, quote_sql_identifier, is_safe_sql_identifier, sanitize_path, is_safe_filename, sanitize_filename, is_safe_url, sanitize_url, encode_url_component, sanitize_header_value, is_safe_header_value, escape_shell_arg, is_safe_shell_arg};
+
+// ============================================================================
+// SQL Sanitization Tests
+// ============================================================================
+
+#[test]
+fn test_escape_sql_single_quote() {
+    let escaped = escape_sql("O'Reilly");
+
+    assert_eq!(escaped, "O''Reilly", "Should escape single quotes");
+}
+
+#[test]
+fn test_escape_sql_backslash() {
+    let escaped = escape_sql("C:\\path");
+
+    assert_eq!(escaped, "C:\\\\path", "Should escape backslashes");
+}
+
+#[test]
+fn test_escape_sql_newline() {
+    let escaped = escape_sql("Line1\nLine2");
+
+    assert_eq!(escaped, "Line1\\nLine2", "Should escape newlines");
+}
+
+#[test]
+fn test_escape_sql_carriage_return() {
+    let escaped = escape_sql("Line1\rLine2");
+
+    assert_eq!(escaped, "Line1\\rLine2", "Should escape carriage returns");
+}
+
+#[test]
+fn test_escape_sql_tab() {
+    let escaped = escape_sql("Col1\tCol2");
+
+    assert_eq!(escaped, "Col1\\tCol2", "Should escape tabs");
+}
+
+#[test]
+fn test_quote_sql_identifier() {
+    let quoted = quote_sql_identifier("user_table");
+
+    assert_eq!(quoted, "\"user_table\"", "Should quote identifier");
+}
+
+#[test]
+fn test_quote_sql_identifier_with_quotes() {
+    let quoted = quote_sql_identifier("table\"name");
+
+    assert_eq!(quoted, "\"table\"\"name\"", "Should escape quotes in identifier");
+}
+
+#[test]
+fn test_is_safe_sql_identifier_valid() {
+    assert!(is_safe_sql_identifier("user_table"), "Should be safe");
+    assert!(is_safe_sql_identifier("Table123"), "Should be safe");
+    assert!(is_safe_sql_identifier("my_column_name"), "Should be safe");
+}
+
+#[test]
+fn test_is_safe_sql_identifier_invalid() {
+    assert!(!is_safe_sql_identifier("user table"), "Space should be unsafe");
+    assert!(!is_safe_sql_identifier("user-table"), "Dash should be unsafe");
+    assert!(!is_safe_sql_identifier("user;DROP TABLE"), "Semicolon should be unsafe");
+}
+
+#[test]
+fn test_is_safe_sql_identifier_empty() {
+    assert!(!is_safe_sql_identifier(""), "Empty should be unsafe");
+}
+
+// ============================================================================
+// Path Sanitization Tests
+// ============================================================================
+
+#[test]
+fn test_sanitize_path_dot_dot_slash() {
+    let sanitized = sanitize_path("../../../etc/passwd");
+
+    assert!(!sanitized.contains(".."), "Should remove path traversal");
+}
+
+#[test]
+fn test_sanitize_path_dot_dot_backslash() {
+    let sanitized = sanitize_path("..\\..\\windows\\system32");
+
+    assert!(!sanitized.contains(".."), "Should remove path traversal");
+}
+
+#[test]
+fn test_sanitize_path_dot_slash() {
+    let sanitized = sanitize_path("./file.txt");
+
+    assert!(!sanitized.contains("./"), "Should remove relative path");
+}
+
+#[test]
+fn test_is_safe_filename_valid() {
+    assert!(is_safe_filename("document.pdf"), "Should be safe");
+    assert!(is_safe_filename("image.png"), "Should be safe");
+    assert!(is_safe_filename("file_name.txt"), "Should be safe");
+}
+
+#[test]
+fn test_is_safe_filename_path_traversal() {
+    assert!(!is_safe_filename("../etc/passwd"), "Should be unsafe");
+    assert!(!is_safe_filename("..\\windows\\system32"), "Should be unsafe");
+}
+
+#[test]
+fn test_is_safe_filename_slash() {
+    assert!(!is_safe_filename("path/to/file.txt"), "Forward slash should be unsafe");
+    assert!(!is_safe_filename("path\\to\\file.txt"), "Backslash should be unsafe");
+}
+
+#[test]
+fn test_is_safe_filename_empty() {
+    assert!(!is_safe_filename(""), "Empty should be unsafe");
+}
+
+#[test]
+fn test_sanitize_filename() {
+    let sanitized = sanitize_filename("my document!@#$%.pdf");
+
+    assert_eq!(sanitized, "mydocument.pdf", "Should remove unsafe characters");
+}
+
+#[test]
+fn test_sanitize_filename_alphanumeric() {
+    let sanitized = sanitize_filename("file123.txt");
+
+    assert_eq!(sanitized, "file123.txt", "Should preserve safe characters");
+}
+
+// ============================================================================
+// URL Sanitization Tests
+// ============================================================================
+
+#[test]
+fn test_is_safe_url_http() {
+    assert!(is_safe_url("http://example.com"), "HTTP should be safe");
+}
+
+#[test]
+fn test_is_safe_url_https() {
+    assert!(is_safe_url("https://example.com"), "HTTPS should be safe");
+}
+
+#[test]
+fn test_is_safe_url_javascript() {
+    assert!(!is_safe_url("javascript:alert('xss')"), "javascript: should be unsafe");
+}
+
+#[test]
+fn test_is_safe_url_data() {
+    assert!(!is_safe_url("data:text/html,<script>alert('xss')</script>"), "data: should be unsafe");
+}
+
+#[test]
+fn test_is_safe_url_vbscript() {
+    assert!(!is_safe_url("vbscript:msgbox('xss')"), "vbscript: should be unsafe");
+}
+
+#[test]
+fn test_is_safe_url_file() {
+    assert!(!is_safe_url("file:///etc/passwd"), "file: should be unsafe");
+}
+
+#[test]
+fn test_is_safe_url_relative() {
+    assert!(is_safe_url("/path/to/page"), "Absolute path should be safe");
+    assert!(is_safe_url("./page.html"), "Relative path should be safe");
+    assert!(is_safe_url("../page.html"), "Parent path should be safe");
+}
+
+#[test]
+fn test_sanitize_url_safe() {
+    let sanitized = sanitize_url("https://example.com");
+
+    assert_eq!(sanitized, "https://example.com", "Should preserve safe URL");
+}
+
+#[test]
+fn test_sanitize_url_unsafe() {
+    let sanitized = sanitize_url("javascript:alert('xss')");
+
+    assert_eq!(sanitized, "", "Should remove unsafe URL");
+}
+
+#[test]
+fn test_encode_url_component_space() {
+    let encoded = encode_url_component("hello world");
+
+    assert_eq!(encoded, "hello%20world", "Should encode space");
+}
+
+#[test]
+fn test_encode_url_component_special() {
+    let encoded = encode_url_component("a+b=c&d");
+
+    assert!(encoded.contains("%"), "Should encode special characters");
+}
+
+// ============================================================================
+// Header Sanitization Tests
+// ============================================================================
+
+#[test]
+fn test_sanitize_header_value() {
+    let sanitized = sanitize_header_value("value\r\nX-Injected: evil");
+
+    assert!(!sanitized.contains("\r"), "Should remove CR");
+    assert!(!sanitized.contains("\n"), "Should remove LF");
+}
+
+#[test]
+fn test_is_safe_header_value_safe() {
+    assert!(is_safe_header_value("SafeValue123"), "Should be safe");
+}
+
+#[test]
+fn test_is_safe_header_value_crlf() {
+    assert!(!is_safe_header_value("Value\r\n"), "CRLF should be unsafe");
+}
+
+// ============================================================================
+// Shell Sanitization Tests
+// ============================================================================
+
+#[test]
+fn test_escape_shell_arg() {
+    let escaped = escape_shell_arg("hello world");
+
+    assert!(escaped.starts_with("'"), "Should quote argument");
+    assert!(escaped.ends_with("'"), "Should quote argument");
+}
+
+#[test]
+fn test_escape_shell_arg_with_quote() {
+    let escaped = escape_shell_arg("it's");
+
+    assert!(escaped.contains("\\'"), "Should escape single quotes");
+}
+
+#[test]
+fn test_is_safe_shell_arg_safe() {
+    assert!(is_safe_shell_arg("hello"), "Should be safe");
+    assert!(is_safe_shell_arg("file.txt"), "Should be safe");
+}
+
+#[test]
+fn test_is_safe_shell_arg_semicolon() {
+    assert!(!is_safe_shell_arg("cmd;rm -rf /"), "Semicolon should be unsafe");
+}
+
+#[test]
+fn test_is_safe_shell_arg_pipe() {
+    assert!(!is_safe_shell_arg("cmd | grep"), "Pipe should be unsafe");
+}
+
+#[test]
+fn test_is_safe_shell_arg_ampersand() {
+    assert!(!is_safe_shell_arg("cmd && rm"), "Ampersand should be unsafe");
+}
+
+#[test]
+fn test_is_safe_shell_arg_dollar() {
+    assert!(!is_safe_shell_arg("$(whoami)"), "Dollar should be unsafe");
+}
+
+#[test]
+fn test_is_safe_shell_arg_backtick() {
+    assert!(!is_safe_shell_arg("`whoami`"), "Backtick should be unsafe");
+}
+
+#[test]
+fn test_is_safe_shell_arg_redirect() {
+    assert!(!is_safe_shell_arg("cmd > file"), "Redirect should be unsafe");
+}

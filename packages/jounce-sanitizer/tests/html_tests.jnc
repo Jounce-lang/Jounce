@@ -1,0 +1,146 @@
+// Tests for HTML sanitization in jounce-sanitizer
+use jounce_sanitizer::{HtmlSanitizer, escape_html, unescape_html, strip_html};
+
+#[test]
+fn test_html_sanitizer_creation() {
+    let sanitizer = HtmlSanitizer::new();
+
+    assert_eq!(sanitizer.allow_tags.len(), 0, "Should have no allowed tags");
+}
+
+#[test]
+fn test_html_sanitizer_strict() {
+    let sanitizer = HtmlSanitizer::strict();
+
+    assert_eq!(sanitizer.allow_tags.len(), 0, "Strict should allow no tags");
+}
+
+#[test]
+fn test_html_sanitizer_basic() {
+    let sanitizer = HtmlSanitizer::basic();
+
+    assert!(sanitizer.allow_tags.len() > 0, "Basic should allow some tags");
+}
+
+#[test]
+fn test_html_sanitizer_with_tag() {
+    let sanitizer = HtmlSanitizer::new()
+        .with_tag("div");
+
+    assert_eq!(sanitizer.allow_tags.len(), 1, "Should have 1 allowed tag");
+}
+
+#[test]
+fn test_html_sanitizer_sanitize() {
+    let sanitizer = HtmlSanitizer::strict();
+    let result = sanitizer.sanitize("<script>alert('xss')</script>");
+
+    assert!(!result.contains("<script>"), "Should escape script tags");
+    assert!(result.contains("&lt;script&gt;"), "Should contain escaped tags");
+}
+
+#[test]
+fn test_escape_html_script() {
+    let escaped = escape_html("<script>alert('xss')</script>");
+
+    assert_eq!(escaped, "&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;", "Should escape all HTML");
+}
+
+#[test]
+fn test_escape_html_ampersand() {
+    let escaped = escape_html("A & B");
+
+    assert_eq!(escaped, "A &amp; B", "Should escape ampersand");
+}
+
+#[test]
+fn test_escape_html_quotes() {
+    let escaped = escape_html("He said \"Hello\"");
+
+    assert_eq!(escaped, "He said &quot;Hello&quot;", "Should escape double quotes");
+}
+
+#[test]
+fn test_escape_html_single_quotes() {
+    let escaped = escape_html("It's working");
+
+    assert_eq!(escaped, "It&#39;s working", "Should escape single quotes");
+}
+
+#[test]
+fn test_escape_html_all_special() {
+    let escaped = escape_html("<>&\"'");
+
+    assert_eq!(escaped, "&lt;&gt;&amp;&quot;&#39;", "Should escape all special chars");
+}
+
+#[test]
+fn test_unescape_html() {
+    let unescaped = unescape_html("&lt;div&gt;");
+
+    assert_eq!(unescaped, "<div>", "Should unescape HTML");
+}
+
+#[test]
+fn test_unescape_html_ampersand() {
+    let unescaped = unescape_html("A &amp; B");
+
+    assert_eq!(unescaped, "A & B", "Should unescape ampersand");
+}
+
+#[test]
+fn test_unescape_html_quotes() {
+    let unescaped = unescape_html("&quot;Hello&quot;");
+
+    assert_eq!(unescaped, "\"Hello\"", "Should unescape quotes");
+}
+
+#[test]
+fn test_strip_html_simple() {
+    let stripped = strip_html("<p>Hello</p>");
+
+    assert_eq!(stripped, "Hello", "Should remove HTML tags");
+}
+
+#[test]
+fn test_strip_html_multiple_tags() {
+    let stripped = strip_html("<div><p>Hello</p></div>");
+
+    assert_eq!(stripped, "Hello", "Should remove all tags");
+}
+
+#[test]
+fn test_strip_html_no_tags() {
+    let stripped = strip_html("Plain text");
+
+    assert_eq!(stripped, "Plain text", "Should not modify plain text");
+}
+
+#[test]
+fn test_strip_html_self_closing() {
+    let stripped = strip_html("Line 1<br/>Line 2");
+
+    assert_eq!(stripped, "Line 1Line 2", "Should remove self-closing tags");
+}
+
+#[test]
+fn test_escape_html_preserves_text() {
+    let escaped = escape_html("Normal text without HTML");
+
+    assert_eq!(escaped, "Normal text without HTML", "Should preserve normal text");
+}
+
+#[test]
+fn test_escape_html_script_injection() {
+    let escaped = escape_html("<script>document.cookie</script>");
+
+    assert!(!escaped.contains("<script>"), "Should prevent script injection");
+}
+
+#[test]
+fn test_escape_html_img_onerror() {
+    let escaped = escape_html("<img src=x onerror='alert(1)'>");
+
+    assert!(!escaped.contains("<img"), "Should escape img tags");
+    assert!(!escaped.contains("onerror"), "Should escape onerror");
+}

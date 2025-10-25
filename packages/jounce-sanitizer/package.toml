@@ -1,0 +1,33 @@
+[package]
+name = "jounce-sanitizer"
+version = "0.1.0"
+description = "Security utilities and input sanitization for preventing XSS, SQL injection, and other vulnerabilities"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-sanitizer"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "html_tests"
+path = "tests/html_tests.jnc"
+
+[[test]]
+name = "security_tests"
+path = "tests/security_tests.jnc"
+
+[[test]]
+name = "validation_tests"
+path = "tests/validation_tests.jnc"
+
+[features]
+default = ["html", "sql", "path", "url", "shell"]
+html = []
+sql = []
+path = []
+url = []
+shell = []
+validation = []
