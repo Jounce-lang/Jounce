@@ -1,0 +1,260 @@
+// Tests for WebSocket server, rooms, and presence in jounce-websocket
+use jounce_websocket::{WebSocketServer, Connection, Room, PresenceTracker, PresenceStatus, EventHandler, Message};
+
+#[test]
+fn test_server_creation() {
+    let server = WebSocketServer::new(8080);
+
+    assert_eq!(server.port, 8080, "Port should be 8080");
+    assert!(!server.running, "Should not be running initially");
+}
+
+#[test]
+fn test_server_start() {
+    let mut server = WebSocketServer::new(8080);
+    server = server.start();
+
+    assert!(server.running, "Should be running");
+}
+
+#[test]
+fn test_server_stop() {
+    let mut server = WebSocketServer::new(8080);
+    server = server.start().stop();
+
+    assert!(!server.running, "Should be stopped");
+}
+
+#[test]
+fn test_server_add_connection() {
+    let mut server = WebSocketServer::new(8080);
+    let conn = Connection::new("conn1");
+
+    server = server.add_connection("conn1", conn);
+
+    assert_eq!(server.get_connection_count(), 1, "Should have 1 connection");
+}
+
+#[test]
+fn test_server_remove_connection() {
+    let mut server = WebSocketServer::new(8080);
+    let conn = Connection::new("conn1");
+
+    server = server.add_connection("conn1", conn);
+    server = server.remove_connection("conn1");
+
+    assert_eq!(server.get_connection_count(), 0, "Should have 0 connections");
+}
+
+#[test]
+fn test_server_create_room() {
+    let mut server = WebSocketServer::new(8080);
+    server = server.create_room("lobby");
+
+    assert!(server.rooms.contains_key("lobby"), "Should have lobby room");
+}
+
+#[test]
+fn test_server_join_room() {
+    let mut server = WebSocketServer::new(8080);
+    server = server.join_room("conn1", "lobby");
+
+    let members = server.get_room_members("lobby");
+    assert_eq!(members.len(), 1, "Lobby should have 1 member");
+}
+
+#[test]
+fn test_server_leave_room() {
+    let mut server = WebSocketServer::new(8080);
+    server = server.join_room("conn1", "lobby");
+    server = server.leave_room("conn1", "lobby");
+
+    let members = server.get_room_members("lobby");
+    assert_eq!(members.len(), 0, "Lobby should have 0 members");
+}
+
+#[test]
+fn test_connection_creation() {
+    let conn = Connection::new("conn1");
+
+    assert_eq!(conn.id, "conn1", "ID should match");
+    assert!(conn.is_active(), "Should be active");
+}
+
+#[test]
+fn test_connection_update_activity() {
+    let mut conn = Connection::new("conn1");
+    let initial_time = conn.last_activity;
+
+    conn = conn.update_activity();
+
+    assert!(conn.last_activity >= initial_time, "Activity should be updated");
+}
+
+#[test]
+fn test_connection_user_data() {
+    let mut conn = Connection::new("conn1");
+    conn = conn.set_user_data("username", "john");
+
+    let username = conn.get_user_data("username");
+    assert!(username.is_some(), "Should have username");
+    assert_eq!(username.unwrap(), "john", "Username should be john");
+}
+
+#[test]
+fn test_room_creation() {
+    let room = Room::new("lobby");
+
+    assert_eq!(room.name, "lobby", "Name should be lobby");
+    assert_eq!(room.members.len(), 0, "Should have no members");
+}
+
+#[test]
+fn test_room_add_member() {
+    let mut room = Room::new("lobby");
+    room = room.add_member("conn1");
+
+    assert_eq!(room.get_member_count(), 1, "Should have 1 member");
+}
+
+#[test]
+fn test_room_remove_member() {
+    let mut room = Room::new("lobby");
+    room = room.add_member("conn1").remove_member("conn1");
+
+    assert_eq!(room.get_member_count(), 0, "Should have 0 members");
+}
+
+#[test]
+fn test_room_has_member() {
+    let mut room = Room::new("lobby");
+    room = room.add_member("conn1");
+
+    assert!(room.has_member("conn1"), "Should have conn1");
+    assert!(!room.has_member("conn2"), "Should not have conn2");
+}
+
+#[test]
+fn test_room_metadata() {
+    let mut room = Room::new("lobby");
+    room = room.set_metadata("topic", "General Discussion");
+
+    let topic = room.get_metadata("topic");
+    assert!(topic.is_some(), "Should have topic");
+    assert_eq!(topic.unwrap(), "General Discussion", "Topic should match");
+}
+
+#[test]
+fn test_presence_tracker_creation() {
+    let tracker = PresenceTracker::new();
+
+    assert_eq!(tracker.users.len(), 0, "Should have no users");
+}
+
+#[test]
+fn test_presence_set_online() {
+    let mut tracker = PresenceTracker::new();
+    tracker = tracker.set_online("user1");
+
+    assert!(tracker.is_online("user1"), "User should be online");
+}
+
+#[test]
+fn test_presence_set_offline() {
+    let mut tracker = PresenceTracker::new();
+    tracker = tracker.set_online("user1").set_offline("user1");
+
+    assert!(!tracker.is_online("user1"), "User should be offline");
+}
+
+#[test]
+fn test_presence_set_away() {
+    let mut tracker = PresenceTracker::new();
+    tracker = tracker.set_online("user1").set_away("user1");
+
+    let status = tracker.get_status("user1");
+    assert!(!tracker.is_online("user1"), "User should not be online");
+}
+
+#[test]
+fn test_presence_get_online_users() {
+    let mut tracker = PresenceTracker::new();
+    tracker = tracker
+        .set_online("user1")
+        .set_online("user2")
+        .set_offline("user3");
+
+    let online = tracker.get_online_users();
+    assert_eq!(online.len(), 2, "Should have 2 online users");
+}
+
+#[test]
+fn test_presence_get_online_count() {
+    let mut tracker = PresenceTracker::new();
+    tracker = tracker.set_online("user1").set_online("user2");
+
+    assert_eq!(tracker.get_online_count(), 2, "Should have 2 online");
+}
+
+#[test]
+fn test_event_handler_creation() {
+    let handler = EventHandler::new();
+
+    assert!(handler.on_connect.is_none(), "Should have no connect handler");
+}
+
+#[test]
+fn test_event_handler_on_connect() {
+    let handler = EventHandler::new()
+        .on_connect(|id| println("Connected: " + id));
+
+    assert!(handler.on_connect.is_some(), "Should have connect handler");
+}
+
+#[test]
+fn test_event_handler_on_disconnect() {
+    let handler = EventHandler::new()
+        .on_disconnect(|id| println("Disconnected: " + id));
+
+    assert!(handler.on_disconnect.is_some(), "Should have disconnect handler");
+}
+
+#[test]
+fn test_event_handler_on_message() {
+    let handler = EventHandler::new()
+        .on_message(|msg| println("Message: " + msg.data));
+
+    assert!(handler.on_message.is_some(), "Should have message handler");
+}
+
+#[test]
+fn test_event_handler_on_error() {
+    let handler = EventHandler::new()
+        .on_error(|err| println("Error: " + err));
+
+    assert!(handler.on_error.is_some(), "Should have error handler");
+}
+
+#[test]
+fn test_server_multiple_connections() {
+    let mut server = WebSocketServer::new(8080);
+
+    server = server
+        .add_connection("conn1", Connection::new("conn1"))
+        .add_connection("conn2", Connection::new("conn2"))
+        .add_connection("conn3", Connection::new("conn3"));
+
+    assert_eq!(server.get_connection_count(), 3, "Should have 3 connections");
+}
+
+#[test]
+fn test_room_multiple_members() {
+    let mut room = Room::new("lobby");
+
+    room = room
+        .add_member("conn1")
+        .add_member("conn2")
+        .add_member("conn3");
+
+    assert_eq!(room.get_member_count(), 3, "Should have 3 members");
+}

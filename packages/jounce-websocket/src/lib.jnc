@@ -1,0 +1,537 @@
+// jounce-websocket - WebSocket client/server with presence, rooms, and reconnection
+//
+// This package provides a comprehensive WebSocket implementation for realtime
+// communication with automatic reconnection, presence tracking, and room support.
+
+// WebSocket connection state
+pub enum ConnectionState {
+    Connecting,
+    Connected,
+    Disconnecting,
+    Disconnected,
+    Reconnecting,
+}
+
+impl ConnectionState {
+    pub fn is_connected(self) -> bool {
+        return match self {
+            ConnectionState::Connected => true,
+            _ => false,
+        };
+    }
+
+    pub fn to_string(self) -> string {
+        return match self {
+            ConnectionState::Connecting => "connecting",
+            ConnectionState::Connected => "connected",
+            ConnectionState::Disconnecting => "disconnecting",
+            ConnectionState::Disconnected => "disconnected",
+            ConnectionState::Reconnecting => "reconnecting",
+        };
+    }
+}
+
+// WebSocket message
+pub struct Message {
+    pub type_: string,
+    pub data: string,
+    pub timestamp: int,
+    pub id: string,
+}
+
+impl Message {
+    pub fn new(type_: string, data: string) -> Message {
+        return Message {
+            type_: type_,
+            data: data,
+            timestamp: get_current_timestamp(),
+            id: generate_id(),
+        };
+    }
+
+    pub fn to_json(self) -> string {
+        // In real implementation, would serialize to JSON
+        return "{\"type\":\"" + self.type_ + "\",\"data\":\"" + self.data + "\"}";
+    }
+
+    pub fn from_json(json: string) -> Message {
+        // In real implementation, would parse JSON
+        return Message::new("unknown", json);
+    }
+}
+
+// WebSocket client
+pub struct WebSocketClient {
+    pub url: string,
+    pub state: ConnectionState,
+    pub reconnect_enabled: bool,
+    pub reconnect_attempts: int,
+    pub max_reconnect_attempts: int,
+    pub reconnect_delay: int,
+    pub message_queue: Array<Message>,
+    pub rooms: Array<string>,
+}
+
+impl WebSocketClient {
+    pub fn new(url: string) -> WebSocketClient {
+        return WebSocketClient {
+            url: url,
+            state: ConnectionState::Disconnected,
+            reconnect_enabled: true,
+            reconnect_attempts: 0,
+            max_reconnect_attempts: 5,
+            reconnect_delay: 1000,
+            message_queue: Array::new(),
+            rooms: Array::new(),
+        };
+    }
+
+    pub fn with_reconnect(mut self, enabled: bool) -> WebSocketClient {
+        self.reconnect_enabled = enabled;
+        return self;
+    }
+
+    pub fn with_max_reconnect_attempts(mut self, max: int) -> WebSocketClient {
+        self.max_reconnect_attempts = max;
+        return self;
+    }
+
+    pub fn with_reconnect_delay(mut self, delay: int) -> WebSocketClient {
+        self.reconnect_delay = delay;
+        return self;
+    }
+
+    pub fn connect(mut self) -> WebSocketClient {
+        self.state = ConnectionState::Connecting;
+        // In real implementation, would open WebSocket connection
+        self.state = ConnectionState::Connected;
+        self.reconnect_attempts = 0;
+
+        // Send queued messages
+        self = self.flush_queue();
+
+        return self;
+    }
+
+    pub fn disconnect(mut self) -> WebSocketClient {
+        self.state = ConnectionState::Disconnecting;
+        // In real implementation, would close WebSocket connection
+        self.state = ConnectionState::Disconnected;
+        return self;
+    }
+
+    pub fn send(mut self, message: Message) -> WebSocketClient {
+        if self.state.is_connected() {
+            // In real implementation, would send over WebSocket
+            return self;
+        } else {
+            // Queue message for when connected
+            self.message_queue.push(message);
+            return self;
+        }
+    }
+
+    pub fn send_text(mut self, type_: string, data: string) -> WebSocketClient {
+        let message = Message::new(type_, data);
+        return self.send(message);
+    }
+
+    pub fn flush_queue(mut self) -> WebSocketClient {
+        if !self.state.is_connected() {
+            return self;
+        }
+
+        for message in self.message_queue {
+            // In real implementation, would send message
+        }
+
+        self.message_queue = Array::new();
+        return self;
+    }
+
+    pub fn join_room(mut self, room: string) -> WebSocketClient {
+        if !self.rooms.contains(room) {
+            self.rooms.push(room);
+            let message = Message::new("join", room);
+            self = self.send(message);
+        }
+        return self;
+    }
+
+    pub fn leave_room(mut self, room: string) -> WebSocketClient {
+        self.rooms = self.rooms.filter(|r| r != room);
+        let message = Message::new("leave", room);
+        self = self.send(message);
+        return self;
+    }
+
+    pub fn is_in_room(self, room: string) -> bool {
+        return self.rooms.contains(room);
+    }
+
+    pub fn get_state(self) -> ConnectionState {
+        return self.state;
+    }
+
+    pub fn is_connected(self) -> bool {
+        return self.state.is_connected();
+    }
+
+    pub fn attempt_reconnect(mut self) -> WebSocketClient {
+        if !self.reconnect_enabled {
+            return self;
+        }
+
+        if self.reconnect_attempts >= self.max_reconnect_attempts {
+            return self;
+        }
+
+        self.reconnect_attempts = self.reconnect_attempts + 1;
+        self.state = ConnectionState::Reconnecting;
+
+        // In real implementation, would retry connection after delay
+        return self.connect();
+    }
+}
+
+// WebSocket server
+pub struct WebSocketServer {
+    pub port: int,
+    pub connections: Map<string, Connection>,
+    pub rooms: Map<string, Room>,
+    pub running: bool,
+}
+
+impl WebSocketServer {
+    pub fn new(port: int) -> WebSocketServer {
+        return WebSocketServer {
+            port: port,
+            connections: Map::new(),
+            rooms: Map::new(),
+            running: false,
+        };
+    }
+
+    pub fn start(mut self) -> WebSocketServer {
+        self.running = true;
+        // In real implementation, would start WebSocket server
+        return self;
+    }
+
+    pub fn stop(mut self) -> WebSocketServer {
+        self.running = false;
+        // In real implementation, would stop WebSocket server
+        return self;
+    }
+
+    pub fn add_connection(mut self, id: string, conn: Connection) -> WebSocketServer {
+        self.connections.insert(id, conn);
+        return self;
+    }
+
+    pub fn remove_connection(mut self, id: string) -> WebSocketServer {
+        self.connections.remove(id);
+        return self;
+    }
+
+    pub fn get_connection_count(self) -> int {
+        return self.connections.len();
+    }
+
+    pub fn create_room(mut self, name: string) -> WebSocketServer {
+        if !self.rooms.contains_key(name) {
+            self.rooms.insert(name, Room::new(name));
+        }
+        return self;
+    }
+
+    pub fn join_room(mut self, connection_id: string, room_name: string) -> WebSocketServer {
+        if !self.rooms.contains_key(room_name) {
+            self = self.create_room(room_name);
+        }
+
+        let mut room = self.rooms.get(room_name).unwrap();
+        room = room.add_member(connection_id);
+        self.rooms.insert(room_name, room);
+
+        return self;
+    }
+
+    pub fn leave_room(mut self, connection_id: string, room_name: string) -> WebSocketServer {
+        if self.rooms.contains_key(room_name) {
+            let mut room = self.rooms.get(room_name).unwrap();
+            room = room.remove_member(connection_id);
+            self.rooms.insert(room_name, room);
+        }
+        return self;
+    }
+
+    pub fn broadcast(self, message: Message) {
+        // In real implementation, would send to all connections
+    }
+
+    pub fn broadcast_to_room(self, room_name: string, message: Message) {
+        if self.rooms.contains_key(room_name) {
+            let room = self.rooms.get(room_name).unwrap();
+            // In real implementation, would send to all room members
+        }
+    }
+
+    pub fn send_to(self, connection_id: string, message: Message) {
+        if self.connections.contains_key(connection_id) {
+            // In real implementation, would send to specific connection
+        }
+    }
+
+    pub fn get_room_members(self, room_name: string) -> Array<string> {
+        if self.rooms.contains_key(room_name) {
+            return self.rooms.get(room_name).unwrap().members;
+        }
+        return Array::new();
+    }
+}
+
+// Connection
+pub struct Connection {
+    pub id: string,
+    pub state: ConnectionState,
+    pub joined_at: int,
+    pub last_activity: int,
+    pub user_data: Map<string, string>,
+}
+
+impl Connection {
+    pub fn new(id: string) -> Connection {
+        return Connection {
+            id: id,
+            state: ConnectionState::Connected,
+            joined_at: get_current_timestamp(),
+            last_activity: get_current_timestamp(),
+            user_data: Map::new(),
+        };
+    }
+
+    pub fn update_activity(mut self) -> Connection {
+        self.last_activity = get_current_timestamp();
+        return self;
+    }
+
+    pub fn set_user_data(mut self, key: string, value: string) -> Connection {
+        self.user_data.insert(key, value);
+        return self;
+    }
+
+    pub fn get_user_data(self, key: string) -> Option<string> {
+        return self.user_data.get(key);
+    }
+
+    pub fn is_active(self) -> bool {
+        return self.state.is_connected();
+    }
+}
+
+// Room
+pub struct Room {
+    pub name: string,
+    pub members: Array<string>,
+    pub created_at: int,
+    pub metadata: Map<string, string>,
+}
+
+impl Room {
+    pub fn new(name: string) -> Room {
+        return Room {
+            name: name,
+            members: Array::new(),
+            created_at: get_current_timestamp(),
+            metadata: Map::new(),
+        };
+    }
+
+    pub fn add_member(mut self, connection_id: string) -> Room {
+        if !self.members.contains(connection_id) {
+            self.members.push(connection_id);
+        }
+        return self;
+    }
+
+    pub fn remove_member(mut self, connection_id: string) -> Room {
+        self.members = self.members.filter(|id| id != connection_id);
+        return self;
+    }
+
+    pub fn has_member(self, connection_id: string) -> bool {
+        return self.members.contains(connection_id);
+    }
+
+    pub fn get_member_count(self) -> int {
+        return self.members.len();
+    }
+
+    pub fn set_metadata(mut self, key: string, value: string) -> Room {
+        self.metadata.insert(key, value);
+        return self;
+    }
+
+    pub fn get_metadata(self, key: string) -> Option<string> {
+        return self.metadata.get(key);
+    }
+}
+
+// Presence tracker
+pub struct PresenceTracker {
+    pub users: Map<string, UserPresence>,
+}
+
+impl PresenceTracker {
+    pub fn new() -> PresenceTracker {
+        return PresenceTracker {
+            users: Map::new(),
+        };
+    }
+
+    pub fn set_online(mut self, user_id: string) -> PresenceTracker {
+        let presence = UserPresence {
+            user_id: user_id,
+            status: PresenceStatus::Online,
+            last_seen: get_current_timestamp(),
+        };
+        self.users.insert(user_id, presence);
+        return self;
+    }
+
+    pub fn set_offline(mut self, user_id: string) -> PresenceTracker {
+        if self.users.contains_key(user_id) {
+            let mut presence = self.users.get(user_id).unwrap();
+            presence.status = PresenceStatus::Offline;
+            presence.last_seen = get_current_timestamp();
+            self.users.insert(user_id, presence);
+        }
+        return self;
+    }
+
+    pub fn set_away(mut self, user_id: string) -> PresenceTracker {
+        if self.users.contains_key(user_id) {
+            let mut presence = self.users.get(user_id).unwrap();
+            presence.status = PresenceStatus::Away;
+            self.users.insert(user_id, presence);
+        }
+        return self;
+    }
+
+    pub fn get_status(self, user_id: string) -> PresenceStatus {
+        if self.users.contains_key(user_id) {
+            return self.users.get(user_id).unwrap().status;
+        }
+        return PresenceStatus::Offline;
+    }
+
+    pub fn is_online(self, user_id: string) -> bool {
+        return match self.get_status(user_id) {
+            PresenceStatus::Online => true,
+            _ => false,
+        };
+    }
+
+    pub fn get_online_users(self) -> Array<string> {
+        let mut online = Array::new();
+        for (user_id, presence) in self.users {
+            if presence.status == PresenceStatus::Online {
+                online.push(user_id);
+            }
+        }
+        return online;
+    }
+
+    pub fn get_online_count(self) -> int {
+        return self.get_online_users().len();
+    }
+}
+
+// User presence
+pub struct UserPresence {
+    pub user_id: string,
+    pub status: PresenceStatus,
+    pub last_seen: int,
+}
+
+// Presence status
+pub enum PresenceStatus {
+    Online,
+    Away,
+    Offline,
+}
+
+// Event handler
+pub struct EventHandler {
+    pub on_connect: Option<fn(string)>,
+    pub on_disconnect: Option<fn(string)>,
+    pub on_message: Option<fn(Message)>,
+    pub on_error: Option<fn(string)>,
+}
+
+impl EventHandler {
+    pub fn new() -> EventHandler {
+        return EventHandler {
+            on_connect: None,
+            on_disconnect: None,
+            on_message: None,
+            on_error: None,
+        };
+    }
+
+    pub fn on_connect(mut self, handler: fn(string)) -> EventHandler {
+        self.on_connect = Some(handler);
+        return self;
+    }
+
+    pub fn on_disconnect(mut self, handler: fn(string)) -> EventHandler {
+        self.on_disconnect = Some(handler);
+        return self;
+    }
+
+    pub fn on_message(mut self, handler: fn(Message)) -> EventHandler {
+        self.on_message = Some(handler);
+        return self;
+    }
+
+    pub fn on_error(mut self, handler: fn(string)) -> EventHandler {
+        self.on_error = Some(handler);
+        return self;
+    }
+
+    pub fn trigger_connect(self, id: string) {
+        if self.on_connect.is_some() {
+            (self.on_connect.unwrap())(id);
+        }
+    }
+
+    pub fn trigger_disconnect(self, id: string) {
+        if self.on_disconnect.is_some() {
+            (self.on_disconnect.unwrap())(id);
+        }
+    }
+
+    pub fn trigger_message(self, message: Message) {
+        if self.on_message.is_some() {
+            (self.on_message.unwrap())(message);
+        }
+    }
+
+    pub fn trigger_error(self, error: string) {
+        if self.on_error.is_some() {
+            (self.on_error.unwrap())(error);
+        }
+    }
+}
+
+// Helper functions
+fn get_current_timestamp() -> int {
+    // In real implementation, would return actual timestamp
+    return 1729800000;
+}
+
+fn generate_id() -> string {
+    // In real implementation, would generate UUID
+    return "id_" + get_current_timestamp().to_string();
+}

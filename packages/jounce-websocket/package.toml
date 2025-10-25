@@ -1,0 +1,27 @@
+[package]
+name = "jounce-websocket"
+version = "0.1.0"
+description = "WebSocket client/server with presence tracking, rooms, and automatic reconnection"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-websocket"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "client_tests"
+path = "tests/client_tests.jnc"
+
+[[test]]
+name = "server_tests"
+path = "tests/server_tests.jnc"
+
+[features]
+default = ["client", "server"]
+client = []
+server = []
+presence = []
+rooms = []

@@ -1,0 +1,183 @@
+// Tests for WebSocket client in jounce-websocket
+use jounce_websocket::{WebSocketClient, Message, ConnectionState};
+
+#[test]
+fn test_client_creation() {
+    let client = WebSocketClient::new("ws://localhost:8080");
+
+    assert_eq!(client.url, "ws://localhost:8080", "URL should match");
+    assert!(!client.is_connected(), "Should not be connected initially");
+}
+
+#[test]
+fn test_client_connect() {
+    let mut client = WebSocketClient::new("ws://localhost:8080");
+    client = client.connect();
+
+    assert!(client.is_connected(), "Should be connected");
+}
+
+#[test]
+fn test_client_disconnect() {
+    let mut client = WebSocketClient::new("ws://localhost:8080");
+    client = client.connect().disconnect();
+
+    assert!(!client.is_connected(), "Should be disconnected");
+}
+
+#[test]
+fn test_client_send_message() {
+    let mut client = WebSocketClient::new("ws://localhost:8080");
+    client = client.connect();
+
+    let message = Message::new("chat", "Hello!");
+    client = client.send(message);
+
+    // No errors should occur
+    assert!(client.is_connected(), "Should still be connected");
+}
+
+#[test]
+fn test_client_send_text() {
+    let mut client = WebSocketClient::new("ws://localhost:8080");
+    client = client.connect();
+
+    client = client.send_text("greeting", "Hi there!");
+
+    assert!(client.is_connected(), "Should still be connected");
+}
+
+#[test]
+fn test_client_message_queue() {
+    let mut client = WebSocketClient::new("ws://localhost:8080");
+
+    // Send before connecting - should queue
+    let message = Message::new("test", "data");
+    client = client.send(message);
+
+    assert_eq!(client.message_queue.len(), 1, "Should have 1 queued message");
+}
+
+#[test]
+fn test_client_flush_queue() {
+    let mut client = WebSocketClient::new("ws://localhost:8080");
+
+    // Queue message
+    let message = Message::new("test", "data");
+    client = client.send(message);
+
+    // Connect and flush
+    client = client.connect();
+
+    assert_eq!(client.message_queue.len(), 0, "Queue should be empty after flush");
+}
+
+#[test]
+fn test_client_join_room() {
+    let mut client = WebSocketClient::new("ws://localhost:8080");
+    client = client.connect();
+
+    client = client.join_room("lobby");
+
+    assert!(client.is_in_room("lobby"), "Should be in lobby");
+}
+
+#[test]
+fn test_client_leave_room() {
+    let mut client = WebSocketClient::new("ws://localhost:8080");
+    client = client.connect();
+
+    client = client.join_room("lobby").leave_room("lobby");
+
+    assert!(!client.is_in_room("lobby"), "Should not be in lobby");
+}
+
+#[test]
+fn test_client_multiple_rooms() {
+    let mut client = WebSocketClient::new("ws://localhost:8080");
+    client = client.connect();
+
+    client = client
+        .join_room("room1")
+        .join_room("room2");
+
+    assert!(client.is_in_room("room1"), "Should be in room1");
+    assert!(client.is_in_room("room2"), "Should be in room2");
+}
+
+#[test]
+fn test_client_reconnect_enabled() {
+    let client = WebSocketClient::new("ws://localhost:8080")
+        .with_reconnect(true);
+
+    assert!(client.reconnect_enabled, "Reconnect should be enabled");
+}
+
+#[test]
+fn test_client_max_reconnect_attempts() {
+    let client = WebSocketClient::new("ws://localhost:8080")
+        .with_max_reconnect_attempts(10);
+
+    assert_eq!(client.max_reconnect_attempts, 10, "Max attempts should be 10");
+}
+
+#[test]
+fn test_client_reconnect_delay() {
+    let client = WebSocketClient::new("ws://localhost:8080")
+        .with_reconnect_delay(5000);
+
+    assert_eq!(client.reconnect_delay, 5000, "Delay should be 5000ms");
+}
+
+#[test]
+fn test_client_get_state() {
+    let client = WebSocketClient::new("ws://localhost:8080");
+
+    let state = client.get_state();
+
+    assert!(!state.is_connected(), "Should not be connected");
+}
+
+#[test]
+fn test_message_creation() {
+    let message = Message::new("chat", "Hello!");
+
+    assert_eq!(message.type_, "chat", "Type should be chat");
+    assert_eq!(message.data, "Hello!", "Data should match");
+}
+
+#[test]
+fn test_message_to_json() {
+    let message = Message::new("test", "data");
+
+    let json = message.to_json();
+
+    assert!(json.contains("test"), "JSON should contain type");
+    assert!(json.contains("data"), "JSON should contain data");
+}
+
+#[test]
+fn test_connection_state_is_connected() {
+    let state1 = ConnectionState::Connected;
+    let state2 = ConnectionState::Disconnected;
+
+    assert!(state1.is_connected(), "Connected should be true");
+    assert!(!state2.is_connected(), "Disconnected should be false");
+}
+
+#[test]
+fn test_connection_state_to_string() {
+    let state = ConnectionState::Connecting;
+
+    assert_eq!(state.to_string(), "connecting", "Should convert to string");
+}
+
+#[test]
+fn test_client_attempt_reconnect() {
+    let mut client = WebSocketClient::new("ws://localhost:8080")
+        .with_reconnect(true);
+
+    client = client.attempt_reconnect();
+
+    assert_eq!(client.reconnect_attempts, 1, "Should have 1 reconnect attempt");
+}
