@@ -20,6 +20,20 @@ This is our development loop from v0.3.1 → v1.0.0:
 
 ---
 
+## ⚠️ MEMORY MANAGEMENT
+
+**IMPORTANT**: Monitor Claude Code token usage during long sessions.
+
+When token usage reaches **80% (160k/200k tokens)**:
+1. **STOP IMMEDIATELY** and notify the user
+2. **Write next steps** to this file (what to do when session resumes)
+3. **Commit all work** in progress
+4. **User will clear memory** by starting new session
+
+Current status will be preserved in git commits and this file.
+
+---
+
 ## 📍 Current Status (v0.6.0 "Ecosystem")
 
 **✅ Complete & Production-Ready**:
