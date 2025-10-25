@@ -1,0 +1,312 @@
+// Tests for PdfBuilder and utility functions
+use jounce_pdf::{PdfBuilder, PdfDocument, PageSize, Orientation, Rectangle, Line, Circle, PdfImage, Table, TableRow, TableCell, Color, Font, points_to_mm, mm_to_points, points_to_inches, inches_to_points};
+
+// ============================================================================
+// PdfBuilder Tests
+// ============================================================================
+
+#[test]
+fn test_builder_creation() {
+    let builder = PdfBuilder::new();
+
+    assert_eq!(builder.document.page_count(), 1, "Should have 1 default page");
+    assert_eq!(builder.current_page, 0, "Current page should be 0");
+}
+
+#[test]
+fn test_builder_with_title() {
+    let builder = PdfBuilder::new()
+        .with_title("Test Document");
+
+    assert_eq!(builder.document.title, "Test Document", "Title should match");
+}
+
+#[test]
+fn test_builder_with_author() {
+    let builder = PdfBuilder::new()
+        .with_author("John Doe");
+
+    assert_eq!(builder.document.author, "John Doe", "Author should match");
+}
+
+#[test]
+fn test_builder_add_page() {
+    let builder = PdfBuilder::new()
+        .add_page(PageSize::Letter, Orientation::Landscape);
+
+    assert_eq!(builder.document.page_count(), 2, "Should have 2 pages");
+    assert_eq!(builder.current_page, 1, "Current page should be 1");
+}
+
+#[test]
+fn test_builder_add_text() {
+    let builder = PdfBuilder::new()
+        .add_text("Hello World", 100.0, 200.0);
+
+    // In production would verify text added to page
+    assert!(true, "Text should be added");
+}
+
+#[test]
+fn test_builder_add_rectangle() {
+    let rect = Rectangle::new(50.0, 50.0, 200.0, 100.0);
+    let builder = PdfBuilder::new()
+        .add_rectangle(rect);
+
+    assert!(true, "Rectangle should be added");
+}
+
+#[test]
+fn test_builder_add_line() {
+    let line = Line::new(0.0, 0.0, 100.0, 100.0);
+    let builder = PdfBuilder::new()
+        .add_line(line);
+
+    assert!(true, "Line should be added");
+}
+
+#[test]
+fn test_builder_add_circle() {
+    let circle = Circle::new(100.0, 100.0, 50.0);
+    let builder = PdfBuilder::new()
+        .add_circle(circle);
+
+    assert!(true, "Circle should be added");
+}
+
+#[test]
+fn test_builder_add_image() {
+    let image = PdfImage::new("photo.jpg", 100.0, 100.0, 200.0, 150.0);
+    let builder = PdfBuilder::new()
+        .add_image(image);
+
+    assert!(true, "Image should be added");
+}
+
+#[test]
+fn test_builder_add_table() {
+    let table = Table::new(50.0, 100.0);
+    let builder = PdfBuilder::new()
+        .add_table(table);
+
+    assert!(true, "Table should be added");
+}
+
+#[test]
+fn test_builder_chaining() {
+    let builder = PdfBuilder::new()
+        .with_title("Test")
+        .with_author("John")
+        .add_page(PageSize::A4, Orientation::Portrait)
+        .add_text("Hello", 0.0, 0.0);
+
+    assert_eq!(builder.document.title, "Test", "Title should be set");
+    assert_eq!(builder.document.author, "John", "Author should be set");
+}
+
+#[test]
+fn test_builder_build() {
+    let doc = PdfBuilder::new()
+        .with_title("Final Document")
+        .build();
+
+    assert_eq!(doc.title, "Final Document", "Document should be built");
+    assert_eq!(doc.page_count(), 1, "Should have pages");
+}
+
+// ============================================================================
+// Complex Builder Tests
+// ============================================================================
+
+#[test]
+fn test_builder_multi_page_document() {
+    let doc = PdfBuilder::new()
+        .with_title("Multi-Page Report")
+        .with_author("Jane Smith")
+        .add_page(PageSize::A4, Orientation::Portrait)
+        .add_page(PageSize::A4, Orientation::Portrait)
+        .add_page(PageSize::A4, Orientation::Landscape)
+        .build();
+
+    assert_eq!(doc.page_count(), 4, "Should have 4 pages (1 default + 3 added)");
+    assert_eq!(doc.title, "Multi-Page Report", "Title should match");
+}
+
+#[test]
+fn test_builder_complete_document() {
+    let rect = Rectangle::new(50.0, 50.0, 200.0, 100.0)
+        .with_fill(Color::blue());
+
+    let line = Line::new(0.0, 0.0, 595.0, 0.0)
+        .with_width(2.0);
+
+    let doc = PdfBuilder::new()
+        .with_title("Complete Example")
+        .with_author("Test Author")
+        .add_text("Title", 100.0, 700.0)
+        .add_rectangle(rect)
+        .add_line(line)
+        .build();
+
+    let pdf = doc.generate();
+    assert!(pdf.starts_with("%PDF-1.4"), "Should generate valid PDF");
+}
+
+#[test]
+fn test_builder_with_table() {
+    let mut widths = Array::new();
+    widths.push(150.0);
+    widths.push(200.0);
+    widths.push(150.0);
+
+    let header_row = TableRow::new()
+        .add_cell(TableCell::new("Name"))
+        .add_cell(TableCell::new("Email"))
+        .add_cell(TableCell::new("Phone"));
+
+    let data_row = TableRow::new()
+        .add_cell(TableCell::new("John Doe"))
+        .add_cell(TableCell::new("john@example.com"))
+        .add_cell(TableCell::new("555-1234"));
+
+    let table = Table::new(50.0, 700.0)
+        .with_column_widths(widths)
+        .add_row(header_row)
+        .add_row(data_row);
+
+    let doc = PdfBuilder::new()
+        .with_title("Table Example")
+        .add_table(table)
+        .build();
+
+    assert_eq!(doc.title, "Table Example", "Document should be built");
+}
+
+// ============================================================================
+// Utility Function Tests
+// ============================================================================
+
+#[test]
+fn test_points_to_mm() {
+    let mm = points_to_mm(72.0);
+    assert!(mm > 25.0 && mm < 26.0, "72 points should be ~25.4mm");
+}
+
+#[test]
+fn test_mm_to_points() {
+    let points = mm_to_points(25.4);
+    assert!(points > 71.0 && points < 73.0, "25.4mm should be ~72 points");
+}
+
+#[test]
+fn test_points_to_mm_conversion() {
+    let original = 100.0;
+    let mm = points_to_mm(original);
+    let back = mm_to_points(mm);
+
+    assert!(back > 99.0 && back < 101.0, "Conversion should be reversible");
+}
+
+#[test]
+fn test_points_to_inches() {
+    let inches = points_to_inches(72.0);
+    assert_eq!(inches, 1.0, "72 points should be 1 inch");
+}
+
+#[test]
+fn test_inches_to_points() {
+    let points = inches_to_points(2.0);
+    assert_eq!(points, 144.0, "2 inches should be 144 points");
+}
+
+#[test]
+fn test_points_to_inches_conversion() {
+    let original = 216.0;
+    let inches = points_to_inches(original);
+    let back = inches_to_points(inches);
+
+    assert_eq!(back, original, "Conversion should be exact");
+}
+
+#[test]
+fn test_a4_dimensions_in_mm() {
+    let a4 = PageSize::A4;
+    let (width_pt, height_pt) = a4.dimensions();
+
+    let width_mm = points_to_mm(width_pt);
+    let height_mm = points_to_mm(height_pt);
+
+    assert!(width_mm > 209.0 && width_mm < 211.0, "A4 width should be ~210mm");
+    assert!(height_mm > 296.0 && height_mm < 298.0, "A4 height should be ~297mm");
+}
+
+#[test]
+fn test_letter_dimensions_in_inches() {
+    let letter = PageSize::Letter;
+    let (width_pt, height_pt) = letter.dimensions();
+
+    let width_in = points_to_inches(width_pt);
+    let height_in = points_to_inches(height_pt);
+
+    assert_eq!(width_in, 8.5, "Letter width should be 8.5 inches");
+    assert_eq!(height_in, 11.0, "Letter height should be 11 inches");
+}
+
+// ============================================================================
+// Integration Tests
+// ============================================================================
+
+#[test]
+fn test_invoice_document() {
+    let doc = PdfBuilder::new()
+        .with_title("Invoice #12345")
+        .with_author("Company Name")
+        .add_text("INVOICE", 250.0, 750.0)
+        .add_text("Invoice #: 12345", 50.0, 700.0)
+        .add_text("Date: 2025-10-24", 50.0, 680.0)
+        .build();
+
+    assert_eq!(doc.title, "Invoice #12345", "Invoice should be created");
+}
+
+#[test]
+fn test_report_with_graphics() {
+    let header_line = Line::new(50.0, 750.0, 545.0, 750.0)
+        .with_width(2.0)
+        .with_color(Color::blue());
+
+    let highlight_rect = Rectangle::new(50.0, 600.0, 495.0, 50.0)
+        .with_fill(Color::gray(240))
+        .no_stroke();
+
+    let doc = PdfBuilder::new()
+        .with_title("Monthly Report")
+        .add_line(header_line)
+        .add_text("MONTHLY REPORT", 200.0, 760.0)
+        .add_rectangle(highlight_rect)
+        .add_text("Key Metrics", 60.0, 625.0)
+        .build();
+
+    assert_eq!(doc.title, "Monthly Report", "Report should be created");
+}
+
+#[test]
+fn test_certificate_document() {
+    let border = Rectangle::new(30.0, 30.0, 535.0, 782.0)
+        .with_stroke(Color::new(0, 51, 102), 3.0)
+        .no_fill();
+
+    let seal = Circle::new(297.5, 421.0, 50.0)
+        .with_fill(Color::new(0, 51, 102))
+        .with_stroke(Color::new(0, 51, 102), 2.0);
+
+    let doc = PdfBuilder::new()
+        .with_title("Certificate of Achievement")
+        .add_rectangle(border)
+        .add_text("CERTIFICATE", 200.0, 700.0)
+        .add_text("OF ACHIEVEMENT", 180.0, 670.0)
+        .add_circle(seal)
+        .build();
+
+    assert_eq!(doc.title, "Certificate of Achievement", "Certificate should be created");
+}

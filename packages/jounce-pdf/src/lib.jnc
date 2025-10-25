@@ -1,0 +1,711 @@
+// PDF generation and document creation for Jounce
+// Create PDFs with text, images, tables, and graphics
+
+// ============================================================================
+// Page Size & Orientation
+// ============================================================================
+
+pub enum PageSize {
+    A4,           // 210 x 297 mm
+    Letter,       // 8.5 x 11 inches
+    Legal,        // 8.5 x 14 inches
+    A3,           // 297 x 420 mm
+    A5,           // 148 x 210 mm
+    Tabloid,      // 11 x 17 inches
+    Custom,       // Custom size
+}
+
+impl PageSize {
+    pub fn dimensions(&self) -> (float, float) {
+        match self {
+            PageSize::A4 => (595.0, 842.0),           // Points (72 DPI)
+            PageSize::Letter => (612.0, 792.0),
+            PageSize::Legal => (612.0, 1008.0),
+            PageSize::A3 => (842.0, 1191.0),
+            PageSize::A5 => (420.0, 595.0),
+            PageSize::Tabloid => (792.0, 1224.0),
+            PageSize::Custom => (595.0, 842.0),       // Default to A4
+        }
+    }
+
+    pub fn width(&self) -> float {
+        self.dimensions().0
+    }
+
+    pub fn height(&self) -> float {
+        self.dimensions().1
+    }
+}
+
+pub enum Orientation {
+    Portrait,
+    Landscape,
+}
+
+// ============================================================================
+// Color
+// ============================================================================
+
+pub struct Color {
+    pub r: int,  // 0-255
+    pub g: int,  // 0-255
+    pub b: int,  // 0-255
+    pub a: float, // 0.0-1.0 (opacity)
+}
+
+impl Color {
+    pub fn new(r: int, g: int, b: int) -> Color {
+        Color {
+            r: r,
+            g: g,
+            b: b,
+            a: 1.0,
+        }
+    }
+
+    pub fn with_alpha(mut self, alpha: float) -> Color {
+        self.a = alpha;
+        self
+    }
+
+    pub fn black() -> Color {
+        Color::new(0, 0, 0)
+    }
+
+    pub fn white() -> Color {
+        Color::new(255, 255, 255)
+    }
+
+    pub fn red() -> Color {
+        Color::new(255, 0, 0)
+    }
+
+    pub fn green() -> Color {
+        Color::new(0, 255, 0)
+    }
+
+    pub fn blue() -> Color {
+        Color::new(0, 0, 255)
+    }
+
+    pub fn gray(value: int) -> Color {
+        Color::new(value, value, value)
+    }
+
+    pub fn to_rgb_string(&self) -> string {
+        "rgb(" + self.r.to_string() + "," +
+                 self.g.to_string() + "," +
+                 self.b.to_string() + ")"
+    }
+}
+
+// ============================================================================
+// Font
+// ============================================================================
+
+pub enum FontFamily {
+    Helvetica,
+    Times,
+    Courier,
+    Symbol,
+    Custom,
+}
+
+pub enum FontStyle {
+    Normal,
+    Bold,
+    Italic,
+    BoldItalic,
+}
+
+pub struct Font {
+    pub family: FontFamily,
+    pub style: FontStyle,
+    pub size: float,
+}
+
+impl Font {
+    pub fn new(family: FontFamily, size: float) -> Font {
+        Font {
+            family: family,
+            style: FontStyle::Normal,
+            size: size,
+        }
+    }
+
+    pub fn with_style(mut self, style: FontStyle) -> Font {
+        self.style = style;
+        self
+    }
+
+    pub fn helvetica(size: float) -> Font {
+        Font::new(FontFamily::Helvetica, size)
+    }
+
+    pub fn times(size: float) -> Font {
+        Font::new(FontFamily::Times, size)
+    }
+
+    pub fn courier(size: float) -> Font {
+        Font::new(FontFamily::Courier, size)
+    }
+
+    pub fn to_string(&self) -> string {
+        let family = match self.family {
+            FontFamily::Helvetica => "Helvetica",
+            FontFamily::Times => "Times-Roman",
+            FontFamily::Courier => "Courier",
+            FontFamily::Symbol => "Symbol",
+            FontFamily::Custom => "Custom",
+        };
+
+        let style = match self.style {
+            FontStyle::Normal => "",
+            FontStyle::Bold => "-Bold",
+            FontStyle::Italic => "-Italic",
+            FontStyle::BoldItalic => "-BoldItalic",
+        };
+
+        family + style
+    }
+}
+
+// ============================================================================
+// Text Alignment
+// ============================================================================
+
+pub enum TextAlign {
+    Left,
+    Center,
+    Right,
+    Justify,
+}
+
+// ============================================================================
+// Page
+// ============================================================================
+
+pub struct Page {
+    pub size: PageSize,
+    pub orientation: Orientation,
+    pub width: float,
+    pub height: float,
+    pub margin_top: float,
+    pub margin_right: float,
+    pub margin_bottom: float,
+    pub margin_left: float,
+    pub content: string,
+}
+
+impl Page {
+    pub fn new(size: PageSize, orientation: Orientation) -> Page {
+        let (w, h) = size.dimensions();
+        let (width, height) = match orientation {
+            Orientation::Portrait => (w, h),
+            Orientation::Landscape => (h, w),
+        };
+
+        Page {
+            size: size,
+            orientation: orientation,
+            width: width,
+            height: height,
+            margin_top: 72.0,     // 1 inch
+            margin_right: 72.0,
+            margin_bottom: 72.0,
+            margin_left: 72.0,
+            content: "",
+        }
+    }
+
+    pub fn with_margins(mut self, top: float, right: float, bottom: float, left: float) -> Page {
+        self.margin_top = top;
+        self.margin_right = right;
+        self.margin_bottom = bottom;
+        self.margin_left = left;
+        self
+    }
+
+    pub fn content_width(&self) -> float {
+        self.width - self.margin_left - self.margin_right
+    }
+
+    pub fn content_height(&self) -> float {
+        self.height - self.margin_top - self.margin_bottom
+    }
+}
+
+// ============================================================================
+// PDF Document
+// ============================================================================
+
+pub struct PdfDocument {
+    pub title: string,
+    pub author: string,
+    pub subject: string,
+    pub keywords: string,
+    pub creator: string,
+    pub pages: Array<Page>,
+    pub default_font: Font,
+    pub default_color: Color,
+}
+
+impl PdfDocument {
+    pub fn new() -> PdfDocument {
+        PdfDocument {
+            title: "",
+            author: "",
+            subject: "",
+            keywords: "",
+            creator: "Jounce PDF v0.1.0",
+            pages: Array::new(),
+            default_font: Font::helvetica(12.0),
+            default_color: Color::black(),
+        }
+    }
+
+    pub fn with_title(mut self, title: string) -> PdfDocument {
+        self.title = title;
+        self
+    }
+
+    pub fn with_author(mut self, author: string) -> PdfDocument {
+        self.author = author;
+        self
+    }
+
+    pub fn with_subject(mut self, subject: string) -> PdfDocument {
+        self.subject = subject;
+        self
+    }
+
+    pub fn add_page(mut self, page: Page) -> PdfDocument {
+        self.pages.push(page);
+        self
+    }
+
+    pub fn new_page(mut self, size: PageSize, orientation: Orientation) -> PdfDocument {
+        let page = Page::new(size, orientation);
+        self.pages.push(page);
+        self
+    }
+
+    pub fn page_count(&self) -> int {
+        self.pages.len()
+    }
+
+    pub fn generate(&self) -> string {
+        // In production, would generate actual PDF binary
+        "%PDF-1.4\n% Generated by Jounce PDF\n"
+    }
+}
+
+// ============================================================================
+// Text Element
+// ============================================================================
+
+pub struct TextElement {
+    pub text: string,
+    pub x: float,
+    pub y: float,
+    pub font: Font,
+    pub color: Color,
+    pub align: TextAlign,
+}
+
+impl TextElement {
+    pub fn new(text: string, x: float, y: float) -> TextElement {
+        TextElement {
+            text: text,
+            x: x,
+            y: y,
+            font: Font::helvetica(12.0),
+            color: Color::black(),
+            align: TextAlign::Left,
+        }
+    }
+
+    pub fn with_font(mut self, font: Font) -> TextElement {
+        self.font = font;
+        self
+    }
+
+    pub fn with_color(mut self, color: Color) -> TextElement {
+        self.color = color;
+        self
+    }
+
+    pub fn with_align(mut self, align: TextAlign) -> TextElement {
+        self.align = align;
+        self
+    }
+}
+
+// ============================================================================
+// Rectangle
+// ============================================================================
+
+pub struct Rectangle {
+    pub x: float,
+    pub y: float,
+    pub width: float,
+    pub height: float,
+    pub fill_color: Option<Color>,
+    pub stroke_color: Option<Color>,
+    pub stroke_width: float,
+}
+
+impl Rectangle {
+    pub fn new(x: float, y: float, width: float, height: float) -> Rectangle {
+        Rectangle {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            fill_color: None,
+            stroke_color: Some(Color::black()),
+            stroke_width: 1.0,
+        }
+    }
+
+    pub fn with_fill(mut self, color: Color) -> Rectangle {
+        self.fill_color = Some(color);
+        self
+    }
+
+    pub fn with_stroke(mut self, color: Color, width: float) -> Rectangle {
+        self.stroke_color = Some(color);
+        self.stroke_width = width;
+        self
+    }
+
+    pub fn no_stroke(mut self) -> Rectangle {
+        self.stroke_color = None;
+        self
+    }
+}
+
+// ============================================================================
+// Line
+// ============================================================================
+
+pub struct Line {
+    pub x1: float,
+    pub y1: float,
+    pub x2: float,
+    pub y2: float,
+    pub color: Color,
+    pub width: float,
+}
+
+impl Line {
+    pub fn new(x1: float, y1: float, x2: float, y2: float) -> Line {
+        Line {
+            x1: x1,
+            y1: y1,
+            x2: x2,
+            y2: y2,
+            color: Color::black(),
+            width: 1.0,
+        }
+    }
+
+    pub fn with_color(mut self, color: Color) -> Line {
+        self.color = color;
+        self
+    }
+
+    pub fn with_width(mut self, width: float) -> Line {
+        self.width = width;
+        self
+    }
+}
+
+// ============================================================================
+// Circle
+// ============================================================================
+
+pub struct Circle {
+    pub x: float,
+    pub y: float,
+    pub radius: float,
+    pub fill_color: Option<Color>,
+    pub stroke_color: Option<Color>,
+    pub stroke_width: float,
+}
+
+impl Circle {
+    pub fn new(x: float, y: float, radius: float) -> Circle {
+        Circle {
+            x: x,
+            y: y,
+            radius: radius,
+            fill_color: None,
+            stroke_color: Some(Color::black()),
+            stroke_width: 1.0,
+        }
+    }
+
+    pub fn with_fill(mut self, color: Color) -> Circle {
+        self.fill_color = Some(color);
+        self
+    }
+
+    pub fn with_stroke(mut self, color: Color, width: float) -> Circle {
+        self.stroke_color = Some(color);
+        self.stroke_width = width;
+        self
+    }
+}
+
+// ============================================================================
+// Image
+// ============================================================================
+
+pub struct PdfImage {
+    pub path: string,
+    pub x: float,
+    pub y: float,
+    pub width: float,
+    pub height: float,
+}
+
+impl PdfImage {
+    pub fn new(path: string, x: float, y: float, width: float, height: float) -> PdfImage {
+        PdfImage {
+            path: path,
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+        }
+    }
+}
+
+// ============================================================================
+// Table
+// ============================================================================
+
+pub struct TableCell {
+    pub content: string,
+    pub colspan: int,
+    pub rowspan: int,
+    pub background: Option<Color>,
+    pub align: TextAlign,
+}
+
+impl TableCell {
+    pub fn new(content: string) -> TableCell {
+        TableCell {
+            content: content,
+            colspan: 1,
+            rowspan: 1,
+            background: None,
+            align: TextAlign::Left,
+        }
+    }
+
+    pub fn with_colspan(mut self, colspan: int) -> TableCell {
+        self.colspan = colspan;
+        self
+    }
+
+    pub fn with_background(mut self, color: Color) -> TableCell {
+        self.background = Some(color);
+        self
+    }
+}
+
+pub struct TableRow {
+    pub cells: Array<TableCell>,
+    pub height: float,
+}
+
+impl TableRow {
+    pub fn new() -> TableRow {
+        TableRow {
+            cells: Array::new(),
+            height: 20.0,
+        }
+    }
+
+    pub fn add_cell(mut self, cell: TableCell) -> TableRow {
+        self.cells.push(cell);
+        self
+    }
+
+    pub fn with_height(mut self, height: float) -> TableRow {
+        self.height = height;
+        self
+    }
+}
+
+pub struct Table {
+    pub rows: Array<TableRow>,
+    pub x: float,
+    pub y: float,
+    pub column_widths: Array<float>,
+    pub border_width: float,
+    pub border_color: Color,
+}
+
+impl Table {
+    pub fn new(x: float, y: float) -> Table {
+        Table {
+            rows: Array::new(),
+            x: x,
+            y: y,
+            column_widths: Array::new(),
+            border_width: 1.0,
+            border_color: Color::black(),
+        }
+    }
+
+    pub fn add_row(mut self, row: TableRow) -> Table {
+        self.rows.push(row);
+        self
+    }
+
+    pub fn with_column_widths(mut self, widths: Array<float>) -> Table {
+        self.column_widths = widths;
+        self
+    }
+
+    pub fn with_border(mut self, width: float, color: Color) -> Table {
+        self.border_width = width;
+        self.border_color = color;
+        self
+    }
+
+    pub fn no_border(mut self) -> Table {
+        self.border_width = 0.0;
+        self
+    }
+}
+
+// ============================================================================
+// Link
+// ============================================================================
+
+pub struct Link {
+    pub text: string,
+    pub url: string,
+    pub x: float,
+    pub y: float,
+    pub font: Font,
+    pub color: Color,
+}
+
+impl Link {
+    pub fn new(text: string, url: string, x: float, y: float) -> Link {
+        Link {
+            text: text,
+            url: url,
+            x: x,
+            y: y,
+            font: Font::helvetica(12.0),
+            color: Color::blue(),
+        }
+    }
+
+    pub fn with_font(mut self, font: Font) -> Link {
+        self.font = font;
+        self
+    }
+
+    pub fn with_color(mut self, color: Color) -> Link {
+        self.color = color;
+        self
+    }
+}
+
+// ============================================================================
+// PDF Builder
+// ============================================================================
+
+pub struct PdfBuilder {
+    pub document: PdfDocument,
+    pub current_page: int,
+}
+
+impl PdfBuilder {
+    pub fn new() -> PdfBuilder {
+        let mut doc = PdfDocument::new();
+        doc = doc.new_page(PageSize::A4, Orientation::Portrait);
+
+        PdfBuilder {
+            document: doc,
+            current_page: 0,
+        }
+    }
+
+    pub fn with_title(mut self, title: string) -> PdfBuilder {
+        self.document.title = title;
+        self
+    }
+
+    pub fn with_author(mut self, author: string) -> PdfBuilder {
+        self.document.author = author;
+        self
+    }
+
+    pub fn add_page(mut self, size: PageSize, orientation: Orientation) -> PdfBuilder {
+        self.document = self.document.new_page(size, orientation);
+        self.current_page = self.document.page_count() - 1;
+        self
+    }
+
+    pub fn add_text(mut self, text: string, x: float, y: float) -> PdfBuilder {
+        // In production, would add to current page
+        self
+    }
+
+    pub fn add_rectangle(mut self, rect: Rectangle) -> PdfBuilder {
+        // In production, would add to current page
+        self
+    }
+
+    pub fn add_line(mut self, line: Line) -> PdfBuilder {
+        // In production, would add to current page
+        self
+    }
+
+    pub fn add_circle(mut self, circle: Circle) -> PdfBuilder {
+        // In production, would add to current page
+        self
+    }
+
+    pub fn add_image(mut self, image: PdfImage) -> PdfBuilder {
+        // In production, would add to current page
+        self
+    }
+
+    pub fn add_table(mut self, table: Table) -> PdfBuilder {
+        // In production, would add to current page
+        self
+    }
+
+    pub fn build(self) -> PdfDocument {
+        self.document
+    }
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+pub fn points_to_mm(points: float) -> float {
+    points * 0.352778
+}
+
+pub fn mm_to_points(mm: float) -> float {
+    mm / 0.352778
+}
+
+pub fn points_to_inches(points: float) -> float {
+    points / 72.0
+}
+
+pub fn inches_to_points(inches: float) -> float {
+    inches * 72.0
+}

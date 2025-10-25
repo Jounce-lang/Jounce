@@ -1,0 +1,32 @@
+[package]
+name = "jounce-pdf"
+version = "0.1.0"
+description = "PDF generation and document creation - text, images, tables, shapes, and more"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-pdf"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "document_tests"
+path = "tests/document_tests.jnc"
+
+[[test]]
+name = "elements_tests"
+path = "tests/elements_tests.jnc"
+
+[[test]]
+name = "builder_tests"
+path = "tests/builder_tests.jnc"
+
+[features]
+default = ["text", "shapes", "tables"]
+text = []
+shapes = []
+tables = []
+images = []
+links = []

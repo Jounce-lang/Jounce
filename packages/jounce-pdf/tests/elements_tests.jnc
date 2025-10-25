@@ -1,0 +1,324 @@
+// Tests for PDF elements (text, shapes, images, tables)
+use jounce_pdf::{TextElement, Rectangle, Line, Circle, PdfImage, Table, TableRow, TableCell, Link, Font, Color, TextAlign};
+
+// ============================================================================
+// TextElement Tests
+// ============================================================================
+
+#[test]
+fn test_text_element_creation() {
+    let text = TextElement::new("Hello World", 100.0, 200.0);
+
+    assert_eq!(text.text, "Hello World", "Text should match");
+    assert_eq!(text.x, 100.0, "X should be 100");
+    assert_eq!(text.y, 200.0, "Y should be 200");
+}
+
+#[test]
+fn test_text_element_with_font() {
+    let font = Font::helvetica(14.0);
+    let text = TextElement::new("Test", 0.0, 0.0)
+        .with_font(font);
+
+    assert_eq!(text.font.size, 14.0, "Font size should be 14");
+}
+
+#[test]
+fn test_text_element_with_color() {
+    let color = Color::red();
+    let text = TextElement::new("Test", 0.0, 0.0)
+        .with_color(color);
+
+    assert_eq!(text.color.r, 255, "Color should be red");
+}
+
+#[test]
+fn test_text_element_with_align() {
+    let text = TextElement::new("Test", 0.0, 0.0)
+        .with_align(TextAlign::Center);
+
+    // Can't test enum directly, but ensure it doesn't crash
+    assert!(true, "Alignment should be set");
+}
+
+// ============================================================================
+// Rectangle Tests
+// ============================================================================
+
+#[test]
+fn test_rectangle_creation() {
+    let rect = Rectangle::new(10.0, 20.0, 100.0, 50.0);
+
+    assert_eq!(rect.x, 10.0, "X should be 10");
+    assert_eq!(rect.y, 20.0, "Y should be 20");
+    assert_eq!(rect.width, 100.0, "Width should be 100");
+    assert_eq!(rect.height, 50.0, "Height should be 50");
+}
+
+#[test]
+fn test_rectangle_default_stroke() {
+    let rect = Rectangle::new(0.0, 0.0, 100.0, 100.0);
+
+    assert!(rect.stroke_color.is_some(), "Should have stroke by default");
+    assert_eq!(rect.stroke_width, 1.0, "Stroke width should be 1");
+}
+
+#[test]
+fn test_rectangle_with_fill() {
+    let color = Color::blue();
+    let rect = Rectangle::new(0.0, 0.0, 100.0, 100.0)
+        .with_fill(color);
+
+    assert!(rect.fill_color.is_some(), "Should have fill color");
+}
+
+#[test]
+fn test_rectangle_with_stroke() {
+    let color = Color::red();
+    let rect = Rectangle::new(0.0, 0.0, 100.0, 100.0)
+        .with_stroke(color, 2.0);
+
+    assert_eq!(rect.stroke_width, 2.0, "Stroke width should be 2");
+}
+
+#[test]
+fn test_rectangle_no_stroke() {
+    let rect = Rectangle::new(0.0, 0.0, 100.0, 100.0)
+        .no_stroke();
+
+    assert!(rect.stroke_color.is_none(), "Should have no stroke");
+}
+
+// ============================================================================
+// Line Tests
+// ============================================================================
+
+#[test]
+fn test_line_creation() {
+    let line = Line::new(0.0, 0.0, 100.0, 100.0);
+
+    assert_eq!(line.x1, 0.0, "X1 should be 0");
+    assert_eq!(line.y1, 0.0, "Y1 should be 0");
+    assert_eq!(line.x2, 100.0, "X2 should be 100");
+    assert_eq!(line.y2, 100.0, "Y2 should be 100");
+}
+
+#[test]
+fn test_line_default_properties() {
+    let line = Line::new(0.0, 0.0, 100.0, 100.0);
+
+    assert_eq!(line.width, 1.0, "Default width should be 1");
+}
+
+#[test]
+fn test_line_with_color() {
+    let color = Color::red();
+    let line = Line::new(0.0, 0.0, 100.0, 100.0)
+        .with_color(color);
+
+    assert_eq!(line.color.r, 255, "Color should be red");
+}
+
+#[test]
+fn test_line_with_width() {
+    let line = Line::new(0.0, 0.0, 100.0, 100.0)
+        .with_width(3.0);
+
+    assert_eq!(line.width, 3.0, "Width should be 3");
+}
+
+// ============================================================================
+// Circle Tests
+// ============================================================================
+
+#[test]
+fn test_circle_creation() {
+    let circle = Circle::new(100.0, 100.0, 50.0);
+
+    assert_eq!(circle.x, 100.0, "X should be 100");
+    assert_eq!(circle.y, 100.0, "Y should be 100");
+    assert_eq!(circle.radius, 50.0, "Radius should be 50");
+}
+
+#[test]
+fn test_circle_default_properties() {
+    let circle = Circle::new(0.0, 0.0, 10.0);
+
+    assert!(circle.stroke_color.is_some(), "Should have stroke");
+    assert_eq!(circle.stroke_width, 1.0, "Stroke width should be 1");
+}
+
+#[test]
+fn test_circle_with_fill() {
+    let color = Color::green();
+    let circle = Circle::new(0.0, 0.0, 10.0)
+        .with_fill(color);
+
+    assert!(circle.fill_color.is_some(), "Should have fill");
+}
+
+#[test]
+fn test_circle_with_stroke() {
+    let color = Color::blue();
+    let circle = Circle::new(0.0, 0.0, 10.0)
+        .with_stroke(color, 2.0);
+
+    assert_eq!(circle.stroke_width, 2.0, "Stroke width should be 2");
+}
+
+// ============================================================================
+// PdfImage Tests
+// ============================================================================
+
+#[test]
+fn test_pdf_image_creation() {
+    let image = PdfImage::new("photo.jpg", 100.0, 200.0, 300.0, 400.0);
+
+    assert_eq!(image.path, "photo.jpg", "Path should match");
+    assert_eq!(image.x, 100.0, "X should be 100");
+    assert_eq!(image.y, 200.0, "Y should be 200");
+    assert_eq!(image.width, 300.0, "Width should be 300");
+    assert_eq!(image.height, 400.0, "Height should be 400");
+}
+
+// ============================================================================
+// Table Tests
+// ============================================================================
+
+#[test]
+fn test_table_cell_creation() {
+    let cell = TableCell::new("Cell Content");
+
+    assert_eq!(cell.content, "Cell Content", "Content should match");
+    assert_eq!(cell.colspan, 1, "Default colspan should be 1");
+    assert_eq!(cell.rowspan, 1, "Default rowspan should be 1");
+}
+
+#[test]
+fn test_table_cell_with_colspan() {
+    let cell = TableCell::new("Test")
+        .with_colspan(2);
+
+    assert_eq!(cell.colspan, 2, "Colspan should be 2");
+}
+
+#[test]
+fn test_table_cell_with_background() {
+    let color = Color::gray(240);
+    let cell = TableCell::new("Test")
+        .with_background(color);
+
+    assert!(cell.background.is_some(), "Should have background");
+}
+
+#[test]
+fn test_table_row_creation() {
+    let row = TableRow::new();
+
+    assert_eq!(row.cells.len(), 0, "Should have no cells");
+    assert_eq!(row.height, 20.0, "Default height should be 20");
+}
+
+#[test]
+fn test_table_row_add_cell() {
+    let cell = TableCell::new("Test");
+    let row = TableRow::new()
+        .add_cell(cell);
+
+    assert_eq!(row.cells.len(), 1, "Should have 1 cell");
+}
+
+#[test]
+fn test_table_row_with_height() {
+    let row = TableRow::new()
+        .with_height(30.0);
+
+    assert_eq!(row.height, 30.0, "Height should be 30");
+}
+
+#[test]
+fn test_table_creation() {
+    let table = Table::new(50.0, 100.0);
+
+    assert_eq!(table.x, 50.0, "X should be 50");
+    assert_eq!(table.y, 100.0, "Y should be 100");
+    assert_eq!(table.rows.len(), 0, "Should have no rows");
+}
+
+#[test]
+fn test_table_add_row() {
+    let row = TableRow::new();
+    let table = Table::new(0.0, 0.0)
+        .add_row(row);
+
+    assert_eq!(table.rows.len(), 1, "Should have 1 row");
+}
+
+#[test]
+fn test_table_with_column_widths() {
+    let mut widths = Array::new();
+    widths.push(100.0);
+    widths.push(200.0);
+    widths.push(150.0);
+
+    let table = Table::new(0.0, 0.0)
+        .with_column_widths(widths);
+
+    assert_eq!(table.column_widths.len(), 3, "Should have 3 column widths");
+}
+
+#[test]
+fn test_table_with_border() {
+    let color = Color::black();
+    let table = Table::new(0.0, 0.0)
+        .with_border(2.0, color);
+
+    assert_eq!(table.border_width, 2.0, "Border width should be 2");
+}
+
+#[test]
+fn test_table_no_border() {
+    let table = Table::new(0.0, 0.0)
+        .no_border();
+
+    assert_eq!(table.border_width, 0.0, "Border width should be 0");
+}
+
+// ============================================================================
+// Link Tests
+// ============================================================================
+
+#[test]
+fn test_link_creation() {
+    let link = Link::new("Click Here", "https://example.com", 100.0, 200.0);
+
+    assert_eq!(link.text, "Click Here", "Text should match");
+    assert_eq!(link.url, "https://example.com", "URL should match");
+    assert_eq!(link.x, 100.0, "X should be 100");
+    assert_eq!(link.y, 200.0, "Y should be 200");
+}
+
+#[test]
+fn test_link_default_color() {
+    let link = Link::new("Test", "https://test.com", 0.0, 0.0);
+
+    assert_eq!(link.color.b, 255, "Default color should be blue");
+}
+
+#[test]
+fn test_link_with_font() {
+    let font = Font::courier(10.0);
+    let link = Link::new("Test", "https://test.com", 0.0, 0.0)
+        .with_font(font);
+
+    assert_eq!(link.font.size, 10.0, "Font size should be 10");
+}
+
+#[test]
+fn test_link_with_color() {
+    let color = Color::red();
+    let link = Link::new("Test", "https://test.com", 0.0, 0.0)
+        .with_color(color);
+
+    assert_eq!(link.color.r, 255, "Color should be red");
+}

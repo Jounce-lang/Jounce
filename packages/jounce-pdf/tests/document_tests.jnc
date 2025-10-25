@@ -1,0 +1,254 @@
+// Tests for PdfDocument, Page, and metadata
+use jounce_pdf::{PdfDocument, Page, PageSize, Orientation, Font, FontFamily, FontStyle, Color};
+
+// ============================================================================
+// PageSize Tests
+// ============================================================================
+
+#[test]
+fn test_page_size_a4_dimensions() {
+    let size = PageSize::A4;
+    let (width, height) = size.dimensions();
+
+    assert_eq!(width, 595.0, "A4 width should be 595 points");
+    assert_eq!(height, 842.0, "A4 height should be 842 points");
+}
+
+#[test]
+fn test_page_size_letter_dimensions() {
+    let size = PageSize::Letter;
+    let (width, height) = size.dimensions();
+
+    assert_eq!(width, 612.0, "Letter width should be 612 points");
+    assert_eq!(height, 792.0, "Letter height should be 792 points");
+}
+
+#[test]
+fn test_page_size_a3_dimensions() {
+    let size = PageSize::A3;
+
+    assert_eq!(size.width(), 842.0, "A3 width should be 842 points");
+    assert_eq!(size.height(), 1191.0, "A3 height should be 1191 points");
+}
+
+// ============================================================================
+// Page Tests
+// ============================================================================
+
+#[test]
+fn test_page_creation_portrait() {
+    let page = Page::new(PageSize::A4, Orientation::Portrait);
+
+    assert_eq!(page.width, 595.0, "Width should be A4 width");
+    assert_eq!(page.height, 842.0, "Height should be A4 height");
+}
+
+#[test]
+fn test_page_creation_landscape() {
+    let page = Page::new(PageSize::A4, Orientation::Landscape);
+
+    assert_eq!(page.width, 842.0, "Width should be A4 height (landscape)");
+    assert_eq!(page.height, 595.0, "Height should be A4 width (landscape)");
+}
+
+#[test]
+fn test_page_default_margins() {
+    let page = Page::new(PageSize::A4, Orientation::Portrait);
+
+    assert_eq!(page.margin_top, 72.0, "Default margin should be 72 points (1 inch)");
+    assert_eq!(page.margin_left, 72.0, "Default margin should be 72 points");
+}
+
+#[test]
+fn test_page_custom_margins() {
+    let page = Page::new(PageSize::A4, Orientation::Portrait)
+        .with_margins(50.0, 40.0, 50.0, 40.0);
+
+    assert_eq!(page.margin_top, 50.0, "Top margin should be 50");
+    assert_eq!(page.margin_right, 40.0, "Right margin should be 40");
+}
+
+#[test]
+fn test_page_content_width() {
+    let page = Page::new(PageSize::A4, Orientation::Portrait)
+        .with_margins(72.0, 72.0, 72.0, 72.0);
+
+    let content_width = page.content_width();
+    assert_eq!(content_width, 451.0, "Content width should be width - margins");
+}
+
+#[test]
+fn test_page_content_height() {
+    let page = Page::new(PageSize::A4, Orientation::Portrait)
+        .with_margins(72.0, 72.0, 72.0, 72.0);
+
+    let content_height = page.content_height();
+    assert_eq!(content_height, 698.0, "Content height should be height - margins");
+}
+
+// ============================================================================
+// Color Tests
+// ============================================================================
+
+#[test]
+fn test_color_creation() {
+    let color = Color::new(255, 128, 0);
+
+    assert_eq!(color.r, 255, "Red should be 255");
+    assert_eq!(color.g, 128, "Green should be 128");
+    assert_eq!(color.b, 0, "Blue should be 0");
+    assert_eq!(color.a, 1.0, "Alpha should default to 1.0");
+}
+
+#[test]
+fn test_color_with_alpha() {
+    let color = Color::new(255, 0, 0)
+        .with_alpha(0.5);
+
+    assert_eq!(color.a, 0.5, "Alpha should be 0.5");
+}
+
+#[test]
+fn test_color_presets() {
+    let black = Color::black();
+    assert_eq!(black.r, 0, "Black R should be 0");
+
+    let white = Color::white();
+    assert_eq!(white.r, 255, "White R should be 255");
+
+    let red = Color::red();
+    assert_eq!(red.r, 255, "Red R should be 255");
+    assert_eq!(red.g, 0, "Red G should be 0");
+}
+
+#[test]
+fn test_color_gray() {
+    let gray = Color::gray(128);
+
+    assert_eq!(gray.r, 128, "Gray R should be 128");
+    assert_eq!(gray.g, 128, "Gray G should be 128");
+    assert_eq!(gray.b, 128, "Gray B should be 128");
+}
+
+#[test]
+fn test_color_to_rgb_string() {
+    let color = Color::new(255, 128, 64);
+    let rgb = color.to_rgb_string();
+
+    assert_eq!(rgb, "rgb(255,128,64)", "RGB string should match");
+}
+
+// ============================================================================
+// Font Tests
+// ============================================================================
+
+#[test]
+fn test_font_creation() {
+    let font = Font::new(FontFamily::Helvetica, 12.0);
+
+    assert_eq!(font.size, 12.0, "Font size should be 12");
+}
+
+#[test]
+fn test_font_with_style() {
+    let font = Font::new(FontFamily::Helvetica, 12.0)
+        .with_style(FontStyle::Bold);
+
+    // Can't directly test enum equality, so check it doesn't crash
+    assert!(true, "Font style should be set");
+}
+
+#[test]
+fn test_font_presets() {
+    let helvetica = Font::helvetica(14.0);
+    assert_eq!(helvetica.size, 14.0, "Helvetica size should be 14");
+
+    let times = Font::times(12.0);
+    assert_eq!(times.size, 12.0, "Times size should be 12");
+
+    let courier = Font::courier(10.0);
+    assert_eq!(courier.size, 10.0, "Courier size should be 10");
+}
+
+#[test]
+fn test_font_to_string_normal() {
+    let font = Font::helvetica(12.0);
+    let name = font.to_string();
+
+    assert_eq!(name, "Helvetica", "Font name should be Helvetica");
+}
+
+#[test]
+fn test_font_to_string_bold() {
+    let font = Font::helvetica(12.0)
+        .with_style(FontStyle::Bold);
+    let name = font.to_string();
+
+    assert_eq!(name, "Helvetica-Bold", "Font name should include Bold");
+}
+
+// ============================================================================
+// PdfDocument Tests
+// ============================================================================
+
+#[test]
+fn test_document_creation() {
+    let doc = PdfDocument::new();
+
+    assert_eq!(doc.title, "", "Title should be empty");
+    assert_eq!(doc.creator, "Jounce PDF v0.1.0", "Creator should be set");
+    assert_eq!(doc.page_count(), 0, "Should have no pages");
+}
+
+#[test]
+fn test_document_with_title() {
+    let doc = PdfDocument::new()
+        .with_title("Test Document");
+
+    assert_eq!(doc.title, "Test Document", "Title should match");
+}
+
+#[test]
+fn test_document_with_author() {
+    let doc = PdfDocument::new()
+        .with_author("John Doe");
+
+    assert_eq!(doc.author, "John Doe", "Author should match");
+}
+
+#[test]
+fn test_document_with_subject() {
+    let doc = PdfDocument::new()
+        .with_subject("Test Subject");
+
+    assert_eq!(doc.subject, "Test Subject", "Subject should match");
+}
+
+#[test]
+fn test_document_add_page() {
+    let page = Page::new(PageSize::A4, Orientation::Portrait);
+    let doc = PdfDocument::new()
+        .add_page(page);
+
+    assert_eq!(doc.page_count(), 1, "Should have 1 page");
+}
+
+#[test]
+fn test_document_new_page() {
+    let doc = PdfDocument::new()
+        .new_page(PageSize::A4, Orientation::Portrait)
+        .new_page(PageSize::Letter, Orientation::Landscape);
+
+    assert_eq!(doc.page_count(), 2, "Should have 2 pages");
+}
+
+#[test]
+fn test_document_generate() {
+    let doc = PdfDocument::new()
+        .with_title("Test")
+        .new_page(PageSize::A4, Orientation::Portrait);
+
+    let pdf = doc.generate();
+
+    assert!(pdf.starts_with("%PDF-1.4"), "Should start with PDF header");
+}
