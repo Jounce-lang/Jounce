@@ -1,0 +1,13 @@
+[package]
+name = "task-dashboard-example"
+version = "0.1.0"
+description = "Multi-package integration example demonstrating 6 Jounce packages working together"
+authors = ["Jounce Team"]
+
+[dependencies]
+jounce-auth = "0.1.0"
+jounce-db = "0.1.0"
+jounce-cache = "0.1.0"
+jounce-ui = "0.1.0"
+jounce-logger = "0.1.0"
+jounce-theme = "0.1.0"

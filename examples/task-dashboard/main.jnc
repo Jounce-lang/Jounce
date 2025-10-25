@@ -1,0 +1,453 @@
+// Task Management Dashboard - Multi-Package Integration Example
+//
+// This example demonstrates integration of 6 Jounce packages:
+// 1. jounce-auth - User authentication and sessions
+// 2. jounce-db - Database operations for task storage
+// 3. jounce-cache - Cache frequently accessed tasks
+// 4. jounce-ui - UI components (Button, Input, Modal, Toast, Card)
+// 5. jounce-logger - Structured logging of user actions
+// 6. jounce-theme - Dark/light mode theming
+
+use jounce_auth::{JwtManager, SessionManager, Session};
+use jounce_db::{QueryBuilder, ConnectionPool};
+use jounce_cache::{Cache, CacheConfig, EvictionPolicy};
+use jounce_ui::{Button, ButtonVariant, Input, InputType, Modal, Toast, ToastType, Card};
+use jounce_logger::{Logger, LogLevel, OutputTarget, OutputFormat};
+use jounce_theme::{ThemeManager, ThemeMode};
+
+// Task model
+struct Task {
+    pub id: string,
+    pub title: string,
+    pub description: string,
+    pub completed: bool,
+    pub user_id: string,
+    pub created_at: int,
+}
+
+// Application state
+struct AppState {
+    pub current_user: Option<Session>,
+    pub tasks: Array<Task>,
+    pub theme_mode: ThemeMode,
+    pub logger: Logger,
+}
+
+// Initialize the application
+fn init_app() -> AppState {
+    // 1. Set up logger (jounce-logger)
+    let logger = Logger::new("TaskDashboard")
+        .with_level(LogLevel::Info)
+        .with_output(OutputTarget::Both)
+        .with_format(OutputFormat::Json);
+
+    logger.info("Application initializing...", Map::new());
+
+    // 2. Set up theme manager (jounce-theme)
+    let theme_manager = ThemeManager::new();
+    let theme_mode = theme_manager.detect_system_preference();
+    theme_manager.apply_mode(theme_mode);
+
+    logger.info("Theme initialized", {"mode": theme_mode.to_string()});
+
+    return AppState {
+        current_user: None,
+        tasks: Array::new(),
+        theme_mode: theme_mode,
+        logger: logger,
+    };
+}
+
+// User authentication (jounce-auth)
+fn login(username: string, password: string, state: AppState) -> Option<Session> {
+    state.logger.info("Login attempt", {"username": username});
+
+    // Create JWT manager
+    let jwt_manager = JwtManager::new("super-secret-key-12345");
+
+    // Create session manager
+    let mut session_manager = SessionManager::new();
+    session_manager.set_default_ttl(3600); // 1 hour sessions
+
+    // In real app, verify password against database
+    // For demo, accept any non-empty password
+    if password.len() > 0 {
+        let user_id = "user_" + username;
+
+        // Create JWT token
+        let mut claims = Map::new();
+        claims.insert("sub", user_id);
+        claims.insert("username", username);
+        claims.insert("role", "user");
+
+        let token = jwt_manager.create_token(claims, 3600);
+
+        // Create session
+        let session = session_manager.create_session(user_id, {"token": token});
+
+        state.logger.info("Login successful", {"user_id": user_id});
+
+        return Some(session);
+    }
+
+    state.logger.warn("Login failed", {"username": username});
+    return None;
+}
+
+// Database operations (jounce-db)
+fn setup_database() -> ConnectionPool {
+    // Create connection pool for SQLite
+    let pool = ConnectionPool::sqlite("tasks.db", 5);
+
+    // Create tasks table if it doesn't exist
+    let query = QueryBuilder::new()
+        .raw("CREATE TABLE IF NOT EXISTS tasks (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            description TEXT,
+            completed INTEGER DEFAULT 0,
+            user_id TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+        )")
+        .build();
+
+    pool.execute(query);
+
+    return pool;
+}
+
+// Load tasks from database with caching (jounce-db + jounce-cache)
+fn load_tasks(user_id: string, pool: ConnectionPool, cache: Cache<Array<Task>>, state: AppState) -> Array<Task> {
+    state.logger.info("Loading tasks", {"user_id": user_id});
+
+    // Check cache first
+    let cache_key = "tasks_" + user_id;
+    let cached_tasks = cache.get(cache_key);
+
+    if cached_tasks.is_some() {
+        state.logger.info("Tasks loaded from cache", {"count": cached_tasks.unwrap().len()});
+        return cached_tasks.unwrap();
+    }
+
+    // Cache miss - load from database
+    let query = QueryBuilder::new()
+        .select(["id", "title", "description", "completed", "user_id", "created_at"])
+        .from("tasks")
+        .where_clause("user_id", "=", user_id)
+        .order_by("created_at", "DESC")
+        .build();
+
+    let rows = pool.query(query);
+
+    let mut tasks = Array::new();
+    for row in rows {
+        let task = Task {
+            id: row.get_string("id"),
+            title: row.get_string("title"),
+            description: row.get_string("description"),
+            completed: row.get_int("completed") == 1,
+            user_id: row.get_string("user_id"),
+            created_at: row.get_int("created_at"),
+        };
+        tasks.push(task);
+    }
+
+    // Store in cache with 5 minute TTL
+    cache.set(cache_key, tasks, Some(300));
+
+    state.logger.info("Tasks loaded from database", {"count": tasks.len()});
+
+    return tasks;
+}
+
+// Create new task (jounce-db + jounce-cache)
+fn create_task(title: string, description: string, user_id: string, pool: ConnectionPool, cache: Cache<Array<Task>>, state: AppState) -> Task {
+    state.logger.info("Creating task", {"title": title, "user_id": user_id});
+
+    let task_id = "task_" + generate_id();
+    let created_at = get_current_timestamp();
+
+    let task = Task {
+        id: task_id,
+        title: title,
+        description: description,
+        completed: false,
+        user_id: user_id,
+        created_at: created_at,
+    };
+
+    // Insert into database
+    let query = QueryBuilder::new()
+        .insert("tasks", [
+            {"id": task_id},
+            {"title": title},
+            {"description": description},
+            {"completed": "0"},
+            {"user_id": user_id},
+            {"created_at": created_at.to_string()},
+        ])
+        .build();
+
+    pool.execute(query);
+
+    // Invalidate cache
+    let cache_key = "tasks_" + user_id;
+    cache.delete(cache_key);
+
+    state.logger.info("Task created", {"task_id": task_id});
+
+    return task;
+}
+
+// Toggle task completion (jounce-db + jounce-cache)
+fn toggle_task(task_id: string, user_id: string, pool: ConnectionPool, cache: Cache<Array<Task>>, state: AppState) {
+    state.logger.info("Toggling task", {"task_id": task_id});
+
+    // Get current state
+    let query = QueryBuilder::new()
+        .select(["completed"])
+        .from("tasks")
+        .where_clause("id", "=", task_id)
+        .build();
+
+    let rows = pool.query(query);
+
+    if rows.len() > 0 {
+        let current_completed = rows[0].get_int("completed");
+        let new_completed = if current_completed == 1 { 0 } else { 1 };
+
+        // Update database
+        let update_query = QueryBuilder::new()
+            .update("tasks")
+            .set("completed", new_completed.to_string())
+            .where_clause("id", "=", task_id)
+            .build();
+
+        pool.execute(update_query);
+
+        // Invalidate cache
+        let cache_key = "tasks_" + user_id;
+        cache.delete(cache_key);
+
+        state.logger.info("Task toggled", {"task_id": task_id, "completed": new_completed == 1});
+    }
+}
+
+// Render UI (jounce-ui + jounce-theme)
+fn render_app(state: AppState) -> string {
+    let html = "<div class=\"app-container\">";
+
+    // Header with theme toggle
+    html = html + render_header(state);
+
+    // Login or dashboard
+    if state.current_user.is_none() {
+        html = html + render_login_form(state);
+    } else {
+        html = html + render_dashboard(state);
+    }
+
+    html = html + "</div>";
+    return html;
+}
+
+fn render_header(state: AppState) -> string {
+    // Theme toggle button (jounce-ui + jounce-theme)
+    let theme_button = Button::new("Toggle Theme")
+        .with_variant(ButtonVariant::Ghost)
+        .with_click_handler("toggle_theme")
+        .render();
+
+    let current_mode = if state.theme_mode == ThemeMode::Dark {
+        "Dark Mode"
+    } else {
+        "Light Mode"
+    };
+
+    return "<header class=\"app-header\">
+        <h1>Task Dashboard</h1>
+        <div class=\"theme-controls\">
+            <span>" + current_mode + "</span>
+            " + theme_button + "
+        </div>
+    </header>";
+}
+
+fn render_login_form(state: AppState) -> string {
+    // Login form using jounce-ui components
+    let username_input = Input::new("username")
+        .with_type(InputType::Text)
+        .with_placeholder("Username")
+        .with_label("Username")
+        .render();
+
+    let password_input = Input::new("password")
+        .with_type(InputType::Password)
+        .with_placeholder("Password")
+        .with_label("Password")
+        .render();
+
+    let login_button = Button::new("Login")
+        .with_variant(ButtonVariant::Primary)
+        .with_click_handler("handle_login")
+        .render();
+
+    return "<div class=\"login-container\">
+        <form class=\"login-form\">
+            " + username_input + "
+            " + password_input + "
+            " + login_button + "
+        </form>
+    </div>";
+}
+
+fn render_dashboard(state: AppState) -> string {
+    let html = "<div class=\"dashboard\">";
+
+    // Add task form
+    html = html + render_add_task_form();
+
+    // Task list
+    html = html + "<div class=\"task-list\">";
+
+    for task in state.tasks {
+        html = html + render_task_card(task);
+    }
+
+    html = html + "</div>";
+    html = html + "</div>";
+
+    return html;
+}
+
+fn render_add_task_form() -> string {
+    let title_input = Input::new("task-title")
+        .with_type(InputType::Text)
+        .with_placeholder("Task title")
+        .with_label("New Task")
+        .render();
+
+    let add_button = Button::new("Add Task")
+        .with_variant(ButtonVariant::Success)
+        .with_click_handler("handle_add_task")
+        .render();
+
+    return "<div class=\"add-task-form\">
+        " + title_input + "
+        " + add_button + "
+    </div>";
+}
+
+fn render_task_card(task: Task) -> string {
+    // Use Card component from jounce-ui
+    let card_content = "<div class=\"task-content\">
+        <h3>" + task.title + "</h3>
+        <p>" + task.description + "</p>
+        <p class=\"task-meta\">Created: " + format_timestamp(task.created_at) + "</p>
+    </div>";
+
+    let toggle_button = Button::new(if task.completed { "Uncomplete" } else { "Complete" })
+        .with_variant(if task.completed { ButtonVariant::Secondary } else { ButtonVariant::Success })
+        .with_click_handler("toggle_task_" + task.id)
+        .render();
+
+    let card_footer = "<div class=\"task-actions\">" + toggle_button + "</div>";
+
+    let card = Card::new()
+        .with_content(card_content)
+        .with_footer(card_footer)
+        .render();
+
+    return card;
+}
+
+// Theme toggle handler (jounce-theme)
+fn toggle_theme(state: AppState) {
+    let theme_manager = ThemeManager::new();
+    let new_mode = theme_manager.toggle_mode();
+
+    state.theme_mode = new_mode;
+    state.logger.info("Theme toggled", {"mode": new_mode.to_string()});
+
+    // Show toast notification (jounce-ui)
+    let toast = Toast::new("Theme changed to " + new_mode.to_string())
+        .with_type(ToastType::Info)
+        .with_duration(2000);
+
+    toast.show();
+}
+
+// Main application entry point
+fn main() {
+    // Initialize application
+    let mut state = init_app();
+
+    // Set up database
+    let pool = setup_database();
+
+    // Set up cache (jounce-cache)
+    let cache_config = CacheConfig::new()
+        .with_max_size(100)
+        .with_eviction_policy(EvictionPolicy::LRU);
+
+    let task_cache = Cache::new(cache_config);
+
+    state.logger.info("Application initialized", Map::new());
+
+    // Demo: Login user
+    let session = login("demo_user", "password123", state);
+
+    if session.is_some() {
+        state.current_user = session;
+        let user_id = session.unwrap().user_id;
+
+        // Show success toast (jounce-ui)
+        let toast = Toast::new("Welcome back!")
+            .with_type(ToastType::Success)
+            .with_duration(3000);
+        toast.show();
+
+        // Load tasks
+        state.tasks = load_tasks(user_id, pool, task_cache, state);
+
+        // Create a sample task
+        let new_task = create_task(
+            "Build amazing app",
+            "Use Jounce packages to build a production-ready application",
+            user_id,
+            pool,
+            task_cache,
+            state
+        );
+
+        state.tasks.push(new_task);
+
+        // Render app
+        let app_html = render_app(state);
+        println(app_html);
+
+        state.logger.info("Application running", {"user_id": user_id, "task_count": state.tasks.len()});
+    } else {
+        // Show error toast (jounce-ui)
+        let toast = Toast::new("Login failed")
+            .with_type(ToastType::Error)
+            .with_duration(3000);
+        toast.show();
+    }
+}
+
+// Helper functions
+fn generate_id() -> string {
+    // Simple ID generation (in real app, use UUID)
+    return get_current_timestamp().to_string();
+}
+
+fn get_current_timestamp() -> int {
+    // In real app, get actual timestamp
+    return 1729800000;
+}
+
+fn format_timestamp(timestamp: int) -> string {
+    // In real app, format properly using jounce-utils date utilities
+    return "2025-10-24";
+}
