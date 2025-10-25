@@ -1,0 +1,193 @@
+// Tests for Worker and WorkerPool in jounce-queue
+use jounce_queue::{Worker, WorkerPool, Job};
+
+#[test]
+fn test_worker_creation() {
+    let worker = Worker::new("worker1", "test_queue");
+
+    assert_eq!(worker.id, "worker1", "ID should match");
+    assert_eq!(worker.queue_name, "test_queue", "Queue name should match");
+    assert!(!worker.running, "Should not be running");
+    assert_eq!(worker.processed_count, 0, "Should have 0 processed");
+    assert_eq!(worker.failed_count, 0, "Should have 0 failed");
+}
+
+#[test]
+fn test_worker_start() {
+    let mut worker = Worker::new("worker1", "test");
+    worker = worker.start();
+
+    assert!(worker.running, "Should be running");
+}
+
+#[test]
+fn test_worker_stop() {
+    let mut worker = Worker::new("worker1", "test");
+    worker = worker.start().stop();
+
+    assert!(!worker.running, "Should be stopped");
+}
+
+#[test]
+fn test_worker_process_job() {
+    let mut worker = Worker::new("worker1", "test");
+    let job = Job::new("job1", "test", "data");
+
+    worker = worker.process_job(job);
+
+    assert!(worker.current_job.is_some(), "Should have current job");
+}
+
+#[test]
+fn test_worker_finish_job_success() {
+    let mut worker = Worker::new("worker1", "test");
+    let job = Job::new("job1", "test", "data");
+
+    worker = worker
+        .process_job(job)
+        .finish_job(true);
+
+    assert!(worker.current_job.is_none(), "Should have no current job");
+    assert_eq!(worker.processed_count, 1, "Should have 1 processed");
+    assert_eq!(worker.failed_count, 0, "Should have 0 failed");
+}
+
+#[test]
+fn test_worker_finish_job_failure() {
+    let mut worker = Worker::new("worker1", "test");
+    let job = Job::new("job1", "test", "data");
+
+    worker = worker
+        .process_job(job)
+        .finish_job(false);
+
+    assert_eq!(worker.processed_count, 0, "Should have 0 processed");
+    assert_eq!(worker.failed_count, 1, "Should have 1 failed");
+}
+
+#[test]
+fn test_worker_is_busy() {
+    let mut worker = Worker::new("worker1", "test");
+    assert!(!worker.is_busy(), "Should not be busy");
+
+    worker = worker.process_job(Job::new("job1", "test", "data"));
+    assert!(worker.is_busy(), "Should be busy");
+}
+
+#[test]
+fn test_worker_get_stats() {
+    let mut worker = Worker::new("worker1", "test");
+    worker = worker
+        .start()
+        .process_job(Job::new("job1", "test", "data"))
+        .finish_job(true);
+
+    let stats = worker.get_stats();
+
+    assert_eq!(stats.worker_id, "worker1", "ID should match");
+    assert_eq!(stats.processed, 1, "Should have 1 processed");
+    assert_eq!(stats.failed, 0, "Should have 0 failed");
+    assert!(stats.running, "Should be running");
+    assert!(!stats.busy, "Should not be busy");
+}
+
+#[test]
+fn test_worker_pool_creation() {
+    let pool = WorkerPool::new("test_queue", 3);
+
+    assert_eq!(pool.queue_name, "test_queue", "Queue name should match");
+    assert_eq!(pool.workers.len(), 3, "Should have 3 workers");
+}
+
+#[test]
+fn test_worker_pool_start_all() {
+    let mut pool = WorkerPool::new("test", 3);
+    pool = pool.start_all();
+
+    assert!(pool.workers[0].running, "Worker 0 should be running");
+    assert!(pool.workers[1].running, "Worker 1 should be running");
+    assert!(pool.workers[2].running, "Worker 2 should be running");
+}
+
+#[test]
+fn test_worker_pool_stop_all() {
+    let mut pool = WorkerPool::new("test", 3);
+    pool = pool.start_all().stop_all();
+
+    assert!(!pool.workers[0].running, "Worker 0 should be stopped");
+    assert!(!pool.workers[1].running, "Worker 1 should be stopped");
+    assert!(!pool.workers[2].running, "Worker 2 should be stopped");
+}
+
+#[test]
+fn test_worker_pool_get_available_worker() {
+    let mut pool = WorkerPool::new("test", 3);
+    pool = pool.start_all();
+
+    let available = pool.get_available_worker();
+
+    assert!(available.is_some(), "Should have available worker");
+}
+
+#[test]
+fn test_worker_pool_no_available_worker() {
+    let mut pool = WorkerPool::new("test", 2);
+    // Don't start workers
+
+    let available = pool.get_available_worker();
+
+    assert!(available.is_none(), "Should have no available worker");
+}
+
+#[test]
+fn test_worker_pool_get_total_processed() {
+    let mut pool = WorkerPool::new("test", 3);
+    pool.workers[0] = pool.workers[0].finish_job(true);
+    pool.workers[1] = pool.workers[1].finish_job(true);
+
+    let total = pool.get_total_processed();
+
+    assert_eq!(total, 2, "Should have 2 total processed");
+}
+
+#[test]
+fn test_worker_pool_get_total_failed() {
+    let mut pool = WorkerPool::new("test", 3);
+    pool.workers[0] = pool.workers[0].finish_job(false);
+    pool.workers[1] = pool.workers[1].finish_job(false);
+
+    let total = pool.get_total_failed();
+
+    assert_eq!(total, 2, "Should have 2 total failed");
+}
+
+#[test]
+fn test_multiple_workers_processing() {
+    let mut pool = WorkerPool::new("test", 3);
+    pool = pool.start_all();
+
+    pool.workers[0] = pool.workers[0].process_job(Job::new("job1", "test", "data"));
+    pool.workers[1] = pool.workers[1].process_job(Job::new("job2", "test", "data"));
+
+    assert!(pool.workers[0].is_busy(), "Worker 0 should be busy");
+    assert!(pool.workers[1].is_busy(), "Worker 1 should be busy");
+    assert!(!pool.workers[2].is_busy(), "Worker 2 should not be busy");
+}
+
+#[test]
+fn test_worker_throughput() {
+    let mut worker = Worker::new("worker1", "test");
+    worker = worker.start();
+
+    // Process multiple jobs
+    worker = worker
+        .process_job(Job::new("job1", "test", "data"))
+        .finish_job(true)
+        .process_job(Job::new("job2", "test", "data"))
+        .finish_job(true)
+        .process_job(Job::new("job3", "test", "data"))
+        .finish_job(false);
+
+    assert_eq!(worker.processed_count, 2, "Should have 2 processed");
+    assert_eq!(worker.failed_count, 1, "Should have 1 failed");
+}

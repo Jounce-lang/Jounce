@@ -1,0 +1,31 @@
+[package]
+name = "jounce-queue"
+version = "0.1.0"
+description = "Job queue and background task processing with priority queues, retry logic, and workers"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-queue"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "queue_tests"
+path = "tests/queue_tests.jnc"
+
+[[test]]
+name = "worker_tests"
+path = "tests/worker_tests.jnc"
+
+[[test]]
+name = "manager_tests"
+path = "tests/manager_tests.jnc"
+
+[features]
+default = ["priority", "retry", "workers"]
+priority = []
+retry = []
+workers = []
+delayed = []

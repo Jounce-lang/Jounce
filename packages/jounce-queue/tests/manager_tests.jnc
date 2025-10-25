@@ -1,0 +1,190 @@
+// Tests for QueueManager and DelayedQueue in jounce-queue
+use jounce_queue::{QueueManager, DelayedQueue, Job, Queue, WorkerPool};
+
+#[test]
+fn test_queue_manager_creation() {
+    let manager = QueueManager::new();
+
+    assert_eq!(manager.queues.size(), 0, "Should have no queues");
+    assert_eq!(manager.worker_pools.size(), 0, "Should have no worker pools");
+}
+
+#[test]
+fn test_queue_manager_create_queue() {
+    let mut manager = QueueManager::new();
+    manager = manager.create_queue("test_queue");
+
+    assert_eq!(manager.queues.size(), 1, "Should have 1 queue");
+}
+
+#[test]
+fn test_queue_manager_create_queue_with_workers() {
+    let mut manager = QueueManager::new();
+    manager = manager.create_queue_with_workers("test_queue", 3);
+
+    assert_eq!(manager.queues.size(), 1, "Should have 1 queue");
+    assert_eq!(manager.worker_pools.size(), 1, "Should have 1 worker pool");
+}
+
+#[test]
+fn test_queue_manager_add_job() {
+    let mut manager = QueueManager::new();
+    manager = manager.create_queue("test");
+
+    let job = Job::new("job1", "test", "data");
+    manager = manager.add_job("test", job);
+
+    let queue = manager.get_queue("test");
+    assert!(queue.is_some(), "Should have queue");
+    assert_eq!(queue.unwrap().jobs.len(), 1, "Should have 1 job");
+}
+
+#[test]
+fn test_queue_manager_get_queue() {
+    let mut manager = QueueManager::new();
+    manager = manager.create_queue("test");
+
+    let queue = manager.get_queue("test");
+
+    assert!(queue.is_some(), "Should get queue");
+    assert_eq!(queue.unwrap().name, "test", "Queue name should match");
+}
+
+#[test]
+fn test_queue_manager_get_nonexistent_queue() {
+    let manager = QueueManager::new();
+
+    let queue = manager.get_queue("nonexistent");
+
+    assert!(queue.is_none(), "Should not get queue");
+}
+
+#[test]
+fn test_queue_manager_get_worker_pool() {
+    let mut manager = QueueManager::new();
+    manager = manager.create_queue_with_workers("test", 3);
+
+    let pool = manager.get_worker_pool("test");
+
+    assert!(pool.is_some(), "Should get worker pool");
+    assert_eq!(pool.unwrap().workers.len(), 3, "Should have 3 workers");
+}
+
+#[test]
+fn test_queue_manager_delete_queue() {
+    let mut manager = QueueManager::new();
+    manager = manager
+        .create_queue_with_workers("test", 3)
+        .delete_queue("test");
+
+    assert_eq!(manager.queues.size(), 0, "Should have no queues");
+    assert_eq!(manager.worker_pools.size(), 0, "Should have no worker pools");
+}
+
+#[test]
+fn test_queue_manager_multiple_queues() {
+    let mut manager = QueueManager::new();
+    manager = manager
+        .create_queue("queue1")
+        .create_queue("queue2")
+        .create_queue("queue3");
+
+    assert_eq!(manager.queues.size(), 3, "Should have 3 queues");
+}
+
+#[test]
+fn test_queue_manager_add_to_multiple_queues() {
+    let mut manager = QueueManager::new();
+    manager = manager
+        .create_queue("queue1")
+        .create_queue("queue2");
+
+    manager = manager
+        .add_job("queue1", Job::new("job1", "test", "data"))
+        .add_job("queue2", Job::new("job2", "test", "data"));
+
+    let q1 = manager.get_queue("queue1");
+    let q2 = manager.get_queue("queue2");
+
+    assert_eq!(q1.unwrap().jobs.len(), 1, "Queue1 should have 1 job");
+    assert_eq!(q2.unwrap().jobs.len(), 1, "Queue2 should have 1 job");
+}
+
+#[test]
+fn test_delayed_queue_creation() {
+    let delayed = DelayedQueue::new("delayed_queue");
+
+    assert_eq!(delayed.queue.name, "delayed_queue", "Name should match");
+    assert_eq!(delayed.check_interval, 1000, "Should have default interval");
+}
+
+#[test]
+fn test_delayed_queue_add_delayed_job() {
+    let mut delayed = DelayedQueue::new("test");
+    let job = Job::new("job1", "test", "data");
+
+    delayed = delayed.add_delayed_job(job, 5000);
+
+    assert_eq!(delayed.queue.jobs.len(), 1, "Should have 1 job");
+}
+
+#[test]
+fn test_delayed_queue_get_ready_jobs() {
+    let mut delayed = DelayedQueue::new("test");
+    delayed = delayed.add_delayed_job(Job::new("job1", "test", "data"), 100);
+
+    let ready = delayed.get_ready_jobs();
+
+    // Implementation returns empty array for now
+    assert_eq!(ready.len(), 0, "Should have 0 ready jobs");
+}
+
+#[test]
+fn test_queue_manager_with_delayed_queue() {
+    let mut manager = QueueManager::new();
+    manager = manager.create_queue("delayed");
+
+    let delayed_job = Job::new("job1", "test", "data").with_delay(1000);
+    manager = manager.add_job("delayed", delayed_job);
+
+    let queue = manager.get_queue("delayed");
+    assert!(queue.is_some(), "Should have queue");
+}
+
+#[test]
+fn test_complete_workflow() {
+    // Create manager
+    let mut manager = QueueManager::new();
+    manager = manager.create_queue_with_workers("emails", 2);
+
+    // Add jobs
+    manager = manager
+        .add_job("emails", Job::new("job1", "send_email", "user1@test.com"))
+        .add_job("emails", Job::new("job2", "send_email", "user2@test.com"));
+
+    // Get queue
+    let queue = manager.get_queue("emails");
+    assert!(queue.is_some(), "Should have emails queue");
+    assert_eq!(queue.unwrap().jobs.len(), 2, "Should have 2 jobs");
+
+    // Get worker pool
+    let pool = manager.get_worker_pool("emails");
+    assert!(pool.is_some(), "Should have worker pool");
+    assert_eq!(pool.unwrap().workers.len(), 2, "Should have 2 workers");
+}
+
+#[test]
+fn test_manager_queue_isolation() {
+    let mut manager = QueueManager::new();
+    manager = manager
+        .create_queue("queue1")
+        .create_queue("queue2");
+
+    manager = manager.add_job("queue1", Job::new("job1", "test", "data"));
+
+    let q1 = manager.get_queue("queue1");
+    let q2 = manager.get_queue("queue2");
+
+    assert_eq!(q1.unwrap().jobs.len(), 1, "Queue1 should have 1 job");
+    assert_eq!(q2.unwrap().jobs.len(), 0, "Queue2 should have 0 jobs");
+}

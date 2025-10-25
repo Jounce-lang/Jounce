@@ -1,0 +1,602 @@
+// Job queue and background task processing for Jounce
+// Provides queue management, job scheduling, retry logic, and workers
+
+// ============================================================================
+// Job Status and Priority
+// ============================================================================
+
+pub enum JobStatus {
+    Pending,
+    Processing,
+    Completed,
+    Failed,
+    Retrying,
+    Delayed,
+}
+
+pub enum JobPriority {
+    High,    // Process first
+    Normal,  // Default
+    Low,     // Process last
+}
+
+// ============================================================================
+// Job
+// ============================================================================
+
+pub struct Job {
+    pub id: string,
+    pub name: string,
+    pub data: string,
+    pub status: JobStatus,
+    pub priority: JobPriority,
+    pub attempts: int,
+    pub max_attempts: int,
+    pub created_at: int,
+    pub started_at: int,
+    pub completed_at: int,
+    pub delay_until: int,
+    pub error: string,
+}
+
+impl Job {
+    pub fn new(id: string, name: string, data: string) -> Job {
+        Job {
+            id: id,
+            name: name,
+            data: data,
+            status: JobStatus::Pending,
+            priority: JobPriority::Normal,
+            attempts: 0,
+            max_attempts: 3,
+            created_at: 0, // Would use DateTime::now() in production
+            started_at: 0,
+            completed_at: 0,
+            delay_until: 0,
+            error: "",
+        }
+    }
+
+    pub fn with_priority(mut self, priority: JobPriority) -> Job {
+        self.priority = priority;
+        self
+    }
+
+    pub fn with_max_attempts(mut self, max: int) -> Job {
+        self.max_attempts = max;
+        self
+    }
+
+    pub fn with_delay(mut self, delay_ms: int) -> Job {
+        self.delay_until = delay_ms;
+        self.status = JobStatus::Delayed;
+        self
+    }
+
+    pub fn start(mut self) -> Job {
+        self.status = JobStatus::Processing;
+        self.started_at = 0; // Would use DateTime::now()
+        self.attempts = self.attempts + 1;
+        self
+    }
+
+    pub fn complete(mut self) -> Job {
+        self.status = JobStatus::Completed;
+        self.completed_at = 0; // Would use DateTime::now()
+        self
+    }
+
+    pub fn fail(mut self, error: string) -> Job {
+        self.error = error;
+        if self.attempts < self.max_attempts {
+            self.status = JobStatus::Retrying;
+        } else {
+            self.status = JobStatus::Failed;
+        }
+        self
+    }
+
+    pub fn can_retry(&self) -> bool {
+        self.attempts < self.max_attempts
+    }
+
+    pub fn is_ready(&self) -> bool {
+        match self.status {
+            JobStatus::Pending => true,
+            JobStatus::Delayed => self.delay_until <= 0, // Would check current time
+            _ => false,
+        }
+    }
+}
+
+// ============================================================================
+// Queue
+// ============================================================================
+
+pub struct Queue {
+    pub name: string,
+    pub jobs: Array<Job>,
+    pub processing_jobs: Array<Job>,
+    pub completed_jobs: Array<Job>,
+    pub failed_jobs: Array<Job>,
+    pub max_concurrent: int,
+    pub paused: bool,
+}
+
+impl Queue {
+    pub fn new(name: string) -> Queue {
+        Queue {
+            name: name,
+            jobs: [],
+            processing_jobs: [],
+            completed_jobs: [],
+            failed_jobs: [],
+            max_concurrent: 5,
+            paused: false,
+        }
+    }
+
+    pub fn with_max_concurrent(mut self, max: int) -> Queue {
+        self.max_concurrent = max;
+        self
+    }
+
+    // Add job to queue
+    pub fn add(mut self, job: Job) -> Queue {
+        self.jobs.push(job);
+        self
+    }
+
+    // Add job with priority
+    pub fn add_high_priority(mut self, job: Job) -> Queue {
+        let high_job = job.with_priority(JobPriority::High);
+        self.jobs.push(high_job);
+        self
+    }
+
+    pub fn add_low_priority(mut self, job: Job) -> Queue {
+        let low_job = job.with_priority(JobPriority::Low);
+        self.jobs.push(low_job);
+        self
+    }
+
+    // Get next job to process (respecting priority)
+    pub fn get_next_job(&mut self) -> Option<Job> {
+        if self.paused {
+            return None;
+        }
+
+        if self.processing_jobs.len() >= self.max_concurrent {
+            return None;
+        }
+
+        // Find highest priority ready job
+        let mut high_idx = -1;
+        let mut normal_idx = -1;
+        let mut low_idx = -1;
+
+        let mut i = 0;
+        while i < self.jobs.len() {
+            let job = &self.jobs[i];
+            if job.is_ready() {
+                match job.priority {
+                    JobPriority::High => {
+                        if high_idx == -1 {
+                            high_idx = i;
+                        }
+                    }
+                    JobPriority::Normal => {
+                        if normal_idx == -1 {
+                            normal_idx = i;
+                        }
+                    }
+                    JobPriority::Low => {
+                        if low_idx == -1 {
+                            low_idx = i;
+                        }
+                    }
+                }
+            }
+            i = i + 1;
+        }
+
+        // Return highest priority job
+        let idx = if high_idx != -1 {
+            high_idx
+        } else if normal_idx != -1 {
+            normal_idx
+        } else if low_idx != -1 {
+            low_idx
+        } else {
+            -1
+        };
+
+        if idx == -1 {
+            return None;
+        }
+
+        let job = self.jobs.remove(idx);
+        Some(job.start())
+    }
+
+    // Mark job as processing
+    pub fn start_processing(mut self, job: Job) -> Queue {
+        self.processing_jobs.push(job);
+        self
+    }
+
+    // Complete a job
+    pub fn complete_job(mut self, job_id: string) -> Queue {
+        let mut found_idx = -1;
+        let mut i = 0;
+        while i < self.processing_jobs.len() {
+            if self.processing_jobs[i].id == job_id {
+                found_idx = i;
+                break;
+            }
+            i = i + 1;
+        }
+
+        if found_idx != -1 {
+            let mut job = self.processing_jobs.remove(found_idx);
+            job = job.complete();
+            self.completed_jobs.push(job);
+        }
+
+        self
+    }
+
+    // Fail a job (with retry logic)
+    pub fn fail_job(mut self, job_id: string, error: string) -> Queue {
+        let mut found_idx = -1;
+        let mut i = 0;
+        while i < self.processing_jobs.len() {
+            if self.processing_jobs[i].id == job_id {
+                found_idx = i;
+                break;
+            }
+            i = i + 1;
+        }
+
+        if found_idx != -1 {
+            let mut job = self.processing_jobs.remove(found_idx);
+            job = job.fail(error);
+
+            if job.can_retry() {
+                // Add back to queue for retry
+                self.jobs.push(job);
+            } else {
+                // Max retries reached
+                self.failed_jobs.push(job);
+            }
+        }
+
+        self
+    }
+
+    // Pause queue
+    pub fn pause(mut self) -> Queue {
+        self.paused = true;
+        self
+    }
+
+    // Resume queue
+    pub fn resume(mut self) -> Queue {
+        self.paused = false;
+        self
+    }
+
+    // Get queue stats
+    pub fn get_pending_count(&self) -> int {
+        self.jobs.len()
+    }
+
+    pub fn get_processing_count(&self) -> int {
+        self.processing_jobs.len()
+    }
+
+    pub fn get_completed_count(&self) -> int {
+        self.completed_jobs.len()
+    }
+
+    pub fn get_failed_count(&self) -> int {
+        self.failed_jobs.len()
+    }
+
+    pub fn get_total_count(&self) -> int {
+        self.jobs.len() + self.processing_jobs.len() + self.completed_jobs.len() + self.failed_jobs.len()
+    }
+
+    // Clear completed jobs
+    pub fn clear_completed(mut self) -> Queue {
+        self.completed_jobs = [];
+        self
+    }
+
+    // Clear failed jobs
+    pub fn clear_failed(mut self) -> Queue {
+        self.failed_jobs = [];
+        self
+    }
+}
+
+// ============================================================================
+// Worker
+// ============================================================================
+
+pub struct Worker {
+    pub id: string,
+    pub queue_name: string,
+    pub running: bool,
+    pub current_job: Option<Job>,
+    pub processed_count: int,
+    pub failed_count: int,
+}
+
+impl Worker {
+    pub fn new(id: string, queue_name: string) -> Worker {
+        Worker {
+            id: id,
+            queue_name: queue_name,
+            running: false,
+            current_job: None,
+            processed_count: 0,
+            failed_count: 0,
+        }
+    }
+
+    pub fn start(mut self) -> Worker {
+        self.running = true;
+        self
+    }
+
+    pub fn stop(mut self) -> Worker {
+        self.running = false;
+        self
+    }
+
+    pub fn process_job(mut self, job: Job) -> Worker {
+        self.current_job = Some(job);
+        self
+    }
+
+    pub fn finish_job(mut self, success: bool) -> Worker {
+        self.current_job = None;
+        if success {
+            self.processed_count = self.processed_count + 1;
+        } else {
+            self.failed_count = self.failed_count + 1;
+        }
+        self
+    }
+
+    pub fn is_busy(&self) -> bool {
+        self.current_job.is_some()
+    }
+
+    pub fn get_stats(&self) -> WorkerStats {
+        WorkerStats {
+            worker_id: self.id.clone(),
+            processed: self.processed_count,
+            failed: self.failed_count,
+            running: self.running,
+            busy: self.is_busy(),
+        }
+    }
+}
+
+pub struct WorkerStats {
+    pub worker_id: string,
+    pub processed: int,
+    pub failed: int,
+    pub running: bool,
+    pub busy: bool,
+}
+
+// ============================================================================
+// WorkerPool
+// ============================================================================
+
+pub struct WorkerPool {
+    pub workers: Array<Worker>,
+    pub queue_name: string,
+}
+
+impl WorkerPool {
+    pub fn new(queue_name: string, worker_count: int) -> WorkerPool {
+        let mut workers = [];
+        let mut i = 0;
+        while i < worker_count {
+            let worker_id = "worker_" + i.to_string();
+            workers.push(Worker::new(worker_id, queue_name.clone()));
+            i = i + 1;
+        }
+
+        WorkerPool {
+            workers: workers,
+            queue_name: queue_name,
+        }
+    }
+
+    pub fn start_all(mut self) -> WorkerPool {
+        let mut i = 0;
+        while i < self.workers.len() {
+            self.workers[i] = self.workers[i].start();
+            i = i + 1;
+        }
+        self
+    }
+
+    pub fn stop_all(mut self) -> WorkerPool {
+        let mut i = 0;
+        while i < self.workers.len() {
+            self.workers[i] = self.workers[i].stop();
+            i = i + 1;
+        }
+        self
+    }
+
+    pub fn get_available_worker(&mut self) -> Option<Worker> {
+        let mut i = 0;
+        while i < self.workers.len() {
+            let worker = &self.workers[i];
+            if worker.running && !worker.is_busy() {
+                return Some(worker.clone());
+            }
+            i = i + 1;
+        }
+        None
+    }
+
+    pub fn get_total_processed(&self) -> int {
+        let mut total = 0;
+        let mut i = 0;
+        while i < self.workers.len() {
+            total = total + self.workers[i].processed_count;
+            i = i + 1;
+        }
+        total
+    }
+
+    pub fn get_total_failed(&self) -> int {
+        let mut total = 0;
+        let mut i = 0;
+        while i < self.workers.len() {
+            total = total + self.workers[i].failed_count;
+            i = i + 1;
+        }
+        total
+    }
+}
+
+// ============================================================================
+// QueueManager
+// ============================================================================
+
+pub struct QueueManager {
+    pub queues: Map<string, Queue>,
+    pub worker_pools: Map<string, WorkerPool>,
+}
+
+impl QueueManager {
+    pub fn new() -> QueueManager {
+        QueueManager {
+            queues: Map::new(),
+            worker_pools: Map::new(),
+        }
+    }
+
+    // Create a new queue
+    pub fn create_queue(mut self, name: string) -> QueueManager {
+        let queue = Queue::new(name.clone());
+        self.queues.insert(name, queue);
+        self
+    }
+
+    // Create queue with workers
+    pub fn create_queue_with_workers(mut self, name: string, worker_count: int) -> QueueManager {
+        let queue = Queue::new(name.clone());
+        let pool = WorkerPool::new(name.clone(), worker_count).start_all();
+
+        self.queues.insert(name.clone(), queue);
+        self.worker_pools.insert(name, pool);
+        self
+    }
+
+    // Add job to queue
+    pub fn add_job(mut self, queue_name: string, job: Job) -> QueueManager {
+        if let Some(mut queue) = self.queues.get(queue_name.clone()) {
+            queue = queue.add(job);
+            self.queues.insert(queue_name, queue);
+        }
+        self
+    }
+
+    // Get queue by name
+    pub fn get_queue(&self, name: string) -> Option<Queue> {
+        self.queues.get(name)
+    }
+
+    // Get worker pool
+    pub fn get_worker_pool(&self, name: string) -> Option<WorkerPool> {
+        self.worker_pools.get(name)
+    }
+
+    // Delete queue
+    pub fn delete_queue(mut self, name: string) -> QueueManager {
+        self.queues.remove(name.clone());
+        self.worker_pools.remove(name);
+        self
+    }
+}
+
+// ============================================================================
+// DelayedQueue (for scheduled jobs)
+// ============================================================================
+
+pub struct DelayedQueue {
+    pub queue: Queue,
+    pub check_interval: int,
+}
+
+impl DelayedQueue {
+    pub fn new(name: string) -> DelayedQueue {
+        DelayedQueue {
+            queue: Queue::new(name),
+            check_interval: 1000, // Check every 1 second
+        }
+    }
+
+    pub fn add_delayed_job(mut self, job: Job, delay_ms: int) -> DelayedQueue {
+        let delayed_job = job.with_delay(delay_ms);
+        self.queue = self.queue.add(delayed_job);
+        self
+    }
+
+    pub fn get_ready_jobs(&mut self) -> Array<Job> {
+        let mut ready = [];
+        // In production, would check current time vs delay_until
+        // For now, just return all pending jobs
+        ready
+    }
+}
+
+// ============================================================================
+// JobBuilder (Fluent API)
+// ============================================================================
+
+pub struct JobBuilder {
+    pub job: Job,
+}
+
+impl JobBuilder {
+    pub fn new(id: string, name: string) -> JobBuilder {
+        JobBuilder {
+            job: Job::new(id, name, ""),
+        }
+    }
+
+    pub fn with_data(mut self, data: string) -> JobBuilder {
+        self.job.data = data;
+        self
+    }
+
+    pub fn with_priority(mut self, priority: JobPriority) -> JobBuilder {
+        self.job = self.job.with_priority(priority);
+        self
+    }
+
+    pub fn with_max_attempts(mut self, max: int) -> JobBuilder {
+        self.job = self.job.with_max_attempts(max);
+        self
+    }
+
+    pub fn with_delay(mut self, delay_ms: int) -> JobBuilder {
+        self.job = self.job.with_delay(delay_ms);
+        self
+    }
+
+    pub fn build(self) -> Job {
+        self.job
+    }
+}

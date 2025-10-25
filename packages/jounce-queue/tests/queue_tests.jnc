@@ -1,0 +1,338 @@
+// Tests for Queue, Job, and JobBuilder in jounce-queue
+use jounce_queue::{Queue, Job, JobBuilder, JobStatus, JobPriority};
+
+#[test]
+fn test_job_creation() {
+    let job = Job::new("job1", "test_job", "data");
+
+    assert_eq!(job.id, "job1", "ID should match");
+    assert_eq!(job.name, "test_job", "Name should match");
+    assert_eq!(job.data, "data", "Data should match");
+    assert_eq!(job.attempts, 0, "Should have 0 attempts");
+    assert_eq!(job.max_attempts, 3, "Should have 3 max attempts");
+}
+
+#[test]
+fn test_job_with_priority() {
+    let job = Job::new("job1", "test", "data")
+        .with_priority(JobPriority::High);
+
+    match job.priority {
+        JobPriority::High => assert!(true, "Should be high priority"),
+        _ => assert!(false, "Should be high priority"),
+    }
+}
+
+#[test]
+fn test_job_with_max_attempts() {
+    let job = Job::new("job1", "test", "data")
+        .with_max_attempts(5);
+
+    assert_eq!(job.max_attempts, 5, "Should have 5 max attempts");
+}
+
+#[test]
+fn test_job_with_delay() {
+    let job = Job::new("job1", "test", "data")
+        .with_delay(1000);
+
+    assert_eq!(job.delay_until, 1000, "Should have delay");
+    match job.status {
+        JobStatus::Delayed => assert!(true, "Should be delayed"),
+        _ => assert!(false, "Should be delayed"),
+    }
+}
+
+#[test]
+fn test_job_start() {
+    let mut job = Job::new("job1", "test", "data");
+    job = job.start();
+
+    assert_eq!(job.attempts, 1, "Should have 1 attempt");
+    match job.status {
+        JobStatus::Processing => assert!(true, "Should be processing"),
+        _ => assert!(false, "Should be processing"),
+    }
+}
+
+#[test]
+fn test_job_complete() {
+    let mut job = Job::new("job1", "test", "data");
+    job = job.start().complete();
+
+    match job.status {
+        JobStatus::Completed => assert!(true, "Should be completed"),
+        _ => assert!(false, "Should be completed"),
+    }
+}
+
+#[test]
+fn test_job_fail() {
+    let mut job = Job::new("job1", "test", "data");
+    job = job.start().fail("error occurred");
+
+    assert_eq!(job.error, "error occurred", "Should have error");
+    match job.status {
+        JobStatus::Retrying => assert!(true, "Should be retrying"),
+        _ => assert!(false, "Should be retrying"),
+    }
+}
+
+#[test]
+fn test_job_fail_max_attempts() {
+    let mut job = Job::new("job1", "test", "data")
+        .with_max_attempts(1);
+    job = job.start().fail("error");
+
+    match job.status {
+        JobStatus::Failed => assert!(true, "Should be failed"),
+        _ => assert!(false, "Should be failed"),
+    }
+}
+
+#[test]
+fn test_job_can_retry() {
+    let mut job = Job::new("job1", "test", "data");
+    assert!(job.can_retry(), "Should be able to retry");
+
+    job = job.start().start().start();
+    assert!(!job.can_retry(), "Should not be able to retry");
+}
+
+#[test]
+fn test_job_is_ready() {
+    let job = Job::new("job1", "test", "data");
+    assert!(job.is_ready(), "Pending job should be ready");
+
+    let processing_job = job.start();
+    assert!(!processing_job.is_ready(), "Processing job should not be ready");
+}
+
+#[test]
+fn test_queue_creation() {
+    let queue = Queue::new("test_queue");
+
+    assert_eq!(queue.name, "test_queue", "Name should match");
+    assert_eq!(queue.jobs.len(), 0, "Should have no jobs");
+    assert_eq!(queue.max_concurrent, 5, "Should have default max concurrent");
+    assert!(!queue.paused, "Should not be paused");
+}
+
+#[test]
+fn test_queue_with_max_concurrent() {
+    let queue = Queue::new("test")
+        .with_max_concurrent(10);
+
+    assert_eq!(queue.max_concurrent, 10, "Should have 10 max concurrent");
+}
+
+#[test]
+fn test_queue_add_job() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data");
+
+    queue = queue.add(job);
+
+    assert_eq!(queue.jobs.len(), 1, "Should have 1 job");
+}
+
+#[test]
+fn test_queue_add_high_priority() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data");
+
+    queue = queue.add_high_priority(job);
+
+    assert_eq!(queue.jobs.len(), 1, "Should have 1 job");
+    match queue.jobs[0].priority {
+        JobPriority::High => assert!(true, "Should be high priority"),
+        _ => assert!(false, "Should be high priority"),
+    }
+}
+
+#[test]
+fn test_queue_add_low_priority() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data");
+
+    queue = queue.add_low_priority(job);
+
+    assert_eq!(queue.jobs.len(), 1, "Should have 1 job");
+    match queue.jobs[0].priority {
+        JobPriority::Low => assert!(true, "Should be low priority"),
+        _ => assert!(false, "Should be low priority"),
+    }
+}
+
+#[test]
+fn test_queue_get_next_job() {
+    let mut queue = Queue::new("test");
+    queue = queue.add(Job::new("job1", "test", "data"));
+
+    let next = queue.get_next_job();
+
+    assert!(next.is_some(), "Should get a job");
+    assert_eq!(queue.jobs.len(), 0, "Queue should be empty");
+}
+
+#[test]
+fn test_queue_priority_order() {
+    let mut queue = Queue::new("test");
+    queue = queue
+        .add_low_priority(Job::new("job1", "low", "data"))
+        .add(Job::new("job2", "normal", "data"))
+        .add_high_priority(Job::new("job3", "high", "data"));
+
+    let next = queue.get_next_job();
+
+    assert!(next.is_some(), "Should get a job");
+    assert_eq!(next.unwrap().id, "job3", "Should get high priority job first");
+}
+
+#[test]
+fn test_queue_pause_resume() {
+    let mut queue = Queue::new("test");
+    queue = queue.pause();
+
+    assert!(queue.paused, "Should be paused");
+
+    queue = queue.resume();
+    assert!(!queue.paused, "Should be resumed");
+}
+
+#[test]
+fn test_queue_paused_no_jobs() {
+    let mut queue = Queue::new("test");
+    queue = queue
+        .add(Job::new("job1", "test", "data"))
+        .pause();
+
+    let next = queue.get_next_job();
+
+    assert!(next.is_none(), "Should not get job when paused");
+}
+
+#[test]
+fn test_queue_start_processing() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data");
+
+    queue = queue.start_processing(job);
+
+    assert_eq!(queue.processing_jobs.len(), 1, "Should have 1 processing job");
+}
+
+#[test]
+fn test_queue_complete_job() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data");
+    queue = queue.start_processing(job);
+
+    queue = queue.complete_job("job1");
+
+    assert_eq!(queue.processing_jobs.len(), 0, "Should have 0 processing jobs");
+    assert_eq!(queue.completed_jobs.len(), 1, "Should have 1 completed job");
+}
+
+#[test]
+fn test_queue_fail_job_with_retry() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data");
+    queue = queue.start_processing(job);
+
+    queue = queue.fail_job("job1", "error");
+
+    assert_eq!(queue.processing_jobs.len(), 0, "Should have 0 processing jobs");
+    assert_eq!(queue.jobs.len(), 1, "Should have job back in queue for retry");
+}
+
+#[test]
+fn test_queue_fail_job_max_retries() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data").with_max_attempts(1);
+    queue = queue.start_processing(job.start());
+
+    queue = queue.fail_job("job1", "error");
+
+    assert_eq!(queue.failed_jobs.len(), 1, "Should have 1 failed job");
+}
+
+#[test]
+fn test_queue_get_pending_count() {
+    let mut queue = Queue::new("test");
+    queue = queue.add(Job::new("job1", "test", "data"));
+
+    assert_eq!(queue.get_pending_count(), 1, "Should have 1 pending");
+}
+
+#[test]
+fn test_queue_get_processing_count() {
+    let mut queue = Queue::new("test");
+    queue = queue.start_processing(Job::new("job1", "test", "data"));
+
+    assert_eq!(queue.get_processing_count(), 1, "Should have 1 processing");
+}
+
+#[test]
+fn test_queue_get_completed_count() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data");
+    queue = queue.start_processing(job).complete_job("job1");
+
+    assert_eq!(queue.get_completed_count(), 1, "Should have 1 completed");
+}
+
+#[test]
+fn test_queue_get_failed_count() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data").with_max_attempts(1);
+    queue = queue.start_processing(job.start()).fail_job("job1", "error");
+
+    assert_eq!(queue.get_failed_count(), 1, "Should have 1 failed");
+}
+
+#[test]
+fn test_queue_get_total_count() {
+    let mut queue = Queue::new("test");
+    queue = queue
+        .add(Job::new("job1", "test", "data"))
+        .start_processing(Job::new("job2", "test", "data"));
+
+    assert_eq!(queue.get_total_count(), 2, "Should have 2 total");
+}
+
+#[test]
+fn test_queue_clear_completed() {
+    let mut queue = Queue::new("test");
+    queue = queue
+        .start_processing(Job::new("job1", "test", "data"))
+        .complete_job("job1")
+        .clear_completed();
+
+    assert_eq!(queue.completed_jobs.len(), 0, "Should have no completed jobs");
+}
+
+#[test]
+fn test_queue_clear_failed() {
+    let mut queue = Queue::new("test");
+    let job = Job::new("job1", "test", "data").with_max_attempts(1);
+    queue = queue
+        .start_processing(job.start())
+        .fail_job("job1", "error")
+        .clear_failed();
+
+    assert_eq!(queue.failed_jobs.len(), 0, "Should have no failed jobs");
+}
+
+#[test]
+fn test_job_builder() {
+    let job = JobBuilder::new("job1", "test")
+        .with_data("test data")
+        .with_priority(JobPriority::High)
+        .with_max_attempts(5)
+        .build();
+
+    assert_eq!(job.id, "job1", "ID should match");
+    assert_eq!(job.data, "test data", "Data should match");
+    assert_eq!(job.max_attempts, 5, "Max attempts should match");
+}
