@@ -53,17 +53,9 @@ impl RPCGenerator {
     pub fn generate_server_handlers(&self) -> String {
         let mut output = String::new();
 
-        // Import server runtime
+        // Note: HttpServer, fs, and wasmInstance are already available from main server bundle
         output.push_str("// Auto-generated RPC server handlers\n");
-        output.push_str("const { HttpServer } = require('../dist/server-runtime.js');\n\n");
         output.push_str("const server = new HttpServer(process.env.PORT || 3000);\n\n");
-
-        // Import WASM module
-        output.push_str("// Load WebAssembly module\n");
-        output.push_str("const fs = require('fs');\n");
-        output.push_str("const wasmBytes = fs.readFileSync('./app.wasm');\n");
-        output.push_str("const wasmModule = new WebAssembly.Module(wasmBytes);\n");
-        output.push_str("const wasmInstance = new WebAssembly.Instance(wasmModule, {});\n\n");
 
         // Generate handler for each server function
         for func in &self.server_functions {
