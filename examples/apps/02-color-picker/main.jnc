@@ -1,0 +1,85 @@
+// App 2: Color Picker
+// Demonstrates RGB color selection with live preview
+
+// Main app component
+fn App() -> JSX {
+    return (
+        <div class="container">
+            <h1>Color Picker 🎨</h1>
+
+            <div class="color-preview-box">
+                <div class="preview default-color"></div>
+            </div>
+
+            <div class="color-info">
+                <div class="hex-display">
+                    <span class="label">HEX:</span>
+                    <span class="value">#8040C0</span>
+                </div>
+                <div class="rgb-display">
+                    <span class="label">RGB:</span>
+                    <span class="value">rgb(128, 64, 192)</span>
+                </div>
+            </div>
+
+            <div class="sliders">
+                <div class="slider-group">
+                    <label class="slider-label">
+                        <span class="color-name">Red</span>
+                        <span class="color-value">128</span>
+                    </label>
+                    <input
+                        type="range"
+                        class="slider red-slider"
+                        min="0"
+                        max="255"
+                        value="128"
+                    />
+                </div>
+
+                <div class="slider-group">
+                    <label class="slider-label">
+                        <span class="color-name">Green</span>
+                        <span class="color-value">64</span>
+                    </label>
+                    <input
+                        type="range"
+                        class="slider green-slider"
+                        min="0"
+                        max="255"
+                        value="64"
+                    />
+                </div>
+
+                <div class="slider-group">
+                    <label class="slider-label">
+                        <span class="color-name">Blue</span>
+                        <span class="color-value">192</span>
+                    </label>
+                    <input
+                        type="range"
+                        class="slider blue-slider"
+                        min="0"
+                        max="255"
+                        value="192"
+                    />
+                </div>
+            </div>
+
+            <div class="info">
+                <p>This is App 2: A color picker demonstration with RGB sliders.</p>
+                <p>The preview shows a nice purple color (RGB: 128, 64, 192).</p>
+                <p>Interactive sliders coming soon with signal and computed values!</p>
+            </div>
+        </div>
+    );
+}
+
+// Entry point
+fn main() {
+    console.log("App 2: Color Picker started!");
+    console.log("Rendering color picker with RGB sliders");
+
+    let app_html = App();
+    console.log("Color picker component created successfully!");
+}
