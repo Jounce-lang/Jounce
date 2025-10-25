@@ -1,0 +1,582 @@
+// jounce-ui - UI Component Library
+// Version: 0.1.0
+//
+// Provides reusable UI components for Jounce applications.
+// Integrates with jounce-theme for styling.
+
+// ============================================================================
+// Component Base Types
+// ============================================================================
+
+/// Component props base
+pub struct ComponentProps {
+    id: string,
+    class_name: string,
+    disabled: bool,
+    aria_label: string,
+}
+
+/// Button variant
+pub enum ButtonVariant {
+    Primary,
+    Secondary,
+    Danger,
+    Success,
+    Ghost,
+}
+
+/// Button size
+pub enum ButtonSize {
+    Small,
+    Medium,
+    Large,
+}
+
+/// Input type
+pub enum InputType {
+    Text,
+    Password,
+    Email,
+    Number,
+    Tel,
+    Url,
+}
+
+/// Toast type
+pub enum ToastType {
+    Info,
+    Success,
+    Warning,
+    Error,
+}
+
+// ============================================================================
+// Button Component
+// ============================================================================
+
+pub struct ButtonProps {
+    text: string,
+    variant: ButtonVariant,
+    size: ButtonSize,
+    disabled: bool,
+    loading: bool,
+    on_click: fn() -> (),
+    class_name: string,
+    aria_label: string,
+}
+
+pub fn Button(props: ButtonProps) -> string {
+    let mut classes = vec!["jnc-button"];
+
+    // Add variant class
+    match props.variant {
+        ButtonVariant::Primary => classes.push("jnc-button-primary"),
+        ButtonVariant::Secondary => classes.push("jnc-button-secondary"),
+        ButtonVariant::Danger => classes.push("jnc-button-danger"),
+        ButtonVariant::Success => classes.push("jnc-button-success"),
+        ButtonVariant::Ghost => classes.push("jnc-button-ghost"),
+    }
+
+    // Add size class
+    match props.size {
+        ButtonSize::Small => classes.push("jnc-button-sm"),
+        ButtonSize::Medium => classes.push("jnc-button-md"),
+        ButtonSize::Large => classes.push("jnc-button-lg"),
+    }
+
+    if props.disabled {
+        classes.push("jnc-button-disabled");
+    }
+
+    if props.loading {
+        classes.push("jnc-button-loading");
+    }
+
+    if props.class_name.len() > 0 {
+        classes.push(props.class_name);
+    }
+
+    let class_str = classes.join(" ");
+    let disabled_attr = if props.disabled { " disabled" } else { "" };
+    let aria = if props.aria_label.len() > 0 {
+        format!(" aria-label=\"{}\"", props.aria_label)
+    } else {
+        ""
+    };
+
+    let loading_spinner = if props.loading {
+        "<span class=\"jnc-spinner\"></span> "
+    } else {
+        ""
+    };
+
+    return format!(
+        "<button class=\"{}\" type=\"button\"{}{}>{}{}}</button>",
+        class_str,
+        disabled_attr,
+        aria,
+        loading_spinner,
+        props.text
+    );
+}
+
+// ============================================================================
+// Input Component
+// ============================================================================
+
+pub struct InputProps {
+    input_type: InputType,
+    value: string,
+    placeholder: string,
+    disabled: bool,
+    required: bool,
+    min_length: int,
+    max_length: int,
+    on_change: fn(string) -> (),
+    on_blur: fn() -> (),
+    class_name: string,
+    aria_label: string,
+}
+
+pub fn Input(props: InputProps) -> string {
+    let type_str = match props.input_type {
+        InputType::Text => "text",
+        InputType::Password => "password",
+        InputType::Email => "email",
+        InputType::Number => "number",
+        InputType::Tel => "tel",
+        InputType::Url => "url",
+    };
+
+    let mut classes = vec!["jnc-input"];
+    if props.class_name.len() > 0 {
+        classes.push(props.class_name);
+    }
+
+    let disabled_attr = if props.disabled { " disabled" } else { "" };
+    let required_attr = if props.required { " required" } else { "" };
+
+    let min_attr = if props.min_length > 0 {
+        format!(" minlength=\"{}\"", props.min_length)
+    } else {
+        ""
+    };
+
+    let max_attr = if props.max_length > 0 {
+        format!(" maxlength=\"{}\"", props.max_length)
+    } else {
+        ""
+    };
+
+    let placeholder_attr = if props.placeholder.len() > 0 {
+        format!(" placeholder=\"{}\"", props.placeholder)
+    } else {
+        ""
+    };
+
+    let aria = if props.aria_label.len() > 0 {
+        format!(" aria-label=\"{}\"", props.aria_label)
+    } else {
+        ""
+    };
+
+    return format!(
+        "<input type=\"{}\" class=\"{}\" value=\"{}\"{}{}{}{}{}{}/>",
+        type_str,
+        classes.join(" "),
+        props.value,
+        placeholder_attr,
+        disabled_attr,
+        required_attr,
+        min_attr,
+        max_attr,
+        aria
+    );
+}
+
+// ============================================================================
+// Textarea Component
+// ============================================================================
+
+pub struct TextareaProps {
+    value: string,
+    placeholder: string,
+    rows: int,
+    cols: int,
+    disabled: bool,
+    required: bool,
+    max_length: int,
+    on_change: fn(string) -> (),
+    class_name: string,
+    aria_label: string,
+}
+
+pub fn Textarea(props: TextareaProps) -> string {
+    let mut classes = vec!["jnc-textarea"];
+    if props.class_name.len() > 0 {
+        classes.push(props.class_name);
+    }
+
+    let disabled_attr = if props.disabled { " disabled" } else { "" };
+    let required_attr = if props.required { " required" } else { "" };
+
+    let rows_attr = if props.rows > 0 {
+        format!(" rows=\"{}\"", props.rows)
+    } else {
+        ""
+    };
+
+    let cols_attr = if props.cols > 0 {
+        format!(" cols=\"{}\"", props.cols)
+    } else {
+        ""
+    };
+
+    let max_attr = if props.max_length > 0 {
+        format!(" maxlength=\"{}\"", props.max_length)
+    } else {
+        ""
+    };
+
+    let placeholder_attr = if props.placeholder.len() > 0 {
+        format!(" placeholder=\"{}\"", props.placeholder)
+    } else {
+        ""
+    };
+
+    let aria = if props.aria_label.len() > 0 {
+        format!(" aria-label=\"{}\"", props.aria_label)
+    } else {
+        ""
+    };
+
+    return format!(
+        "<textarea class=\"{}\"{}{}{}{}{}{}{}>{}</textarea>",
+        classes.join(" "),
+        placeholder_attr,
+        disabled_attr,
+        required_attr,
+        rows_attr,
+        cols_attr,
+        max_attr,
+        aria,
+        props.value
+    );
+}
+
+// ============================================================================
+// Modal Component
+// ============================================================================
+
+pub struct ModalProps {
+    title: string,
+    content: string,
+    is_open: bool,
+    on_close: fn() -> (),
+    show_close_button: bool,
+    class_name: string,
+}
+
+pub fn Modal(props: ModalProps) -> string {
+    if !props.is_open {
+        return "";
+    }
+
+    let mut classes = vec!["jnc-modal"];
+    if props.class_name.len() > 0 {
+        classes.push(props.class_name);
+    }
+
+    let close_button = if props.show_close_button {
+        "<button class=\"jnc-modal-close\" aria-label=\"Close\">&times;</button>"
+    } else {
+        ""
+    };
+
+    return format!(
+        "<div class=\"jnc-modal-overlay\">\
+          <div class=\"{}\" role=\"dialog\" aria-modal=\"true\">\
+            {}\
+            <div class=\"jnc-modal-header\">\
+              <h2 class=\"jnc-modal-title\">{}</h2>\
+            </div>\
+            <div class=\"jnc-modal-content\">{}</div>\
+          </div>\
+        </div>",
+        classes.join(" "),
+        close_button,
+        props.title,
+        props.content
+    );
+}
+
+// ============================================================================
+// Toast Component
+// ============================================================================
+
+pub struct ToastProps {
+    message: string,
+    toast_type: ToastType,
+    duration: int,
+    on_dismiss: fn() -> (),
+    class_name: string,
+}
+
+pub fn Toast(props: ToastProps) -> string {
+    let mut classes = vec!["jnc-toast"];
+
+    match props.toast_type {
+        ToastType::Info => classes.push("jnc-toast-info"),
+        ToastType::Success => classes.push("jnc-toast-success"),
+        ToastType::Warning => classes.push("jnc-toast-warning"),
+        ToastType::Error => classes.push("jnc-toast-error"),
+    }
+
+    if props.class_name.len() > 0 {
+        classes.push(props.class_name);
+    }
+
+    let icon = match props.toast_type {
+        ToastType::Info => "ℹ️",
+        ToastType::Success => "✅",
+        ToastType::Warning => "⚠️",
+        ToastType::Error => "❌",
+    };
+
+    return format!(
+        "<div class=\"{}\" role=\"alert\">\
+          <span class=\"jnc-toast-icon\">{}</span>\
+          <span class=\"jnc-toast-message\">{}</span>\
+          <button class=\"jnc-toast-close\" aria-label=\"Dismiss\">&times;</button>\
+        </div>",
+        classes.join(" "),
+        icon,
+        props.message
+    );
+}
+
+// ============================================================================
+// Alert Component
+// ============================================================================
+
+pub struct AlertProps {
+    title: string,
+    message: string,
+    alert_type: ToastType, // Reuse ToastType for consistency
+    dismissible: bool,
+    on_dismiss: fn() -> (),
+    class_name: string,
+}
+
+pub fn Alert(props: AlertProps) -> string {
+    let mut classes = vec!["jnc-alert"];
+
+    match props.alert_type {
+        ToastType::Info => classes.push("jnc-alert-info"),
+        ToastType::Success => classes.push("jnc-alert-success"),
+        ToastType::Warning => classes.push("jnc-alert-warning"),
+        ToastType::Error => classes.push("jnc-alert-error"),
+    }
+
+    if props.class_name.len() > 0 {
+        classes.push(props.class_name);
+    }
+
+    let dismiss_button = if props.dismissible {
+        "<button class=\"jnc-alert-close\" aria-label=\"Dismiss\">&times;</button>"
+    } else {
+        ""
+    };
+
+    return format!(
+        "<div class=\"{}\" role=\"alert\">\
+          {}\
+          <strong class=\"jnc-alert-title\">{}</strong>\
+          <p class=\"jnc-alert-message\">{}</p>\
+        </div>",
+        classes.join(" "),
+        dismiss_button,
+        props.title,
+        props.message
+    );
+}
+
+// ============================================================================
+// Card Component
+// ============================================================================
+
+pub struct CardProps {
+    title: string,
+    content: string,
+    footer: string,
+    image_url: string,
+    class_name: string,
+}
+
+pub fn Card(props: CardProps) -> string {
+    let mut classes = vec!["jnc-card"];
+    if props.class_name.len() > 0 {
+        classes.push(props.class_name);
+    }
+
+    let image = if props.image_url.len() > 0 {
+        format!("<img src=\"{}\" class=\"jnc-card-image\" alt=\"{}\" />", props.image_url, props.title)
+    } else {
+        ""
+    };
+
+    let footer = if props.footer.len() > 0 {
+        format!("<div class=\"jnc-card-footer\">{}</div>", props.footer)
+    } else {
+        ""
+    };
+
+    return format!(
+        "<div class=\"{}\">\
+          {}\
+          <div class=\"jnc-card-body\">\
+            <h3 class=\"jnc-card-title\">{}</h3>\
+            <div class=\"jnc-card-content\">{}</div>\
+          </div>\
+          {}\
+        </div>",
+        classes.join(" "),
+        image,
+        props.title,
+        props.content,
+        footer
+    );
+}
+
+// ============================================================================
+// Badge Component
+// ============================================================================
+
+pub struct BadgeProps {
+    text: string,
+    variant: ButtonVariant, // Reuse ButtonVariant for consistency
+    class_name: string,
+}
+
+pub fn Badge(props: BadgeProps) -> string {
+    let mut classes = vec!["jnc-badge"];
+
+    match props.variant {
+        ButtonVariant::Primary => classes.push("jnc-badge-primary"),
+        ButtonVariant::Secondary => classes.push("jnc-badge-secondary"),
+        ButtonVariant::Danger => classes.push("jnc-badge-danger"),
+        ButtonVariant::Success => classes.push("jnc-badge-success"),
+        ButtonVariant::Ghost => classes.push("jnc-badge-ghost"),
+    }
+
+    if props.class_name.len() > 0 {
+        classes.push(props.class_name);
+    }
+
+    return format!("<span class=\"{}\">{}</span>", classes.join(" "), props.text);
+}
+
+// ============================================================================
+// Dropdown Component
+// ============================================================================
+
+pub struct DropdownOption {
+    value: string,
+    label: string,
+    disabled: bool,
+}
+
+pub struct DropdownProps {
+    options: Vec<DropdownOption>,
+    selected_value: string,
+    placeholder: string,
+    disabled: bool,
+    on_change: fn(string) -> (),
+    class_name: string,
+    aria_label: string,
+}
+
+pub fn Dropdown(props: DropdownProps) -> string {
+    let mut classes = vec!["jnc-dropdown"];
+    if props.class_name.len() > 0 {
+        classes.push(props.class_name);
+    }
+
+    let disabled_attr = if props.disabled { " disabled" } else { "" };
+    let aria = if props.aria_label.len() > 0 {
+        format!(" aria-label=\"{}\"", props.aria_label)
+    } else {
+        ""
+    };
+
+    let mut options_html = if props.placeholder.len() > 0 {
+        format!("<option value=\"\" disabled>{}</option>", props.placeholder)
+    } else {
+        ""
+    };
+
+    for option in props.options {
+        let selected = if option.value == props.selected_value { " selected" } else { "" };
+        let disabled_opt = if option.disabled { " disabled" } else { "" };
+
+        options_html = options_html + &format!(
+            "<option value=\"{}\"{}{}>{}</option>",
+            option.value,
+            selected,
+            disabled_opt,
+            option.label
+        );
+    }
+
+    return format!(
+        "<select class=\"{}\"{}{}>{}</select>",
+        classes.join(" "),
+        disabled_attr,
+        aria,
+        options_html
+    );
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+fn format(template: string, args: Vec<any>) -> string {
+    // Simple format implementation (placeholder)
+    return template;
+}
+
+// Export all components
+pub use ComponentProps;
+pub use ButtonVariant;
+pub use ButtonSize;
+pub use InputType;
+pub use ToastType;
+
+pub use ButtonProps;
+pub use Button;
+
+pub use InputProps;
+pub use Input;
+
+pub use TextareaProps;
+pub use Textarea;
+
+pub use ModalProps;
+pub use Modal;
+
+pub use ToastProps;
+pub use Toast;
+
+pub use AlertProps;
+pub use Alert;
+
+pub use CardProps;
+pub use Card;
+
+pub use BadgeProps;
+pub use Badge;
+
+pub use DropdownOption;
+pub use DropdownProps;
+pub use Dropdown;

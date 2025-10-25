@@ -1,0 +1,168 @@
+// Tests for Modal, Card, and Dropdown components
+use jounce_ui::{
+    Modal, ModalProps, Card, CardProps, Badge, BadgeProps,
+    Dropdown, DropdownProps, DropdownOption, ButtonVariant
+};
+
+#[test]
+fn test_modal_open() {
+    let modal = Modal(ModalProps {
+        title: "Test Modal",
+        content: "Modal content here",
+        is_open: true,
+        on_close: || {},
+        show_close_button: true,
+        class_name: "",
+    });
+
+    assert!(modal.contains("jnc-modal"), "Should have modal class");
+    assert!(modal.contains("Test Modal"), "Should contain title");
+    assert!(modal.contains("Modal content here"), "Should contain content");
+    assert!(modal.contains("jnc-modal-close"), "Should have close button");
+}
+
+#[test]
+fn test_modal_closed() {
+    let modal = Modal(ModalProps {
+        title: "Test",
+        content: "Content",
+        is_open: false,
+        on_close: || {},
+        show_close_button: true,
+        class_name: "",
+    });
+
+    assert_eq!(modal, "", "Should return empty string when closed");
+}
+
+#[test]
+fn test_modal_no_close_button() {
+    let modal = Modal(ModalProps {
+        title: "Test",
+        content: "Content",
+        is_open: true,
+        on_close: || {},
+        show_close_button: false,
+        class_name: "",
+    });
+
+    assert!(!modal.contains("jnc-modal-close"), "Should not have close button");
+}
+
+#[test]
+fn test_card_basic() {
+    let card = Card(CardProps {
+        title: "Card Title",
+        content: "Card content",
+        footer: "",
+        image_url: "",
+        class_name: "",
+    });
+
+    assert!(card.contains("jnc-card"), "Should have card class");
+    assert!(card.contains("Card Title"), "Should contain title");
+    assert!(card.contains("Card content"), "Should contain content");
+}
+
+#[test]
+fn test_card_with_image() {
+    let card = Card(CardProps {
+        title: "Product",
+        content: "Description",
+        footer: "",
+        image_url: "/image.jpg",
+        class_name: "",
+    });
+
+    assert!(card.contains("<img"), "Should have image");
+    assert!(card.contains("/image.jpg"), "Should have image URL");
+}
+
+#[test]
+fn test_card_with_footer() {
+    let card = Card(CardProps {
+        title: "Title",
+        content: "Content",
+        footer: "<button>Action</button>",
+        image_url: "",
+        class_name: "",
+    });
+
+    assert!(card.contains("jnc-card-footer"), "Should have footer");
+    assert!(card.contains("<button>Action</button>"), "Should contain footer content");
+}
+
+#[test]
+fn test_badge_variants() {
+    let primary = Badge(BadgeProps {
+        text: "Primary",
+        variant: ButtonVariant::Primary,
+        class_name: "",
+    });
+
+    assert!(primary.contains("jnc-badge-primary"), "Should have primary class");
+
+    let danger = Badge(BadgeProps {
+        text: "Danger",
+        variant: ButtonVariant::Danger,
+        class_name: "",
+    });
+
+    assert!(danger.contains("jnc-badge-danger"), "Should have danger class");
+}
+
+#[test]
+fn test_dropdown_basic() {
+    let dropdown = Dropdown(DropdownProps {
+        options: vec![
+            DropdownOption { value: "1", label: "Option 1", disabled: false },
+            DropdownOption { value: "2", label: "Option 2", disabled: false },
+        ],
+        selected_value: "1",
+        placeholder: "Select",
+        disabled: false,
+        on_change: |_| {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(dropdown.contains("<select"), "Should be select element");
+    assert!(dropdown.contains("Option 1"), "Should have first option");
+    assert!(dropdown.contains("Option 2"), "Should have second option");
+}
+
+#[test]
+fn test_dropdown_selected() {
+    let dropdown = Dropdown(DropdownProps {
+        options: vec![
+            DropdownOption { value: "1", label: "One", disabled: false },
+            DropdownOption { value: "2", label: "Two", disabled: false },
+        ],
+        selected_value: "2",
+        placeholder: "",
+        disabled: false,
+        on_change: |_| {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(dropdown.contains("selected"), "Should have selected attribute");
+}
+
+#[test]
+fn test_dropdown_disabled_option() {
+    let dropdown = Dropdown(DropdownProps {
+        options: vec![
+            DropdownOption { value: "1", label: "Active", disabled: false },
+            DropdownOption { value: "2", label: "Disabled", disabled: true },
+        ],
+        selected_value: "",
+        placeholder: "",
+        disabled: false,
+        on_change: |_| {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(dropdown.contains("disabled"), "Should have disabled option");
+}

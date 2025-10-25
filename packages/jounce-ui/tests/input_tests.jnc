@@ -1,0 +1,138 @@
+// Tests for Input component
+use jounce_ui::{Input, InputProps, InputType, Textarea, TextareaProps};
+
+#[test]
+fn test_input_text_type() {
+    let input = Input(InputProps {
+        input_type: InputType::Text,
+        value: "",
+        placeholder: "Enter text",
+        disabled: false,
+        required: false,
+        min_length: 0,
+        max_length: 0,
+        on_change: |_| {},
+        on_blur: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(input.contains("type=\"text\""), "Should be text type");
+    assert!(input.contains("placeholder=\"Enter text\""), "Should have placeholder");
+}
+
+#[test]
+fn test_input_types() {
+    let email = Input(InputProps {
+        input_type: InputType::Email,
+        value: "",
+        placeholder: "",
+        disabled: false,
+        required: false,
+        min_length: 0,
+        max_length: 0,
+        on_change: |_| {},
+        on_blur: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(email.contains("type=\"email\""), "Should be email type");
+
+    let password = Input(InputProps {
+        input_type: InputType::Password,
+        value: "",
+        placeholder: "",
+        disabled: false,
+        required: false,
+        min_length: 0,
+        max_length: 0,
+        on_change: |_| {},
+        on_blur: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(password.contains("type=\"password\""), "Should be password type");
+}
+
+#[test]
+fn test_input_disabled_required() {
+    let input = Input(InputProps {
+        input_type: InputType::Text,
+        value: "",
+        placeholder: "",
+        disabled: true,
+        required: true,
+        min_length: 0,
+        max_length: 0,
+        on_change: |_| {},
+        on_blur: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(input.contains("disabled"), "Should be disabled");
+    assert!(input.contains("required"), "Should be required");
+}
+
+#[test]
+fn test_input_length_validation() {
+    let input = Input(InputProps {
+        input_type: InputType::Text,
+        value: "",
+        placeholder: "",
+        disabled: false,
+        required: false,
+        min_length: 5,
+        max_length: 20,
+        on_change: |_| {},
+        on_blur: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(input.contains("minlength=\"5\""), "Should have min length");
+    assert!(input.contains("maxlength=\"20\""), "Should have max length");
+}
+
+#[test]
+fn test_textarea_basic() {
+    let textarea = Textarea(TextareaProps {
+        value: "Hello",
+        placeholder: "Enter text",
+        rows: 5,
+        cols: 40,
+        disabled: false,
+        required: false,
+        max_length: 0,
+        on_change: |_| {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(textarea.contains("<textarea"), "Should be textarea element");
+    assert!(textarea.contains("Hello"), "Should contain value");
+    assert!(textarea.contains("rows=\"5\""), "Should have rows");
+    assert!(textarea.contains("cols=\"40\""), "Should have cols");
+}
+
+#[test]
+fn test_textarea_disabled_required() {
+    let textarea = Textarea(TextareaProps {
+        value: "",
+        placeholder: "",
+        rows: 0,
+        cols: 0,
+        disabled: true,
+        required: true,
+        max_length: 500,
+        on_change: |_| {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(textarea.contains("disabled"), "Should be disabled");
+    assert!(textarea.contains("required"), "Should be required");
+    assert!(textarea.contains("maxlength=\"500\""), "Should have max length");
+}

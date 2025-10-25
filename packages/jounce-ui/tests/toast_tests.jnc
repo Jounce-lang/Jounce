@@ -1,0 +1,133 @@
+// Tests for Toast and Alert components
+use jounce_ui::{Toast, ToastProps, ToastType, Alert, AlertProps};
+
+#[test]
+fn test_toast_success() {
+    let toast = Toast(ToastProps {
+        message: "Success!",
+        toast_type: ToastType::Success,
+        duration: 3000,
+        on_dismiss: || {},
+        class_name: "",
+    });
+
+    assert!(toast.contains("jnc-toast"), "Should have toast class");
+    assert!(toast.contains("jnc-toast-success"), "Should have success class");
+    assert!(toast.contains("Success!"), "Should contain message");
+    assert!(toast.contains("✅"), "Should have success icon");
+}
+
+#[test]
+fn test_toast_error() {
+    let toast = Toast(ToastProps {
+        message: "Error occurred",
+        toast_type: ToastType::Error,
+        duration: 5000,
+        on_dismiss: || {},
+        class_name: "",
+    });
+
+    assert!(toast.contains("jnc-toast-error"), "Should have error class");
+    assert!(toast.contains("❌"), "Should have error icon");
+}
+
+#[test]
+fn test_toast_warning() {
+    let toast = Toast(ToastProps {
+        message: "Warning",
+        toast_type: ToastType::Warning,
+        duration: 4000,
+        on_dismiss: || {},
+        class_name: "",
+    });
+
+    assert!(toast.contains("jnc-toast-warning"), "Should have warning class");
+    assert!(toast.contains("⚠️"), "Should have warning icon");
+}
+
+#[test]
+fn test_toast_info() {
+    let toast = Toast(ToastProps {
+        message: "Information",
+        toast_type: ToastType::Info,
+        duration: 3000,
+        on_dismiss: || {},
+        class_name: "",
+    });
+
+    assert!(toast.contains("jnc-toast-info"), "Should have info class");
+    assert!(toast.contains("ℹ️"), "Should have info icon");
+}
+
+#[test]
+fn test_toast_dismiss_button() {
+    let toast = Toast(ToastProps {
+        message: "Message",
+        toast_type: ToastType::Info,
+        duration: 3000,
+        on_dismiss: || {},
+        class_name: "",
+    });
+
+    assert!(toast.contains("jnc-toast-close"), "Should have close button");
+    assert!(toast.contains("&times;"), "Should have close symbol");
+}
+
+#[test]
+fn test_alert_success() {
+    let alert = Alert(AlertProps {
+        title: "Success",
+        message: "Operation completed",
+        alert_type: ToastType::Success,
+        dismissible: true,
+        on_dismiss: || {},
+        class_name: "",
+    });
+
+    assert!(alert.contains("jnc-alert"), "Should have alert class");
+    assert!(alert.contains("jnc-alert-success"), "Should have success class");
+    assert!(alert.contains("Success"), "Should contain title");
+    assert!(alert.contains("Operation completed"), "Should contain message");
+}
+
+#[test]
+fn test_alert_dismissible() {
+    let alert = Alert(AlertProps {
+        title: "Warning",
+        message: "Check this",
+        alert_type: ToastType::Warning,
+        dismissible: true,
+        on_dismiss: || {},
+        class_name: "",
+    });
+
+    assert!(alert.contains("jnc-alert-close"), "Should have close button");
+}
+
+#[test]
+fn test_alert_not_dismissible() {
+    let alert = Alert(AlertProps {
+        title: "Info",
+        message: "Read this",
+        alert_type: ToastType::Info,
+        dismissible: false,
+        on_dismiss: || {},
+        class_name: "",
+    });
+
+    assert!(!alert.contains("jnc-alert-close"), "Should not have close button");
+}
+
+#[test]
+fn test_alert_error() {
+    let alert = Alert(AlertProps {
+        title: "Error",
+        message: "Something went wrong",
+        alert_type: ToastType::Error,
+        dismissible: true,
+        on_dismiss: || {},
+        class_name: "",
+    });
+
+    assert!(alert.contains("jnc-alert-error"), "Should have error class");
+}

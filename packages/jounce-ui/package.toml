@@ -1,0 +1,37 @@
+[package]
+name = "jounce-ui"
+version = "0.1.0"
+description = "Reusable UI component library for Jounce applications"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-ui"
+
+[dependencies]
+jounce-theme = "0.1.0"
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "button_tests"
+path = "tests/button_tests.jnc"
+
+[[test]]
+name = "input_tests"
+path = "tests/input_tests.jnc"
+
+[[test]]
+name = "modal_tests"
+path = "tests/modal_tests.jnc"
+
+[[test]]
+name = "toast_tests"
+path = "tests/toast_tests.jnc"
+
+[features]
+default = ["all-components"]
+all-components = []
+buttons = []
+inputs = []
+modals = []
+notifications = []

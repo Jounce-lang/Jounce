@@ -1,0 +1,162 @@
+// Tests for Button component
+use jounce_ui::{Button, ButtonProps, ButtonVariant, ButtonSize};
+
+#[test]
+fn test_button_primary() {
+    let button = Button(ButtonProps {
+        text: "Click",
+        variant: ButtonVariant::Primary,
+        size: ButtonSize::Medium,
+        disabled: false,
+        loading: false,
+        on_click: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(button.contains("jnc-button"), "Should have base class");
+    assert!(button.contains("jnc-button-primary"), "Should have primary class");
+    assert!(button.contains("Click"), "Should contain text");
+}
+
+#[test]
+fn test_button_variants() {
+    let secondary = Button(ButtonProps {
+        text: "Secondary",
+        variant: ButtonVariant::Secondary,
+        size: ButtonSize::Medium,
+        disabled: false,
+        loading: false,
+        on_click: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(secondary.contains("jnc-button-secondary"), "Should have secondary class");
+
+    let danger = Button(ButtonProps {
+        text: "Danger",
+        variant: ButtonVariant::Danger,
+        size: ButtonSize::Medium,
+        disabled: false,
+        loading: false,
+        on_click: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(danger.contains("jnc-button-danger"), "Should have danger class");
+}
+
+#[test]
+fn test_button_sizes() {
+    let small = Button(ButtonProps {
+        text: "Small",
+        variant: ButtonVariant::Primary,
+        size: ButtonSize::Small,
+        disabled: false,
+        loading: false,
+        on_click: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(small.contains("jnc-button-sm"), "Should have small class");
+
+    let large = Button(ButtonProps {
+        text: "Large",
+        variant: ButtonVariant::Primary,
+        size: ButtonSize::Large,
+        disabled: false,
+        loading: false,
+        on_click: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(large.contains("jnc-button-lg"), "Should have large class");
+}
+
+#[test]
+fn test_button_disabled() {
+    let button = Button(ButtonProps {
+        text: "Disabled",
+        variant: ButtonVariant::Primary,
+        size: ButtonSize::Medium,
+        disabled: true,
+        loading: false,
+        on_click: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(button.contains("disabled"), "Should have disabled attribute");
+    assert!(button.contains("jnc-button-disabled"), "Should have disabled class");
+}
+
+#[test]
+fn test_button_loading() {
+    let button = Button(ButtonProps {
+        text: "Loading",
+        variant: ButtonVariant::Primary,
+        size: ButtonSize::Medium,
+        disabled: false,
+        loading: true,
+        on_click: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(button.contains("jnc-button-loading"), "Should have loading class");
+    assert!(button.contains("jnc-spinner"), "Should have spinner");
+}
+
+#[test]
+fn test_button_custom_class() {
+    let button = Button(ButtonProps {
+        text: "Custom",
+        variant: ButtonVariant::Primary,
+        size: ButtonSize::Medium,
+        disabled: false,
+        loading: false,
+        on_click: || {},
+        class_name: "my-custom-class",
+        aria_label: "",
+    });
+
+    assert!(button.contains("my-custom-class"), "Should have custom class");
+}
+
+#[test]
+fn test_button_aria_label() {
+    let button = Button(ButtonProps {
+        text: "Accessible",
+        variant: ButtonVariant::Primary,
+        size: ButtonSize::Medium,
+        disabled: false,
+        loading: false,
+        on_click: || {},
+        class_name: "",
+        aria_label: "Main action",
+    });
+
+    assert!(button.contains("aria-label=\"Main action\""), "Should have aria-label");
+}
+
+#[test]
+fn test_button_html_structure() {
+    let button = Button(ButtonProps {
+        text: "Test",
+        variant: ButtonVariant::Primary,
+        size: ButtonSize::Medium,
+        disabled: false,
+        loading: false,
+        on_click: || {},
+        class_name: "",
+        aria_label: "",
+    });
+
+    assert!(button.starts_with("<button"), "Should be button element");
+    assert!(button.ends_with("</button>"), "Should close button element");
+    assert!(button.contains("type=\"button\""), "Should have type attribute");
+}
