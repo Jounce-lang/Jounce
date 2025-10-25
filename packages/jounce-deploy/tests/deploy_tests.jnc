@@ -1,0 +1,329 @@
+// Tests for deployment utilities in jounce-deploy
+use jounce_deploy::{
+    Environment, EnvConfig, DeploymentStrategy, DeploymentConfig,
+    HealthStatus, HealthCheck, Deployment, DeploymentStatus,
+    Rollback, DeploymentManager
+};
+
+// ============================================================================
+// Environment Tests
+// ============================================================================
+
+#[test]
+fn test_environment_to_string() {
+    assert_eq!(Environment::Development.to_string(), "development");
+    assert_eq!(Environment::Staging.to_string(), "staging");
+    assert_eq!(Environment::Production.to_string(), "production");
+    assert_eq!(Environment::Test.to_string(), "test");
+}
+
+#[test]
+fn test_environment_from_string() {
+    let env = Environment::from_string("production");
+    assert!(env.is_production(), "Should be production");
+}
+
+#[test]
+fn test_environment_is_production() {
+    assert!(Environment::Production.is_production());
+    assert!(!Environment::Development.is_production());
+    assert!(!Environment::Staging.is_production());
+}
+
+#[test]
+fn test_env_config_creation() {
+    let config = EnvConfig::new(Environment::Production);
+    assert!(config.environment.is_production());
+    assert_eq!(config.variables.len(), 0);
+}
+
+#[test]
+fn test_env_config_set_var() {
+    let mut config = EnvConfig::new(Environment::Development);
+    config = config.set_var("API_URL", "https://api.example.com");
+
+    let value = config.get_var("API_URL");
+    assert!(value.is_some());
+    assert_eq!(value.unwrap(), "https://api.example.com");
+}
+
+#[test]
+fn test_env_config_set_secret() {
+    let mut config = EnvConfig::new(Environment::Production);
+    config = config.set_secret("DB_PASSWORD", "secret123");
+
+    let value = config.get_secret("DB_PASSWORD");
+    assert!(value.is_some());
+}
+
+// ============================================================================
+// Deployment Strategy Tests
+// ============================================================================
+
+#[test]
+fn test_deployment_strategy_to_string() {
+    assert_eq!(DeploymentStrategy::BlueGreen.to_string(), "blue-green");
+    assert_eq!(DeploymentStrategy::Canary.to_string(), "canary");
+    assert_eq!(DeploymentStrategy::Rolling.to_string(), "rolling");
+    assert_eq!(DeploymentStrategy::Recreate.to_string(), "recreate");
+}
+
+#[test]
+fn test_deployment_config_creation() {
+    let config = DeploymentConfig::new(DeploymentStrategy::BlueGreen);
+
+    assert_eq!(config.strategy.to_string(), "blue-green");
+    assert_eq!(config.replicas, 3);
+    assert!(config.rollback_on_failure);
+}
+
+#[test]
+fn test_deployment_config_with_replicas() {
+    let mut config = DeploymentConfig::new(DeploymentStrategy::Rolling);
+    config = config.with_replicas(5);
+
+    assert_eq!(config.replicas, 5);
+}
+
+#[test]
+fn test_deployment_config_with_rollback() {
+    let mut config = DeploymentConfig::new(DeploymentStrategy::Canary);
+    config = config.with_rollback(false);
+
+    assert!(!config.rollback_on_failure);
+}
+
+// ============================================================================
+// Health Check Tests
+// ============================================================================
+
+#[test]
+fn test_health_status_to_string() {
+    assert_eq!(HealthStatus::Healthy.to_string(), "healthy");
+    assert_eq!(HealthStatus::Unhealthy.to_string(), "unhealthy");
+    assert_eq!(HealthStatus::Degraded.to_string(), "degraded");
+    assert_eq!(HealthStatus::Unknown.to_string(), "unknown");
+}
+
+#[test]
+fn test_health_status_is_healthy() {
+    assert!(HealthStatus::Healthy.is_healthy());
+    assert!(!HealthStatus::Unhealthy.is_healthy());
+    assert!(!HealthStatus::Degraded.is_healthy());
+}
+
+#[test]
+fn test_health_check_creation() {
+    let check = HealthCheck::new("/health");
+
+    assert_eq!(check.endpoint, "/health");
+    assert_eq!(check.interval, 5000);
+    assert_eq!(check.timeout, 2000);
+    assert_eq!(check.retries, 3);
+}
+
+#[test]
+fn test_health_check_with_interval() {
+    let mut check = HealthCheck::new("/health");
+    check = check.with_interval(10000);
+
+    assert_eq!(check.interval, 10000);
+}
+
+#[test]
+fn test_health_check_check() {
+    let mut check = HealthCheck::new("/health");
+    let status = check.check();
+
+    assert!(status.is_healthy());
+}
+
+#[test]
+fn test_health_check_is_healthy() {
+    let mut check = HealthCheck::new("/health");
+    check.check();
+
+    assert!(check.is_healthy());
+}
+
+// ============================================================================
+// Deployment Tests
+// ============================================================================
+
+#[test]
+fn test_deployment_status_to_string() {
+    assert_eq!(DeploymentStatus::Pending.to_string(), "pending");
+    assert_eq!(DeploymentStatus::InProgress.to_string(), "in_progress");
+    assert_eq!(DeploymentStatus::Success.to_string(), "success");
+    assert_eq!(DeploymentStatus::Failed.to_string(), "failed");
+    assert_eq!(DeploymentStatus::RolledBack.to_string(), "rolled_back");
+}
+
+#[test]
+fn test_deployment_status_is_complete() {
+    assert!(DeploymentStatus::Success.is_complete());
+    assert!(DeploymentStatus::Failed.is_complete());
+    assert!(DeploymentStatus::RolledBack.is_complete());
+    assert!(!DeploymentStatus::Pending.is_complete());
+    assert!(!DeploymentStatus::InProgress.is_complete());
+}
+
+#[test]
+fn test_deployment_creation() {
+    let config = DeploymentConfig::new(DeploymentStrategy::Rolling);
+    let deployment = Deployment::new("deploy1", "v1.0.0", config);
+
+    assert_eq!(deployment.id, "deploy1");
+    assert_eq!(deployment.version, "v1.0.0");
+    assert_eq!(deployment.status.to_string(), "pending");
+}
+
+#[test]
+fn test_deployment_start() {
+    let config = DeploymentConfig::new(DeploymentStrategy::BlueGreen);
+    let mut deployment = Deployment::new("deploy1", "v1.0.0", config);
+
+    deployment = deployment.start();
+
+    assert_eq!(deployment.status.to_string(), "in_progress");
+    assert!(deployment.started_at > 0);
+}
+
+#[test]
+fn test_deployment_complete() {
+    let config = DeploymentConfig::new(DeploymentStrategy::Canary);
+    let mut deployment = Deployment::new("deploy1", "v1.0.0", config);
+
+    deployment = deployment.start().complete();
+
+    assert_eq!(deployment.status.to_string(), "success");
+    assert!(deployment.completed_at > 0);
+}
+
+#[test]
+fn test_deployment_fail() {
+    let config = DeploymentConfig::new(DeploymentStrategy::Rolling);
+    let mut deployment = Deployment::new("deploy1", "v1.0.0", config);
+
+    deployment = deployment.start().fail();
+
+    assert_eq!(deployment.status.to_string(), "failed");
+}
+
+#[test]
+fn test_deployment_rollback() {
+    let config = DeploymentConfig::new(DeploymentStrategy::BlueGreen);
+    let mut deployment = Deployment::new("deploy1", "v1.0.0", config);
+
+    deployment = deployment.start().rollback();
+
+    assert_eq!(deployment.status.to_string(), "rolled_back");
+}
+
+#[test]
+fn test_deployment_add_health_check() {
+    let config = DeploymentConfig::new(DeploymentStrategy::Rolling);
+    let mut deployment = Deployment::new("deploy1", "v1.0.0", config);
+    let check = HealthCheck::new("/health");
+
+    deployment = deployment.add_health_check(check);
+
+    assert_eq!(deployment.health_checks.len(), 1);
+}
+
+#[test]
+fn test_deployment_all_healthy() {
+    let config = DeploymentConfig::new(DeploymentStrategy::Canary);
+    let mut deployment = Deployment::new("deploy1", "v1.0.0", config);
+
+    let mut check1 = HealthCheck::new("/health");
+    check1.check();
+    let mut check2 = HealthCheck::new("/ready");
+    check2.check();
+
+    deployment = deployment
+        .add_health_check(check1)
+        .add_health_check(check2);
+
+    assert!(deployment.all_healthy());
+}
+
+// ============================================================================
+// Rollback Tests
+// ============================================================================
+
+#[test]
+fn test_rollback_creation() {
+    let rollback = Rollback::new("deploy1", "v0.9.0", "Failed health check");
+
+    assert_eq!(rollback.deployment_id, "deploy1");
+    assert_eq!(rollback.previous_version, "v0.9.0");
+    assert_eq!(rollback.reason, "Failed health check");
+    assert!(!rollback.completed);
+}
+
+#[test]
+fn test_rollback_execute() {
+    let mut rollback = Rollback::new("deploy1", "v0.9.0", "Manual rollback");
+
+    rollback = rollback.execute();
+
+    assert!(rollback.completed);
+}
+
+// ============================================================================
+// Deployment Manager Tests
+// ============================================================================
+
+#[test]
+fn test_deployment_manager_creation() {
+    let manager = DeploymentManager::new(Environment::Production);
+
+    assert!(manager.environment.is_production());
+    assert_eq!(manager.deployments.len(), 0);
+    assert_eq!(manager.current_version, "0.0.0");
+}
+
+#[test]
+fn test_deployment_manager_deploy() {
+    let mut manager = DeploymentManager::new(Environment::Staging);
+    let config = DeploymentConfig::new(DeploymentStrategy::Rolling);
+
+    let deployment = manager.deploy("v1.0.0", config);
+
+    assert_eq!(deployment.version, "v1.0.0");
+}
+
+#[test]
+fn test_deployment_manager_get_deployment() {
+    let mut manager = DeploymentManager::new(Environment::Production);
+    let config = DeploymentConfig::new(DeploymentStrategy::BlueGreen);
+
+    let deployment = manager.deploy("v1.0.0", config);
+    let retrieved = manager.get_deployment(deployment.id);
+
+    assert!(retrieved.is_some());
+}
+
+#[test]
+fn test_deployment_manager_get_latest_deployment() {
+    let mut manager = DeploymentManager::new(Environment::Production);
+    let config = DeploymentConfig::new(DeploymentStrategy::Canary);
+
+    manager.deploy("v1.0.0", config.clone());
+    manager.deploy("v1.1.0", config);
+
+    let latest = manager.get_latest_deployment();
+    assert!(latest.is_some());
+    assert_eq!(latest.unwrap().version, "v1.1.0");
+}
+
+#[test]
+fn test_deployment_manager_rollback_to() {
+    let mut manager = DeploymentManager::new(Environment::Production);
+
+    let rollback = manager.rollback_to("v0.9.0");
+
+    assert!(rollback.completed);
+    assert_eq!(manager.current_version, "v0.9.0");
+}

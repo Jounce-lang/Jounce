@@ -1,0 +1,23 @@
+[package]
+name = "jounce-deploy"
+version = "0.1.0"
+description = "Deployment and environment management - strategies, health checks, rollbacks"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-deploy"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "deploy_tests"
+path = "tests/deploy_tests.jnc"
+
+[features]
+default = ["health-checks", "rollback"]
+health-checks = []
+rollback = []
+blue-green = []
+canary = []

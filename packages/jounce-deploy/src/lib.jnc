@@ -1,0 +1,401 @@
+// jounce-deploy - Deployment and environment management utilities
+// Provides deployment strategies, environment management, health checks, and rollback
+
+// ============================================================================
+// Environment Management
+// ============================================================================
+
+pub enum Environment {
+    Development,
+    Staging,
+    Production,
+    Test,
+}
+
+impl Environment {
+    pub fn to_string(self) -> string {
+        return match self {
+            Environment::Development => "development",
+            Environment::Staging => "staging",
+            Environment::Production => "production",
+            Environment::Test => "test",
+        };
+    }
+
+    pub fn from_string(s: string) -> Environment {
+        return match s {
+            "development" => Environment::Development,
+            "staging" => Environment::Staging,
+            "production" => Environment::Production,
+            "test" => Environment::Test,
+            _ => Environment::Development,
+        };
+    }
+
+    pub fn is_production(self) -> bool {
+        return match self {
+            Environment::Production => true,
+            _ => false,
+        };
+    }
+}
+
+pub struct EnvConfig {
+    pub environment: Environment,
+    pub variables: Map<string, string>,
+    pub secrets: Map<string, string>,
+}
+
+impl EnvConfig {
+    pub fn new(environment: Environment) -> EnvConfig {
+        return EnvConfig {
+            environment: environment,
+            variables: Map::new(),
+            secrets: Map::new(),
+        };
+    }
+
+    pub fn set_var(mut self, key: string, value: string) -> EnvConfig {
+        self.variables.insert(key, value);
+        return self;
+    }
+
+    pub fn set_secret(mut self, key: string, value: string) -> EnvConfig {
+        self.secrets.insert(key, value);
+        return self;
+    }
+
+    pub fn get_var(self, key: string) -> Option<string> {
+        return self.variables.get(key);
+    }
+
+    pub fn get_secret(self, key: string) -> Option<string> {
+        return self.secrets.get(key);
+    }
+}
+
+// ============================================================================
+// Deployment Configuration
+// ============================================================================
+
+pub enum DeploymentStrategy {
+    BlueGreen,
+    Canary,
+    Rolling,
+    Recreate,
+}
+
+impl DeploymentStrategy {
+    pub fn to_string(self) -> string {
+        return match self {
+            DeploymentStrategy::BlueGreen => "blue-green",
+            DeploymentStrategy::Canary => "canary",
+            DeploymentStrategy::Rolling => "rolling",
+            DeploymentStrategy::Recreate => "recreate",
+        };
+    }
+}
+
+pub struct DeploymentConfig {
+    pub strategy: DeploymentStrategy,
+    pub replicas: int,
+    pub max_surge: int,
+    pub max_unavailable: int,
+    pub health_check_interval: int,
+    pub rollback_on_failure: bool,
+}
+
+impl DeploymentConfig {
+    pub fn new(strategy: DeploymentStrategy) -> DeploymentConfig {
+        return DeploymentConfig {
+            strategy: strategy,
+            replicas: 3,
+            max_surge: 1,
+            max_unavailable: 0,
+            health_check_interval: 5000,
+            rollback_on_failure: true,
+        };
+    }
+
+    pub fn with_replicas(mut self, replicas: int) -> DeploymentConfig {
+        self.replicas = replicas;
+        return self;
+    }
+
+    pub fn with_max_surge(mut self, surge: int) -> DeploymentConfig {
+        self.max_surge = surge;
+        return self;
+    }
+
+    pub fn with_rollback(mut self, enabled: bool) -> DeploymentConfig {
+        self.rollback_on_failure = enabled;
+        return self;
+    }
+}
+
+// ============================================================================
+// Health Checks
+// ============================================================================
+
+pub enum HealthStatus {
+    Healthy,
+    Unhealthy,
+    Degraded,
+    Unknown,
+}
+
+impl HealthStatus {
+    pub fn to_string(self) -> string {
+        return match self {
+            HealthStatus::Healthy => "healthy",
+            HealthStatus::Unhealthy => "unhealthy",
+            HealthStatus::Degraded => "degraded",
+            HealthStatus::Unknown => "unknown",
+        };
+    }
+
+    pub fn is_healthy(self) -> bool {
+        return match self {
+            HealthStatus::Healthy => true,
+            _ => false,
+        };
+    }
+}
+
+pub struct HealthCheck {
+    pub endpoint: string,
+    pub interval: int,
+    pub timeout: int,
+    pub retries: int,
+    pub status: HealthStatus,
+    pub last_check: int,
+}
+
+impl HealthCheck {
+    pub fn new(endpoint: string) -> HealthCheck {
+        return HealthCheck {
+            endpoint: endpoint,
+            interval: 5000,
+            timeout: 2000,
+            retries: 3,
+            status: HealthStatus::Unknown,
+            last_check: 0,
+        };
+    }
+
+    pub fn with_interval(mut self, interval: int) -> HealthCheck {
+        self.interval = interval;
+        return self;
+    }
+
+    pub fn with_timeout(mut self, timeout: int) -> HealthCheck {
+        self.timeout = timeout;
+        return self;
+    }
+
+    pub fn check(mut self) -> HealthStatus {
+        // In production, would make HTTP request to endpoint
+        self.status = HealthStatus::Healthy;
+        self.last_check = get_timestamp();
+        return self.status;
+    }
+
+    pub fn is_healthy(self) -> bool {
+        return self.status.is_healthy();
+    }
+}
+
+// ============================================================================
+// Deployment
+// ============================================================================
+
+pub enum DeploymentStatus {
+    Pending,
+    InProgress,
+    Success,
+    Failed,
+    RolledBack,
+}
+
+impl DeploymentStatus {
+    pub fn to_string(self) -> string {
+        return match self {
+            DeploymentStatus::Pending => "pending",
+            DeploymentStatus::InProgress => "in_progress",
+            DeploymentStatus::Success => "success",
+            DeploymentStatus::Failed => "failed",
+            DeploymentStatus::RolledBack => "rolled_back",
+        };
+    }
+
+    pub fn is_complete(self) -> bool {
+        return match self {
+            DeploymentStatus::Success => true,
+            DeploymentStatus::Failed => true,
+            DeploymentStatus::RolledBack => true,
+            _ => false,
+        };
+    }
+}
+
+pub struct Deployment {
+    pub id: string,
+    pub version: string,
+    pub config: DeploymentConfig,
+    pub status: DeploymentStatus,
+    pub started_at: int,
+    pub completed_at: int,
+    pub health_checks: Array<HealthCheck>,
+}
+
+impl Deployment {
+    pub fn new(id: string, version: string, config: DeploymentConfig) -> Deployment {
+        return Deployment {
+            id: id,
+            version: version,
+            config: config,
+            status: DeploymentStatus::Pending,
+            started_at: 0,
+            completed_at: 0,
+            health_checks: Array::new(),
+        };
+    }
+
+    pub fn start(mut self) -> Deployment {
+        self.status = DeploymentStatus::InProgress;
+        self.started_at = get_timestamp();
+        return self;
+    }
+
+    pub fn complete(mut self) -> Deployment {
+        self.status = DeploymentStatus::Success;
+        self.completed_at = get_timestamp();
+        return self;
+    }
+
+    pub fn fail(mut self) -> Deployment {
+        self.status = DeploymentStatus::Failed;
+        self.completed_at = get_timestamp();
+        return self;
+    }
+
+    pub fn rollback(mut self) -> Deployment {
+        self.status = DeploymentStatus::RolledBack;
+        self.completed_at = get_timestamp();
+        return self;
+    }
+
+    pub fn add_health_check(mut self, check: HealthCheck) -> Deployment {
+        self.health_checks.push(check);
+        return self;
+    }
+
+    pub fn all_healthy(self) -> bool {
+        for check in self.health_checks {
+            if !check.is_healthy() {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    pub fn duration(self) -> int {
+        if self.completed_at == 0 {
+            return get_timestamp() - self.started_at;
+        }
+        return self.completed_at - self.started_at;
+    }
+}
+
+// ============================================================================
+// Rollback
+// ============================================================================
+
+pub struct Rollback {
+    pub deployment_id: string,
+    pub previous_version: string,
+    pub reason: string,
+    pub initiated_at: int,
+    pub completed: bool,
+}
+
+impl Rollback {
+    pub fn new(deployment_id: string, previous_version: string, reason: string) -> Rollback {
+        return Rollback {
+            deployment_id: deployment_id,
+            previous_version: previous_version,
+            reason: reason,
+            initiated_at: get_timestamp(),
+            completed: false,
+        };
+    }
+
+    pub fn execute(mut self) -> Rollback {
+        // In production, would trigger actual rollback
+        self.completed = true;
+        return self;
+    }
+}
+
+// ============================================================================
+// Deployment Manager
+// ============================================================================
+
+pub struct DeploymentManager {
+    pub deployments: Array<Deployment>,
+    pub current_version: string,
+    pub environment: Environment,
+}
+
+impl DeploymentManager {
+    pub fn new(environment: Environment) -> DeploymentManager {
+        return DeploymentManager {
+            deployments: Array::new(),
+            current_version: "0.0.0",
+            environment: environment,
+        };
+    }
+
+    pub fn deploy(mut self, version: string, config: DeploymentConfig) -> Deployment {
+        let deployment = Deployment::new(generate_id(), version, config);
+        self.deployments.push(deployment);
+        return deployment;
+    }
+
+    pub fn get_deployment(self, id: string) -> Option<Deployment> {
+        for deployment in self.deployments {
+            if deployment.id == id {
+                return Some(deployment);
+            }
+        }
+        return None;
+    }
+
+    pub fn get_latest_deployment(self) -> Option<Deployment> {
+        let len = self.deployments.len();
+        if len == 0 {
+            return None;
+        }
+        return Some(self.deployments.get(len - 1));
+    }
+
+    pub fn rollback_to(mut self, version: string) -> Rollback {
+        let rollback = Rollback::new("latest", version, "Manual rollback");
+        self.current_version = version;
+        return rollback.execute();
+    }
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+fn get_timestamp() -> int {
+    // In production, would return actual timestamp
+    return 1729800000;
+}
+
+fn generate_id() -> string {
+    // In production, would generate UUID
+    return "deploy_" + get_timestamp().to_string();
+}
