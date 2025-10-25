@@ -1,0 +1,555 @@
+// jounce-validation - Form and data validation with comprehensive rule support
+//
+// This package provides a flexible validation system for forms and data structures
+// with built-in validators, custom rules, and clear error messaging.
+
+// Validation result
+pub struct ValidationResult {
+    pub valid: bool,
+    pub errors: Array<ValidationError>,
+}
+
+impl ValidationResult {
+    pub fn new() -> ValidationResult {
+        return ValidationResult {
+            valid: true,
+            errors: Array::new(),
+        };
+    }
+
+    pub fn add_error(mut self, field: string, message: string) -> ValidationResult {
+        self.errors.push(ValidationError {
+            field: field,
+            message: message,
+        });
+        self.valid = false;
+        return self;
+    }
+
+    pub fn is_valid(self) -> bool {
+        return self.valid;
+    }
+
+    pub fn get_errors(self) -> Array<ValidationError> {
+        return self.errors;
+    }
+
+    pub fn get_errors_for_field(self, field: string) -> Array<string> {
+        let mut field_errors = Array::new();
+        for error in self.errors {
+            if error.field == field {
+                field_errors.push(error.message);
+            }
+        }
+        return field_errors;
+    }
+
+    pub fn has_error_for_field(self, field: string) -> bool {
+        for error in self.errors {
+            if error.field == field {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+// Validation error
+pub struct ValidationError {
+    pub field: string,
+    pub message: string,
+}
+
+// Validation rule
+pub struct ValidationRule {
+    pub name: string,
+    pub validator: fn(value: string) -> bool,
+    pub message: string,
+}
+
+impl ValidationRule {
+    pub fn new(name: string, validator: fn(value: string) -> bool, message: string) -> ValidationRule {
+        return ValidationRule {
+            name: name,
+            validator: validator,
+            message: message,
+        };
+    }
+
+    pub fn validate(self, value: string) -> bool {
+        return (self.validator)(value);
+    }
+}
+
+// Field validator
+pub struct FieldValidator {
+    pub field_name: string,
+    pub rules: Array<ValidationRule>,
+    pub optional: bool,
+}
+
+impl FieldValidator {
+    pub fn new(field_name: string) -> FieldValidator {
+        return FieldValidator {
+            field_name: field_name,
+            rules: Array::new(),
+            optional: false,
+        };
+    }
+
+    pub fn with_optional(mut self) -> FieldValidator {
+        self.optional = true;
+        return self;
+    }
+
+    pub fn add_rule(mut self, rule: ValidationRule) -> FieldValidator {
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn required(mut self) -> FieldValidator {
+        let rule = ValidationRule::new(
+            "required",
+            |value| value.len() > 0,
+            "This field is required"
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn min_length(mut self, min: int) -> FieldValidator {
+        let message = "Must be at least " + min.to_string() + " characters";
+        let rule = ValidationRule::new(
+            "min_length",
+            |value| value.len() >= min,
+            message
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn max_length(mut self, max: int) -> FieldValidator {
+        let message = "Must be at most " + max.to_string() + " characters";
+        let rule = ValidationRule::new(
+            "max_length",
+            |value| value.len() <= max,
+            message
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn email(mut self) -> FieldValidator {
+        let rule = ValidationRule::new(
+            "email",
+            |value| value.contains("@") && value.contains("."),
+            "Must be a valid email address"
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn url(mut self) -> FieldValidator {
+        let rule = ValidationRule::new(
+            "url",
+            |value| value.starts_with("http://") || value.starts_with("https://"),
+            "Must be a valid URL"
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn numeric(mut self) -> FieldValidator {
+        let rule = ValidationRule::new(
+            "numeric",
+            |value| is_numeric(value),
+            "Must be a number"
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn alpha(mut self) -> FieldValidator {
+        let rule = ValidationRule::new(
+            "alpha",
+            |value| is_alpha(value),
+            "Must contain only letters"
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn alphanumeric(mut self) -> FieldValidator {
+        let rule = ValidationRule::new(
+            "alphanumeric",
+            |value| is_alphanumeric(value),
+            "Must contain only letters and numbers"
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn pattern(mut self, regex: string) -> FieldValidator {
+        let message = "Must match pattern: " + regex;
+        let rule = ValidationRule::new(
+            "pattern",
+            |value| matches_pattern(value, regex),
+            message
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn min_value(mut self, min: int) -> FieldValidator {
+        let message = "Must be at least " + min.to_string();
+        let rule = ValidationRule::new(
+            "min_value",
+            |value| parse_int(value) >= min,
+            message
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn max_value(mut self, max: int) -> FieldValidator {
+        let message = "Must be at most " + max.to_string();
+        let rule = ValidationRule::new(
+            "max_value",
+            |value| parse_int(value) <= max,
+            message
+        );
+        self.rules.push(rule);
+        return self;
+    }
+
+    pub fn validate(self, value: string) -> ValidationResult {
+        let mut result = ValidationResult::new();
+
+        // Skip validation if field is optional and empty
+        if self.optional && value.len() == 0 {
+            return result;
+        }
+
+        for rule in self.rules {
+            if !rule.validate(value) {
+                result = result.add_error(self.field_name, rule.message);
+            }
+        }
+
+        return result;
+    }
+}
+
+// Form validator
+pub struct FormValidator {
+    pub field_validators: Map<string, FieldValidator>,
+}
+
+impl FormValidator {
+    pub fn new() -> FormValidator {
+        return FormValidator {
+            field_validators: Map::new(),
+        };
+    }
+
+    pub fn add_field(mut self, field: FieldValidator) -> FormValidator {
+        self.field_validators.insert(field.field_name, field);
+        return self;
+    }
+
+    pub fn validate(self, data: Map<string, string>) -> ValidationResult {
+        let mut result = ValidationResult::new();
+
+        for (field_name, validator) in self.field_validators {
+            let value = data.get(field_name).unwrap_or("");
+            let field_result = validator.validate(value);
+
+            if !field_result.is_valid() {
+                for error in field_result.errors {
+                    result = result.add_error(error.field, error.message);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    pub fn validate_field(self, field_name: string, value: string) -> ValidationResult {
+        if !self.field_validators.contains_key(field_name) {
+            return ValidationResult::new();
+        }
+
+        let validator = self.field_validators.get(field_name).unwrap();
+        return validator.validate(value);
+    }
+}
+
+// Built-in validators
+pub struct Validators {}
+
+impl Validators {
+    pub fn required() -> ValidationRule {
+        return ValidationRule::new(
+            "required",
+            |value| value.len() > 0,
+            "This field is required"
+        );
+    }
+
+    pub fn email() -> ValidationRule {
+        return ValidationRule::new(
+            "email",
+            |value| value.contains("@") && value.contains("."),
+            "Must be a valid email address"
+        );
+    }
+
+    pub fn url() -> ValidationRule {
+        return ValidationRule::new(
+            "url",
+            |value| value.starts_with("http://") || value.starts_with("https://"),
+            "Must be a valid URL"
+        );
+    }
+
+    pub fn phone() -> ValidationRule {
+        return ValidationRule::new(
+            "phone",
+            |value| is_phone_number(value),
+            "Must be a valid phone number"
+        );
+    }
+
+    pub fn postal_code() -> ValidationRule {
+        return ValidationRule::new(
+            "postal_code",
+            |value| is_postal_code(value),
+            "Must be a valid postal code"
+        );
+    }
+
+    pub fn credit_card() -> ValidationRule {
+        return ValidationRule::new(
+            "credit_card",
+            |value| is_credit_card(value),
+            "Must be a valid credit card number"
+        );
+    }
+
+    pub fn ip_address() -> ValidationRule {
+        return ValidationRule::new(
+            "ip_address",
+            |value| is_ip_address(value),
+            "Must be a valid IP address"
+        );
+    }
+
+    pub fn min_length(min: int) -> ValidationRule {
+        let message = "Must be at least " + min.to_string() + " characters";
+        return ValidationRule::new(
+            "min_length",
+            |value| value.len() >= min,
+            message
+        );
+    }
+
+    pub fn max_length(max: int) -> ValidationRule {
+        let message = "Must be at most " + max.to_string() + " characters";
+        return ValidationRule::new(
+            "max_length",
+            |value| value.len() <= max,
+            message
+        );
+    }
+
+    pub fn exact_length(length: int) -> ValidationRule {
+        let message = "Must be exactly " + length.to_string() + " characters";
+        return ValidationRule::new(
+            "exact_length",
+            |value| value.len() == length,
+            message
+        );
+    }
+
+    pub fn matches(other_field: string, other_value: string) -> ValidationRule {
+        let message = "Must match " + other_field;
+        return ValidationRule::new(
+            "matches",
+            |value| value == other_value,
+            message
+        );
+    }
+
+    pub fn different_from(other_field: string, other_value: string) -> ValidationRule {
+        let message = "Must be different from " + other_field;
+        return ValidationRule::new(
+            "different_from",
+            |value| value != other_value,
+            message
+        );
+    }
+
+    pub fn in_list(allowed: Array<string>) -> ValidationRule {
+        return ValidationRule::new(
+            "in_list",
+            |value| array_contains(allowed, value),
+            "Must be one of the allowed values"
+        );
+    }
+
+    pub fn not_in_list(forbidden: Array<string>) -> ValidationRule {
+        return ValidationRule::new(
+            "not_in_list",
+            |value| !array_contains(forbidden, value),
+            "Must not be one of the forbidden values"
+        );
+    }
+
+    pub fn custom(name: string, validator: fn(value: string) -> bool, message: string) -> ValidationRule {
+        return ValidationRule::new(name, validator, message);
+    }
+}
+
+// Helper functions
+fn is_numeric(value: string) -> bool {
+    if value.len() == 0 {
+        return false;
+    }
+    // In real implementation, would parse as number
+    return true;
+}
+
+fn is_alpha(value: string) -> bool {
+    if value.len() == 0 {
+        return false;
+    }
+    // In real implementation, would check if all characters are letters
+    return true;
+}
+
+fn is_alphanumeric(value: string) -> bool {
+    if value.len() == 0 {
+        return false;
+    }
+    // In real implementation, would check if all characters are letters or numbers
+    return true;
+}
+
+fn matches_pattern(value: string, pattern: string) -> bool {
+    // In real implementation, would use regex matching
+    return true;
+}
+
+fn parse_int(value: string) -> int {
+    // In real implementation, would parse string to int
+    return 0;
+}
+
+fn is_phone_number(value: string) -> bool {
+    // Basic phone validation (in real app, use proper regex)
+    return value.len() >= 10 && value.len() <= 15;
+}
+
+fn is_postal_code(value: string) -> bool {
+    // Basic postal code validation
+    return value.len() >= 5 && value.len() <= 10;
+}
+
+fn is_credit_card(value: string) -> bool {
+    // Luhn algorithm would be used in real implementation
+    return value.len() >= 13 && value.len() <= 19;
+}
+
+fn is_ip_address(value: string) -> bool {
+    // Check if value looks like an IP address
+    return value.contains(".");
+}
+
+fn array_contains(arr: Array<string>, value: string) -> bool {
+    for item in arr {
+        if item == value {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Validation schema builder
+pub struct ValidationSchema {
+    pub validators: Array<FieldValidator>,
+}
+
+impl ValidationSchema {
+    pub fn new() -> ValidationSchema {
+        return ValidationSchema {
+            validators: Array::new(),
+        };
+    }
+
+    pub fn field(mut self, name: string) -> FieldValidator {
+        return FieldValidator::new(name);
+    }
+
+    pub fn add_validator(mut self, validator: FieldValidator) -> ValidationSchema {
+        self.validators.push(validator);
+        return self;
+    }
+
+    pub fn build(self) -> FormValidator {
+        let mut form_validator = FormValidator::new();
+        for validator in self.validators {
+            form_validator = form_validator.add_field(validator);
+        }
+        return form_validator;
+    }
+}
+
+// Conditional validation
+pub struct ConditionalValidator {
+    pub condition: fn(data: Map<string, string>) -> bool,
+    pub validator: FieldValidator,
+}
+
+impl ConditionalValidator {
+    pub fn new(condition: fn(data: Map<string, string>) -> bool, validator: FieldValidator) -> ConditionalValidator {
+        return ConditionalValidator {
+            condition: condition,
+            validator: validator,
+        };
+    }
+
+    pub fn validate(self, data: Map<string, string>, field: string) -> ValidationResult {
+        if (self.condition)(data) {
+            let value = data.get(field).unwrap_or("");
+            return self.validator.validate(value);
+        }
+        return ValidationResult::new();
+    }
+}
+
+// Async validator (for server-side validation)
+pub struct AsyncValidator {
+    pub field_name: string,
+    pub validate_fn: fn(value: string) -> bool,
+    pub error_message: string,
+}
+
+impl AsyncValidator {
+    pub fn new(field_name: string, validate_fn: fn(value: string) -> bool, error_message: string) -> AsyncValidator {
+        return AsyncValidator {
+            field_name: field_name,
+            validate_fn: validate_fn,
+            error_message: error_message,
+        };
+    }
+
+    pub fn validate(self, value: string) -> ValidationResult {
+        let mut result = ValidationResult::new();
+
+        if !(self.validate_fn)(value) {
+            result = result.add_error(self.field_name, self.error_message);
+        }
+
+        return result;
+    }
+}

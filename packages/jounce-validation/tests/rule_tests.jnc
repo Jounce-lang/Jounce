@@ -1,0 +1,182 @@
+// Tests for validation rules in jounce-validation
+use jounce_validation::{ValidationRule, ValidationResult, FieldValidator};
+
+#[test]
+fn test_validation_rule_creation() {
+    let rule = ValidationRule::new(
+        "required",
+        |value| value.len() > 0,
+        "This field is required"
+    );
+
+    assert_eq!(rule.name, "required", "Rule name should match");
+    assert_eq!(rule.message, "This field is required", "Message should match");
+}
+
+#[test]
+fn test_validation_rule_validate_pass() {
+    let rule = ValidationRule::new(
+        "required",
+        |value| value.len() > 0,
+        "This field is required"
+    );
+
+    assert!(rule.validate("hello"), "Should pass for non-empty string");
+}
+
+#[test]
+fn test_validation_rule_validate_fail() {
+    let rule = ValidationRule::new(
+        "required",
+        |value| value.len() > 0,
+        "This field is required"
+    );
+
+    assert!(!rule.validate(""), "Should fail for empty string");
+}
+
+#[test]
+fn test_validation_result_new() {
+    let result = ValidationResult::new();
+
+    assert!(result.is_valid(), "New result should be valid");
+    assert_eq!(result.errors.len(), 0, "Should have no errors");
+}
+
+#[test]
+fn test_validation_result_add_error() {
+    let mut result = ValidationResult::new();
+    result = result.add_error("email", "Invalid email");
+
+    assert!(!result.is_valid(), "Should be invalid after adding error");
+    assert_eq!(result.errors.len(), 1, "Should have 1 error");
+}
+
+#[test]
+fn test_validation_result_get_errors() {
+    let mut result = ValidationResult::new();
+    result = result.add_error("email", "Invalid email");
+    result = result.add_error("password", "Too short");
+
+    let errors = result.get_errors();
+    assert_eq!(errors.len(), 2, "Should have 2 errors");
+}
+
+#[test]
+fn test_validation_result_get_errors_for_field() {
+    let mut result = ValidationResult::new();
+    result = result.add_error("email", "Invalid email");
+    result = result.add_error("email", "Already taken");
+    result = result.add_error("password", "Too short");
+
+    let email_errors = result.get_errors_for_field("email");
+    assert_eq!(email_errors.len(), 2, "Should have 2 email errors");
+}
+
+#[test]
+fn test_validation_result_has_error_for_field() {
+    let mut result = ValidationResult::new();
+    result = result.add_error("email", "Invalid email");
+
+    assert!(result.has_error_for_field("email"), "Should have error for email");
+    assert!(!result.has_error_for_field("password"), "Should not have error for password");
+}
+
+#[test]
+fn test_field_validator_creation() {
+    let validator = FieldValidator::new("email");
+
+    assert_eq!(validator.field_name, "email", "Field name should match");
+    assert_eq!(validator.rules.len(), 0, "Should have no rules initially");
+    assert!(!validator.optional, "Should not be optional by default");
+}
+
+#[test]
+fn test_field_validator_with_optional() {
+    let validator = FieldValidator::new("email")
+        .with_optional();
+
+    assert!(validator.optional, "Should be optional");
+}
+
+#[test]
+fn test_field_validator_required() {
+    let validator = FieldValidator::new("email")
+        .required();
+
+    assert_eq!(validator.rules.len(), 1, "Should have 1 rule");
+    assert_eq!(validator.rules[0].name, "required", "Rule should be required");
+}
+
+#[test]
+fn test_field_validator_min_length() {
+    let validator = FieldValidator::new("password")
+        .min_length(8);
+
+    assert_eq!(validator.rules.len(), 1, "Should have 1 rule");
+    assert_eq!(validator.rules[0].name, "min_length", "Rule should be min_length");
+}
+
+#[test]
+fn test_field_validator_max_length() {
+    let validator = FieldValidator::new("username")
+        .max_length(20);
+
+    assert_eq!(validator.rules.len(), 1, "Should have 1 rule");
+    assert_eq!(validator.rules[0].name, "max_length", "Rule should be max_length");
+}
+
+#[test]
+fn test_field_validator_email() {
+    let validator = FieldValidator::new("email")
+        .email();
+
+    assert_eq!(validator.rules.len(), 1, "Should have 1 rule");
+    assert_eq!(validator.rules[0].name, "email", "Rule should be email");
+}
+
+#[test]
+fn test_field_validator_url() {
+    let validator = FieldValidator::new("website")
+        .url();
+
+    assert_eq!(validator.rules.len(), 1, "Should have 1 rule");
+    assert_eq!(validator.rules[0].name, "url", "Rule should be url");
+}
+
+#[test]
+fn test_field_validator_numeric() {
+    let validator = FieldValidator::new("age")
+        .numeric();
+
+    assert_eq!(validator.rules.len(), 1, "Should have 1 rule");
+    assert_eq!(validator.rules[0].name, "numeric", "Rule should be numeric");
+}
+
+#[test]
+fn test_field_validator_alpha() {
+    let validator = FieldValidator::new("name")
+        .alpha();
+
+    assert_eq!(validator.rules.len(), 1, "Should have 1 rule");
+    assert_eq!(validator.rules[0].name, "alpha", "Rule should be alpha");
+}
+
+#[test]
+fn test_field_validator_alphanumeric() {
+    let validator = FieldValidator::new("username")
+        .alphanumeric();
+
+    assert_eq!(validator.rules.len(), 1, "Should have 1 rule");
+    assert_eq!(validator.rules[0].name, "alphanumeric", "Rule should be alphanumeric");
+}
+
+#[test]
+fn test_field_validator_chaining() {
+    let validator = FieldValidator::new("email")
+        .required()
+        .email()
+        .max_length(100);
+
+    assert_eq!(validator.rules.len(), 3, "Should have 3 rules");
+}

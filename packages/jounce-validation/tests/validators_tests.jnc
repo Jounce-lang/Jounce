@@ -1,0 +1,212 @@
+// Tests for built-in validators in jounce-validation
+use jounce_validation::{Validators, ConditionalValidator, AsyncValidator, FieldValidator};
+
+#[test]
+fn test_validators_required() {
+    let rule = Validators::required();
+
+    assert_eq!(rule.name, "required", "Rule name should be required");
+    assert!(rule.validate("hello"), "Should pass for non-empty");
+    assert!(!rule.validate(""), "Should fail for empty");
+}
+
+#[test]
+fn test_validators_email() {
+    let rule = Validators::email();
+
+    assert_eq!(rule.name, "email", "Rule name should be email");
+    assert!(rule.validate("test@example.com"), "Should pass for valid email");
+    assert!(!rule.validate("invalid"), "Should fail for invalid email");
+}
+
+#[test]
+fn test_validators_url() {
+    let rule = Validators::url();
+
+    assert_eq!(rule.name, "url", "Rule name should be url");
+    assert!(rule.validate("https://example.com"), "Should pass for valid URL");
+    assert!(!rule.validate("not-a-url"), "Should fail for invalid URL");
+}
+
+#[test]
+fn test_validators_phone() {
+    let rule = Validators::phone();
+
+    assert_eq!(rule.name, "phone", "Rule name should be phone");
+}
+
+#[test]
+fn test_validators_postal_code() {
+    let rule = Validators::postal_code();
+
+    assert_eq!(rule.name, "postal_code", "Rule name should be postal_code");
+}
+
+#[test]
+fn test_validators_credit_card() {
+    let rule = Validators::credit_card();
+
+    assert_eq!(rule.name, "credit_card", "Rule name should be credit_card");
+}
+
+#[test]
+fn test_validators_ip_address() {
+    let rule = Validators::ip_address();
+
+    assert_eq!(rule.name, "ip_address", "Rule name should be ip_address");
+    assert!(rule.validate("192.168.1.1"), "Should pass for IP address");
+}
+
+#[test]
+fn test_validators_min_length() {
+    let rule = Validators::min_length(5);
+
+    assert_eq!(rule.name, "min_length", "Rule name should be min_length");
+}
+
+#[test]
+fn test_validators_max_length() {
+    let rule = Validators::max_length(10);
+
+    assert_eq!(rule.name, "max_length", "Rule name should be max_length");
+}
+
+#[test]
+fn test_validators_exact_length() {
+    let rule = Validators::exact_length(8);
+
+    assert_eq!(rule.name, "exact_length", "Rule name should be exact_length");
+}
+
+#[test]
+fn test_validators_matches() {
+    let rule = Validators::matches("password", "secret123");
+
+    assert_eq!(rule.name, "matches", "Rule name should be matches");
+    assert!(rule.validate("secret123"), "Should pass for matching value");
+    assert!(!rule.validate("different"), "Should fail for non-matching value");
+}
+
+#[test]
+fn test_validators_different_from() {
+    let rule = Validators::different_from("username", "admin");
+
+    assert_eq!(rule.name, "different_from", "Rule name should be different_from");
+    assert!(rule.validate("user123"), "Should pass for different value");
+    assert!(!rule.validate("admin"), "Should fail for same value");
+}
+
+#[test]
+fn test_validators_in_list() {
+    let allowed = ["red", "green", "blue"];
+    let rule = Validators::in_list(allowed);
+
+    assert_eq!(rule.name, "in_list", "Rule name should be in_list");
+    assert!(rule.validate("red"), "Should pass for allowed value");
+    assert!(!rule.validate("yellow"), "Should fail for disallowed value");
+}
+
+#[test]
+fn test_validators_not_in_list() {
+    let forbidden = ["admin", "root", "system"];
+    let rule = Validators::not_in_list(forbidden);
+
+    assert_eq!(rule.name, "not_in_list", "Rule name should be not_in_list");
+    assert!(rule.validate("user123"), "Should pass for non-forbidden value");
+    assert!(!rule.validate("admin"), "Should fail for forbidden value");
+}
+
+#[test]
+fn test_validators_custom() {
+    let rule = Validators::custom(
+        "custom_rule",
+        |value| value.starts_with("jnc_"),
+        "Must start with jnc_"
+    );
+
+    assert_eq!(rule.name, "custom_rule", "Rule name should be custom_rule");
+    assert!(rule.validate("jnc_file"), "Should pass for matching pattern");
+    assert!(!rule.validate("other"), "Should fail for non-matching pattern");
+}
+
+#[test]
+fn test_conditional_validator_creation() {
+    let condition = |data: Map<string, string>| data.get("country").unwrap_or("") == "US";
+    let validator = FieldValidator::new("zip_code").required();
+
+    let conditional = ConditionalValidator::new(condition, validator);
+
+    assert_eq!(conditional.validator.field_name, "zip_code", "Field name should match");
+}
+
+#[test]
+fn test_conditional_validator_validate_when_condition_true() {
+    let condition = |data: Map<string, string>| data.get("country").unwrap_or("") == "US";
+    let validator = FieldValidator::new("zip_code").required();
+    let conditional = ConditionalValidator::new(condition, validator);
+
+    let mut data = Map::new();
+    data.insert("country", "US");
+    data.insert("zip_code", "12345");
+
+    let result = conditional.validate(data, "zip_code");
+
+    assert!(result.is_valid(), "Should validate when condition is true");
+}
+
+#[test]
+fn test_conditional_validator_validate_when_condition_false() {
+    let condition = |data: Map<string, string>| data.get("country").unwrap_or("") == "US";
+    let validator = FieldValidator::new("zip_code").required();
+    let conditional = ConditionalValidator::new(condition, validator);
+
+    let mut data = Map::new();
+    data.insert("country", "UK");
+    // zip_code is missing but condition is false
+
+    let result = conditional.validate(data, "zip_code");
+
+    assert!(result.is_valid(), "Should skip validation when condition is false");
+}
+
+#[test]
+fn test_async_validator_creation() {
+    let validate_fn = |value: string| value != "taken@example.com";
+    let validator = AsyncValidator::new(
+        "email",
+        validate_fn,
+        "Email is already taken"
+    );
+
+    assert_eq!(validator.field_name, "email", "Field name should match");
+    assert_eq!(validator.error_message, "Email is already taken", "Error message should match");
+}
+
+#[test]
+fn test_async_validator_validate_pass() {
+    let validate_fn = |value: string| value != "taken@example.com";
+    let validator = AsyncValidator::new(
+        "email",
+        validate_fn,
+        "Email is already taken"
+    );
+
+    let result = validator.validate("new@example.com");
+
+    assert!(result.is_valid(), "Should pass for available email");
+}
+
+#[test]
+fn test_async_validator_validate_fail() {
+    let validate_fn = |value: string| value != "taken@example.com";
+    let validator = AsyncValidator::new(
+        "email",
+        validate_fn,
+        "Email is already taken"
+    );
+
+    let result = validator.validate("taken@example.com");
+
+    assert!(!result.is_valid(), "Should fail for taken email");
+    assert_eq!(result.errors[0].message, "Email is already taken", "Error message should match");
+}

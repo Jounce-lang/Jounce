@@ -1,0 +1,167 @@
+// Tests for form validation in jounce-validation
+use jounce_validation::{FormValidator, FieldValidator, ValidationSchema};
+
+#[test]
+fn test_form_validator_creation() {
+    let validator = FormValidator::new();
+
+    assert_eq!(validator.field_validators.len(), 0, "Should have no fields initially");
+}
+
+#[test]
+fn test_form_validator_add_field() {
+    let mut validator = FormValidator::new();
+    let field = FieldValidator::new("email").required();
+
+    validator = validator.add_field(field);
+
+    assert_eq!(validator.field_validators.len(), 1, "Should have 1 field");
+}
+
+#[test]
+fn test_form_validator_validate_empty_form() {
+    let validator = FormValidator::new();
+    let data = Map::new();
+
+    let result = validator.validate(data);
+
+    assert!(result.is_valid(), "Empty form should be valid");
+}
+
+#[test]
+fn test_form_validator_validate_valid_data() {
+    let mut validator = FormValidator::new();
+    let field = FieldValidator::new("email").required().email();
+    validator = validator.add_field(field);
+
+    let mut data = Map::new();
+    data.insert("email", "test@example.com");
+
+    let result = validator.validate(data);
+
+    assert!(result.is_valid(), "Should be valid with correct email");
+}
+
+#[test]
+fn test_form_validator_validate_invalid_data() {
+    let mut validator = FormValidator::new();
+    let field = FieldValidator::new("email").required();
+    validator = validator.add_field(field);
+
+    let data = Map::new(); // Missing email
+
+    let result = validator.validate(data);
+
+    assert!(!result.is_valid(), "Should be invalid with missing required field");
+}
+
+#[test]
+fn test_form_validator_validate_multiple_fields() {
+    let mut validator = FormValidator::new();
+
+    let email_field = FieldValidator::new("email").required().email();
+    let password_field = FieldValidator::new("password").required().min_length(8);
+
+    validator = validator.add_field(email_field).add_field(password_field);
+
+    let mut data = Map::new();
+    data.insert("email", "test@example.com");
+    data.insert("password", "secure123");
+
+    let result = validator.validate(data);
+
+    assert!(result.is_valid(), "Should be valid with all fields correct");
+}
+
+#[test]
+fn test_form_validator_validate_field() {
+    let mut validator = FormValidator::new();
+    let field = FieldValidator::new("email").required().email();
+    validator = validator.add_field(field);
+
+    let result = validator.validate_field("email", "test@example.com");
+
+    assert!(result.is_valid(), "Should validate single field");
+}
+
+#[test]
+fn test_form_validator_validate_field_invalid() {
+    let mut validator = FormValidator::new();
+    let field = FieldValidator::new("email").required().email();
+    validator = validator.add_field(field);
+
+    let result = validator.validate_field("email", "");
+
+    assert!(!result.is_valid(), "Should be invalid for empty required field");
+}
+
+#[test]
+fn test_validation_schema_creation() {
+    let schema = ValidationSchema::new();
+
+    assert_eq!(schema.validators.len(), 0, "Should have no validators initially");
+}
+
+#[test]
+fn test_validation_schema_field() {
+    let schema = ValidationSchema::new();
+    let field = schema.field("email");
+
+    assert_eq!(field.field_name, "email", "Field name should match");
+}
+
+#[test]
+fn test_validation_schema_add_validator() {
+    let mut schema = ValidationSchema::new();
+    let field = FieldValidator::new("email").required();
+
+    schema = schema.add_validator(field);
+
+    assert_eq!(schema.validators.len(), 1, "Should have 1 validator");
+}
+
+#[test]
+fn test_validation_schema_build() {
+    let mut schema = ValidationSchema::new();
+    let email_field = FieldValidator::new("email").required().email();
+    let password_field = FieldValidator::new("password").required().min_length(8);
+
+    schema = schema.add_validator(email_field).add_validator(password_field);
+
+    let form_validator = schema.build();
+
+    assert_eq!(form_validator.field_validators.len(), 2, "Should have 2 field validators");
+}
+
+#[test]
+fn test_form_validation_with_optional_fields() {
+    let mut validator = FormValidator::new();
+    let required_field = FieldValidator::new("email").required();
+    let optional_field = FieldValidator::new("phone").with_optional();
+
+    validator = validator.add_field(required_field).add_field(optional_field);
+
+    let mut data = Map::new();
+    data.insert("email", "test@example.com");
+    // phone is optional and missing
+
+    let result = validator.validate(data);
+
+    assert!(result.is_valid(), "Should be valid with optional field missing");
+}
+
+#[test]
+fn test_form_validation_multiple_errors() {
+    let mut validator = FormValidator::new();
+    let email_field = FieldValidator::new("email").required().email();
+    let password_field = FieldValidator::new("password").required().min_length(8);
+
+    validator = validator.add_field(email_field).add_field(password_field);
+
+    let data = Map::new(); // Both fields missing
+
+    let result = validator.validate(data);
+
+    assert!(!result.is_valid(), "Should be invalid");
+    assert!(result.errors.len() >= 2, "Should have at least 2 errors");
+}

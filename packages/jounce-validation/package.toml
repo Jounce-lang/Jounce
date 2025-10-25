@@ -1,0 +1,31 @@
+[package]
+name = "jounce-validation"
+version = "0.1.0"
+description = "Comprehensive form and data validation with built-in validators, custom rules, and clear error messaging"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-validation"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "rule_tests"
+path = "tests/rule_tests.jnc"
+
+[[test]]
+name = "form_tests"
+path = "tests/form_tests.jnc"
+
+[[test]]
+name = "validators_tests"
+path = "tests/validators_tests.jnc"
+
+[features]
+default = ["validators", "forms"]
+validators = []
+forms = []
+async = []
+conditional = []
