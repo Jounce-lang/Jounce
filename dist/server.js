@@ -18,36 +18,7 @@ const wasmInstance = new WebAssembly.Instance(wasmModule, {
 // Server function implementations
 // Shared utility functions
 module.exports.main = function() {
-  console.log("=== Reactive Form Validation ===");
-  let email = signal("");
-  let password = signal("");
-  let confirmPassword = signal("");
-  let emailValid = computed(() => let len = email.value.length;
-(len > 0));
-  let passwordValid = computed(() => (password.value.length >= 8));
-  let passwordsMatch = computed(() => (password.value == confirmPassword.value));
-  let formValid = computed(() => true);
-  effect(() => console.log(("Form valid: " + formValid.value.to_string()));
-console.log(("Email valid: " + emailValid.value.to_string()));
-console.log(("Password valid: " + passwordValid.value.to_string()));
-console.log(("Passwords match: " + passwordsMatch.value.to_string())));
-  console.log("");
-  console.log("Reactive form validation initialized!");
-  console.log("");
-  console.log("Example usage patterns:");
-  console.log("  // User types in email field");
-  console.log("  email.value = 'user@example.com';");
-  console.log("  // emailValid and emailError update automatically");
-  console.log("");
-  console.log("  // User types password");
-  console.log("  password.value = 'secure123';");
-  console.log("  // passwordValid updates, formValid recalculates");
-  console.log("");
-  console.log("  // User confirms password");
-  console.log("  confirmPassword.value = 'secure123';");
-  console.log("  // passwordsMatch updates, formValid becomes true");
-  console.log("");
-  return console.log("All validation happens automatically as user types!");
+  let x = 42;
 
 }
 
