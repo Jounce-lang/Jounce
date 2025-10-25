@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body>
+<div id="app">Loading...</div>
+<script type="module">
+import { h, mountComponent } from './client-runtime.js';
+
+function TestApp() {
+  return h('div', {}, h('h1', {}, 'IT WORKS!'));
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('Test loaded');
+  mountComponent(TestApp);
+});
+</script>
+</body>
+</html>
