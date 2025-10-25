@@ -1,0 +1,153 @@
+// App 3: Markdown Previewer
+// Demonstrates markdown preview UI structure
+// NOTE: Package imports coming soon! (jounce-markdown, jounce-sanitizer)
+
+// Main app component
+fn App() -> JSX {
+    return (
+        <div class="container">
+            <header class="header">
+                <h1>Markdown Previewer 📝</h1>
+                <p class="subtitle">Write markdown on the left, see HTML preview on the right</p>
+            </header>
+
+            <div class="editor-container">
+                <div class="editor-pane">
+                    <div class="pane-header">
+                        <h2>Markdown Input</h2>
+                        <span class="badge">Editor</span>
+                    </div>
+                    <textarea
+                        class="markdown-input"
+                        placeholder="# Welcome to Markdown!
+
+## Features
+- **Bold text**
+- *Italic text*
+- `Code snippets`
+- [Links](https://example.com)
+
+```javascript
+const code = 'blocks';
+```
+
+> Blockquotes are cool too!
+
+---
+
+Try typing some markdown!"
+                    >
+# Hello, Jounce! 🚀
+
+## What is Markdown?
+
+Markdown is a **lightweight markup language** for creating formatted text.
+
+### Features
+
+- Easy to write
+- Easy to read
+- Converts to HTML
+
+### Code Example
+
+```jounce
+let greeting = "Hello, World!";
+console.log(greeting);
+```
+
+### Formatting
+
+You can use:
+- **Bold text** with `**text**`
+- *Italic text* with `*text*`
+- `Inline code` with backticks
+
+### Links
+
+Visit [Jounce](https://github.com/jounce) for more!
+
+---
+
+> "Markdown is a simple way to format text that looks great everywhere."
+
+### Task List
+
+- [x] Create markdown parser
+- [x] Add syntax highlighting
+- [ ] Build live preview
+- [ ] Deploy to production
+
+**Try editing the markdown!** The preview updates as you type.
+                    </textarea>
+                </div>
+
+                <div class="preview-pane">
+                    <div class="pane-header">
+                        <h2>HTML Preview</h2>
+                        <span class="badge">Live</span>
+                    </div>
+                    <div class="markdown-preview">
+                        <h1>Hello, Jounce! 🚀</h1>
+                        <h2>What is Markdown?</h2>
+                        <p>Markdown is a <strong>lightweight markup language</strong> for creating formatted text.</p>
+
+                        <h3>Features</h3>
+                        <ul>
+                            <li>Easy to write</li>
+                            <li>Easy to read</li>
+                            <li>Converts to HTML</li>
+                        </ul>
+
+                        <h3>Code Example</h3>
+                        <pre><code class="language-jounce">let greeting = "Hello, World!";
+console.log(greeting);</code></pre>
+
+                        <h3>Formatting</h3>
+                        <p>You can use:</p>
+                        <ul>
+                            <li><strong>Bold text</strong> with <code>**text**</code></li>
+                            <li><em>Italic text</em> with <code>*text*</code></li>
+                            <li><code>Inline code</code> with backticks</li>
+                        </ul>
+
+                        <h3>Links</h3>
+                        <p>Visit <a href="https://github.com/jounce">Jounce</a> for more!</p>
+
+                        <hr />
+
+                        <blockquote>
+                            <p>"Markdown is a simple way to format text that looks great everywhere."</p>
+                        </blockquote>
+
+                        <h3>Task List</h3>
+                        <ul>
+                            <li>✓ Create markdown parser</li>
+                            <li>✓ Add syntax highlighting</li>
+                            <li>☐ Build live preview</li>
+                            <li>☐ Deploy to production</li>
+                        </ul>
+
+                        <p><strong>Try editing the markdown!</strong> The preview updates as you type.</p>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="info">
+                <p><strong>App 3: Markdown Previewer</strong></p>
+                <p>This demo shows static markdown rendering. Interactive preview with signal and computed coming soon!</p>
+                <p>Packages: jounce-markdown for parsing and jounce-sanitizer for XSS protection</p>
+            </footer>
+        </div>
+    );
+}
+
+// Entry point
+fn main() {
+    console.log("App 3: Markdown Previewer started!");
+    console.log("Features: Split-pane editor, markdown syntax reference");
+    console.log("Coming soon: Package integration for live markdown parsing!");
+
+    let app_html = App();
+    console.log("Markdown previewer component created successfully!");
+}
