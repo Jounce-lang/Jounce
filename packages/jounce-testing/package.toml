@@ -1,0 +1,28 @@
+[package]
+name = "jounce-testing"
+version = "0.1.0"
+description = "Comprehensive testing utilities - assertions, mocking, spies, fixtures, and benchmarking"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-testing"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "assert_tests"
+path = "tests/assert_tests.jnc"
+
+[[test]]
+name = "mock_tests"
+path = "tests/mock_tests.jnc"
+
+[features]
+default = ["assertions", "mocking", "benchmarking"]
+assertions = []
+mocking = []
+spying = []
+fixtures = []
+benchmarking = []

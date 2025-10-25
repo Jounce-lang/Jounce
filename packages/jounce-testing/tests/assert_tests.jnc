@@ -1,0 +1,125 @@
+// Tests for assertion utilities in jounce-testing
+use jounce_testing::{
+    assert_equals, assert_not_equals, assert_true, assert_false,
+    assert_null, assert_not_null, assert_contains, assert_not_contains,
+    assert_starts_with, assert_ends_with, assert_greater_than, assert_less_than,
+    assert_in_range, assert_array_length, assert_array_contains
+};
+
+#[test]
+fn test_assert_equals() {
+    assert_equals(5, 5, "Should be equal");
+    assert_equals("hello", "hello", "Strings should be equal");
+}
+
+#[test]
+fn test_assert_not_equals() {
+    assert_not_equals(5, 10, "Should not be equal");
+    assert_not_equals("hello", "world", "Strings should not be equal");
+}
+
+#[test]
+fn test_assert_true() {
+    assert_true(true, "Should be true");
+    assert_true(1 == 1, "Comparison should be true");
+}
+
+#[test]
+fn test_assert_false() {
+    assert_false(false, "Should be false");
+    assert_false(1 == 2, "Comparison should be false");
+}
+
+#[test]
+fn test_assert_null() {
+    let value: Option<string> = None;
+    assert_null(value, "Should be null");
+}
+
+#[test]
+fn test_assert_not_null() {
+    let value: Option<string> = Some("value");
+    assert_not_null(value, "Should not be null");
+}
+
+#[test]
+fn test_assert_contains() {
+    assert_contains("hello world", "world", "Should contain substring");
+    assert_contains("testing", "test", "Should contain prefix");
+}
+
+#[test]
+fn test_assert_not_contains() {
+    assert_not_contains("hello world", "goodbye", "Should not contain substring");
+    assert_not_contains("testing", "fail", "Should not contain word");
+}
+
+#[test]
+fn test_assert_starts_with() {
+    assert_starts_with("hello world", "hello", "Should start with prefix");
+    assert_starts_with("testing", "test", "Should start with test");
+}
+
+#[test]
+fn test_assert_ends_with() {
+    assert_ends_with("hello world", "world", "Should end with suffix");
+    assert_ends_with("testing", "ing", "Should end with ing");
+}
+
+#[test]
+fn test_assert_greater_than() {
+    assert_greater_than(10, 5, "10 should be greater than 5");
+    assert_greater_than(100, 99, "100 should be greater than 99");
+}
+
+#[test]
+fn test_assert_less_than() {
+    assert_less_than(5, 10, "5 should be less than 10");
+    assert_less_than(99, 100, "99 should be less than 100");
+}
+
+#[test]
+fn test_assert_in_range() {
+    assert_in_range(5, 1, 10, "5 should be in range 1-10");
+    assert_in_range(50, 0, 100, "50 should be in range 0-100");
+}
+
+#[test]
+fn test_assert_array_length() {
+    let arr = vec![1, 2, 3];
+    assert_array_length(arr, 3, "Array should have 3 elements");
+}
+
+#[test]
+fn test_assert_array_contains() {
+    let arr = vec!["a", "b", "c"];
+    assert_array_contains(arr, "b", "Array should contain 'b'");
+}
+
+#[test]
+fn test_assert_equals_numbers() {
+    assert_equals(0, 0, "Zero should equal zero");
+    assert_equals(-5, -5, "Negative numbers should be equal");
+    assert_equals(1000, 1000, "Large numbers should be equal");
+}
+
+#[test]
+fn test_assert_not_equals_numbers() {
+    assert_not_equals(0, 1, "0 should not equal 1");
+    assert_not_equals(-5, 5, "Negative should not equal positive");
+}
+
+#[test]
+fn test_assert_in_range_boundary() {
+    assert_in_range(1, 1, 10, "Lower boundary should be in range");
+    assert_in_range(10, 1, 10, "Upper boundary should be in range");
+}
+
+#[test]
+fn test_multiple_assertions() {
+    let value = "hello world";
+    assert_contains(value, "hello", "Should contain hello");
+    assert_contains(value, "world", "Should contain world");
+    assert_starts_with(value, "hello", "Should start with hello");
+    assert_ends_with(value, "world", "Should end with world");
+}

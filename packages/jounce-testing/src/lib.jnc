@@ -1,0 +1,616 @@
+// jounce-testing - Comprehensive testing utilities for Jounce
+// Provides assertions, mocking, fixtures, spies, and benchmarking
+
+// ============================================================================
+// Assertion Utilities
+// ============================================================================
+
+pub struct AssertionError {
+    pub message: string,
+    pub expected: string,
+    pub actual: string,
+}
+
+impl AssertionError {
+    pub fn new(message: string, expected: string, actual: string) -> AssertionError {
+        return AssertionError {
+            message: message,
+            expected: expected,
+            actual: actual,
+        };
+    }
+
+    pub fn to_string(self) -> string {
+        return self.message + "\nExpected: " + self.expected + "\nActual: " + self.actual;
+    }
+}
+
+// Extended assertions
+pub fn assert_equals<T>(actual: T, expected: T, message: string) {
+    if actual != expected {
+        panic(message);
+    }
+}
+
+pub fn assert_not_equals<T>(actual: T, expected: T, message: string) {
+    if actual == expected {
+        panic(message);
+    }
+}
+
+pub fn assert_true(value: bool, message: string) {
+    if !value {
+        panic(message);
+    }
+}
+
+pub fn assert_false(value: bool, message: string) {
+    if value {
+        panic(message);
+    }
+}
+
+pub fn assert_null<T>(value: Option<T>, message: string) {
+    if value.is_some() {
+        panic(message);
+    }
+}
+
+pub fn assert_not_null<T>(value: Option<T>, message: string) {
+    if value.is_none() {
+        panic(message);
+    }
+}
+
+pub fn assert_contains(haystack: string, needle: string, message: string) {
+    if !haystack.contains(needle) {
+        panic(message);
+    }
+}
+
+pub fn assert_not_contains(haystack: string, needle: string, message: string) {
+    if haystack.contains(needle) {
+        panic(message);
+    }
+}
+
+pub fn assert_starts_with(text: string, prefix: string, message: string) {
+    if !text.starts_with(prefix) {
+        panic(message);
+    }
+}
+
+pub fn assert_ends_with(text: string, suffix: string, message: string) {
+    if !text.ends_with(suffix) {
+        panic(message);
+    }
+}
+
+pub fn assert_greater_than(actual: int, expected: int, message: string) {
+    if actual <= expected {
+        panic(message);
+    }
+}
+
+pub fn assert_less_than(actual: int, expected: int, message: string) {
+    if actual >= expected {
+        panic(message);
+    }
+}
+
+pub fn assert_in_range(value: int, min: int, max: int, message: string) {
+    if value < min || value > max {
+        panic(message);
+    }
+}
+
+pub fn assert_array_length<T>(array: Array<T>, expected_length: int, message: string) {
+    if array.len() != expected_length {
+        panic(message);
+    }
+}
+
+pub fn assert_array_contains<T>(array: Array<T>, item: T, message: string) {
+    if !array.contains(item) {
+        panic(message);
+    }
+}
+
+// ============================================================================
+// Mock Objects
+// ============================================================================
+
+pub struct MockCall {
+    pub method_name: string,
+    pub args: Array<string>,
+    pub timestamp: int,
+}
+
+impl MockCall {
+    pub fn new(method_name: string, args: Array<string>) -> MockCall {
+        return MockCall {
+            method_name: method_name,
+            args: args,
+            timestamp: get_current_time(),
+        };
+    }
+}
+
+pub struct Mock {
+    pub name: string,
+    pub calls: Array<MockCall>,
+    pub return_values: Map<string, string>,
+}
+
+impl Mock {
+    pub fn new(name: string) -> Mock {
+        return Mock {
+            name: name,
+            calls: Array::new(),
+            return_values: Map::new(),
+        };
+    }
+
+    pub fn when(mut self, method: string, return_value: string) -> Mock {
+        self.return_values.insert(method, return_value);
+        return self;
+    }
+
+    pub fn call(mut self, method: string, args: Array<string>) -> string {
+        let call = MockCall::new(method, args);
+        self.calls.push(call);
+
+        if self.return_values.contains_key(method) {
+            return self.return_values.get(method).unwrap();
+        }
+
+        return "";
+    }
+
+    pub fn was_called(self, method: string) -> bool {
+        for call in self.calls {
+            if call.method_name == method {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn call_count(self, method: string) -> int {
+        let mut count = 0;
+        for call in self.calls {
+            if call.method_name == method {
+                count = count + 1;
+            }
+        }
+        return count;
+    }
+
+    pub fn get_calls(self, method: string) -> Array<MockCall> {
+        let mut result = Array::new();
+        for call in self.calls {
+            if call.method_name == method {
+                result.push(call);
+            }
+        }
+        return result;
+    }
+
+    pub fn reset(mut self) -> Mock {
+        self.calls = Array::new();
+        return self;
+    }
+
+    pub fn verify_called_once(self, method: string) -> bool {
+        return self.call_count(method) == 1;
+    }
+
+    pub fn verify_called_with(self, method: string, expected_args: Array<string>) -> bool {
+        let calls = self.get_calls(method);
+        for call in calls {
+            if call.args == expected_args {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+// ============================================================================
+// Spy Objects
+// ============================================================================
+
+pub struct Spy {
+    pub target_name: string,
+    pub calls: Array<MockCall>,
+    pub original_function: Option<fn(Array<string>) -> string>,
+}
+
+impl Spy {
+    pub fn new(target_name: string) -> Spy {
+        return Spy {
+            target_name: target_name,
+            calls: Array::new(),
+            original_function: None,
+        };
+    }
+
+    pub fn on(mut self, func: fn(Array<string>) -> string) -> Spy {
+        self.original_function = Some(func);
+        return self;
+    }
+
+    pub fn call(mut self, args: Array<string>) -> string {
+        let call = MockCall::new(self.target_name, args);
+        self.calls.push(call);
+
+        if let Some(func) = self.original_function {
+            return func(args);
+        }
+
+        return "";
+    }
+
+    pub fn was_called(self) -> bool {
+        return self.calls.len() > 0;
+    }
+
+    pub fn call_count(self) -> int {
+        return self.calls.len();
+    }
+
+    pub fn reset(mut self) -> Spy {
+        self.calls = Array::new();
+        return self;
+    }
+}
+
+// ============================================================================
+// Test Fixtures
+// ============================================================================
+
+pub struct Fixture<T> {
+    pub name: string,
+    pub data: T,
+    pub setup: Option<fn() -> T>,
+    pub teardown: Option<fn(T)>,
+}
+
+impl<T> Fixture<T> {
+    pub fn new(name: string, data: T) -> Fixture<T> {
+        return Fixture {
+            name: name,
+            data: data,
+            setup: None,
+            teardown: None,
+        };
+    }
+
+    pub fn with_setup(mut self, setup_fn: fn() -> T) -> Fixture<T> {
+        self.setup = Some(setup_fn);
+        return self;
+    }
+
+    pub fn with_teardown(mut self, teardown_fn: fn(T)) -> Fixture<T> {
+        self.teardown = Some(teardown_fn);
+        return self;
+    }
+
+    pub fn before_each(self) -> T {
+        if let Some(setup) = self.setup {
+            return setup();
+        }
+        return self.data;
+    }
+
+    pub fn after_each(self, data: T) {
+        if let Some(teardown) = self.teardown {
+            teardown(data);
+        }
+    }
+}
+
+// ============================================================================
+// Test Suite
+// ============================================================================
+
+pub struct TestCase {
+    pub name: string,
+    pub passed: bool,
+    pub error: string,
+    pub duration: int,
+}
+
+impl TestCase {
+    pub fn new(name: string) -> TestCase {
+        return TestCase {
+            name: name,
+            passed: false,
+            error: "",
+            duration: 0,
+        };
+    }
+
+    pub fn pass(mut self, duration: int) -> TestCase {
+        self.passed = true;
+        self.duration = duration;
+        return self;
+    }
+
+    pub fn fail(mut self, error: string, duration: int) -> TestCase {
+        self.passed = false;
+        self.error = error;
+        self.duration = duration;
+        return self;
+    }
+}
+
+pub struct TestSuite {
+    pub name: string,
+    pub tests: Array<TestCase>,
+    pub before_all: Option<fn()>,
+    pub after_all: Option<fn()>,
+    pub before_each: Option<fn()>,
+    pub after_each: Option<fn()>,
+}
+
+impl TestSuite {
+    pub fn new(name: string) -> TestSuite {
+        return TestSuite {
+            name: name,
+            tests: Array::new(),
+            before_all: None,
+            after_all: None,
+            before_each: None,
+            after_each: None,
+        };
+    }
+
+    pub fn with_before_all(mut self, func: fn()) -> TestSuite {
+        self.before_all = Some(func);
+        return self;
+    }
+
+    pub fn with_after_all(mut self, func: fn()) -> TestSuite {
+        self.after_all = Some(func);
+        return self;
+    }
+
+    pub fn with_before_each(mut self, func: fn()) -> TestSuite {
+        self.before_each = Some(func);
+        return self;
+    }
+
+    pub fn with_after_each(mut self, func: fn()) -> TestSuite {
+        self.after_each = Some(func);
+        return self;
+    }
+
+    pub fn add_test(mut self, test: TestCase) -> TestSuite {
+        self.tests.push(test);
+        return self;
+    }
+
+    pub fn run(mut self) -> TestResult {
+        if let Some(before) = self.before_all {
+            before();
+        }
+
+        let mut passed = 0;
+        let mut failed = 0;
+
+        for test in self.tests {
+            if let Some(before_each) = self.before_each {
+                before_each();
+            }
+
+            if test.passed {
+                passed = passed + 1;
+            } else {
+                failed = failed + 1;
+            }
+
+            if let Some(after_each) = self.after_each {
+                after_each();
+            }
+        }
+
+        if let Some(after) = self.after_all {
+            after();
+        }
+
+        return TestResult {
+            suite_name: self.name,
+            total: self.tests.len(),
+            passed: passed,
+            failed: failed,
+            duration: 0,
+        };
+    }
+}
+
+pub struct TestResult {
+    pub suite_name: string,
+    pub total: int,
+    pub passed: int,
+    pub failed: int,
+    pub duration: int,
+}
+
+impl TestResult {
+    pub fn success_rate(self) -> float {
+        if self.total == 0 {
+            return 0.0;
+        }
+        return (self.passed as float) / (self.total as float);
+    }
+
+    pub fn all_passed(self) -> bool {
+        return self.failed == 0;
+    }
+}
+
+// ============================================================================
+// Benchmarking
+// ============================================================================
+
+pub struct Benchmark {
+    pub name: string,
+    pub iterations: int,
+    pub total_time: int,
+    pub min_time: int,
+    pub max_time: int,
+}
+
+impl Benchmark {
+    pub fn new(name: string, iterations: int) -> Benchmark {
+        return Benchmark {
+            name: name,
+            iterations: iterations,
+            total_time: 0,
+            min_time: 999999999,
+            max_time: 0,
+        };
+    }
+
+    pub fn run(mut self, func: fn()) -> Benchmark {
+        let mut i = 0;
+        while i < self.iterations {
+            let start = get_current_time();
+            func();
+            let end = get_current_time();
+            let duration = end - start;
+
+            self.total_time = self.total_time + duration;
+
+            if duration < self.min_time {
+                self.min_time = duration;
+            }
+
+            if duration > self.max_time {
+                self.max_time = duration;
+            }
+
+            i = i + 1;
+        }
+
+        return self;
+    }
+
+    pub fn average_time(self) -> float {
+        if self.iterations == 0 {
+            return 0.0;
+        }
+        return (self.total_time as float) / (self.iterations as float);
+    }
+
+    pub fn ops_per_second(self) -> float {
+        let avg = self.average_time();
+        if avg == 0.0 {
+            return 0.0;
+        }
+        return 1000.0 / avg;
+    }
+
+    pub fn report(self) -> string {
+        return "Benchmark: " + self.name + "\n" +
+               "Iterations: " + self.iterations.to_string() + "\n" +
+               "Average: " + self.average_time().to_string() + "ms\n" +
+               "Min: " + self.min_time.to_string() + "ms\n" +
+               "Max: " + self.max_time.to_string() + "ms\n" +
+               "Ops/sec: " + self.ops_per_second().to_string();
+    }
+}
+
+// ============================================================================
+// Test Doubles (Stubs)
+// ============================================================================
+
+pub struct Stub {
+    pub name: string,
+    pub return_value: string,
+}
+
+impl Stub {
+    pub fn new(name: string) -> Stub {
+        return Stub {
+            name: name,
+            return_value: "",
+        };
+    }
+
+    pub fn returns(mut self, value: string) -> Stub {
+        self.return_value = value;
+        return self;
+    }
+
+    pub fn call(self) -> string {
+        return self.return_value;
+    }
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+fn get_current_time() -> int {
+    // In production, would return actual timestamp
+    return 1729800000;
+}
+
+// ============================================================================
+// Test Runner
+// ============================================================================
+
+pub struct TestRunner {
+    pub suites: Array<TestSuite>,
+    pub verbose: bool,
+}
+
+impl TestRunner {
+    pub fn new() -> TestRunner {
+        return TestRunner {
+            suites: Array::new(),
+            verbose: false,
+        };
+    }
+
+    pub fn with_verbose(mut self, verbose: bool) -> TestRunner {
+        self.verbose = verbose;
+        return self;
+    }
+
+    pub fn add_suite(mut self, suite: TestSuite) -> TestRunner {
+        self.suites.push(suite);
+        return self;
+    }
+
+    pub fn run_all(mut self) -> Array<TestResult> {
+        let mut results = Array::new();
+
+        for suite in self.suites {
+            let result = suite.run();
+            results.push(result);
+        }
+
+        return results;
+    }
+
+    pub fn total_passed(self) -> int {
+        let mut total = 0;
+        let results = self.run_all();
+        for result in results {
+            total = total + result.passed;
+        }
+        return total;
+    }
+
+    pub fn total_failed(self) -> int {
+        let mut total = 0;
+        let results = self.run_all();
+        for result in results {
+            total = total + result.failed;
+        }
+        return total;
+    }
+}

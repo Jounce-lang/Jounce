@@ -1,0 +1,323 @@
+// Tests for mocking, spying, and test utilities in jounce-testing
+use jounce_testing::{
+    Mock, Spy, Fixture, TestSuite, TestCase, TestResult,
+    Benchmark, Stub, TestRunner
+};
+
+// ============================================================================
+// Mock Tests
+// ============================================================================
+
+#[test]
+fn test_mock_creation() {
+    let mock = Mock::new("UserService");
+
+    assert_eq!(mock.name, "UserService", "Mock name should match");
+    assert_eq!(mock.calls.len(), 0, "Should have no calls initially");
+}
+
+#[test]
+fn test_mock_when() {
+    let mut mock = Mock::new("API");
+    mock = mock.when("getUser", "user data");
+
+    assert!(mock.return_values.contains_key("getUser"), "Should have return value set");
+}
+
+#[test]
+fn test_mock_call() {
+    let mut mock = Mock::new("API");
+    mock = mock.when("getUser", "John Doe");
+
+    let result = mock.call("getUser", vec!["123"]);
+
+    assert_eq!(result, "John Doe", "Should return mocked value");
+}
+
+#[test]
+fn test_mock_was_called() {
+    let mut mock = Mock::new("API");
+    mock.call("getUser", vec!["123"]);
+
+    assert!(mock.was_called("getUser"), "Should register call");
+    assert!(!mock.was_called("deleteUser"), "Should not register uncalled method");
+}
+
+#[test]
+fn test_mock_call_count() {
+    let mut mock = Mock::new("API");
+    mock.call("getUser", vec!["1"]);
+    mock.call("getUser", vec!["2"]);
+    mock.call("deleteUser", vec!["3"]);
+
+    assert_eq!(mock.call_count("getUser"), 2, "Should count 2 calls");
+    assert_eq!(mock.call_count("deleteUser"), 1, "Should count 1 call");
+}
+
+#[test]
+fn test_mock_get_calls() {
+    let mut mock = Mock::new("API");
+    mock.call("getUser", vec!["123"]);
+    mock.call("getUser", vec!["456"]);
+
+    let calls = mock.get_calls("getUser");
+    assert_eq!(calls.len(), 2, "Should have 2 calls");
+}
+
+#[test]
+fn test_mock_reset() {
+    let mut mock = Mock::new("API");
+    mock.call("getUser", vec!["123"]);
+
+    mock = mock.reset();
+
+    assert_eq!(mock.calls.len(), 0, "Should have no calls after reset");
+}
+
+#[test]
+fn test_mock_verify_called_once() {
+    let mut mock = Mock::new("API");
+    mock.call("getUser", vec!["123"]);
+
+    assert!(mock.verify_called_once("getUser"), "Should be called once");
+}
+
+#[test]
+fn test_mock_verify_called_with() {
+    let mut mock = Mock::new("API");
+    mock.call("getUser", vec!["123", "admin"]);
+
+    assert!(mock.verify_called_with("getUser", vec!["123", "admin"]), "Should verify args");
+}
+
+// ============================================================================
+// Spy Tests
+// ============================================================================
+
+#[test]
+fn test_spy_creation() {
+    let spy = Spy::new("logger");
+
+    assert_eq!(spy.target_name, "logger", "Spy name should match");
+    assert_eq!(spy.calls.len(), 0, "Should have no calls initially");
+}
+
+#[test]
+fn test_spy_call() {
+    let mut spy = Spy::new("logger");
+    spy.call(vec!["info", "message"]);
+
+    assert!(spy.was_called(), "Should register call");
+}
+
+#[test]
+fn test_spy_call_count() {
+    let mut spy = Spy::new("logger");
+    spy.call(vec!["info"]);
+    spy.call(vec!["warn"]);
+    spy.call(vec!["error"]);
+
+    assert_eq!(spy.call_count(), 3, "Should count 3 calls");
+}
+
+#[test]
+fn test_spy_reset() {
+    let mut spy = Spy::new("logger");
+    spy.call(vec!["info"]);
+
+    spy = spy.reset();
+
+    assert!(!spy.was_called(), "Should not be called after reset");
+    assert_eq!(spy.call_count(), 0, "Count should be 0 after reset");
+}
+
+// ============================================================================
+// Fixture Tests
+// ============================================================================
+
+#[test]
+fn test_fixture_creation() {
+    let fixture = Fixture::new("user", "test_user");
+
+    assert_eq!(fixture.name, "user", "Fixture name should match");
+    assert_eq!(fixture.data, "test_user", "Fixture data should match");
+}
+
+#[test]
+fn test_fixture_before_each() {
+    let fixture = Fixture::new("counter", 0);
+
+    let data = fixture.before_each();
+    assert_eq!(data, 0, "Should return fixture data");
+}
+
+// ============================================================================
+// Test Suite Tests
+// ============================================================================
+
+#[test]
+fn test_test_case_creation() {
+    let test = TestCase::new("test_addition");
+
+    assert_eq!(test.name, "test_addition", "Test name should match");
+    assert!(!test.passed, "Should not be passed initially");
+}
+
+#[test]
+fn test_test_case_pass() {
+    let mut test = TestCase::new("test_addition");
+    test = test.pass(100);
+
+    assert!(test.passed, "Should be passed");
+    assert_eq!(test.duration, 100, "Duration should be set");
+}
+
+#[test]
+fn test_test_case_fail() {
+    let mut test = TestCase::new("test_division");
+    test = test.fail("Division by zero", 50);
+
+    assert!(!test.passed, "Should not be passed");
+    assert_eq!(test.error, "Division by zero", "Error should be set");
+    assert_eq!(test.duration, 50, "Duration should be set");
+}
+
+#[test]
+fn test_test_suite_creation() {
+    let suite = TestSuite::new("Math Tests");
+
+    assert_eq!(suite.name, "Math Tests", "Suite name should match");
+    assert_eq!(suite.tests.len(), 0, "Should have no tests initially");
+}
+
+#[test]
+fn test_test_suite_add_test() {
+    let mut suite = TestSuite::new("Math Tests");
+    let test = TestCase::new("test_add").pass(10);
+
+    suite = suite.add_test(test);
+
+    assert_eq!(suite.tests.len(), 1, "Should have 1 test");
+}
+
+#[test]
+fn test_test_result_success_rate() {
+    let result = TestResult {
+        suite_name: "Tests",
+        total: 10,
+        passed: 7,
+        failed: 3,
+        duration: 1000,
+    };
+
+    assert_eq!(result.success_rate(), 0.7, "Success rate should be 70%");
+}
+
+#[test]
+fn test_test_result_all_passed() {
+    let result = TestResult {
+        suite_name: "Tests",
+        total: 5,
+        passed: 5,
+        failed: 0,
+        duration: 500,
+    };
+
+    assert!(result.all_passed(), "All tests should pass");
+}
+
+// ============================================================================
+// Benchmark Tests
+// ============================================================================
+
+#[test]
+fn test_benchmark_creation() {
+    let bench = Benchmark::new("sort_array", 1000);
+
+    assert_eq!(bench.name, "sort_array", "Benchmark name should match");
+    assert_eq!(bench.iterations, 1000, "Iterations should match");
+}
+
+#[test]
+fn test_benchmark_average_time() {
+    let mut bench = Benchmark::new("test", 10);
+    bench.total_time = 1000;
+
+    assert_eq!(bench.average_time(), 100.0, "Average should be 100ms");
+}
+
+#[test]
+fn test_benchmark_ops_per_second() {
+    let mut bench = Benchmark::new("test", 10);
+    bench.total_time = 1000;
+
+    let ops = bench.ops_per_second();
+    assert!(ops > 0.0, "Should have positive ops/sec");
+}
+
+#[test]
+fn test_benchmark_report() {
+    let bench = Benchmark::new("test_function", 100);
+
+    let report = bench.report();
+    assert!(report.contains("test_function"), "Report should contain benchmark name");
+    assert!(report.contains("Iterations"), "Report should contain iterations");
+}
+
+// ============================================================================
+// Stub Tests
+// ============================================================================
+
+#[test]
+fn test_stub_creation() {
+    let stub = Stub::new("getUserName");
+
+    assert_eq!(stub.name, "getUserName", "Stub name should match");
+}
+
+#[test]
+fn test_stub_returns() {
+    let mut stub = Stub::new("getAge");
+    stub = stub.returns("25");
+
+    assert_eq!(stub.return_value, "25", "Return value should be set");
+}
+
+#[test]
+fn test_stub_call() {
+    let mut stub = Stub::new("getStatus");
+    stub = stub.returns("active");
+
+    let result = stub.call();
+    assert_eq!(result, "active", "Should return stubbed value");
+}
+
+// ============================================================================
+// Test Runner Tests
+// ============================================================================
+
+#[test]
+fn test_test_runner_creation() {
+    let runner = TestRunner::new();
+
+    assert_eq!(runner.suites.len(), 0, "Should have no suites initially");
+    assert!(!runner.verbose, "Should not be verbose by default");
+}
+
+#[test]
+fn test_test_runner_with_verbose() {
+    let mut runner = TestRunner::new();
+    runner = runner.with_verbose(true);
+
+    assert!(runner.verbose, "Should be verbose");
+}
+
+#[test]
+fn test_test_runner_add_suite() {
+    let mut runner = TestRunner::new();
+    let suite = TestSuite::new("Math Tests");
+
+    runner = runner.add_suite(suite);
+
+    assert_eq!(runner.suites.len(), 1, "Should have 1 suite");
+}
