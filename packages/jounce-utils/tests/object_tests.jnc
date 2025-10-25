@@ -1,0 +1,84 @@
+// Tests for object utilities in jounce-utils
+use jounce_utils::{merge, clone, pick, omit, keys, values, entries};
+
+#[test]
+fn test_merge() {
+    let obj1 = Map::from([("a", 1), ("b", 2)]);
+    let obj2 = Map::from([("b", 3), ("c", 4)]);
+
+    let result = merge(obj1, obj2);
+
+    assert_eq!(result.len(), 3, "Should have 3 keys");
+    assert_eq!(result.get(&"a"), 1, "Should have key a with value 1");
+    assert_eq!(result.get(&"b"), 3, "Should overwrite b with value 3");
+    assert_eq!(result.get(&"c"), 4, "Should have key c with value 4");
+}
+
+#[test]
+fn test_clone() {
+    let obj = Map::from([("x", 10), ("y", 20)]);
+    let cloned = clone(obj);
+
+    assert_eq!(cloned.len(), 2, "Should have same length");
+    assert_eq!(cloned.get(&"x"), 10, "Should have same values");
+    assert_eq!(cloned.get(&"y"), 20, "Should have same values");
+}
+
+#[test]
+fn test_pick() {
+    let obj = Map::from([("a", 1), ("b", 2), ("c", 3), ("d", 4)]);
+    let result = pick(obj, vec!["a", "c"]);
+
+    assert_eq!(result.len(), 2, "Should have 2 keys");
+    assert!(result.contains_key(&"a"), "Should contain a");
+    assert!(result.contains_key(&"c"), "Should contain c");
+    assert!(!result.contains_key(&"b"), "Should not contain b");
+}
+
+#[test]
+fn test_omit() {
+    let obj = Map::from([("a", 1), ("b", 2), ("c", 3)]);
+    let result = omit(obj, vec!["b"]);
+
+    assert_eq!(result.len(), 2, "Should have 2 keys");
+    assert!(result.contains_key(&"a"), "Should contain a");
+    assert!(result.contains_key(&"c"), "Should contain c");
+    assert!(!result.contains_key(&"b"), "Should not contain b");
+}
+
+#[test]
+fn test_keys() {
+    let obj = Map::from([("x", 1), ("y", 2), ("z", 3)]);
+    let result = keys(obj);
+
+    assert_eq!(result.len(), 3, "Should have 3 keys");
+    assert!(result.contains(&"x"), "Should contain x");
+    assert!(result.contains(&"y"), "Should contain y");
+    assert!(result.contains(&"z"), "Should contain z");
+}
+
+#[test]
+fn test_values() {
+    let obj = Map::from([("a", 10), ("b", 20), ("c", 30)]);
+    let result = values(obj);
+
+    assert_eq!(result.len(), 3, "Should have 3 values");
+    assert!(result.contains(&10), "Should contain 10");
+    assert!(result.contains(&20), "Should contain 20");
+    assert!(result.contains(&30), "Should contain 30");
+}
+
+#[test]
+fn test_entries() {
+    let obj = Map::from([("a", 1), ("b", 2)]);
+    let result = entries(obj);
+
+    assert_eq!(result.len(), 2, "Should have 2 entries");
+
+    // Check that entries contain correct pairs
+    let has_a = result.iter().any(|(k, v)| k == "a" && v == 1);
+    let has_b = result.iter().any(|(k, v)| k == "b" && v == 2);
+
+    assert!(has_a, "Should have entry (a, 1)");
+    assert!(has_b, "Should have entry (b, 2)");
+}

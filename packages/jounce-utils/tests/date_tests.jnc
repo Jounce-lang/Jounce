@@ -1,0 +1,155 @@
+// Tests for date utilities in jounce-utils
+use jounce_utils::{
+    now, format_date, parse_date, diff_days, add_days, subtract_days,
+    is_before, is_after, DateTime
+};
+
+#[test]
+fn test_now() {
+    let current = now();
+
+    assert!(current.year > 2000, "Year should be reasonable");
+    assert!(current.month >= 1 && current.month <= 12, "Month should be 1-12");
+    assert!(current.day >= 1 && current.day <= 31, "Day should be 1-31");
+}
+
+#[test]
+fn test_format_date() {
+    let dt = DateTime {
+        year: 2025,
+        month: 10,
+        day: 24,
+        hour: 14,
+        minute: 30,
+        second: 45,
+    };
+
+    // Format as YYYY-MM-DD
+    let formatted1 = format_date(dt, "YYYY-MM-DD");
+    assert_eq!(formatted1, "2025-10-24", "Should format as YYYY-MM-DD");
+
+    // Format as MM/DD/YYYY
+    let formatted2 = format_date(dt, "MM/DD/YYYY");
+    assert_eq!(formatted2, "10/24/2025", "Should format as MM/DD/YYYY");
+
+    // Format with time
+    let formatted3 = format_date(dt, "YYYY-MM-DD HH:mm:ss");
+    assert_eq!(formatted3, "2025-10-24 14:30:45", "Should include time");
+}
+
+#[test]
+fn test_parse_date() {
+    let parsed = parse_date("2025-10-24", "YYYY-MM-DD");
+
+    assert_eq!(parsed.year, 2025, "Should parse year");
+    assert_eq!(parsed.month, 10, "Should parse month");
+    assert_eq!(parsed.day, 24, "Should parse day");
+}
+
+#[test]
+fn test_add_days() {
+    let dt = DateTime {
+        year: 2025,
+        month: 10,
+        day: 24,
+        hour: 12,
+        minute: 0,
+        second: 0,
+    };
+
+    let tomorrow = add_days(dt, 1);
+
+    assert_eq!(tomorrow.day, 25, "Should add one day");
+    assert_eq!(tomorrow.month, 10, "Month should stay same");
+    assert_eq!(tomorrow.year, 2025, "Year should stay same");
+}
+
+#[test]
+fn test_subtract_days() {
+    let dt = DateTime {
+        year: 2025,
+        month: 10,
+        day: 24,
+        hour: 12,
+        minute: 0,
+        second: 0,
+    };
+
+    let yesterday = subtract_days(dt, 1);
+
+    assert_eq!(yesterday.day, 23, "Should subtract one day");
+    assert_eq!(yesterday.month, 10, "Month should stay same");
+}
+
+#[test]
+fn test_diff_days() {
+    let dt1 = DateTime {
+        year: 2025,
+        month: 10,
+        day: 24,
+        hour: 12,
+        minute: 0,
+        second: 0,
+    };
+
+    let dt2 = DateTime {
+        year: 2025,
+        month: 10,
+        day: 26,
+        hour: 12,
+        minute: 0,
+        second: 0,
+    };
+
+    let diff = diff_days(dt1, dt2);
+
+    assert_eq!(diff, 2, "Should be 2 days difference");
+}
+
+#[test]
+fn test_is_before() {
+    let dt1 = DateTime {
+        year: 2025,
+        month: 10,
+        day: 24,
+        hour: 12,
+        minute: 0,
+        second: 0,
+    };
+
+    let dt2 = DateTime {
+        year: 2025,
+        month: 10,
+        day: 26,
+        hour: 12,
+        minute: 0,
+        second: 0,
+    };
+
+    assert!(is_before(dt1, dt2), "dt1 should be before dt2");
+    assert!(!is_before(dt2, dt1), "dt2 should not be before dt1");
+}
+
+#[test]
+fn test_is_after() {
+    let dt1 = DateTime {
+        year: 2025,
+        month: 10,
+        day: 24,
+        hour: 12,
+        minute: 0,
+        second: 0,
+    };
+
+    let dt2 = DateTime {
+        year: 2025,
+        month: 10,
+        day: 26,
+        hour: 12,
+        minute: 0,
+        second: 0,
+    };
+
+    assert!(is_after(dt2, dt1), "dt2 should be after dt1");
+    assert!(!is_after(dt1, dt2), "dt1 should not be after dt2");
+}

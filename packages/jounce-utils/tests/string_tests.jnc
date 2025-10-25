@@ -1,0 +1,110 @@
+// Tests for string utilities in jounce-utils
+use jounce_utils::{
+    slugify, truncate, capitalize, camel_case, snake_case,
+    kebab_case, trim, pad_start, pad_end, repeat
+};
+
+#[test]
+fn test_slugify() {
+    // Basic slugify
+    assert_eq!(slugify("Hello World"), "hello-world", "Should convert spaces to dashes");
+
+    // Remove special characters
+    assert_eq!(slugify("Hello, World!"), "hello-world", "Should remove punctuation");
+
+    // Multiple spaces
+    assert_eq!(slugify("Hello   World"), "hello---world", "Should convert all spaces");
+}
+
+#[test]
+fn test_truncate() {
+    // String shorter than max
+    assert_eq!(truncate("Hello", 10), "Hello", "Should not truncate short strings");
+
+    // String longer than max
+    assert_eq!(truncate("Hello World", 8), "Hello...", "Should truncate with ellipsis");
+
+    // Exact length
+    assert_eq!(truncate("Hello", 5), "Hello", "Should not truncate exact length");
+}
+
+#[test]
+fn test_capitalize() {
+    // Lowercase first letter
+    assert_eq!(capitalize("hello"), "Hello", "Should capitalize first letter");
+
+    // Already capitalized
+    assert_eq!(capitalize("Hello"), "Hello", "Should keep capitalized");
+
+    // Empty string
+    assert_eq!(capitalize(""), "", "Should handle empty string");
+
+    // Single character
+    assert_eq!(capitalize("h"), "H", "Should capitalize single char");
+}
+
+#[test]
+fn test_camel_case() {
+    // Snake case to camel case
+    assert_eq!(camel_case("hello_world"), "helloWorld", "Should convert snake to camel");
+
+    // Multiple underscores
+    assert_eq!(camel_case("foo_bar_baz"), "fooBarBaz", "Should handle multiple words");
+
+    // Already camel case
+    assert_eq!(camel_case("helloWorld"), "helloworld", "Should lowercase first part");
+}
+
+#[test]
+fn test_snake_case() {
+    // Pascal case to snake case
+    assert_eq!(snake_case("HelloWorld"), "hello_world", "Should convert pascal to snake");
+
+    // Camel case to snake case
+    assert_eq!(snake_case("helloWorld"), "hello_world", "Should convert camel to snake");
+
+    // Multiple capitals
+    assert_eq!(snake_case("FooBarBaz"), "foo_bar_baz", "Should handle multiple caps");
+}
+
+#[test]
+fn test_kebab_case() {
+    // Pascal case to kebab case
+    assert_eq!(kebab_case("HelloWorld"), "hello-world", "Should convert to kebab");
+
+    // Camel case to kebab case
+    assert_eq!(kebab_case("helloWorld"), "hello-world", "Should convert camel to kebab");
+}
+
+#[test]
+fn test_pad_start() {
+    // Pad with zeros
+    assert_eq!(pad_start("5", 3, "0"), "005", "Should pad with zeros");
+
+    // Already long enough
+    assert_eq!(pad_start("123", 2, "0"), "123", "Should not pad if long enough");
+
+    // Pad with spaces
+    assert_eq!(pad_start("hi", 5, " "), "   hi", "Should pad with spaces");
+}
+
+#[test]
+fn test_pad_end() {
+    // Pad with zeros
+    assert_eq!(pad_end("5", 3, "0"), "500", "Should pad at end");
+
+    // Already long enough
+    assert_eq!(pad_end("123", 2, "0"), "123", "Should not pad if long enough");
+}
+
+#[test]
+fn test_repeat() {
+    // Repeat string
+    assert_eq!(repeat("ha", 3), "hahaha", "Should repeat string");
+
+    // Repeat once
+    assert_eq!(repeat("hi", 1), "hi", "Should repeat once");
+
+    // Repeat zero times
+    assert_eq!(repeat("hi", 0), "", "Should return empty for zero");
+}

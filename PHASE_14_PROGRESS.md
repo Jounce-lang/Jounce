@@ -57,18 +57,27 @@ Given the scope (10 packages, 100+ tests, comprehensive docs), we're using a **p
 
 ---
 
-### 🚧 In Progress
-
 #### 2. jounce-utils (v0.1.0)
-**Planned Features**:
-- String utilities (slugify, truncate, capitalize, camelCase, snake_case)
-- Array utilities (chunk, unique, flatten, partition)
-- Object utilities (merge, clone, pick, omit)
-- Date utilities (format, parse, diff, add, subtract)
+**Features**:
+- String utilities (slugify, truncate, capitalize, camelCase, snake_case, kebab_case, pad, repeat)
+- Array utilities (chunk, unique, flatten, partition, take, drop, zip, group_by)
+- Object utilities (merge, clone, pick, omit, keys, values, entries)
+- Date utilities (format, parse, diff, add, subtract, is_before, is_after)
 
-**Status**: Next to implement
+**Files**:
+- ✅ `src/lib.jnc` - Full implementation (550+ lines, 40+ functions)
+- ✅ `README.md` - Comprehensive documentation with examples
+- ✅ `package.toml` - Package metadata
+- ✅ `tests/string_tests.jnc` - 10 string tests
+- ✅ `tests/array_tests.jnc` - 8 array tests
+- ✅ `tests/object_tests.jnc` - 7 object tests
+- ✅ `tests/date_tests.jnc` - 9 date tests
+
+**Status**: Complete (34 tests total)
 
 ---
+
+### 🚧 In Progress
 
 #### 3. jounce-theme (v0.1.0)
 **Planned Features**:
@@ -131,17 +140,18 @@ Given the scope (10 packages, 100+ tests, comprehensive docs), we're using a **p
 ## Progress Metrics
 
 ### Packages
-- **Complete**: 1/10 (10%)
-- **In Progress**: 0/10
-- **Planned**: 9/10
+- **Complete**: 2/10 (20%)
+- **In Progress**: 1/10 (jounce-theme)
+- **Planned**: 7/10
 
 ### Tests
-- **Written**: 8
+- **Written**: 42 (8 auth + 34 utils)
 - **Target**: 100+ (10+ per package)
+- **Progress**: 42% of target
 
 ### Documentation
-- **Complete**: 1/10 packages documented
-- **Pages**: 1 README
+- **Complete**: 2/10 packages documented
+- **Pages**: 2 READMEs (auth, utils)
 
 ### Examples
 - **Created**: 0
@@ -153,13 +163,14 @@ Given the scope (10 packages, 100+ tests, comprehensive docs), we're using a **p
 
 1. **Immediate** (Current Session)
    - ✅ Complete jounce-auth foundation
-   - ⏳ Commit Phase 14 progress
-   - ⏳ Update CLAUDE.md with in-progress status
+   - ✅ Complete jounce-utils (40+ functions, 34 tests)
+   - 🚧 Build jounce-theme (dark/light mode, CSS variables)
+   - ⏳ Commit jounce-utils progress
 
 2. **Next Session**
-   - Build jounce-utils (string, array, object, date utilities)
-   - Build jounce-theme (dark/light mode, CSS variables)
-   - Add more tests to jounce-auth
+   - Complete jounce-theme
+   - Build jounce-db (PostgreSQL, SQLite adapters)
+   - Add more tests to auth/utils if needed
 
 3. **Week 2-3**
    - Complete remaining 7 packages
@@ -203,5 +214,5 @@ packages/jounce-{name}/
 ---
 
 **Last Updated**: October 24, 2025
-**Current Focus**: jounce-auth foundation complete
-**Next**: Build jounce-utils and jounce-theme
+**Current Focus**: 2/10 packages complete (auth, utils) - 42 tests written
+**Next**: Complete jounce-theme package

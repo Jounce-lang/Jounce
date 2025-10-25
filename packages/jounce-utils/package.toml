@@ -1,0 +1,36 @@
+[package]
+name = "jounce-utils"
+version = "0.1.0"
+description = "Essential utility functions for Jounce applications"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-utils"
+
+[dependencies]
+# No external dependencies
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "string_tests"
+path = "tests/string_tests.jnc"
+
+[[test]]
+name = "array_tests"
+path = "tests/array_tests.jnc"
+
+[[test]]
+name = "object_tests"
+path = "tests/object_tests.jnc"
+
+[[test]]
+name = "date_tests"
+path = "tests/date_tests.jnc"
+
+[features]
+default = ["string", "array", "object", "date"]
+string = []
+array = []
+object = []
+date = []

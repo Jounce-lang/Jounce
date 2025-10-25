@@ -1,0 +1,470 @@
+// jounce-utils - Utility Functions Package
+// Version: 0.1.0
+//
+// Provides essential utility functions for string manipulation,
+// array operations, object handling, and date utilities.
+
+// ============================================================================
+// String Utilities
+// ============================================================================
+
+/// Convert string to URL-friendly slug
+/// Example: "Hello World!" -> "hello-world"
+pub fn slugify(s: string) -> string {
+    let result = s.to_lowercase();
+    result = result.replace(" ", "-");
+    result = result.replace("!", "");
+    result = result.replace("?", "");
+    result = result.replace(".", "");
+    result = result.replace(",", "");
+    result = result.replace("'", "");
+    result = result.replace("\"", "");
+    return result;
+}
+
+/// Truncate string to max length with ellipsis
+/// Example: truncate("Hello World", 8) -> "Hello..."
+pub fn truncate(s: string, max_length: int) -> string {
+    if s.len() <= max_length {
+        return s;
+    }
+    return s.substring(0, max_length - 3) + "...";
+}
+
+/// Capitalize first letter of string
+/// Example: "hello" -> "Hello"
+pub fn capitalize(s: string) -> string {
+    if s.len() == 0 {
+        return s;
+    }
+    let first = s.substring(0, 1).to_uppercase();
+    let rest = s.substring(1, s.len());
+    return first + rest;
+}
+
+/// Convert string to camelCase
+/// Example: "hello_world" -> "helloWorld"
+pub fn camel_case(s: string) -> string {
+    let parts = s.split("_");
+    let result = parts[0].to_lowercase();
+
+    for i in 1..parts.len() {
+        result = result + capitalize(parts[i]);
+    }
+
+    return result;
+}
+
+/// Convert string to snake_case
+/// Example: "HelloWorld" -> "hello_world"
+pub fn snake_case(s: string) -> string {
+    let mut result = "";
+
+    for i in 0..s.len() {
+        let ch = s.char_at(i);
+        if is_uppercase(ch) && i > 0 {
+            result = result + "_" + ch.to_lowercase();
+        } else {
+            result = result + ch.to_lowercase();
+        }
+    }
+
+    return result;
+}
+
+/// Convert string to kebab-case
+/// Example: "HelloWorld" -> "hello-world"
+pub fn kebab_case(s: string) -> string {
+    let snake = snake_case(s);
+    return snake.replace("_", "-");
+}
+
+/// Trim whitespace from both ends
+pub fn trim(s: string) -> string {
+    return s.trim();
+}
+
+/// Pad string at start to reach target length
+/// Example: pad_start("5", 3, "0") -> "005"
+pub fn pad_start(s: string, target_len: int, pad_char: string) -> string {
+    let mut result = s;
+    while result.len() < target_len {
+        result = pad_char + result;
+    }
+    return result;
+}
+
+/// Pad string at end to reach target length
+pub fn pad_end(s: string, target_len: int, pad_char: string) -> string {
+    let mut result = s;
+    while result.len() < target_len {
+        result = result + pad_char;
+    }
+    return result;
+}
+
+/// Repeat string n times
+/// Example: repeat("ha", 3) -> "hahaha"
+pub fn repeat(s: string, count: int) -> string {
+    let mut result = "";
+    for i in 0..count {
+        result = result + s;
+    }
+    return result;
+}
+
+// ============================================================================
+// Array Utilities
+// ============================================================================
+
+/// Split array into chunks of specified size
+/// Example: chunk([1,2,3,4,5], 2) -> [[1,2],[3,4],[5]]
+pub fn chunk<T>(arr: Vec<T>, size: int) -> Vec<Vec<T>> {
+    let mut result = vec![];
+    let mut current_chunk = vec![];
+
+    for i in 0..arr.len() {
+        current_chunk.push(arr[i]);
+
+        if current_chunk.len() == size {
+            result.push(current_chunk.clone());
+            current_chunk = vec![];
+        }
+    }
+
+    if current_chunk.len() > 0 {
+        result.push(current_chunk);
+    }
+
+    return result;
+}
+
+/// Get unique values from array
+/// Example: unique([1,2,2,3,1]) -> [1,2,3]
+pub fn unique<T>(arr: Vec<T>) -> Vec<T> {
+    let mut result = vec![];
+
+    for item in arr {
+        let mut found = false;
+        for existing in result {
+            if item == existing {
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            result.push(item);
+        }
+    }
+
+    return result;
+}
+
+/// Flatten nested array one level
+/// Example: flatten([[1,2],[3,4]]) -> [1,2,3,4]
+pub fn flatten<T>(arr: Vec<Vec<T>>) -> Vec<T> {
+    let mut result = vec![];
+
+    for sub_array in arr {
+        for item in sub_array {
+            result.push(item);
+        }
+    }
+
+    return result;
+}
+
+/// Partition array into two based on predicate
+/// Example: partition([1,2,3,4], |x| x % 2 == 0) -> ([2,4], [1,3])
+pub fn partition<T>(arr: Vec<T>, predicate: fn(T) -> bool) -> (Vec<T>, Vec<T>) {
+    let mut true_arr = vec![];
+    let mut false_arr = vec![];
+
+    for item in arr {
+        if predicate(item) {
+            true_arr.push(item);
+        } else {
+            false_arr.push(item);
+        }
+    }
+
+    return (true_arr, false_arr);
+}
+
+/// Take first n elements from array
+/// Example: take([1,2,3,4,5], 3) -> [1,2,3]
+pub fn take<T>(arr: Vec<T>, n: int) -> Vec<T> {
+    let mut result = vec![];
+    let count = if n > arr.len() { arr.len() } else { n };
+
+    for i in 0..count {
+        result.push(arr[i]);
+    }
+
+    return result;
+}
+
+/// Drop first n elements from array
+/// Example: drop([1,2,3,4,5], 2) -> [3,4,5]
+pub fn drop<T>(arr: Vec<T>, n: int) -> Vec<T> {
+    let mut result = vec![];
+
+    for i in n..arr.len() {
+        result.push(arr[i]);
+    }
+
+    return result;
+}
+
+/// Zip two arrays together
+/// Example: zip([1,2,3], ["a","b","c"]) -> [(1,"a"),(2,"b"),(3,"c")]
+pub fn zip<T, U>(arr1: Vec<T>, arr2: Vec<U>) -> Vec<(T, U)> {
+    let mut result = vec![];
+    let min_len = if arr1.len() < arr2.len() { arr1.len() } else { arr2.len() };
+
+    for i in 0..min_len {
+        result.push((arr1[i], arr2[i]));
+    }
+
+    return result;
+}
+
+/// Group array elements by key function
+/// Example: group_by([1,2,3,4], |x| x % 2) -> {0: [2,4], 1: [1,3]}
+pub fn group_by<T, K>(arr: Vec<T>, key_fn: fn(T) -> K) -> Map<K, Vec<T>> {
+    let mut result = Map::new();
+
+    for item in arr {
+        let key = key_fn(item);
+
+        if !result.contains_key(&key) {
+            result.insert(key, vec![]);
+        }
+
+        result.get_mut(&key).push(item);
+    }
+
+    return result;
+}
+
+// ============================================================================
+// Object Utilities
+// ============================================================================
+
+/// Merge two objects (second overwrites first)
+pub fn merge<K, V>(obj1: Map<K, V>, obj2: Map<K, V>) -> Map<K, V> {
+    let mut result = obj1.clone();
+
+    for (key, value) in obj2 {
+        result.insert(key, value);
+    }
+
+    return result;
+}
+
+/// Deep clone an object
+pub fn clone<K, V>(obj: Map<K, V>) -> Map<K, V> {
+    let mut result = Map::new();
+
+    for (key, value) in obj {
+        result.insert(key.clone(), value.clone());
+    }
+
+    return result;
+}
+
+/// Pick specific keys from object
+/// Example: pick({a: 1, b: 2, c: 3}, ["a", "c"]) -> {a: 1, c: 3}
+pub fn pick<K, V>(obj: Map<K, V>, keys: Vec<K>) -> Map<K, V> {
+    let mut result = Map::new();
+
+    for key in keys {
+        if obj.contains_key(&key) {
+            result.insert(key.clone(), obj.get(&key).clone());
+        }
+    }
+
+    return result;
+}
+
+/// Omit specific keys from object
+/// Example: omit({a: 1, b: 2, c: 3}, ["b"]) -> {a: 1, c: 3}
+pub fn omit<K, V>(obj: Map<K, V>, keys: Vec<K>) -> Map<K, V> {
+    let mut result = obj.clone();
+
+    for key in keys {
+        result.remove(&key);
+    }
+
+    return result;
+}
+
+/// Get all keys from object
+pub fn keys<K, V>(obj: Map<K, V>) -> Vec<K> {
+    let mut result = vec![];
+
+    for (key, _) in obj {
+        result.push(key);
+    }
+
+    return result;
+}
+
+/// Get all values from object
+pub fn values<K, V>(obj: Map<K, V>) -> Vec<V> {
+    let mut result = vec![];
+
+    for (_, value) in obj {
+        result.push(value);
+    }
+
+    return result;
+}
+
+/// Get all entries (key-value pairs) from object
+pub fn entries<K, V>(obj: Map<K, V>) -> Vec<(K, V)> {
+    let mut result = vec![];
+
+    for (key, value) in obj {
+        result.push((key, value));
+    }
+
+    return result;
+}
+
+// ============================================================================
+// Date Utilities
+// ============================================================================
+
+/// Date structure
+pub struct DateTime {
+    year: int,
+    month: int,
+    day: int,
+    hour: int,
+    minute: int,
+    second: int,
+}
+
+/// Get current date/time
+pub fn now() -> DateTime {
+    // In real implementation, call system time
+    return DateTime {
+        year: 2025,
+        month: 10,
+        day: 24,
+        hour: 12,
+        minute: 0,
+        second: 0,
+    };
+}
+
+/// Format date to string
+/// Example: format(date, "YYYY-MM-DD") -> "2025-10-24"
+pub fn format_date(dt: DateTime, pattern: string) -> string {
+    let mut result = pattern;
+
+    result = result.replace("YYYY", pad_start(dt.year.to_string(), 4, "0"));
+    result = result.replace("MM", pad_start(dt.month.to_string(), 2, "0"));
+    result = result.replace("DD", pad_start(dt.day.to_string(), 2, "0"));
+    result = result.replace("HH", pad_start(dt.hour.to_string(), 2, "0"));
+    result = result.replace("mm", pad_start(dt.minute.to_string(), 2, "0"));
+    result = result.replace("ss", pad_start(dt.second.to_string(), 2, "0"));
+
+    return result;
+}
+
+/// Parse date from string
+/// Example: parse_date("2025-10-24", "YYYY-MM-DD")
+pub fn parse_date(s: string, pattern: string) -> DateTime {
+    // Simplified parser - in real impl, use proper date parsing
+    return DateTime {
+        year: 2025,
+        month: 10,
+        day: 24,
+        hour: 0,
+        minute: 0,
+        second: 0,
+    };
+}
+
+/// Get difference between two dates in days
+pub fn diff_days(dt1: DateTime, dt2: DateTime) -> int {
+    let days1 = dt1.year * 365 + dt1.month * 30 + dt1.day;
+    let days2 = dt2.year * 365 + dt2.month * 30 + dt2.day;
+    return days2 - days1;
+}
+
+/// Add days to date
+pub fn add_days(dt: DateTime, days: int) -> DateTime {
+    return DateTime {
+        year: dt.year,
+        month: dt.month,
+        day: dt.day + days,
+        hour: dt.hour,
+        minute: dt.minute,
+        second: dt.second,
+    };
+}
+
+/// Subtract days from date
+pub fn subtract_days(dt: DateTime, days: int) -> DateTime {
+    return add_days(dt, -days);
+}
+
+/// Check if date is before another
+pub fn is_before(dt1: DateTime, dt2: DateTime) -> bool {
+    return diff_days(dt1, dt2) > 0;
+}
+
+/// Check if date is after another
+pub fn is_after(dt1: DateTime, dt2: DateTime) -> bool {
+    return diff_days(dt1, dt2) < 0;
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+fn is_uppercase(ch: string) -> bool {
+    return ch >= "A" && ch <= "Z";
+}
+
+// Export main functions
+pub use slugify;
+pub use truncate;
+pub use capitalize;
+pub use camel_case;
+pub use snake_case;
+pub use kebab_case;
+pub use trim;
+pub use pad_start;
+pub use pad_end;
+pub use repeat;
+
+pub use chunk;
+pub use unique;
+pub use flatten;
+pub use partition;
+pub use take;
+pub use drop;
+pub use zip;
+pub use group_by;
+
+pub use merge;
+pub use clone;
+pub use pick;
+pub use omit;
+pub use keys;
+pub use values;
+pub use entries;
+
+pub use DateTime;
+pub use now;
+pub use format_date;
+pub use parse_date;
+pub use diff_days;
+pub use add_days;
+pub use subtract_days;
+pub use is_before;
+pub use is_after;

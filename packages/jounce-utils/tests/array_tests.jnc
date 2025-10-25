@@ -1,0 +1,96 @@
+// Tests for array utilities in jounce-utils
+use jounce_utils::{
+    chunk, unique, flatten, partition, take, drop, zip, group_by
+};
+
+#[test]
+fn test_chunk() {
+    // Basic chunking
+    let result = chunk(vec![1, 2, 3, 4, 5], 2);
+    assert_eq!(result.len(), 3, "Should have 3 chunks");
+    assert_eq!(result[0].len(), 2, "First chunk should have 2 items");
+    assert_eq!(result[2].len(), 1, "Last chunk should have 1 item");
+
+    // Exact division
+    let result2 = chunk(vec![1, 2, 3, 4], 2);
+    assert_eq!(result2.len(), 2, "Should have 2 chunks");
+}
+
+#[test]
+fn test_unique() {
+    // Remove duplicates
+    let result = unique(vec![1, 2, 2, 3, 1]);
+    assert_eq!(result.len(), 3, "Should have 3 unique items");
+    assert!(result.contains(&1), "Should contain 1");
+    assert!(result.contains(&2), "Should contain 2");
+    assert!(result.contains(&3), "Should contain 3");
+
+    // Already unique
+    let result2 = unique(vec![1, 2, 3]);
+    assert_eq!(result2.len(), 3, "Should remain 3 items");
+}
+
+#[test]
+fn test_flatten() {
+    // Flatten nested arrays
+    let result = flatten(vec![vec![1, 2], vec![3, 4], vec![5]]);
+    assert_eq!(result.len(), 5, "Should have 5 items");
+    assert_eq!(result[0], 1, "First item should be 1");
+    assert_eq!(result[4], 5, "Last item should be 5");
+}
+
+#[test]
+fn test_partition() {
+    // Partition by even/odd
+    let (evens, odds) = partition(vec![1, 2, 3, 4, 5], |x| x % 2 == 0);
+    assert_eq!(evens.len(), 2, "Should have 2 even numbers");
+    assert_eq!(odds.len(), 3, "Should have 3 odd numbers");
+    assert!(evens.contains(&2), "Evens should contain 2");
+    assert!(odds.contains(&1), "Odds should contain 1");
+}
+
+#[test]
+fn test_take() {
+    // Take first n elements
+    let result = take(vec![1, 2, 3, 4, 5], 3);
+    assert_eq!(result.len(), 3, "Should have 3 items");
+    assert_eq!(result[0], 1, "First item should be 1");
+    assert_eq!(result[2], 3, "Last item should be 3");
+
+    // Take more than available
+    let result2 = take(vec![1, 2], 5);
+    assert_eq!(result2.len(), 2, "Should only take available items");
+}
+
+#[test]
+fn test_drop() {
+    // Drop first n elements
+    let result = drop(vec![1, 2, 3, 4, 5], 2);
+    assert_eq!(result.len(), 3, "Should have 3 items");
+    assert_eq!(result[0], 3, "First item should be 3");
+    assert_eq!(result[2], 5, "Last item should be 5");
+}
+
+#[test]
+fn test_zip() {
+    // Zip two arrays
+    let result = zip(vec![1, 2, 3], vec!["a", "b", "c"]);
+    assert_eq!(result.len(), 3, "Should have 3 pairs");
+    assert_eq!(result[0].0, 1, "First pair first item");
+    assert_eq!(result[0].1, "a", "First pair second item");
+
+    // Different lengths
+    let result2 = zip(vec![1, 2], vec!["a", "b", "c"]);
+    assert_eq!(result2.len(), 2, "Should use shorter length");
+}
+
+#[test]
+fn test_group_by() {
+    // Group by modulo
+    let result = group_by(vec![1, 2, 3, 4, 5], |x| x % 2);
+    assert_eq!(result.len(), 2, "Should have 2 groups");
+    assert!(result.contains_key(&0), "Should have group 0");
+    assert!(result.contains_key(&1), "Should have group 1");
+    assert_eq!(result.get(&0).len(), 2, "Group 0 should have 2 items");
+    assert_eq!(result.get(&1).len(), 3, "Group 1 should have 3 items");
+}
