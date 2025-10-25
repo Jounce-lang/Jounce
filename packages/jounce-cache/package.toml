@@ -13,6 +13,10 @@ jounce-utils = "0.1.0"
 jounce-test = "0.1.0"
 
 [[test]]
+name = "cache_tests"
+path = "tests/cache_tests.jnc"
+
+[[test]]
 name = "lru_tests"
 path = "tests/lru_tests.jnc"
 
