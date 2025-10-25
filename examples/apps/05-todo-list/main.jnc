@@ -1,0 +1,84 @@
+// App 5: Todo List
+// Demonstrates list rendering and task management UI
+
+// Main app component
+fn App() -> JSX {
+    return (
+        <div class="container">
+            <div class="todo-app">
+                <header class="header">
+                    <h1>My Tasks</h1>
+                    <p class="subtitle">Stay organized, get things done</p>
+                </header>
+
+                <div class="add-task">
+                    <input
+                        type="text"
+                        class="task-input"
+                        placeholder="What needs to be done?"
+                    />
+                    <button class="btn-add">Add Task</button>
+                </div>
+
+                <div class="filters">
+                    <button class="filter-btn active">All</button>
+                    <button class="filter-btn">Active</button>
+                    <button class="filter-btn">Completed</button>
+                </div>
+
+                <div class="task-list">
+                    <div class="task-item completed">
+                        <input type="checkbox" class="task-checkbox" checked />
+                        <span class="task-text">Complete Jounce tutorial</span>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+
+                    <div class="task-item">
+                        <input type="checkbox" class="task-checkbox" />
+                        <span class="task-text">Build example applications</span>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+
+                    <div class="task-item">
+                        <input type="checkbox" class="task-checkbox" />
+                        <span class="task-text">Deploy to production</span>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+
+                    <div class="task-item">
+                        <input type="checkbox" class="task-checkbox" />
+                        <span class="task-text">Write documentation</span>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+
+                    <div class="task-item completed">
+                        <input type="checkbox" class="task-checkbox" checked />
+                        <span class="task-text">Set up development environment</span>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+                </div>
+
+                <footer class="task-footer">
+                    <span class="task-count">3 tasks remaining</span>
+                    <button class="btn-clear">Clear completed</button>
+                </footer>
+
+                <div class="info">
+                    <p><strong>App 5: Todo List</strong></p>
+                    <p>Task management with add, complete, and delete actions</p>
+                    <p>Interactive functionality with signal and array state coming soon!</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Entry point
+fn main() {
+    console.log("App 5: Todo List started!");
+    console.log("Features: Task list, checkboxes, add/delete actions");
+    console.log("Coming soon: Dynamic task management with signal!");
+
+    let app_html = App();
+    console.log("Todo list component created successfully!");
+}

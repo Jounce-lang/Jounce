@@ -1,0 +1,61 @@
+// App 4: Simple Calculator
+// Demonstrates button grid layout and calculator UI structure
+
+// Main app component
+fn App() -> JSX {
+    return (
+        <div class="container">
+            <div class="calculator">
+                <header class="header">
+                    <h1>Calculator 🔢</h1>
+                </header>
+
+                <div class="display">
+                    <div class="display-value">0</div>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn btn-function">AC</button>
+                    <button class="btn btn-function">+/-</button>
+                    <button class="btn btn-function">%</button>
+                    <button class="btn btn-operator">÷</button>
+
+                    <button class="btn btn-number">7</button>
+                    <button class="btn btn-number">8</button>
+                    <button class="btn btn-number">9</button>
+                    <button class="btn btn-operator">×</button>
+
+                    <button class="btn btn-number">4</button>
+                    <button class="btn btn-number">5</button>
+                    <button class="btn btn-number">6</button>
+                    <button class="btn btn-operator">-</button>
+
+                    <button class="btn btn-number">1</button>
+                    <button class="btn btn-number">2</button>
+                    <button class="btn btn-number">3</button>
+                    <button class="btn btn-operator">+</button>
+
+                    <button class="btn btn-number btn-zero">0</button>
+                    <button class="btn btn-number">.</button>
+                    <button class="btn btn-equals">EQ</button>
+                </div>
+
+                <footer class="info">
+                    <p><strong>App 4: Simple Calculator</strong></p>
+                    <p>Classic calculator layout with number pad and operations</p>
+                    <p>Interactive functionality coming soon with signal and event handlers!</p>
+                </footer>
+            </div>
+        </div>
+    );
+}
+
+// Entry point
+fn main() {
+    console.log("App 4: Simple Calculator started!");
+    console.log("Features: Button grid layout, calculator display");
+    console.log("Coming soon: Interactive calculations with signal!");
+
+    let app_html = App();
+    console.log("Calculator component created successfully!");
+}
