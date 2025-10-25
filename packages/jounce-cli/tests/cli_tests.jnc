@@ -1,0 +1,193 @@
+// Tests for CLI utilities in jounce-cli
+use jounce_cli::{
+    CliArgs, CliCommand, CliApp, Color, colorize,
+    success, error, warning, info, ProgressBar, Table
+};
+
+#[test]
+fn test_cli_args_parse_command() {
+    let args = CliArgs::parse(vec!["program", "build", "file.jnc"]);
+
+    assert_eq!(args.command, "build");
+    assert_eq!(args.args.len(), 1);
+}
+
+#[test]
+fn test_cli_args_parse_long_flag() {
+    let args = CliArgs::parse(vec!["program", "--verbose"]);
+
+    assert!(args.has_flag("verbose"));
+}
+
+#[test]
+fn test_cli_args_parse_long_flag_with_value() {
+    let args = CliArgs::parse(vec!["program", "--output=dist"]);
+
+    assert_eq!(args.get_flag("output").unwrap(), "dist");
+}
+
+#[test]
+fn test_cli_args_parse_short_flag() {
+    let args = CliArgs::parse(vec!["program", "-v"]);
+
+    assert!(args.has_flag("v"));
+}
+
+#[test]
+fn test_cli_args_get_arg() {
+    let args = CliArgs::parse(vec!["program", "build", "main.jnc", "lib.jnc"]);
+
+    assert_eq!(args.get_arg(0).unwrap(), "main.jnc");
+    assert_eq!(args.get_arg(1).unwrap(), "lib.jnc");
+    assert!(args.get_arg(2).is_none());
+}
+
+#[test]
+fn test_cli_command_creation() {
+    let cmd = CliCommand::new("build", "Build the project");
+
+    assert_eq!(cmd.name, "build");
+    assert_eq!(cmd.description, "Build the project");
+}
+
+#[test]
+fn test_cli_command_with_usage() {
+    let cmd = CliCommand::new("test", "Run tests")
+        .with_usage("[OPTIONS] [FILES...]");
+
+    assert_eq!(cmd.usage, "[OPTIONS] [FILES...]");
+}
+
+#[test]
+fn test_cli_command_add_subcommand() {
+    let mut parent = CliCommand::new("git", "Git version control");
+    let child = CliCommand::new("commit", "Commit changes");
+
+    parent = parent.add_subcommand(child);
+
+    assert_eq!(parent.subcommands.len(), 1);
+}
+
+#[test]
+fn test_cli_command_help() {
+    let cmd = CliCommand::new("build", "Build the project")
+        .with_usage("[OPTIONS]");
+
+    let help = cmd.help();
+
+    assert!(help.contains("USAGE:"));
+    assert!(help.contains("DESCRIPTION:"));
+}
+
+#[test]
+fn test_cli_app_creation() {
+    let app = CliApp::new("myapp", "1.0.0");
+
+    assert_eq!(app.name, "myapp");
+    assert_eq!(app.version, "1.0.0");
+}
+
+#[test]
+fn test_cli_app_with_description() {
+    let app = CliApp::new("myapp", "1.0.0")
+        .with_description("My awesome app");
+
+    assert_eq!(app.description, "My awesome app");
+}
+
+#[test]
+fn test_cli_app_add_command() {
+    let mut app = CliApp::new("myapp", "1.0.0");
+    let cmd = CliCommand::new("build", "Build");
+
+    app = app.add_command(cmd);
+
+    assert_eq!(app.commands.len(), 1);
+}
+
+#[test]
+fn test_cli_app_help() {
+    let app = CliApp::new("myapp", "1.0.0")
+        .with_description("Test app");
+
+    let help = app.help();
+
+    assert!(help.contains("myapp v1.0.0"));
+    assert!(help.contains("USAGE:"));
+    assert!(help.contains("COMMANDS:"));
+}
+
+#[test]
+fn test_color_code() {
+    assert_eq!(Color::Red.code(), "\x1b[31m");
+    assert_eq!(Color::Green.code(), "\x1b[32m");
+    assert_eq!(Color::Reset.code(), "\x1b[0m");
+}
+
+#[test]
+fn test_colorize() {
+    let colored = colorize("test", Color::Green);
+
+    assert!(colored.contains("test"));
+}
+
+#[test]
+fn test_progress_bar_creation() {
+    let bar = ProgressBar::new(100);
+
+    assert_eq!(bar.total, 100);
+    assert_eq!(bar.current, 0);
+}
+
+#[test]
+fn test_progress_bar_with_label() {
+    let bar = ProgressBar::new(50)
+        .with_label("Processing");
+
+    assert_eq!(bar.label, "Processing");
+}
+
+#[test]
+fn test_progress_bar_update() {
+    let mut bar = ProgressBar::new(100);
+    bar = bar.update(50);
+
+    assert_eq!(bar.current, 50);
+}
+
+#[test]
+fn test_progress_bar_increment() {
+    let mut bar = ProgressBar::new(100);
+    bar = bar.increment();
+    bar = bar.increment();
+
+    assert_eq!(bar.current, 2);
+}
+
+#[test]
+fn test_table_creation() {
+    let table = Table::new(vec!["Name", "Age", "City"]);
+
+    assert_eq!(table.headers.len(), 3);
+    assert_eq!(table.rows.len(), 0);
+}
+
+#[test]
+fn test_table_add_row() {
+    let mut table = Table::new(vec!["Name", "Age"]);
+    table = table.add_row(vec!["Alice", "30"]);
+    table = table.add_row(vec!["Bob", "25"]);
+
+    assert_eq!(table.rows.len(), 2);
+}
+
+#[test]
+fn test_table_render() {
+    let mut table = Table::new(vec!["Name", "Age"]);
+    table = table.add_row(vec!["Alice", "30"]);
+
+    let output = table.render();
+
+    assert!(output.contains("Name"));
+    assert!(output.contains("Alice"));
+}

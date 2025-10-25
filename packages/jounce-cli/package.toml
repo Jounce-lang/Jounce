@@ -1,0 +1,10 @@
+[package]
+name = "jounce-cli"
+version = "0.1.0"
+description = "CLI utilities - argument parsing, commands, colors, progress bars"
+authors = ["Jounce Team"]
+license = "MIT"
+
+[[test]]
+name = "cli_tests"
+path = "tests/cli_tests.jnc"
