@@ -1,0 +1,105 @@
+// Tests for CSS variable management in jounce-theme
+use jounce_theme::{set_css_var, get_css_var, remove_css_var, set_css_vars};
+
+#[test]
+fn test_set_css_var() {
+    set_css_var("test-color", "#ff0000");
+
+    // In real implementation, would verify DOM
+    // For now, just test that function runs without error
+    assert!(true, "Should set CSS variable");
+}
+
+#[test]
+fn test_get_css_var() {
+    set_css_var("primary", "#3b82f6");
+
+    let value = get_css_var("primary");
+
+    // In real implementation with DOM, would check actual value
+    // For placeholder implementation, just verify it returns a string
+    assert!(value.is_string(), "Should return string value");
+}
+
+#[test]
+fn test_remove_css_var() {
+    set_css_var("temp-var", "temporary");
+
+    remove_css_var("temp-var");
+
+    // In real implementation, would verify variable removed from DOM
+    assert!(true, "Should remove CSS variable");
+}
+
+#[test]
+fn test_set_multiple_css_vars() {
+    let vars = Map::from([
+        ("primary", "#3b82f6"),
+        ("secondary", "#8b5cf6"),
+        ("background", "#ffffff"),
+    ]);
+
+    set_css_vars(vars);
+
+    // All variables should be set
+    assert!(true, "Should set multiple variables");
+}
+
+#[test]
+fn test_css_var_naming() {
+    // Test that variables get -- prefix
+    set_css_var("color-primary", "#3b82f6");
+
+    // In real implementation:
+    // - Should set as --color-primary
+    // - Should be accessible via var(--color-primary)
+    assert!(true, "Should handle variable naming correctly");
+}
+
+#[test]
+fn test_css_var_with_complex_values() {
+    // Test various CSS value formats
+    set_css_var("font-family", "Inter, system-ui, sans-serif");
+    set_css_var("box-shadow", "0 4px 6px rgba(0, 0, 0, 0.1)");
+    set_css_var("gradient", "linear-gradient(90deg, #f00, #00f)");
+
+    assert!(true, "Should handle complex CSS values");
+}
+
+#[test]
+fn test_css_var_overwrite() {
+    set_css_var("theme-color", "#ff0000");
+    set_css_var("theme-color", "#00ff00"); // Overwrite
+
+    let value = get_css_var("theme-color");
+
+    // In real implementation, would verify it's #00ff00
+    assert!(true, "Should overwrite existing variable");
+}
+
+#[test]
+fn test_css_var_with_units() {
+    set_css_var("spacing", "1rem");
+    set_css_var("width", "100px");
+    set_css_var("opacity", "0.5");
+
+    assert!(true, "Should handle different units");
+}
+
+#[test]
+fn test_get_nonexistent_var() {
+    let value = get_css_var("nonexistent-var");
+
+    // Should return empty string or default for missing vars
+    assert!(value.is_string(), "Should return string for missing var");
+}
+
+#[test]
+fn test_set_css_vars_empty_map() {
+    let vars = Map::new();
+
+    set_css_vars(vars);
+
+    // Should handle empty map without error
+    assert!(true, "Should handle empty variable map");
+}

@@ -1,0 +1,564 @@
+// jounce-theme - Theme Management Package
+// Version: 0.1.0
+//
+// Provides dark/light mode toggling, CSS variable management,
+// theme presets, and custom theme builders for Jounce applications.
+
+// ============================================================================
+// Theme Structure
+// ============================================================================
+
+/// Theme definition with CSS variables
+pub struct Theme {
+    name: string,
+    colors: Map<string, string>,
+    fonts: Map<string, string>,
+    spacing: Map<string, string>,
+    breakpoints: Map<string, string>,
+}
+
+/// Theme mode (light or dark)
+pub enum ThemeMode {
+    Light,
+    Dark,
+}
+
+// ============================================================================
+// Theme Registry
+// ============================================================================
+
+/// Global theme registry
+static mut THEMES: Map<string, Theme> = Map::new();
+static mut CURRENT_THEME: string = "light";
+static mut CURRENT_MODE: ThemeMode = ThemeMode::Light;
+
+/// Register a new theme
+pub fn register_theme(theme: Theme) -> bool {
+    unsafe {
+        THEMES.insert(theme.name.clone(), theme);
+        return true;
+    }
+}
+
+/// Get theme by name
+pub fn get_theme(name: string) -> Option<Theme> {
+    unsafe {
+        return THEMES.get(&name).cloned();
+    }
+}
+
+/// Get current active theme
+pub fn get_current_theme() -> Option<Theme> {
+    unsafe {
+        return THEMES.get(&CURRENT_THEME).cloned();
+    }
+}
+
+/// Set current theme
+pub fn set_current_theme(name: string) -> bool {
+    unsafe {
+        if THEMES.contains_key(&name) {
+            CURRENT_THEME = name;
+            apply_theme(CURRENT_THEME.clone());
+            save_theme_preference();
+            return true;
+        }
+        return false;
+    }
+}
+
+// ============================================================================
+// Dark/Light Mode Toggle
+// ============================================================================
+
+/// Get current theme mode
+pub fn get_mode() -> ThemeMode {
+    unsafe {
+        return CURRENT_MODE;
+    }
+}
+
+/// Set theme mode
+pub fn set_mode(mode: ThemeMode) {
+    unsafe {
+        CURRENT_MODE = mode;
+
+        match mode {
+            ThemeMode::Light => {
+                set_current_theme("light");
+            },
+            ThemeMode::Dark => {
+                set_current_theme("dark");
+            },
+        }
+    }
+}
+
+/// Toggle between light and dark modes
+pub fn toggle_mode() -> ThemeMode {
+    unsafe {
+        match CURRENT_MODE {
+            ThemeMode::Light => {
+                set_mode(ThemeMode::Dark);
+                return ThemeMode::Dark;
+            },
+            ThemeMode::Dark => {
+                set_mode(ThemeMode::Light);
+                return ThemeMode::Light;
+            },
+        }
+    }
+}
+
+/// Check if dark mode is active
+pub fn is_dark_mode() -> bool {
+    unsafe {
+        match CURRENT_MODE {
+            ThemeMode::Dark => true,
+            _ => false,
+        }
+    }
+}
+
+// ============================================================================
+// CSS Variable Management
+// ============================================================================
+
+/// Set CSS variable on :root
+pub fn set_css_var(name: string, value: string) {
+    let root = get_root_element();
+    root.style.set_property("--" + name, value);
+}
+
+/// Get CSS variable value
+pub fn get_css_var(name: string) -> string {
+    let root = get_root_element();
+    return root.style.get_property_value("--" + name);
+}
+
+/// Remove CSS variable
+pub fn remove_css_var(name: string) {
+    let root = get_root_element();
+    root.style.remove_property("--" + name);
+}
+
+/// Set multiple CSS variables at once
+pub fn set_css_vars(vars: Map<string, string>) {
+    for (name, value) in vars {
+        set_css_var(name, value);
+    }
+}
+
+// ============================================================================
+// Theme Application
+// ============================================================================
+
+/// Apply theme to document
+fn apply_theme(theme_name: string) {
+    if let Some(theme) = get_theme(theme_name) {
+        // Apply color variables
+        for (name, value) in theme.colors {
+            set_css_var("color-" + name, value);
+        }
+
+        // Apply font variables
+        for (name, value) in theme.fonts {
+            set_css_var("font-" + name, value);
+        }
+
+        // Apply spacing variables
+        for (name, value) in theme.spacing {
+            set_css_var("spacing-" + name, value);
+        }
+
+        // Apply breakpoint variables
+        for (name, value) in theme.breakpoints {
+            set_css_var("breakpoint-" + name, value);
+        }
+
+        // Set data-theme attribute on document
+        let doc = get_document();
+        doc.document_element.set_attribute("data-theme", theme_name);
+    }
+}
+
+// ============================================================================
+// Theme Presets
+// ============================================================================
+
+/// Create default light theme
+pub fn light_theme() -> Theme {
+    return Theme {
+        name: "light",
+        colors: Map::from([
+            ("background", "#ffffff"),
+            ("foreground", "#000000"),
+            ("primary", "#3b82f6"),
+            ("secondary", "#8b5cf6"),
+            ("accent", "#10b981"),
+            ("muted", "#6b7280"),
+            ("border", "#e5e7eb"),
+            ("error", "#ef4444"),
+            ("warning", "#f59e0b"),
+            ("success", "#22c55e"),
+        ]),
+        fonts: Map::from([
+            ("sans", "system-ui, -apple-system, sans-serif"),
+            ("serif", "Georgia, serif"),
+            ("mono", "monospace"),
+        ]),
+        spacing: Map::from([
+            ("xs", "0.25rem"),
+            ("sm", "0.5rem"),
+            ("md", "1rem"),
+            ("lg", "1.5rem"),
+            ("xl", "2rem"),
+        ]),
+        breakpoints: Map::from([
+            ("sm", "640px"),
+            ("md", "768px"),
+            ("lg", "1024px"),
+            ("xl", "1280px"),
+        ]),
+    };
+}
+
+/// Create default dark theme
+pub fn dark_theme() -> Theme {
+    return Theme {
+        name: "dark",
+        colors: Map::from([
+            ("background", "#0f172a"),
+            ("foreground", "#f1f5f9"),
+            ("primary", "#3b82f6"),
+            ("secondary", "#8b5cf6"),
+            ("accent", "#10b981"),
+            ("muted", "#94a3b8"),
+            ("border", "#334155"),
+            ("error", "#ef4444"),
+            ("warning", "#f59e0b"),
+            ("success", "#22c55e"),
+        ]),
+        fonts: Map::from([
+            ("sans", "system-ui, -apple-system, sans-serif"),
+            ("serif", "Georgia, serif"),
+            ("mono", "monospace"),
+        ]),
+        spacing: Map::from([
+            ("xs", "0.25rem"),
+            ("sm", "0.5rem"),
+            ("md", "1rem"),
+            ("lg", "1.5rem"),
+            ("xl", "2rem"),
+        ]),
+        breakpoints: Map::from([
+            ("sm", "640px"),
+            ("md", "768px"),
+            ("lg", "1024px"),
+            ("xl", "1280px"),
+        ]),
+    };
+}
+
+/// Create high contrast theme
+pub fn high_contrast_theme() -> Theme {
+    return Theme {
+        name: "high-contrast",
+        colors: Map::from([
+            ("background", "#000000"),
+            ("foreground", "#ffffff"),
+            ("primary", "#00ffff"),
+            ("secondary", "#ff00ff"),
+            ("accent", "#00ff00"),
+            ("muted", "#cccccc"),
+            ("border", "#ffffff"),
+            ("error", "#ff0000"),
+            ("warning", "#ffff00"),
+            ("success", "#00ff00"),
+        ]),
+        fonts: Map::from([
+            ("sans", "system-ui, -apple-system, sans-serif"),
+            ("serif", "Georgia, serif"),
+            ("mono", "monospace"),
+        ]),
+        spacing: Map::from([
+            ("xs", "0.25rem"),
+            ("sm", "0.5rem"),
+            ("md", "1rem"),
+            ("lg", "1.5rem"),
+            ("xl", "2rem"),
+        ]),
+        breakpoints: Map::from([
+            ("sm", "640px"),
+            ("md", "768px"),
+            ("lg", "1024px"),
+            ("xl", "1280px"),
+        ]),
+    };
+}
+
+// ============================================================================
+// Custom Theme Builder
+// ============================================================================
+
+/// Theme builder for creating custom themes
+pub struct ThemeBuilder {
+    theme: Theme,
+}
+
+impl ThemeBuilder {
+    /// Create new theme builder
+    pub fn new(name: string) -> ThemeBuilder {
+        return ThemeBuilder {
+            theme: Theme {
+                name: name,
+                colors: Map::new(),
+                fonts: Map::new(),
+                spacing: Map::new(),
+                breakpoints: Map::new(),
+            },
+        };
+    }
+
+    /// Set color
+    pub fn color(mut self, name: string, value: string) -> ThemeBuilder {
+        self.theme.colors.insert(name, value);
+        return self;
+    }
+
+    /// Set font
+    pub fn font(mut self, name: string, value: string) -> ThemeBuilder {
+        self.theme.fonts.insert(name, value);
+        return self;
+    }
+
+    /// Set spacing
+    pub fn spacing(mut self, name: string, value: string) -> ThemeBuilder {
+        self.theme.spacing.insert(name, value);
+        return self;
+    }
+
+    /// Set breakpoint
+    pub fn breakpoint(mut self, name: string, value: string) -> ThemeBuilder {
+        self.theme.breakpoints.insert(name, value);
+        return self;
+    }
+
+    /// Build theme
+    pub fn build(self) -> Theme {
+        return self.theme;
+    }
+}
+
+// ============================================================================
+// Theme Persistence
+// ============================================================================
+
+/// Save theme preference to localStorage
+fn save_theme_preference() {
+    unsafe {
+        let storage = get_local_storage();
+        storage.set_item("jounce-theme", CURRENT_THEME.clone());
+
+        let mode_str = match CURRENT_MODE {
+            ThemeMode::Light => "light",
+            ThemeMode::Dark => "dark",
+        };
+        storage.set_item("jounce-theme-mode", mode_str);
+    }
+}
+
+/// Load theme preference from localStorage
+pub fn load_theme_preference() {
+    let storage = get_local_storage();
+
+    if let Some(theme_name) = storage.get_item("jounce-theme") {
+        set_current_theme(theme_name);
+    }
+
+    if let Some(mode_str) = storage.get_item("jounce-theme-mode") {
+        if mode_str == "dark" {
+            set_mode(ThemeMode::Dark);
+        } else {
+            set_mode(ThemeMode::Light);
+        }
+    }
+}
+
+/// Clear theme preference
+pub fn clear_theme_preference() {
+    let storage = get_local_storage();
+    storage.remove_item("jounce-theme");
+    storage.remove_item("jounce-theme-mode");
+}
+
+// ============================================================================
+// System Preference Detection
+// ============================================================================
+
+/// Detect system dark mode preference
+pub fn prefers_dark_mode() -> bool {
+    let media_query = "(prefers-color-scheme: dark)";
+    let matches = window_match_media(media_query);
+    return matches;
+}
+
+/// Initialize theme based on system preference
+pub fn init_from_system_preference() {
+    if prefers_dark_mode() {
+        set_mode(ThemeMode::Dark);
+    } else {
+        set_mode(ThemeMode::Light);
+    }
+}
+
+// ============================================================================
+// Theme Initialization
+// ============================================================================
+
+/// Initialize default themes
+pub fn init_default_themes() {
+    register_theme(light_theme());
+    register_theme(dark_theme());
+    register_theme(high_contrast_theme());
+}
+
+/// Full initialization with system preference and persistence
+pub fn init_theme_system() {
+    init_default_themes();
+    load_theme_preference();
+
+    // If no saved preference, use system preference
+    unsafe {
+        if CURRENT_THEME == "" {
+            init_from_system_preference();
+        }
+    }
+}
+
+// ============================================================================
+// Helper Functions (Platform-specific implementations)
+// ============================================================================
+
+fn get_root_element() -> DOMElement {
+    // Get document root element
+    return DOMElement::new(); // Placeholder
+}
+
+fn get_document() -> Document {
+    // Get document object
+    return Document::new(); // Placeholder
+}
+
+fn get_local_storage() -> LocalStorage {
+    // Get localStorage API
+    return LocalStorage::new(); // Placeholder
+}
+
+fn window_match_media(query: string) -> bool {
+    // Check media query
+    return false; // Placeholder
+}
+
+// ============================================================================
+// Platform Types (Placeholder)
+// ============================================================================
+
+struct DOMElement {
+    style: CSSStyleDeclaration,
+}
+
+impl DOMElement {
+    fn new() -> DOMElement {
+        return DOMElement {
+            style: CSSStyleDeclaration::new(),
+        };
+    }
+
+    fn set_attribute(self, name: string, value: string) {
+        // Set attribute
+    }
+}
+
+struct CSSStyleDeclaration {}
+
+impl CSSStyleDeclaration {
+    fn new() -> CSSStyleDeclaration {
+        return CSSStyleDeclaration {};
+    }
+
+    fn set_property(self, name: string, value: string) {
+        // Set CSS property
+    }
+
+    fn get_property_value(self, name: string) -> string {
+        return ""; // Placeholder
+    }
+
+    fn remove_property(self, name: string) {
+        // Remove CSS property
+    }
+}
+
+struct Document {
+    document_element: DOMElement,
+}
+
+impl Document {
+    fn new() -> Document {
+        return Document {
+            document_element: DOMElement::new(),
+        };
+    }
+}
+
+struct LocalStorage {}
+
+impl LocalStorage {
+    fn new() -> LocalStorage {
+        return LocalStorage {};
+    }
+
+    fn set_item(self, key: string, value: string) {
+        // Set localStorage item
+    }
+
+    fn get_item(self, key: string) -> Option<string> {
+        return None; // Placeholder
+    }
+
+    fn remove_item(self, key: string) {
+        // Remove localStorage item
+    }
+}
+
+// Export main types and functions
+pub use Theme;
+pub use ThemeMode;
+pub use ThemeBuilder;
+
+pub use register_theme;
+pub use get_theme;
+pub use get_current_theme;
+pub use set_current_theme;
+
+pub use get_mode;
+pub use set_mode;
+pub use toggle_mode;
+pub use is_dark_mode;
+
+pub use set_css_var;
+pub use get_css_var;
+pub use remove_css_var;
+pub use set_css_vars;
+
+pub use light_theme;
+pub use dark_theme;
+pub use high_contrast_theme;
+
+pub use init_default_themes;
+pub use init_theme_system;
+pub use load_theme_preference;
+pub use clear_theme_preference;
+pub use prefers_dark_mode;
+pub use init_from_system_preference;

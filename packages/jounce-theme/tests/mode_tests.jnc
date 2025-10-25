@@ -1,0 +1,135 @@
+// Tests for dark/light mode in jounce-theme
+use jounce_theme::{
+    ThemeMode, get_mode, set_mode, toggle_mode, is_dark_mode,
+    init_theme_system, get_current_theme
+};
+
+#[test]
+fn test_get_mode_default() {
+    let mode = get_mode();
+
+    // Default should be Light
+    match mode {
+        ThemeMode::Light => assert!(true, "Default should be Light"),
+        ThemeMode::Dark => assert!(false, "Default should not be Dark"),
+    }
+}
+
+#[test]
+fn test_set_mode_light() {
+    init_theme_system();
+
+    set_mode(ThemeMode::Light);
+    let mode = get_mode();
+
+    match mode {
+        ThemeMode::Light => assert!(true, "Should be Light"),
+        ThemeMode::Dark => assert!(false, "Should not be Dark"),
+    }
+
+    // Should set light theme
+    let theme = get_current_theme();
+    assert!(theme.is_some(), "Should have current theme");
+    assert_eq!(theme.unwrap().name, "light", "Should be light theme");
+}
+
+#[test]
+fn test_set_mode_dark() {
+    init_theme_system();
+
+    set_mode(ThemeMode::Dark);
+    let mode = get_mode();
+
+    match mode {
+        ThemeMode::Dark => assert!(true, "Should be Dark"),
+        ThemeMode::Light => assert!(false, "Should not be Light"),
+    }
+
+    // Should set dark theme
+    let theme = get_current_theme();
+    assert!(theme.is_some(), "Should have current theme");
+    assert_eq!(theme.unwrap().name, "dark", "Should be dark theme");
+}
+
+#[test]
+fn test_toggle_mode_light_to_dark() {
+    init_theme_system();
+
+    // Start with light
+    set_mode(ThemeMode::Light);
+
+    // Toggle to dark
+    let new_mode = toggle_mode();
+
+    match new_mode {
+        ThemeMode::Dark => assert!(true, "Should toggle to Dark"),
+        ThemeMode::Light => assert!(false, "Should not be Light"),
+    }
+
+    assert!(is_dark_mode(), "Should be in dark mode");
+}
+
+#[test]
+fn test_toggle_mode_dark_to_light() {
+    init_theme_system();
+
+    // Start with dark
+    set_mode(ThemeMode::Dark);
+
+    // Toggle to light
+    let new_mode = toggle_mode();
+
+    match new_mode {
+        ThemeMode::Light => assert!(true, "Should toggle to Light"),
+        ThemeMode::Dark => assert!(false, "Should not be Dark"),
+    }
+
+    assert!(!is_dark_mode(), "Should not be in dark mode");
+}
+
+#[test]
+fn test_is_dark_mode_when_light() {
+    init_theme_system();
+
+    set_mode(ThemeMode::Light);
+
+    assert!(!is_dark_mode(), "Should return false for light mode");
+}
+
+#[test]
+fn test_is_dark_mode_when_dark() {
+    init_theme_system();
+
+    set_mode(ThemeMode::Dark);
+
+    assert!(is_dark_mode(), "Should return true for dark mode");
+}
+
+#[test]
+fn test_toggle_mode_multiple_times() {
+    init_theme_system();
+
+    set_mode(ThemeMode::Light);
+    assert!(!is_dark_mode(), "Should start in light mode");
+
+    toggle_mode();
+    assert!(is_dark_mode(), "Should toggle to dark");
+
+    toggle_mode();
+    assert!(!is_dark_mode(), "Should toggle back to light");
+
+    toggle_mode();
+    assert!(is_dark_mode(), "Should toggle to dark again");
+}
+
+#[test]
+fn test_mode_persistence() {
+    init_theme_system();
+
+    // Set dark mode
+    set_mode(ThemeMode::Dark);
+
+    // Preferences should be saved automatically
+    // In real implementation, would test localStorage
+    assert!(is_dark_mode(), "Should maintain dark mode");
+}

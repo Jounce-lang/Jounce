@@ -1,0 +1,152 @@
+// Tests for ThemeBuilder in jounce-theme
+use jounce_theme::{ThemeBuilder, register_theme, get_theme};
+
+#[test]
+fn test_builder_create_empty_theme() {
+    let builder = ThemeBuilder::new("empty");
+    let theme = builder.build();
+
+    assert_eq!(theme.name, "empty", "Should have correct name");
+    assert_eq!(theme.colors.len(), 0, "Should have no colors");
+    assert_eq!(theme.fonts.len(), 0, "Should have no fonts");
+}
+
+#[test]
+fn test_builder_add_colors() {
+    let theme = ThemeBuilder::new("colorful")
+        .color("primary", "#3b82f6")
+        .color("secondary", "#8b5cf6")
+        .color("accent", "#10b981")
+        .build();
+
+    assert_eq!(theme.colors.len(), 3, "Should have 3 colors");
+    assert_eq!(theme.colors.get(&"primary"), "#3b82f6", "Should have primary color");
+    assert_eq!(theme.colors.get(&"secondary"), "#8b5cf6", "Should have secondary color");
+    assert_eq!(theme.colors.get(&"accent"), "#10b981", "Should have accent color");
+}
+
+#[test]
+fn test_builder_add_fonts() {
+    let theme = ThemeBuilder::new("fonty")
+        .font("sans", "Inter, sans-serif")
+        .font("mono", "Fira Code, monospace")
+        .build();
+
+    assert_eq!(theme.fonts.len(), 2, "Should have 2 fonts");
+    assert_eq!(theme.fonts.get(&"sans"), "Inter, sans-serif", "Should have sans font");
+    assert_eq!(theme.fonts.get(&"mono"), "Fira Code, monospace", "Should have mono font");
+}
+
+#[test]
+fn test_builder_add_spacing() {
+    let theme = ThemeBuilder::new("spaced")
+        .spacing("sm", "0.5rem")
+        .spacing("md", "1rem")
+        .spacing("lg", "2rem")
+        .build();
+
+    assert_eq!(theme.spacing.len(), 3, "Should have 3 spacing values");
+    assert_eq!(theme.spacing.get(&"sm"), "0.5rem", "Should have sm spacing");
+    assert_eq!(theme.spacing.get(&"md"), "1rem", "Should have md spacing");
+    assert_eq!(theme.spacing.get(&"lg"), "2rem", "Should have lg spacing");
+}
+
+#[test]
+fn test_builder_add_breakpoints() {
+    let theme = ThemeBuilder::new("responsive")
+        .breakpoint("mobile", "480px")
+        .breakpoint("tablet", "768px")
+        .breakpoint("desktop", "1024px")
+        .build();
+
+    assert_eq!(theme.breakpoints.len(), 3, "Should have 3 breakpoints");
+    assert_eq!(theme.breakpoints.get(&"mobile"), "480px", "Should have mobile breakpoint");
+    assert_eq!(theme.breakpoints.get(&"tablet"), "768px", "Should have tablet breakpoint");
+}
+
+#[test]
+fn test_builder_chaining() {
+    let theme = ThemeBuilder::new("complete")
+        .color("primary", "#3b82f6")
+        .color("secondary", "#8b5cf6")
+        .font("sans", "Inter, sans-serif")
+        .spacing("md", "1rem")
+        .breakpoint("md", "768px")
+        .build();
+
+    assert_eq!(theme.colors.len(), 2, "Should have 2 colors");
+    assert_eq!(theme.fonts.len(), 1, "Should have 1 font");
+    assert_eq!(theme.spacing.len(), 1, "Should have 1 spacing");
+    assert_eq!(theme.breakpoints.len(), 1, "Should have 1 breakpoint");
+}
+
+#[test]
+fn test_builder_register_and_retrieve() {
+    let theme = ThemeBuilder::new("custom")
+        .color("brand", "#ff6b6b")
+        .build();
+
+    register_theme(theme);
+
+    let retrieved = get_theme("custom");
+    assert!(retrieved.is_some(), "Should retrieve registered theme");
+    assert_eq!(retrieved.unwrap().name, "custom", "Should have correct name");
+}
+
+#[test]
+fn test_builder_overwrite_values() {
+    let theme = ThemeBuilder::new("overwrite")
+        .color("primary", "#ff0000")
+        .color("primary", "#00ff00") // Overwrite
+        .build();
+
+    // Last value should win
+    assert_eq!(theme.colors.get(&"primary"), "#00ff00", "Should overwrite with last value");
+}
+
+#[test]
+fn test_builder_full_theme() {
+    let theme = ThemeBuilder::new("ocean")
+        .color("background", "#003f5c")
+        .color("foreground", "#ffffff")
+        .color("primary", "#00d4ff")
+        .color("secondary", "#7a5fff")
+        .color("accent", "#00ffa3")
+        .color("error", "#ff006e")
+        .font("sans", "Inter, system-ui, sans-serif")
+        .font("mono", "Fira Code, monospace")
+        .spacing("xs", "0.25rem")
+        .spacing("sm", "0.5rem")
+        .spacing("md", "1rem")
+        .spacing("lg", "2rem")
+        .breakpoint("sm", "640px")
+        .breakpoint("md", "768px")
+        .breakpoint("lg", "1024px")
+        .build();
+
+    assert_eq!(theme.name, "ocean", "Should have correct name");
+    assert_eq!(theme.colors.len(), 6, "Should have 6 colors");
+    assert_eq!(theme.fonts.len(), 2, "Should have 2 fonts");
+    assert_eq!(theme.spacing.len(), 4, "Should have 4 spacing values");
+    assert_eq!(theme.breakpoints.len(), 3, "Should have 3 breakpoints");
+}
+
+#[test]
+fn test_builder_multiple_themes() {
+    let theme1 = ThemeBuilder::new("theme1")
+        .color("primary", "#ff0000")
+        .build();
+
+    let theme2 = ThemeBuilder::new("theme2")
+        .color("primary", "#00ff00")
+        .build();
+
+    register_theme(theme1);
+    register_theme(theme2);
+
+    let t1 = get_theme("theme1").unwrap();
+    let t2 = get_theme("theme2").unwrap();
+
+    assert_eq!(t1.colors.get(&"primary"), "#ff0000", "Theme1 should have red");
+    assert_eq!(t2.colors.get(&"primary"), "#00ff00", "Theme2 should have green");
+}

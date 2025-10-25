@@ -1,0 +1,35 @@
+[package]
+name = "jounce-theme"
+version = "0.1.0"
+description = "Theme management and dark/light mode for Jounce applications"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-theme"
+
+[dependencies]
+# No external dependencies
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "theme_tests"
+path = "tests/theme_tests.jnc"
+
+[[test]]
+name = "mode_tests"
+path = "tests/mode_tests.jnc"
+
+[[test]]
+name = "css_var_tests"
+path = "tests/css_var_tests.jnc"
+
+[[test]]
+name = "builder_tests"
+path = "tests/builder_tests.jnc"
+
+[features]
+default = ["dark-mode", "persistence", "system-detection"]
+dark-mode = []
+persistence = []
+system-detection = []

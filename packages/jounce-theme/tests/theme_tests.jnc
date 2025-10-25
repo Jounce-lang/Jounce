@@ -1,0 +1,125 @@
+// Tests for theme management in jounce-theme
+use jounce_theme::{
+    Theme, register_theme, get_theme, get_current_theme,
+    set_current_theme, init_default_themes, light_theme, dark_theme
+};
+
+#[test]
+fn test_register_theme() {
+    let custom = Theme {
+        name: "custom",
+        colors: Map::from([("primary", "#ff0000")]),
+        fonts: Map::new(),
+        spacing: Map::new(),
+        breakpoints: Map::new(),
+    };
+
+    let result = register_theme(custom);
+    assert!(result, "Should register theme successfully");
+}
+
+#[test]
+fn test_get_theme() {
+    init_default_themes();
+
+    // Get existing theme
+    let light = get_theme("light");
+    assert!(light.is_some(), "Should find light theme");
+    assert_eq!(light.unwrap().name, "light", "Should have correct name");
+
+    // Get non-existent theme
+    let missing = get_theme("nonexistent");
+    assert!(missing.is_none(), "Should return None for missing theme");
+}
+
+#[test]
+fn test_set_current_theme() {
+    init_default_themes();
+
+    // Set valid theme
+    let result = set_current_theme("dark");
+    assert!(result, "Should set dark theme successfully");
+
+    let current = get_current_theme();
+    assert!(current.is_some(), "Should have current theme");
+    assert_eq!(current.unwrap().name, "dark", "Should be dark theme");
+
+    // Set invalid theme
+    let result2 = set_current_theme("nonexistent");
+    assert!(!result2, "Should fail for invalid theme");
+}
+
+#[test]
+fn test_light_theme_preset() {
+    let light = light_theme();
+
+    assert_eq!(light.name, "light", "Should be named light");
+    assert!(light.colors.contains_key(&"background"), "Should have background color");
+    assert_eq!(light.colors.get(&"background"), "#ffffff", "Should be white background");
+    assert!(light.colors.contains_key(&"primary"), "Should have primary color");
+}
+
+#[test]
+fn test_dark_theme_preset() {
+    let dark = dark_theme();
+
+    assert_eq!(dark.name, "dark", "Should be named dark");
+    assert!(dark.colors.contains_key(&"background"), "Should have background color");
+    assert_eq!(dark.colors.get(&"background"), "#0f172a", "Should be dark background");
+    assert!(dark.colors.contains_key(&"foreground"), "Should have foreground color");
+}
+
+#[test]
+fn test_theme_has_all_colors() {
+    let light = light_theme();
+
+    // Check all required colors
+    assert!(light.colors.contains_key(&"background"), "Should have background");
+    assert!(light.colors.contains_key(&"foreground"), "Should have foreground");
+    assert!(light.colors.contains_key(&"primary"), "Should have primary");
+    assert!(light.colors.contains_key(&"secondary"), "Should have secondary");
+    assert!(light.colors.contains_key(&"accent"), "Should have accent");
+    assert!(light.colors.contains_key(&"error"), "Should have error");
+    assert!(light.colors.contains_key(&"warning"), "Should have warning");
+    assert!(light.colors.contains_key(&"success"), "Should have success");
+}
+
+#[test]
+fn test_theme_has_fonts() {
+    let light = light_theme();
+
+    assert!(light.fonts.contains_key(&"sans"), "Should have sans font");
+    assert!(light.fonts.contains_key(&"serif"), "Should have serif font");
+    assert!(light.fonts.contains_key(&"mono"), "Should have mono font");
+}
+
+#[test]
+fn test_theme_has_spacing() {
+    let light = light_theme();
+
+    assert!(light.spacing.contains_key(&"xs"), "Should have xs spacing");
+    assert!(light.spacing.contains_key(&"sm"), "Should have sm spacing");
+    assert!(light.spacing.contains_key(&"md"), "Should have md spacing");
+    assert!(light.spacing.contains_key(&"lg"), "Should have lg spacing");
+    assert!(light.spacing.contains_key(&"xl"), "Should have xl spacing");
+}
+
+#[test]
+fn test_theme_has_breakpoints() {
+    let light = light_theme();
+
+    assert!(light.breakpoints.contains_key(&"sm"), "Should have sm breakpoint");
+    assert!(light.breakpoints.contains_key(&"md"), "Should have md breakpoint");
+    assert!(light.breakpoints.contains_key(&"lg"), "Should have lg breakpoint");
+    assert!(light.breakpoints.contains_key(&"xl"), "Should have xl breakpoint");
+}
+
+#[test]
+fn test_init_default_themes() {
+    init_default_themes();
+
+    // Should register all default themes
+    assert!(get_theme("light").is_some(), "Should have light theme");
+    assert!(get_theme("dark").is_some(), "Should have dark theme");
+    assert!(get_theme("high-contrast").is_some(), "Should have high-contrast theme");
+}
