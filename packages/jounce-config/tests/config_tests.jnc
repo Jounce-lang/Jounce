@@ -1,0 +1,155 @@
+// Tests for core config operations in jounce-config
+use jounce_config::{Config, ConfigValue, Environment};
+
+#[test]
+fn test_config_creation() {
+    let config = Config::new();
+
+    assert_eq!(config.values.len(), 0, "Should have no values initially");
+}
+
+#[test]
+fn test_config_set_string() {
+    let mut config = Config::new();
+    config = config.set_string("api_key", "secret123");
+
+    assert!(config.has("api_key"), "Should have api_key");
+    assert_eq!(config.get_string("api_key"), "secret123", "Value should match");
+}
+
+#[test]
+fn test_config_set_int() {
+    let mut config = Config::new();
+    config = config.set_int("port", 8080);
+
+    assert!(config.has("port"), "Should have port");
+    assert_eq!(config.get_int("port").unwrap(), 8080, "Port should be 8080");
+}
+
+#[test]
+fn test_config_set_bool() {
+    let mut config = Config::new();
+    config = config.set_bool("debug", true);
+
+    assert!(config.has("debug"), "Should have debug");
+    assert!(config.get_bool("debug"), "Debug should be true");
+}
+
+#[test]
+fn test_config_get_or_default() {
+    let config = Config::new();
+
+    let value = config.get_string_or("missing_key", "default_value");
+
+    assert_eq!(value, "default_value", "Should return default for missing key");
+}
+
+#[test]
+fn test_config_get_int_or() {
+    let config = Config::new();
+
+    let value = config.get_int_or("port", 3000);
+
+    assert_eq!(value, 3000, "Should return default port");
+}
+
+#[test]
+fn test_config_get_bool_or() {
+    let config = Config::new();
+
+    let value = config.get_bool_or("enabled", false);
+
+    assert!(!value, "Should return default bool");
+}
+
+#[test]
+fn test_config_has() {
+    let mut config = Config::new();
+    config = config.set_string("key", "value");
+
+    assert!(config.has("key"), "Should have key");
+    assert!(!config.has("missing"), "Should not have missing key");
+}
+
+#[test]
+fn test_config_with_environment() {
+    let config = Config::new()
+        .with_environment(Environment::Production);
+
+    assert!(config.environment.is_production(), "Should be production");
+}
+
+#[test]
+fn test_config_merge() {
+    let mut config1 = Config::new();
+    config1 = config1.set_string("key1", "value1");
+
+    let mut config2 = Config::new();
+    config2 = config2.set_string("key2", "value2");
+
+    let merged = config1.merge(config2);
+
+    assert!(merged.has("key1"), "Should have key1");
+    assert!(merged.has("key2"), "Should have key2");
+}
+
+#[test]
+fn test_config_value_as_string() {
+    let value = ConfigValue::String("hello");
+
+    assert_eq!(value.as_string(), "hello", "Should convert to string");
+}
+
+#[test]
+fn test_config_value_int_as_string() {
+    let value = ConfigValue::Int(42);
+
+    assert_eq!(value.as_string(), "42", "Should convert int to string");
+}
+
+#[test]
+fn test_config_value_bool_as_string() {
+    let value = ConfigValue::Bool(true);
+
+    assert_eq!(value.as_string(), "true", "Should convert bool to string");
+}
+
+#[test]
+fn test_config_value_is_some() {
+    let value1 = ConfigValue::String("test");
+    let value2 = ConfigValue::None;
+
+    assert!(value1.is_some(), "String value should be some");
+    assert!(!value2.is_some(), "None value should not be some");
+}
+
+#[test]
+fn test_environment_from_string() {
+    let env = Environment::from_string("production");
+
+    assert!(env.is_production(), "Should be production");
+}
+
+#[test]
+fn test_environment_to_string() {
+    let env = Environment::Development;
+
+    assert_eq!(env.to_string(), "development", "Should convert to string");
+}
+
+#[test]
+fn test_environment_is_development() {
+    let env = Environment::Development;
+
+    assert!(env.is_development(), "Should be development");
+    assert!(!env.is_production(), "Should not be production");
+}
+
+#[test]
+fn test_config_load_env_file() {
+    let config = Config::new()
+        .load_env_file(".env");
+
+    assert_eq!(config.loaded_files.len(), 1, "Should have loaded 1 file");
+    assert_eq!(config.loaded_files[0], ".env", "Filename should match");
+}

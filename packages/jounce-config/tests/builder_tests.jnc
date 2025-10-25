@@ -1,0 +1,158 @@
+// Tests for ConfigBuilder in jounce-config
+use jounce_config::{ConfigBuilder, ConfigValue, Environment, SecretManager};
+
+#[test]
+fn test_config_builder_creation() {
+    let builder = ConfigBuilder::new();
+
+    assert_eq!(builder.env_files.len(), 0, "Should have no env files initially");
+}
+
+#[test]
+fn test_config_builder_with_env_file() {
+    let builder = ConfigBuilder::new()
+        .with_env_file(".env");
+
+    assert_eq!(builder.env_files.len(), 1, "Should have 1 env file");
+}
+
+#[test]
+fn test_config_builder_with_env() {
+    let builder = ConfigBuilder::new()
+        .with_env(Environment::Production);
+
+    assert!(builder.config.environment.is_production(), "Should be production");
+}
+
+#[test]
+fn test_config_builder_with_default_string() {
+    let builder = ConfigBuilder::new()
+        .with_default_string("host", "localhost");
+
+    assert!(builder.defaults.contains_key("host"), "Should have host default");
+}
+
+#[test]
+fn test_config_builder_with_default_int() {
+    let builder = ConfigBuilder::new()
+        .with_default_int("port", 3000);
+
+    assert!(builder.defaults.contains_key("port"), "Should have port default");
+}
+
+#[test]
+fn test_config_builder_with_default_bool() {
+    let builder = ConfigBuilder::new()
+        .with_default_bool("debug", true);
+
+    assert!(builder.defaults.contains_key("debug"), "Should have debug default");
+}
+
+#[test]
+fn test_config_builder_build() {
+    let builder = ConfigBuilder::new()
+        .with_default_string("app_name", "MyApp");
+
+    let config = builder.build();
+
+    assert!(config.has("app_name"), "Should have app_name");
+    assert_eq!(config.get_string("app_name"), "MyApp", "Value should match");
+}
+
+#[test]
+fn test_config_builder_multiple_defaults() {
+    let builder = ConfigBuilder::new()
+        .with_default_string("host", "localhost")
+        .with_default_int("port", 8080)
+        .with_default_bool("ssl", false);
+
+    let config = builder.build();
+
+    assert!(config.has("host"), "Should have host");
+    assert!(config.has("port"), "Should have port");
+    assert!(config.has("ssl"), "Should have ssl");
+}
+
+#[test]
+fn test_config_builder_with_multiple_env_files() {
+    let builder = ConfigBuilder::new()
+        .with_env_file(".env")
+        .with_env_file(".env.local");
+
+    assert_eq!(builder.env_files.len(), 2, "Should have 2 env files");
+}
+
+#[test]
+fn test_config_builder_defaults_dont_override() {
+    let mut builder = ConfigBuilder::new();
+    builder.config = builder.config.set_string("key", "original");
+
+    builder = builder.with_default_string("key", "default");
+
+    let config = builder.build();
+
+    assert_eq!(config.get_string("key"), "original", "Should keep original value");
+}
+
+#[test]
+fn test_secret_manager_creation() {
+    let manager = SecretManager::new();
+
+    assert_eq!(manager.secrets.len(), 0, "Should have no secrets initially");
+    assert!(!manager.encrypted, "Should not be encrypted by default");
+}
+
+#[test]
+fn test_secret_manager_with_encryption() {
+    let manager = SecretManager::new()
+        .with_encryption();
+
+    assert!(manager.encrypted, "Should be encrypted");
+}
+
+#[test]
+fn test_secret_manager_set_secret() {
+    let mut manager = SecretManager::new();
+    manager = manager.set_secret("api_key", "secret123");
+
+    assert!(manager.has_secret("api_key"), "Should have api_key secret");
+}
+
+#[test]
+fn test_secret_manager_get_secret() {
+    let mut manager = SecretManager::new();
+    manager = manager.set_secret("token", "abc123");
+
+    let secret = manager.get_secret("token");
+
+    assert!(secret.is_some(), "Should find token");
+    assert_eq!(secret.unwrap(), "abc123", "Token should match");
+}
+
+#[test]
+fn test_secret_manager_missing_secret() {
+    let manager = SecretManager::new();
+
+    let secret = manager.get_secret("missing");
+
+    assert!(secret.is_none(), "Should not find missing secret");
+}
+
+#[test]
+fn test_secret_manager_has_secret() {
+    let mut manager = SecretManager::new();
+    manager = manager.set_secret("key", "value");
+
+    assert!(manager.has_secret("key"), "Should have key");
+    assert!(!manager.has_secret("missing"), "Should not have missing");
+}
+
+#[test]
+fn test_secret_manager_multiple_secrets() {
+    let mut manager = SecretManager::new();
+    manager = manager
+        .set_secret("secret1", "value1")
+        .set_secret("secret2", "value2");
+
+    assert_eq!(manager.secrets.len(), 2, "Should have 2 secrets");
+}

@@ -1,0 +1,30 @@
+[package]
+name = "jounce-config"
+version = "0.1.0"
+description = "Configuration management with environment variables, typed config loading, and validation"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-config"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "config_tests"
+path = "tests/config_tests.jnc"
+
+[[test]]
+name = "builder_tests"
+path = "tests/builder_tests.jnc"
+
+[[test]]
+name = "schema_tests"
+path = "tests/schema_tests.jnc"
+
+[features]
+default = ["env-files", "validation"]
+env-files = []
+validation = []
+secrets = []

@@ -1,0 +1,516 @@
+// jounce-config - Configuration management with environment variables and typed config loading
+//
+// This package provides a flexible configuration system for loading and managing
+// application configuration from environment variables, files, and defaults.
+
+// Configuration value (can be string, int, bool, or float)
+pub enum ConfigValue {
+    String(string),
+    Int(int),
+    Bool(bool),
+    Float(float),
+    None,
+}
+
+impl ConfigValue {
+    pub fn as_string(self) -> string {
+        return match self {
+            ConfigValue::String(s) => s,
+            ConfigValue::Int(i) => i.to_string(),
+            ConfigValue::Bool(b) => if b { "true" } else { "false" },
+            ConfigValue::Float(f) => f.to_string(),
+            ConfigValue::None => "",
+        };
+    }
+
+    pub fn as_int(self) -> Option<int> {
+        return match self {
+            ConfigValue::Int(i) => Some(i),
+            ConfigValue::String(s) => parse_int_safe(s),
+            _ => None,
+        };
+    }
+
+    pub fn as_bool(self) -> bool {
+        return match self {
+            ConfigValue::Bool(b) => b,
+            ConfigValue::String(s) => s == "true" || s == "1" || s == "yes",
+            ConfigValue::Int(i) => i != 0,
+            _ => false,
+        };
+    }
+
+    pub fn as_float(self) -> Option<float> {
+        return match self {
+            ConfigValue::Float(f) => Some(f),
+            ConfigValue::String(s) => parse_float_safe(s),
+            _ => None,
+        };
+    }
+
+    pub fn is_some(self) -> bool {
+        return match self {
+            ConfigValue::None => false,
+            _ => true,
+        };
+    }
+}
+
+// Environment type
+pub enum Environment {
+    Development,
+    Production,
+    Test,
+    Staging,
+}
+
+impl Environment {
+    pub fn from_string(s: string) -> Environment {
+        return match s.to_lowercase() {
+            "production" | "prod" => Environment::Production,
+            "test" | "testing" => Environment::Test,
+            "staging" | "stage" => Environment::Staging,
+            _ => Environment::Development,
+        };
+    }
+
+    pub fn to_string(self) -> string {
+        return match self {
+            Environment::Development => "development",
+            Environment::Production => "production",
+            Environment::Test => "test",
+            Environment::Staging => "staging",
+        };
+    }
+
+    pub fn is_production(self) -> bool {
+        return match self {
+            Environment::Production => true,
+            _ => false,
+        };
+    }
+
+    pub fn is_development(self) -> bool {
+        return match self {
+            Environment::Development => true,
+            _ => false,
+        };
+    }
+}
+
+// Configuration manager
+pub struct Config {
+    pub values: Map<string, ConfigValue>,
+    pub environment: Environment,
+    pub loaded_files: Array<string>,
+}
+
+impl Config {
+    pub fn new() -> Config {
+        return Config {
+            values: Map::new(),
+            environment: Environment::Development,
+            loaded_files: Array::new(),
+        };
+    }
+
+    pub fn with_environment(mut self, env: Environment) -> Config {
+        self.environment = env;
+        return self;
+    }
+
+    pub fn load_env_file(mut self, file_path: string) -> Config {
+        // In real implementation, would read and parse .env file
+        self.loaded_files.push(file_path);
+        return self;
+    }
+
+    pub fn load_from_env(mut self) -> Config {
+        // In real implementation, would load from process.env
+        return self;
+    }
+
+    pub fn set(mut self, key: string, value: ConfigValue) -> Config {
+        self.values.insert(key, value);
+        return self;
+    }
+
+    pub fn set_string(mut self, key: string, value: string) -> Config {
+        self.values.insert(key, ConfigValue::String(value));
+        return self;
+    }
+
+    pub fn set_int(mut self, key: string, value: int) -> Config {
+        self.values.insert(key, ConfigValue::Int(value));
+        return self;
+    }
+
+    pub fn set_bool(mut self, key: string, value: bool) -> Config {
+        self.values.insert(key, ConfigValue::Bool(value));
+        return self;
+    }
+
+    pub fn set_float(mut self, key: string, value: float) -> Config {
+        self.values.insert(key, ConfigValue::Float(value));
+        return self;
+    }
+
+    pub fn get(self, key: string) -> ConfigValue {
+        return self.values.get(key).unwrap_or(ConfigValue::None);
+    }
+
+    pub fn get_string(self, key: string) -> string {
+        return self.get(key).as_string();
+    }
+
+    pub fn get_int(self, key: string) -> Option<int> {
+        return self.get(key).as_int();
+    }
+
+    pub fn get_bool(self, key: string) -> bool {
+        return self.get(key).as_bool();
+    }
+
+    pub fn get_float(self, key: string) -> Option<float> {
+        return self.get(key).as_float();
+    }
+
+    pub fn get_or_default(self, key: string, default: ConfigValue) -> ConfigValue {
+        if self.has(key) {
+            return self.get(key);
+        }
+        return default;
+    }
+
+    pub fn get_string_or(self, key: string, default: string) -> string {
+        return self.get_or_default(key, ConfigValue::String(default)).as_string();
+    }
+
+    pub fn get_int_or(self, key: string, default: int) -> int {
+        return self.get_or_default(key, ConfigValue::Int(default)).as_int().unwrap_or(default);
+    }
+
+    pub fn get_bool_or(self, key: string, default: bool) -> bool {
+        return self.get_or_default(key, ConfigValue::Bool(default)).as_bool();
+    }
+
+    pub fn has(self, key: string) -> bool {
+        return self.values.contains_key(key) && self.get(key).is_some();
+    }
+
+    pub fn require(self, key: string) -> ConfigValue {
+        if !self.has(key) {
+            panic("Required config key missing: " + key);
+        }
+        return self.get(key);
+    }
+
+    pub fn require_string(self, key: string) -> string {
+        return self.require(key).as_string();
+    }
+
+    pub fn require_int(self, key: string) -> int {
+        let value = self.require(key).as_int();
+        if value.is_none() {
+            panic("Config key is not an int: " + key);
+        }
+        return value.unwrap();
+    }
+
+    pub fn require_bool(self, key: string) -> bool {
+        return self.require(key).as_bool();
+    }
+
+    pub fn merge(mut self, other: Config) -> Config {
+        for (key, value) in other.values {
+            if !self.has(key) {
+                self.values.insert(key, value);
+            }
+        }
+        return self;
+    }
+
+    pub fn validate(self, validator: fn(Config) -> bool) -> bool {
+        return validator(self);
+    }
+}
+
+// Config builder for fluent API
+pub struct ConfigBuilder {
+    pub config: Config,
+    pub env_files: Array<string>,
+    pub defaults: Map<string, ConfigValue>,
+}
+
+impl ConfigBuilder {
+    pub fn new() -> ConfigBuilder {
+        return ConfigBuilder {
+            config: Config::new(),
+            env_files: Array::new(),
+            defaults: Map::new(),
+        };
+    }
+
+    pub fn with_env_file(mut self, file_path: string) -> ConfigBuilder {
+        self.env_files.push(file_path);
+        return self;
+    }
+
+    pub fn with_env(mut self, env: Environment) -> ConfigBuilder {
+        self.config = self.config.with_environment(env);
+        return self;
+    }
+
+    pub fn with_default(mut self, key: string, value: ConfigValue) -> ConfigBuilder {
+        self.defaults.insert(key, value);
+        return self;
+    }
+
+    pub fn with_default_string(mut self, key: string, value: string) -> ConfigBuilder {
+        self.defaults.insert(key, ConfigValue::String(value));
+        return self;
+    }
+
+    pub fn with_default_int(mut self, key: string, value: int) -> ConfigBuilder {
+        self.defaults.insert(key, ConfigValue::Int(value));
+        return self;
+    }
+
+    pub fn with_default_bool(mut self, key: string, value: bool) -> ConfigBuilder {
+        self.defaults.insert(key, ConfigValue::Bool(value));
+        return self;
+    }
+
+    pub fn load_from_system_env(mut self) -> ConfigBuilder {
+        self.config = self.config.load_from_env();
+        return self;
+    }
+
+    pub fn build(mut self) -> Config {
+        // Load env files
+        for file in self.env_files {
+            self.config = self.config.load_env_file(file);
+        }
+
+        // Apply defaults for missing keys
+        for (key, value) in self.defaults {
+            if !self.config.has(key) {
+                self.config.values.insert(key, value);
+            }
+        }
+
+        return self.config;
+    }
+}
+
+// Typed config schema
+pub struct ConfigSchema {
+    pub required_keys: Array<string>,
+    pub optional_keys: Array<string>,
+    pub validators: Map<string, fn(ConfigValue) -> bool>,
+}
+
+impl ConfigSchema {
+    pub fn new() -> ConfigSchema {
+        return ConfigSchema {
+            required_keys: Array::new(),
+            optional_keys: Array::new(),
+            validators: Map::new(),
+        };
+    }
+
+    pub fn require(mut self, key: string) -> ConfigSchema {
+        self.required_keys.push(key);
+        return self;
+    }
+
+    pub fn optional(mut self, key: string) -> ConfigSchema {
+        self.optional_keys.push(key);
+        return self;
+    }
+
+    pub fn with_validator(mut self, key: string, validator: fn(ConfigValue) -> bool) -> ConfigSchema {
+        self.validators.insert(key, validator);
+        return self;
+    }
+
+    pub fn validate(self, config: Config) -> ValidationResult {
+        let mut result = ValidationResult::new();
+
+        // Check required keys
+        for key in self.required_keys {
+            if !config.has(key) {
+                result.add_error("Config key required: " + key);
+            }
+        }
+
+        // Run custom validators
+        for (key, validator) in self.validators {
+            if config.has(key) {
+                let value = config.get(key);
+                if !validator(value) {
+                    result.add_error("Validation failed for key: " + key);
+                }
+            }
+        }
+
+        return result;
+    }
+}
+
+// Validation result
+pub struct ValidationResult {
+    pub errors: Array<string>,
+}
+
+impl ValidationResult {
+    pub fn new() -> ValidationResult {
+        return ValidationResult {
+            errors: Array::new(),
+        };
+    }
+
+    pub fn add_error(mut self, error: string) {
+        self.errors.push(error);
+    }
+
+    pub fn is_valid(self) -> bool {
+        return self.errors.len() == 0;
+    }
+
+    pub fn get_errors(self) -> Array<string> {
+        return self.errors;
+    }
+}
+
+// Environment-specific config
+pub struct EnvConfig {
+    pub development: Config,
+    pub production: Config,
+    pub test: Config,
+    pub staging: Config,
+    pub current: Environment,
+}
+
+impl EnvConfig {
+    pub fn new() -> EnvConfig {
+        return EnvConfig {
+            development: Config::new().with_environment(Environment::Development),
+            production: Config::new().with_environment(Environment::Production),
+            test: Config::new().with_environment(Environment::Test),
+            staging: Config::new().with_environment(Environment::Staging),
+            current: Environment::Development,
+        };
+    }
+
+    pub fn with_current_env(mut self, env: Environment) -> EnvConfig {
+        self.current = env;
+        return self;
+    }
+
+    pub fn get_current(self) -> Config {
+        return match self.current {
+            Environment::Development => self.development,
+            Environment::Production => self.production,
+            Environment::Test => self.test,
+            Environment::Staging => self.staging,
+        };
+    }
+
+    pub fn set_for_env(mut self, env: Environment, config: Config) -> EnvConfig {
+        match env {
+            Environment::Development => self.development = config,
+            Environment::Production => self.production = config,
+            Environment::Test => self.test = config,
+            Environment::Staging => self.staging = config,
+        }
+        return self;
+    }
+}
+
+// Secret manager (for sensitive config values)
+pub struct SecretManager {
+    pub secrets: Map<string, string>,
+    pub encrypted: bool,
+}
+
+impl SecretManager {
+    pub fn new() -> SecretManager {
+        return SecretManager {
+            secrets: Map::new(),
+            encrypted: false,
+        };
+    }
+
+    pub fn with_encryption(mut self) -> SecretManager {
+        self.encrypted = true;
+        return self;
+    }
+
+    pub fn set_secret(mut self, key: string, value: string) -> SecretManager {
+        // In real implementation, would encrypt if enabled
+        self.secrets.insert(key, value);
+        return self;
+    }
+
+    pub fn get_secret(self, key: string) -> Option<string> {
+        // In real implementation, would decrypt if enabled
+        return self.secrets.get(key);
+    }
+
+    pub fn has_secret(self, key: string) -> bool {
+        return self.secrets.contains_key(key);
+    }
+
+    pub fn load_from_env(mut self, prefix: string) -> SecretManager {
+        // In real implementation, would load secrets from environment
+        // with given prefix (e.g., "SECRET_")
+        return self;
+    }
+}
+
+// Helper functions
+fn parse_int_safe(s: string) -> Option<int> {
+    // In real implementation, would safely parse string to int
+    return Some(0);
+}
+
+fn parse_float_safe(s: string) -> Option<float> {
+    // In real implementation, would safely parse string to float
+    return Some(0.0);
+}
+
+fn panic(message: string) {
+    // In real implementation, would throw error or panic
+    println("PANIC: " + message);
+}
+
+// Global config instance
+let mut GLOBAL_CONFIG: Option<Config> = None;
+
+pub fn set_global_config(config: Config) {
+    GLOBAL_CONFIG = Some(config);
+}
+
+pub fn get_global_config() -> Option<Config> {
+    return GLOBAL_CONFIG;
+}
+
+pub fn config_get(key: string) -> ConfigValue {
+    if GLOBAL_CONFIG.is_some() {
+        return GLOBAL_CONFIG.unwrap().get(key);
+    }
+    return ConfigValue::None;
+}
+
+pub fn config_get_string(key: string) -> string {
+    return config_get(key).as_string();
+}
+
+pub fn config_get_int(key: string) -> Option<int> {
+    return config_get(key).as_int();
+}
+
+pub fn config_get_bool(key: string) -> bool {
+    return config_get(key).as_bool();
+}

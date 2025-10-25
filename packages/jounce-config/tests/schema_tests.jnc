@@ -1,0 +1,205 @@
+// Tests for ConfigSchema and environment config in jounce-config
+use jounce_config::{ConfigSchema, Config, ConfigValue, EnvConfig, Environment};
+
+#[test]
+fn test_schema_creation() {
+    let schema = ConfigSchema::new();
+
+    assert_eq!(schema.required_keys.len(), 0, "Should have no required keys initially");
+    assert_eq!(schema.optional_keys.len(), 0, "Should have no optional keys initially");
+}
+
+#[test]
+fn test_schema_require() {
+    let schema = ConfigSchema::new()
+        .require("api_key");
+
+    assert_eq!(schema.required_keys.len(), 1, "Should have 1 required key");
+}
+
+#[test]
+fn test_schema_optional() {
+    let schema = ConfigSchema::new()
+        .optional("debug");
+
+    assert_eq!(schema.optional_keys.len(), 1, "Should have 1 optional key");
+}
+
+#[test]
+fn test_schema_validate_success() {
+    let schema = ConfigSchema::new()
+        .require("api_key");
+
+    let mut config = Config::new();
+    config = config.set_string("api_key", "secret");
+
+    let result = schema.validate(config);
+
+    assert!(result.is_valid(), "Should be valid");
+}
+
+#[test]
+fn test_schema_validate_missing_required() {
+    let schema = ConfigSchema::new()
+        .require("api_key");
+
+    let config = Config::new();
+
+    let result = schema.validate(config);
+
+    assert!(!result.is_valid(), "Should be invalid");
+    assert!(result.errors.len() > 0, "Should have errors");
+}
+
+#[test]
+fn test_schema_multiple_required() {
+    let schema = ConfigSchema::new()
+        .require("api_key")
+        .require("database_url");
+
+    let mut config = Config::new();
+    config = config.set_string("api_key", "secret");
+
+    let result = schema.validate(config);
+
+    assert!(!result.is_valid(), "Should be invalid - missing database_url");
+}
+
+#[test]
+fn test_validation_result_creation() {
+    let result = ValidationResult::new();
+
+    assert!(result.is_valid(), "Should be valid initially");
+    assert_eq!(result.errors.len(), 0, "Should have no errors");
+}
+
+#[test]
+fn test_validation_result_add_error() {
+    let mut result = ValidationResult::new();
+    result.add_error("Error message");
+
+    assert!(!result.is_valid(), "Should be invalid after adding error");
+    assert_eq!(result.errors.len(), 1, "Should have 1 error");
+}
+
+#[test]
+fn test_validation_result_get_errors() {
+    let mut result = ValidationResult::new();
+    result.add_error("Error 1");
+    result.add_error("Error 2");
+
+    let errors = result.get_errors();
+
+    assert_eq!(errors.len(), 2, "Should have 2 errors");
+}
+
+#[test]
+fn test_env_config_creation() {
+    let env_config = EnvConfig::new();
+
+    assert!(env_config.current.is_development(), "Should default to development");
+}
+
+#[test]
+fn test_env_config_with_current_env() {
+    let env_config = EnvConfig::new()
+        .with_current_env(Environment::Production);
+
+    assert!(env_config.current.is_production(), "Should be production");
+}
+
+#[test]
+fn test_env_config_get_current() {
+    let mut env_config = EnvConfig::new();
+
+    let mut dev_config = Config::new();
+    dev_config = dev_config.set_string("host", "localhost");
+
+    env_config.development = dev_config;
+    env_config = env_config.with_current_env(Environment::Development);
+
+    let current = env_config.get_current();
+
+    assert_eq!(current.get_string("host"), "localhost", "Should get dev config");
+}
+
+#[test]
+fn test_env_config_set_for_env() {
+    let mut env_config = EnvConfig::new();
+
+    let mut prod_config = Config::new();
+    prod_config = prod_config.set_string("host", "api.example.com");
+
+    env_config = env_config.set_for_env(Environment::Production, prod_config);
+
+    assert_eq!(
+        env_config.production.get_string("host"),
+        "api.example.com",
+        "Should set production config"
+    );
+}
+
+#[test]
+fn test_environment_from_string_prod() {
+    let env1 = Environment::from_string("production");
+    let env2 = Environment::from_string("prod");
+
+    assert!(env1.is_production(), "Should parse production");
+    assert!(env2.is_production(), "Should parse prod");
+}
+
+#[test]
+fn test_environment_from_string_test() {
+    let env1 = Environment::from_string("test");
+    let env2 = Environment::from_string("testing");
+
+    assert_eq!(env1.to_string(), "test", "Should parse test");
+    assert_eq!(env2.to_string(), "test", "Should parse testing");
+}
+
+#[test]
+fn test_environment_from_string_staging() {
+    let env1 = Environment::from_string("staging");
+    let env2 = Environment::from_string("stage");
+
+    assert_eq!(env1.to_string(), "staging", "Should parse staging");
+    assert_eq!(env2.to_string(), "staging", "Should parse stage");
+}
+
+#[test]
+fn test_environment_from_string_default() {
+    let env = Environment::from_string("unknown");
+
+    assert!(env.is_development(), "Should default to development");
+}
+
+#[test]
+fn test_global_config_set_and_get() {
+    let mut config = Config::new();
+    config = config.set_string("app_name", "MyApp");
+
+    set_global_config(config);
+
+    let global = get_global_config();
+
+    assert!(global.is_some(), "Should have global config");
+    assert_eq!(
+        global.unwrap().get_string("app_name"),
+        "MyApp",
+        "Should get app_name from global"
+    );
+}
+
+#[test]
+fn test_global_config_get_helpers() {
+    let mut config = Config::new();
+    config = config.set_string("key", "value");
+    config = config.set_int("port", 8080);
+    config = config.set_bool("enabled", true);
+
+    set_global_config(config);
+
+    assert_eq!(config_get_string("key"), "value", "Should get string");
+    assert_eq!(config_get_int("port").unwrap(), 8080, "Should get int");
+    assert!(config_get_bool("enabled"), "Should get bool");
+}
