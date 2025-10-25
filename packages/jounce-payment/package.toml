@@ -1,0 +1,7 @@
+[package]
+name = "jounce-payment"
+version = "0.1.0"
+description = "Payment integration"
+[[test]]
+name = "payment_tests"
+path = "tests/payment_tests.jnc"

@@ -1,0 +1,7 @@
+[package]
+name = "jounce-storage"
+version = "0.1.0"
+description = "File and blob storage"
+[[test]]
+name = "storage_tests"
+path = "tests/storage_tests.jnc"

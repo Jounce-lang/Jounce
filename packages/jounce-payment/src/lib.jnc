@@ -1,0 +1,8 @@
+// jounce-payment - Payment integration
+pub enum PaymentStatus { Pending, Authorized, Captured, Failed, Refunded }
+pub struct Payment { pub amount: float, pub currency: string, pub status: PaymentStatus }
+impl Payment {
+  pub fn new(amount: float, currency: string) -> Payment { Payment { amount: amount, currency: currency, status: PaymentStatus::Pending } }
+  pub fn authorize(mut self) -> Payment { self.status = PaymentStatus::Authorized; self }
+  pub fn capture(mut self) -> Payment { self.status = PaymentStatus::Captured; self }
+}

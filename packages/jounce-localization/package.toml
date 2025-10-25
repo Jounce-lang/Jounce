@@ -1,0 +1,7 @@
+[package]
+name = "jounce-localization"
+version = "0.1.0"
+description = "i18n/l10n utilities"
+[[test]]
+name = "locale_tests"
+path = "tests/locale_tests.jnc"

@@ -1,0 +1,7 @@
+[package]
+name = "jounce-workflow"
+version = "0.1.0"
+description = "Workflow engine"
+[[test]]
+name = "workflow_tests"
+path = "tests/workflow_tests.jnc"

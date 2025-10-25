@@ -1,0 +1,3 @@
+use jounce_storage::Storage;
+#[test]
+fn test_storage() { let mut s = Storage::new(); s = s.put("file.txt", "content"); assert!(s.get("file.txt").is_some()); }

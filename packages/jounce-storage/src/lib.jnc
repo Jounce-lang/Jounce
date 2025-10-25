@@ -1,0 +1,7 @@
+// jounce-storage - File and blob storage
+pub struct Storage { pub files: Map<string, string> }
+impl Storage {
+  pub fn new() -> Storage { Storage { files: Map::new() } }
+  pub fn put(mut self, key: string, data: string) -> Storage { self.files.insert(key, data); self }
+  pub fn get(self, key: string) -> Option<string> { self.files.get(key) }
+}

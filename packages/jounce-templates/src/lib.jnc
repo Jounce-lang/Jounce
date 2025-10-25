@@ -1,0 +1,7 @@
+// jounce-templates - Template engine
+pub struct Template { pub content: string, pub variables: Map<string, string> }
+impl Template {
+  pub fn new(content: string) -> Template { Template { content: content, variables: Map::new() } }
+  pub fn set(mut self, key: string, value: string) -> Template { self.variables.insert(key, value); self }
+  pub fn render(self) -> string { let mut result = self.content; for (k, v) in self.variables { result = result.replace("{{" + k + "}}", v); } result }
+}

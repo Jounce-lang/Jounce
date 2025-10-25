@@ -1,0 +1,7 @@
+[package]
+name = "jounce-graphql"
+version = "0.1.0"
+description = "GraphQL utilities"
+[[test]]
+name = "graphql_tests"
+path = "tests/graphql_tests.jnc"

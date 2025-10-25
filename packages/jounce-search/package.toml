@@ -1,0 +1,7 @@
+[package]
+name = "jounce-search"
+version = "0.1.0"
+description = "Search and indexing utilities"
+[[test]]
+name = "search_tests"
+path = "tests/search_tests.jnc"

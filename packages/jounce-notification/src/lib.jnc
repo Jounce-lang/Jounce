@@ -1,0 +1,8 @@
+// jounce-notification - Notification management
+pub enum NotificationType { Info, Success, Warning, Error }
+pub struct Notification { pub type_: NotificationType, pub message: string, pub timestamp: int }
+impl Notification {
+  pub fn new(type_: NotificationType, message: string) -> Notification {
+    Notification { type_: type_, message: message, timestamp: 0 }
+  }
+}

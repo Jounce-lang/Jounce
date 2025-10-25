@@ -1,0 +1,3 @@
+use jounce_analytics::{Analytics, Event};
+#[test]
+fn test_analytics() { let mut a = Analytics::new(); a = a.track(Event::new("page_view")); assert_eq!(a.events.len(), 1); }

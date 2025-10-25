@@ -1,0 +1,7 @@
+// jounce-graphql - GraphQL utilities
+pub struct GraphQLQuery { pub query: string, pub variables: Map<string, string> }
+impl GraphQLQuery {
+  pub fn new(query: string) -> GraphQLQuery { GraphQLQuery { query: query, variables: Map::new() } }
+  pub fn with_variable(mut self, key: string, value: string) -> GraphQLQuery { self.variables.insert(key, value); self }
+  pub fn to_json(self) -> string { "{\"query\":\"" + self.query + "\"}" }
+}

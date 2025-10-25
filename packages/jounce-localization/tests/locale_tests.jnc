@@ -1,0 +1,3 @@
+use jounce_localization::Locale;
+#[test]
+fn test_locale() { let l = Locale::new("en").add("hello", "Hello"); assert_eq!(l.translate("hello"), "Hello"); }

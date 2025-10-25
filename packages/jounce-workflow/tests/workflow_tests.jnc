@@ -1,0 +1,3 @@
+use jounce_workflow::Workflow;
+#[test]
+fn test_workflow() { let wf = Workflow::new("deploy").add_step("build"); assert_eq!(wf.steps.len(), 1); }

@@ -1,0 +1,6 @@
+// jounce-scheduler - Task scheduling
+pub struct ScheduledTask { pub name: string, pub cron: string, pub enabled: bool }
+impl ScheduledTask {
+  pub fn new(name: string, cron: string) -> ScheduledTask { ScheduledTask { name: name, cron: cron, enabled: true } }
+  pub fn disable(mut self) -> ScheduledTask { self.enabled = false; self }
+}

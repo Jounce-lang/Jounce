@@ -1,0 +1,3 @@
+use jounce_templates::Template;
+#[test]
+fn test_template() { let t = Template::new("Hello {{name}}").set("name", "World"); assert_eq!(t.render(), "Hello World"); }

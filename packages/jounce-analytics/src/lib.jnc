@@ -1,0 +1,11 @@
+// jounce-analytics - Analytics tracking
+pub struct Event { pub name: string, pub properties: Map<string, string>, pub timestamp: int }
+impl Event {
+  pub fn new(name: string) -> Event { Event { name: name, properties: Map::new(), timestamp: 0 } }
+  pub fn with_property(mut self, key: string, value: string) -> Event { self.properties.insert(key, value); self }
+}
+pub struct Analytics { pub events: Array<Event> }
+impl Analytics {
+  pub fn new() -> Analytics { Analytics { events: Array::new() } }
+  pub fn track(mut self, event: Event) -> Analytics { self.events.push(event); self }
+}

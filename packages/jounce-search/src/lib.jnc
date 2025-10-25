@@ -1,0 +1,19 @@
+// jounce-search - Search and indexing utilities
+pub struct SearchIndex { pub documents: Map<string, string>, pub index: Map<string, Array<string>> }
+impl SearchIndex {
+  pub fn new() -> SearchIndex { SearchIndex { documents: Map::new(), index: Map::new() } }
+  pub fn add_document(mut self, id: string, content: string) -> SearchIndex {
+    self.documents.insert(id, content);
+    let words = content.split(" ");
+    for word in words { 
+      if !self.index.contains_key(word) { self.index.insert(word, Array::new()); }
+      let mut ids = self.index.get(word).unwrap();
+      if !ids.contains(id) { ids.push(id); }
+      self.index.insert(word, ids);
+    }
+    self
+  }
+  pub fn search(self, query: string) -> Array<string> {
+    if self.index.contains_key(query) { self.index.get(query).unwrap() } else { Array::new() }
+  }
+}

@@ -1,0 +1,3 @@
+use jounce_payment::Payment;
+#[test]
+fn test_payment() { let p = Payment::new(99.99, "USD").authorize(); assert_eq!(p.amount, 99.99); }

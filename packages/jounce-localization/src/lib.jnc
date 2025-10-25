@@ -1,0 +1,7 @@
+// jounce-localization - i18n/l10n utilities
+pub struct Locale { pub code: string, pub translations: Map<string, string> }
+impl Locale {
+  pub fn new(code: string) -> Locale { Locale { code: code, translations: Map::new() } }
+  pub fn add(mut self, key: string, value: string) -> Locale { self.translations.insert(key, value); self }
+  pub fn translate(self, key: string) -> string { if self.translations.contains_key(key) { self.translations.get(key).unwrap() } else { key } }
+}

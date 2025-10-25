@@ -1,0 +1,7 @@
+[package]
+name = "jounce-templates"
+version = "0.1.0"
+description = "Template engine"
+[[test]]
+name = "template_tests"
+path = "tests/template_tests.jnc"

@@ -1,0 +1,3 @@
+use jounce_graphql::GraphQLQuery;
+#[test]
+fn test_graphql() { let q = GraphQLQuery::new("query { user { name } }"); assert!(q.to_json().contains("query")); }

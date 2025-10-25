@@ -1,0 +1,7 @@
+[package]
+name = "jounce-scheduler"
+version = "0.1.0"
+description = "Task scheduling"
+[[test]]
+name = "scheduler_tests"
+path = "tests/scheduler_tests.jnc"

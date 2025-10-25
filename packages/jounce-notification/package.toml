@@ -1,0 +1,7 @@
+[package]
+name = "jounce-notification"
+version = "0.1.0"
+description = "Notification management"
+[[test]]
+name = "notif_tests"
+path = "tests/notif_tests.jnc"
