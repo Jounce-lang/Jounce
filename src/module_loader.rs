@@ -119,7 +119,8 @@ impl ModuleLoader {
         // Try multiple package root locations
         let package_roots = vec![
             PathBuf::from("test_modules"),  // For testing
-            PathBuf::from("aloha-shirts"),   // Default package location
+            PathBuf::from("packages"),      // Jounce ecosystem packages
+            PathBuf::from("aloha-shirts"),   // Legacy package location
             self.package_root.clone(),       // User-specified root
         ];
 
