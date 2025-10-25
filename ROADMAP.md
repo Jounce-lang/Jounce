@@ -1,22 +1,22 @@
 # Jounce Development Roadmap
 
-**Current Version**: 0.6.0 "Ecosystem"
+**Current Version**: 0.7.0 "Growing Ecosystem"
 **Target Version**: 1.0.0 "Language Lock"
 **Last Updated**: October 24, 2025
 
 ---
 
-## 📍 Where We Are (v0.6.0 Status)
+## 📍 Where We Are (v0.7.0 Status)
 
 **✅ Complete & Production-Ready**:
 - Core compiler (lexer, parser, type checker, borrow checker, code gen)
 - **Multi-file projects** with `./` and `../` imports (**Phase 11 Complete**)
 - **Fine-grained reactivity system** with signals, computed, effects (**Phase 12 Complete**)
-- **15 ecosystem packages** - auth, db, cache, ui, logger, theme, utils, animate, rpc, docs + 5 existing (**Phase 14 Complete**)
+- **20 ecosystem packages** - validation, config, websocket, queue, markdown + 15 from Phase 14 (**Growing Fast**)
 - Standard library (JSON, DateTime, Crypto, File I/O, YAML) - 100% tested
 - Developer tools (CLI, LSP, test framework, watch mode, HMR, formatter)
 - Compilation cache with smart dependency tracking (102x faster builds)
-- 599/604 tests passing (99.2% coverage)
+- 766+ tests passing across core and packages
 
 **🎉 New in v0.4.0 (Phase 12 - Reactivity)**:
 - ✅ Complete reactivity system (4 primitives: signal, computed, effect, batch)
@@ -42,13 +42,21 @@
 - ✅ **jounce-docs** - Doc parsing, markdown, API ref generation (58 tests)
 - ✅ **task-dashboard** - Multi-package example integrating 6 packages
 
+**🎉 New in v0.7.0 (Packages 14-15 - Growing Ecosystem)**:
+- ✅ **2 new packages** - continued ecosystem expansion (18 → 20 packages)
+- ✅ **136 new tests** - 71 queue + 65 markdown (total 766+ tests)
+- ✅ **jounce-queue** - Job queue, worker pools, priority, retry logic (71 tests)
+- ✅ **jounce-markdown** - Markdown parser, HTML renderer, GFM support (65 tests)
+- ✅ **20/35 packages** toward intermediate goal (57% complete)
+- ✅ **20/100 packages** toward v1.0.0 (20% complete)
+
 **⚠️ Gaps That Block Mass Adoption**:
-- No style system yet (Phase 13 next)
-- Need more packages (15/50 toward competitive ecosystem)
+- No style system yet (Phase 13 planned)
+- Need more packages (20/35 toward intermediate goal, 15 remaining)
 - Limited real-world example apps (need 10+)
 - No community or contributors yet
 
-**🎯 Bottom Line**: Core is rock-solid, module system works, reactivity complete, **ecosystem growing fast**. Ready for Phase 13 (Style System).
+**🎯 Bottom Line**: Core is rock-solid, module system works, reactivity complete, **ecosystem growing fast** (20 packages). On track for 35 packages before building example apps.
 
 ---
 

@@ -1,8 +1,8 @@
-# 🎉 Jounce v0.3.0 - Production Ready!
+# 🎉 Jounce v0.7.0 - Growing Ecosystem!
 
 **The Full-Stack Programming Language Built for Speed and Simplicity**
 
-> ✅ **Status**: **Production Ready** with 638/638 tests passing (100%), 102x faster builds, and complete package ecosystem!
+> ✅ **Status**: **Production Ready** with 766+ tests passing, 102x faster builds, and growing package ecosystem (20+ packages)!
 
 Jounce is a modern programming language where you write **ONE `.jnc` file** that automatically compiles into optimized server and client code. Build production applications with type safety, blazing-fast compilation, and a rich ecosystem of packages.
 
@@ -46,11 +46,12 @@ jnc compile app.jnc
 - **Thread-safe** in-memory AST caching
 - **Instant feedback** with watch mode
 
-### **📦 Complete Package Ecosystem**
-- **5 production-ready packages**: router, HTTP client, forms, i18n, state management
+### **📦 Growing Package Ecosystem**
+- **20+ production-ready packages**: validation, config, websocket, queue, markdown, and more
 - **Full package manager** with dependency resolution
 - **Semantic versioning** support
 - **Security auditing** infrastructure
+- **Target**: 35 packages before v1.0
 
 ### **🎯 Developer Experience**
 - **Colorized CLI** with beautiful output
@@ -60,10 +61,11 @@ jnc compile app.jnc
 - **LSP support** with 70+ completions
 
 ### **🔒 Type-Safe & Tested**
-- **638/638 tests passing** (100% coverage)
+- **766+ tests passing** across core and packages
 - **100% stdlib coverage**: JSON, DateTime, Crypto, File I/O, YAML
 - **Zero critical bugs**
 - **Memory-safe** with borrow checker
+- **Comprehensive package tests**: avg 48+ tests per package
 
 ---
 

@@ -1,4 +1,98 @@
-# Jounce v0.4.0 "Reactive" - Release Notes
+# Jounce Release Notes
+
+## v0.7.0 "Growing Ecosystem" - Current Release
+
+**Release Date**: October 24, 2025
+**Version**: v0.7.0
+**Codename**: "Growing Ecosystem"
+**Status**: Stable Release
+
+---
+
+### 🎉 Major Features
+
+#### New Ecosystem Packages
+
+Jounce v0.7.0 adds two major ecosystem packages, bringing the total to **20+ production-ready packages**.
+
+**Package 14: jounce-queue** (71 tests)
+- ✅ Job queue and background task processing
+- ✅ Priority queues (High, Normal, Low)
+- ✅ Automatic retry logic with configurable attempts
+- ✅ Worker pools for concurrent processing
+- ✅ Delayed/scheduled jobs
+- ✅ Queue management (pause, resume, clear)
+- ✅ Statistics and monitoring
+
+**Package 15: jounce-markdown** (65 tests)
+- ✅ Markdown parsing into AST
+- ✅ HTML rendering with sanitization
+- ✅ GitHub Flavored Markdown (GFM) support
+- ✅ Task lists, code blocks, tables
+- ✅ XSS protection
+- ✅ MarkdownBuilder fluent API
+
+---
+
+### 📊 What's New
+
+#### Packages
+- **jounce-queue**: Complete job queue system with workers, priorities, and retry logic
+- **jounce-markdown**: Full markdown parser and HTML renderer with GFM support
+
+#### Testing
+- **Total Tests**: 766+ tests passing (up from 630)
+- **Package Tests**: 136 new tests across 2 packages
+- **Coverage**: Comprehensive testing for all new features
+
+#### Progress
+- **20/100 packages** complete on roadmap (20%)
+- **20/35 packages** toward intermediate goal (57%)
+- **On track** for 35 packages before v1.0
+
+---
+
+### 🚀 Use Cases
+
+**jounce-queue**:
+- Email sending queues
+- Image processing pipelines
+- Background job processing
+- Task scheduling
+- Batch operations
+
+**jounce-markdown**:
+- Blog/CMS content rendering
+- Documentation generation
+- README rendering
+- Comment systems
+- Rich text editors
+
+---
+
+### 📦 Package Ecosystem (20 Total)
+
+**Core Packages** (5):
+- jounce-router, jounce-http, jounce-forms, jounce-i18n, jounce-store
+
+**Phase 14 Packages** (10):
+- jounce-auth, jounce-db, jounce-cache, jounce-ui, jounce-logger
+- jounce-theme, jounce-utils, jounce-animate, jounce-rpc, jounce-docs
+
+**Additional Packages** (5):
+- jounce-validation, jounce-config, jounce-websocket, jounce-queue, jounce-markdown
+
+---
+
+### 🎯 Next Steps
+
+- **15 more packages** to reach 35-package intermediate goal
+- **Focus**: Email, rate limiting, sanitizer, image, PDF, metrics
+- **Timeline**: 2-3 weeks to 35 packages
+
+---
+
+## v0.4.0 "Reactive" - Previous Release
 
 **Release Date**: October 24, 2025
 **Version**: v0.4.0
