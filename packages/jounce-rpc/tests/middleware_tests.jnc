@@ -1,0 +1,128 @@
+// Tests for RPC middleware in jounce-rpc
+use jounce_rpc::{
+    RetryMiddleware, TimeoutMiddleware, RateLimitMiddleware,
+    MiddlewareContext, RpcRequest
+};
+
+#[test]
+fn test_retry_middleware_creation() {
+    let middleware = RetryMiddleware::new(3);
+
+    assert_eq!(middleware.max_retries, 3, "Max retries should be 3");
+    assert_eq!(middleware.retry_delay, 1000, "Default delay should be 1000ms");
+    assert!(middleware.retry_on_error, "Should retry on error by default");
+}
+
+#[test]
+fn test_retry_middleware_with_delay() {
+    let middleware = RetryMiddleware::new(5)
+        .with_delay(2000);
+
+    assert_eq!(middleware.max_retries, 5, "Max retries should be 5");
+    assert_eq!(middleware.retry_delay, 2000, "Delay should be 2000ms");
+}
+
+#[test]
+fn test_retry_middleware_no_retries() {
+    let middleware = RetryMiddleware::new(0);
+
+    assert_eq!(middleware.max_retries, 0, "Max retries should be 0");
+}
+
+#[test]
+fn test_timeout_middleware_creation() {
+    let middleware = TimeoutMiddleware::new(5000);
+
+    assert_eq!(middleware.timeout, 5000, "Timeout should be 5000ms");
+}
+
+#[test]
+fn test_timeout_middleware_short() {
+    let middleware = TimeoutMiddleware::new(1000);
+
+    assert_eq!(middleware.timeout, 1000, "Timeout should be 1000ms");
+}
+
+#[test]
+fn test_timeout_middleware_long() {
+    let middleware = TimeoutMiddleware::new(60000);
+
+    assert_eq!(middleware.timeout, 60000, "Timeout should be 60000ms");
+}
+
+#[test]
+fn test_rate_limit_middleware_creation() {
+    let middleware = RateLimitMiddleware::new(100, 60000);
+
+    assert_eq!(middleware.max_requests, 100, "Max requests should be 100");
+    assert_eq!(middleware.window, 60000, "Window should be 60000ms");
+    assert_eq!(middleware.current_count, 0, "Current count should be 0");
+}
+
+#[test]
+fn test_rate_limit_is_allowed() {
+    let mut middleware = RateLimitMiddleware::new(5, 60000);
+
+    assert!(middleware.is_allowed(), "First request should be allowed");
+    assert!(middleware.is_allowed(), "Second request should be allowed");
+    assert!(middleware.is_allowed(), "Third request should be allowed");
+}
+
+#[test]
+fn test_rate_limit_exceeds_max() {
+    let mut middleware = RateLimitMiddleware::new(2, 60000);
+
+    middleware.is_allowed();  // 1st request
+    middleware.is_allowed();  // 2nd request
+
+    assert!(!middleware.is_allowed(), "Should reject 3rd request");
+}
+
+#[test]
+fn test_rate_limit_reset() {
+    let mut middleware = RateLimitMiddleware::new(3, 60000);
+
+    middleware.is_allowed();
+    middleware.is_allowed();
+
+    middleware.reset();
+
+    assert_eq!(middleware.current_count, 0, "Count should be reset to 0");
+}
+
+#[test]
+fn test_middleware_context_creation() {
+    let request = RpcRequest::new("getUser");
+    let context = MiddlewareContext::new(request);
+
+    assert_eq!(context.request.method, "getUser", "Method should be getUser");
+    assert_eq!(context.metadata.len(), 0, "Should have no metadata initially");
+}
+
+#[test]
+fn test_middleware_context_with_metadata() {
+    let request = RpcRequest::new("createUser");
+    let mut context = MiddlewareContext::new(request);
+
+    context.metadata.insert("trace_id", "abc123");
+
+    assert_eq!(context.metadata.len(), 1, "Should have 1 metadata entry");
+}
+
+#[test]
+fn test_retry_middleware_different_delays() {
+    let fast = RetryMiddleware::new(3).with_delay(100);
+    let slow = RetryMiddleware::new(3).with_delay(5000);
+
+    assert_eq!(fast.retry_delay, 100, "Fast retry should be 100ms");
+    assert_eq!(slow.retry_delay, 5000, "Slow retry should be 5000ms");
+}
+
+#[test]
+fn test_rate_limit_different_windows() {
+    let per_second = RateLimitMiddleware::new(10, 1000);
+    let per_minute = RateLimitMiddleware::new(100, 60000);
+
+    assert_eq!(per_second.window, 1000, "Per second window should be 1000ms");
+    assert_eq!(per_minute.window, 60000, "Per minute window should be 60000ms");
+}

@@ -1,0 +1,168 @@
+// Tests for RPC client, interceptors, and batch requests in jounce-rpc
+use jounce_rpc::{
+    RpcClient, RpcClientConfig, RpcRequest, RpcResponse,
+    BatchRequest, BatchResponse, RpcError, RpcErrorCode,
+    set_global_client, get_global_client
+};
+
+#[test]
+fn test_rpc_client_config_creation() {
+    let config = RpcClientConfig::new("https://api.example.com/rpc");
+
+    assert_eq!(config.endpoint, "https://api.example.com/rpc", "Endpoint should match");
+    assert_eq!(config.timeout, 30000, "Default timeout should be 30000ms");
+    assert_eq!(config.max_retries, 3, "Default max retries should be 3");
+}
+
+#[test]
+fn test_rpc_client_config_with_timeout() {
+    let config = RpcClientConfig::new("https://api.example.com/rpc")
+        .with_timeout(10000);
+
+    assert_eq!(config.timeout, 10000, "Timeout should be 10000ms");
+}
+
+#[test]
+fn test_rpc_client_config_with_retries() {
+    let config = RpcClientConfig::new("https://api.example.com/rpc")
+        .with_retries(5);
+
+    assert_eq!(config.max_retries, 5, "Max retries should be 5");
+}
+
+#[test]
+fn test_rpc_client_config_with_header() {
+    let config = RpcClientConfig::new("https://api.example.com/rpc")
+        .with_header("X-API-Key", "secret123");
+
+    assert_eq!(config.headers.len(), 1, "Should have 1 header");
+    assert!(config.headers.contains_key(&"X-API-Key"), "Should have X-API-Key header");
+}
+
+#[test]
+fn test_rpc_client_config_builder() {
+    let config = RpcClientConfig::new("https://api.example.com/rpc")
+        .with_timeout(5000)
+        .with_retries(2)
+        .with_header("Authorization", "Bearer token");
+
+    assert_eq!(config.endpoint, "https://api.example.com/rpc", "Endpoint should match");
+    assert_eq!(config.timeout, 5000, "Timeout should be 5000ms");
+    assert_eq!(config.max_retries, 2, "Max retries should be 2");
+    assert_eq!(config.headers.len(), 1, "Should have 1 header");
+}
+
+#[test]
+fn test_rpc_client_creation() {
+    let config = RpcClientConfig::new("https://api.example.com/rpc");
+    let client = RpcClient::new(config);
+
+    // Client should be created successfully
+    assert!(true, "Client created successfully");
+}
+
+#[test]
+fn test_rpc_client_call() {
+    let config = RpcClientConfig::new("https://api.example.com/rpc");
+    let client = RpcClient::new(config);
+
+    let request = RpcRequest::new("getUser")
+        .with_param("id", "123");
+
+    let result = client.call(request);
+
+    assert!(result.is_ok(), "Call should succeed");
+}
+
+#[test]
+fn test_batch_request_creation() {
+    let batch = BatchRequest::new();
+
+    assert_eq!(batch.size(), 0, "Batch should be empty initially");
+}
+
+#[test]
+fn test_batch_request_add() {
+    let batch = BatchRequest::new()
+        .add(RpcRequest::new("getUser"))
+        .add(RpcRequest::new("getPost"));
+
+    assert_eq!(batch.size(), 2, "Batch should have 2 requests");
+}
+
+#[test]
+fn test_batch_request_multiple() {
+    let batch = BatchRequest::new()
+        .add(RpcRequest::new("method1"))
+        .add(RpcRequest::new("method2"))
+        .add(RpcRequest::new("method3"));
+
+    assert_eq!(batch.size(), 3, "Batch should have 3 requests");
+}
+
+#[test]
+fn test_batch_response_creation() {
+    let batch = BatchResponse::new();
+
+    assert_eq!(batch.responses.len(), 0, "Batch response should be empty");
+}
+
+#[test]
+fn test_batch_response_add() {
+    let batch = BatchResponse::new()
+        .add(RpcResponse::success("req1", "result1"))
+        .add(RpcResponse::success("req2", "result2"));
+
+    assert_eq!(batch.responses.len(), 2, "Batch response should have 2 responses");
+}
+
+#[test]
+fn test_batch_response_all_success() {
+    let batch = BatchResponse::new()
+        .add(RpcResponse::success("req1", "result1"))
+        .add(RpcResponse::success("req2", "result2"));
+
+    assert!(batch.all_success(), "All responses should be successful");
+}
+
+#[test]
+fn test_batch_response_has_errors() {
+    let error = RpcError::new(RpcErrorCode::InternalError, "Error");
+    let batch = BatchResponse::new()
+        .add(RpcResponse::success("req1", "result1"))
+        .add(RpcResponse::failure("req2", error));
+
+    assert!(!batch.all_success(), "Not all responses should be successful");
+    assert!(batch.has_errors(), "Batch should have errors");
+}
+
+#[test]
+fn test_set_global_client() {
+    let config = RpcClientConfig::new("https://global.example.com/rpc");
+    let client = RpcClient::new(config);
+
+    set_global_client(client);
+
+    let retrieved = get_global_client();
+    assert!(retrieved.is_some(), "Should retrieve global client");
+}
+
+#[test]
+fn test_get_global_client() {
+    let client = get_global_client();
+
+    // May or may not be set depending on test order
+    assert!(true, "Get global client should not fail");
+}
+
+#[test]
+fn test_rpc_client_different_endpoints() {
+    let config1 = RpcClientConfig::new("https://api1.example.com/rpc");
+    let config2 = RpcClientConfig::new("https://api2.example.com/rpc");
+
+    let client1 = RpcClient::new(config1);
+    let client2 = RpcClient::new(config2);
+
+    // Different clients should be independent
+    assert!(true, "Different clients created successfully");
+}

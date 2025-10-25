@@ -1,0 +1,123 @@
+// Tests for RPC requests and responses in jounce-rpc
+use jounce_rpc::{RpcRequest, RpcResponse, RpcError, RpcErrorCode};
+
+#[test]
+fn test_rpc_request_creation() {
+    let request = RpcRequest::new("getUser");
+
+    assert_eq!(request.method, "getUser", "Method should be getUser");
+    assert!(request.id.len() > 0, "Should have auto-generated ID");
+    assert_eq!(request.params.len(), 0, "Should have no params initially");
+}
+
+#[test]
+fn test_rpc_request_with_param() {
+    let request = RpcRequest::new("getUser")
+        .with_param("id", "123");
+
+    assert_eq!(request.params.len(), 1, "Should have 1 param");
+    assert!(request.params.contains_key(&"id"), "Should have id param");
+}
+
+#[test]
+fn test_rpc_request_with_multiple_params() {
+    let request = RpcRequest::new("createUser")
+        .with_param("name", "John")
+        .with_param("email", "john@example.com")
+        .with_param("age", "30");
+
+    assert_eq!(request.params.len(), 3, "Should have 3 params");
+}
+
+#[test]
+fn test_rpc_request_with_header() {
+    let request = RpcRequest::new("getUser")
+        .with_header("Authorization", "Bearer token123");
+
+    assert_eq!(request.headers.len(), 1, "Should have 1 header");
+    assert!(request.headers.contains_key(&"Authorization"), "Should have Authorization header");
+}
+
+#[test]
+fn test_rpc_request_with_metadata() {
+    let request = RpcRequest::new("getUser")
+        .with_metadata("trace_id", "abc123");
+
+    assert_eq!(request.metadata.len(), 1, "Should have 1 metadata entry");
+}
+
+#[test]
+fn test_rpc_request_builder() {
+    let request = RpcRequest::new("createUser")
+        .with_param("name", "Alice")
+        .with_header("Content-Type", "application/json")
+        .with_metadata("trace_id", "xyz789");
+
+    assert_eq!(request.method, "createUser", "Method should be createUser");
+    assert_eq!(request.params.len(), 1, "Should have 1 param");
+    assert_eq!(request.headers.len(), 1, "Should have 1 header");
+    assert_eq!(request.metadata.len(), 1, "Should have 1 metadata entry");
+}
+
+#[test]
+fn test_rpc_response_success() {
+    let response = RpcResponse::success("req_123", "result_data");
+
+    assert_eq!(response.id, "req_123", "ID should match");
+    assert!(response.result.is_some(), "Should have result");
+    assert!(response.error.is_none(), "Should not have error");
+}
+
+#[test]
+fn test_rpc_response_failure() {
+    let error = RpcError::new(RpcErrorCode::MethodNotFound, "Method not found");
+    let response = RpcResponse::failure("req_456", error);
+
+    assert_eq!(response.id, "req_456", "ID should match");
+    assert!(response.result.is_none(), "Should not have result");
+    assert!(response.error.is_some(), "Should have error");
+}
+
+#[test]
+fn test_rpc_response_is_success() {
+    let response = RpcResponse::success("req_123", "data");
+
+    assert!(response.is_success(), "Should be success");
+    assert!(!response.is_error(), "Should not be error");
+}
+
+#[test]
+fn test_rpc_response_is_error() {
+    let error = RpcError::new(RpcErrorCode::InternalError, "Server error");
+    let response = RpcResponse::failure("req_456", error);
+
+    assert!(!response.is_success(), "Should not be success");
+    assert!(response.is_error(), "Should be error");
+}
+
+#[test]
+fn test_rpc_response_get_result() {
+    let response = RpcResponse::success("req_123", "user_data");
+
+    if let Some(result) = response.result {
+        assert_eq!(result, "user_data", "Result should be user_data");
+    } else {
+        assert!(false, "Should have result");
+    }
+}
+
+#[test]
+fn test_rpc_response_with_headers() {
+    let mut response = RpcResponse::success("req_123", "data");
+    response.headers.insert("Content-Type", "application/json");
+
+    assert_eq!(response.headers.len(), 1, "Should have 1 header");
+}
+
+#[test]
+fn test_rpc_response_with_metadata() {
+    let mut response = RpcResponse::success("req_123", "data");
+    response.metadata.insert("duration_ms", "150");
+
+    assert_eq!(response.metadata.len(), 1, "Should have 1 metadata entry");
+}

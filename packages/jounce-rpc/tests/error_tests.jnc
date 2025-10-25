@@ -1,0 +1,126 @@
+// Tests for RPC error handling in jounce-rpc
+use jounce_rpc::{RpcError, RpcErrorCode};
+
+#[test]
+fn test_error_code_parse_error() {
+    let code = RpcErrorCode::ParseError;
+
+    assert_eq!(code.to_int(), -32700, "ParseError code should be -32700");
+    assert_eq!(code.to_string(), "Parse error", "ParseError string should match");
+}
+
+#[test]
+fn test_error_code_invalid_request() {
+    let code = RpcErrorCode::InvalidRequest;
+
+    assert_eq!(code.to_int(), -32600, "InvalidRequest code should be -32600");
+    assert_eq!(code.to_string(), "Invalid request", "InvalidRequest string should match");
+}
+
+#[test]
+fn test_error_code_method_not_found() {
+    let code = RpcErrorCode::MethodNotFound;
+
+    assert_eq!(code.to_int(), -32601, "MethodNotFound code should be -32601");
+    assert_eq!(code.to_string(), "Method not found", "MethodNotFound string should match");
+}
+
+#[test]
+fn test_error_code_invalid_params() {
+    let code = RpcErrorCode::InvalidParams;
+
+    assert_eq!(code.to_int(), -32602, "InvalidParams code should be -32602");
+    assert_eq!(code.to_string(), "Invalid params", "InvalidParams string should match");
+}
+
+#[test]
+fn test_error_code_internal_error() {
+    let code = RpcErrorCode::InternalError;
+
+    assert_eq!(code.to_int(), -32603, "InternalError code should be -32603");
+    assert_eq!(code.to_string(), "Internal error", "InternalError string should match");
+}
+
+#[test]
+fn test_error_code_server_error() {
+    let code = RpcErrorCode::ServerError;
+
+    assert_eq!(code.to_int(), -32000, "ServerError code should be -32000");
+    assert_eq!(code.to_string(), "Server error", "ServerError string should match");
+}
+
+#[test]
+fn test_error_code_timeout() {
+    let code = RpcErrorCode::Timeout;
+
+    assert_eq!(code.to_int(), -32001, "Timeout code should be -32001");
+    assert_eq!(code.to_string(), "Timeout", "Timeout string should match");
+}
+
+#[test]
+fn test_error_code_network_error() {
+    let code = RpcErrorCode::NetworkError;
+
+    assert_eq!(code.to_int(), -32002, "NetworkError code should be -32002");
+    assert_eq!(code.to_string(), "Network error", "NetworkError string should match");
+}
+
+#[test]
+fn test_error_code_authentication_error() {
+    let code = RpcErrorCode::AuthenticationError;
+
+    assert_eq!(code.to_int(), -32003, "AuthenticationError code should be -32003");
+    assert_eq!(code.to_string(), "Authentication error", "AuthenticationError string should match");
+}
+
+#[test]
+fn test_error_code_authorization_error() {
+    let code = RpcErrorCode::AuthorizationError;
+
+    assert_eq!(code.to_int(), -32004, "AuthorizationError code should be -32004");
+    assert_eq!(code.to_string(), "Authorization error", "AuthorizationError string should match");
+}
+
+#[test]
+fn test_rpc_error_creation() {
+    let error = RpcError::new(RpcErrorCode::MethodNotFound, "Method 'getUser' not found");
+
+    assert_eq!(error.message, "Method 'getUser' not found", "Message should match");
+    assert_eq!(error.data.len(), 0, "Should have no data initially");
+}
+
+#[test]
+fn test_rpc_error_with_data() {
+    let error = RpcError::new(RpcErrorCode::InvalidParams, "Missing required parameter")
+        .with_data("param", "id")
+        .with_data("required", "true");
+
+    assert_eq!(error.data.len(), 2, "Should have 2 data entries");
+    assert!(error.data.contains_key(&"param"), "Should have param data");
+}
+
+#[test]
+fn test_rpc_error_to_string() {
+    let error = RpcError::new(RpcErrorCode::InternalError, "Database connection failed");
+    let error_str = error.to_string();
+
+    assert!(error_str.contains("-32603"), "Should contain error code");
+    assert!(error_str.contains("Database connection failed"), "Should contain message");
+}
+
+#[test]
+fn test_rpc_error_parse_error_string() {
+    let error = RpcError::new(RpcErrorCode::ParseError, "Invalid JSON");
+    let error_str = error.to_string();
+
+    assert!(error_str.contains("-32700"), "Should contain parse error code");
+}
+
+#[test]
+fn test_rpc_error_timeout_string() {
+    let error = RpcError::new(RpcErrorCode::Timeout, "Request timed out after 30s");
+    let error_str = error.to_string();
+
+    assert!(error_str.contains("-32001"), "Should contain timeout code");
+    assert!(error_str.contains("Request timed out"), "Should contain timeout message");
+}

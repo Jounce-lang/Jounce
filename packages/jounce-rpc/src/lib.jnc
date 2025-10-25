@@ -1,0 +1,542 @@
+// jounce-rpc - RPC middleware, interceptors, error handling, and retry logic
+// Version: 0.1.0
+
+use jounce_logger::{get_logger, LogLevel};
+
+// ============================================================================
+// RPC Request & Response
+// ============================================================================
+
+/// RPC request
+pub struct RpcRequest {
+    pub id: string,
+    pub method: string,
+    pub params: Map<string, string>,
+    pub headers: Map<string, string>,
+    pub metadata: Map<string, string>,
+}
+
+impl RpcRequest {
+    pub fn new(method: string) -> RpcRequest {
+        return RpcRequest {
+            id: generate_request_id(),
+            method: method,
+            params: Map::new(),
+            headers: Map::new(),
+            metadata: Map::new(),
+        };
+    }
+
+    pub fn with_param(mut self, key: string, value: string) -> RpcRequest {
+        self.params.insert(key, value);
+        return self;
+    }
+
+    pub fn with_header(mut self, key: string, value: string) -> RpcRequest {
+        self.headers.insert(key, value);
+        return self;
+    }
+
+    pub fn with_metadata(mut self, key: string, value: string) -> RpcRequest {
+        self.metadata.insert(key, value);
+        return self;
+    }
+}
+
+/// RPC response
+pub struct RpcResponse {
+    pub id: string,
+    pub result: Option<string>,
+    pub error: Option<RpcError>,
+    pub headers: Map<string, string>,
+    pub metadata: Map<string, string>,
+}
+
+impl RpcResponse {
+    pub fn success(id: string, result: string) -> RpcResponse {
+        return RpcResponse {
+            id: id,
+            result: Some(result),
+            error: None,
+            headers: Map::new(),
+            metadata: Map::new(),
+        };
+    }
+
+    pub fn failure(id: string, error: RpcError) -> RpcResponse {
+        return RpcResponse {
+            id: id,
+            result: None,
+            error: Some(error),
+            headers: Map::new(),
+            metadata: Map::new(),
+        };
+    }
+
+    pub fn is_success(self) -> bool {
+        return self.error.is_none();
+    }
+
+    pub fn is_error(self) -> bool {
+        return self.error.is_some();
+    }
+}
+
+// ============================================================================
+// RPC Error
+// ============================================================================
+
+/// RPC error codes
+pub enum RpcErrorCode {
+    ParseError,         // -32700
+    InvalidRequest,     // -32600
+    MethodNotFound,     // -32601
+    InvalidParams,      // -32602
+    InternalError,      // -32603
+    ServerError,        // -32000 to -32099
+    Timeout,
+    NetworkError,
+    AuthenticationError,
+    AuthorizationError,
+}
+
+impl RpcErrorCode {
+    pub fn to_int(self) -> int {
+        match self {
+            RpcErrorCode::ParseError => -32700,
+            RpcErrorCode::InvalidRequest => -32600,
+            RpcErrorCode::MethodNotFound => -32601,
+            RpcErrorCode::InvalidParams => -32602,
+            RpcErrorCode::InternalError => -32603,
+            RpcErrorCode::ServerError => -32000,
+            RpcErrorCode::Timeout => -32001,
+            RpcErrorCode::NetworkError => -32002,
+            RpcErrorCode::AuthenticationError => -32003,
+            RpcErrorCode::AuthorizationError => -32004,
+        }
+    }
+
+    pub fn to_string(self) -> string {
+        match self {
+            RpcErrorCode::ParseError => "Parse error",
+            RpcErrorCode::InvalidRequest => "Invalid request",
+            RpcErrorCode::MethodNotFound => "Method not found",
+            RpcErrorCode::InvalidParams => "Invalid params",
+            RpcErrorCode::InternalError => "Internal error",
+            RpcErrorCode::ServerError => "Server error",
+            RpcErrorCode::Timeout => "Timeout",
+            RpcErrorCode::NetworkError => "Network error",
+            RpcErrorCode::AuthenticationError => "Authentication error",
+            RpcErrorCode::AuthorizationError => "Authorization error",
+        }
+    }
+}
+
+/// RPC error
+pub struct RpcError {
+    pub code: RpcErrorCode,
+    pub message: string,
+    pub data: Map<string, string>,
+}
+
+impl RpcError {
+    pub fn new(code: RpcErrorCode, message: string) -> RpcError {
+        return RpcError {
+            code: code,
+            message: message,
+            data: Map::new(),
+        };
+    }
+
+    pub fn with_data(mut self, key: string, value: string) -> RpcError {
+        self.data.insert(key, value);
+        return self;
+    }
+
+    pub fn to_string(self) -> string {
+        return "[" + self.code.to_int().to_string() + "] " + self.message;
+    }
+}
+
+// ============================================================================
+// Interceptors
+// ============================================================================
+
+/// Request interceptor
+pub trait RequestInterceptor {
+    fn intercept_request(request: RpcRequest) -> RpcRequest;
+}
+
+/// Response interceptor
+pub trait ResponseInterceptor {
+    fn intercept_response(response: RpcResponse) -> RpcResponse;
+}
+
+/// Logging interceptor
+pub struct LoggingInterceptor {
+    pub logger_name: string,
+}
+
+impl LoggingInterceptor {
+    pub fn new(logger_name: string) -> LoggingInterceptor {
+        return LoggingInterceptor {
+            logger_name: logger_name,
+        };
+    }
+}
+
+impl RequestInterceptor for LoggingInterceptor {
+    fn intercept_request(request: RpcRequest) -> RpcRequest {
+        let logger = get_logger("rpc");
+        // In real implementation: log request details
+        return request;
+    }
+}
+
+impl ResponseInterceptor for LoggingInterceptor {
+    fn intercept_response(response: RpcResponse) -> RpcResponse {
+        let logger = get_logger("rpc");
+        // In real implementation: log response details
+        return response;
+    }
+}
+
+/// Authentication interceptor
+pub struct AuthInterceptor {
+    pub token: string,
+}
+
+impl AuthInterceptor {
+    pub fn new(token: string) -> AuthInterceptor {
+        return AuthInterceptor {
+            token: token,
+        };
+    }
+}
+
+impl RequestInterceptor for AuthInterceptor {
+    fn intercept_request(mut request: RpcRequest) -> RpcRequest {
+        // Add authorization header
+        request.headers.insert("Authorization", "Bearer " + self.token);
+        return request;
+    }
+}
+
+// ============================================================================
+// Middleware
+// ============================================================================
+
+/// Middleware context
+pub struct MiddlewareContext {
+    pub request: RpcRequest,
+    pub metadata: Map<string, string>,
+}
+
+impl MiddlewareContext {
+    pub fn new(request: RpcRequest) -> MiddlewareContext {
+        return MiddlewareContext {
+            request: request,
+            metadata: Map::new(),
+        };
+    }
+}
+
+/// Middleware handler
+pub trait Middleware {
+    fn handle(context: MiddlewareContext) -> Result<RpcResponse, RpcError>;
+}
+
+/// Retry middleware
+pub struct RetryMiddleware {
+    pub max_retries: int,
+    pub retry_delay: int,  // milliseconds
+    pub retry_on_error: bool,
+}
+
+impl RetryMiddleware {
+    pub fn new(max_retries: int) -> RetryMiddleware {
+        return RetryMiddleware {
+            max_retries: max_retries,
+            retry_delay: 1000,
+            retry_on_error: true,
+        };
+    }
+
+    pub fn with_delay(mut self, delay: int) -> RetryMiddleware {
+        self.retry_delay = delay;
+        return self;
+    }
+}
+
+/// Timeout middleware
+pub struct TimeoutMiddleware {
+    pub timeout: int,  // milliseconds
+}
+
+impl TimeoutMiddleware {
+    pub fn new(timeout: int) -> TimeoutMiddleware {
+        return TimeoutMiddleware {
+            timeout: timeout,
+        };
+    }
+}
+
+/// Rate limiting middleware
+pub struct RateLimitMiddleware {
+    pub max_requests: int,
+    pub window: int,  // milliseconds
+    pub current_count: int,
+    pub window_start: int,
+}
+
+impl RateLimitMiddleware {
+    pub fn new(max_requests: int, window: int) -> RateLimitMiddleware {
+        return RateLimitMiddleware {
+            max_requests: max_requests,
+            window: window,
+            current_count: 0,
+            window_start: Date.now(),
+        };
+    }
+
+    pub fn is_allowed(mut self) -> bool {
+        let now = Date.now();
+
+        // Reset window if expired
+        if now - self.window_start > self.window {
+            self.window_start = now;
+            self.current_count = 0;
+        }
+
+        if self.current_count >= self.max_requests {
+            return false;
+        }
+
+        self.current_count = self.current_count + 1;
+        return true;
+    }
+
+    pub fn reset(mut self) {
+        self.current_count = 0;
+        self.window_start = Date.now();
+    }
+}
+
+// ============================================================================
+// RPC Client
+// ============================================================================
+
+/// RPC client configuration
+pub struct RpcClientConfig {
+    pub endpoint: string,
+    pub timeout: int,
+    pub max_retries: int,
+    pub retry_delay: int,
+    pub headers: Map<string, string>,
+}
+
+impl RpcClientConfig {
+    pub fn new(endpoint: string) -> RpcClientConfig {
+        return RpcClientConfig {
+            endpoint: endpoint,
+            timeout: 30000,  // 30 seconds
+            max_retries: 3,
+            retry_delay: 1000,
+            headers: Map::new(),
+        };
+    }
+
+    pub fn with_timeout(mut self, timeout: int) -> RpcClientConfig {
+        self.timeout = timeout;
+        return self;
+    }
+
+    pub fn with_retries(mut self, max_retries: int) -> RpcClientConfig {
+        self.max_retries = max_retries;
+        return self;
+    }
+
+    pub fn with_header(mut self, key: string, value: string) -> RpcClientConfig {
+        self.headers.insert(key, value);
+        return self;
+    }
+}
+
+/// RPC client
+pub struct RpcClient {
+    config: RpcClientConfig,
+    request_interceptors: Array<RequestInterceptor>,
+    response_interceptors: Array<ResponseInterceptor>,
+}
+
+impl RpcClient {
+    pub fn new(config: RpcClientConfig) -> RpcClient {
+        return RpcClient {
+            config: config,
+            request_interceptors: Array::new(),
+            response_interceptors: Array::new(),
+        };
+    }
+
+    pub fn call(self, request: RpcRequest) -> Result<RpcResponse, RpcError> {
+        // Apply request interceptors
+        let mut modified_request = request;
+        for interceptor in self.request_interceptors {
+            modified_request = interceptor.intercept_request(modified_request);
+        }
+
+        // Make RPC call (in real implementation, would use HTTP/WebSocket)
+        let response = self.execute_call(modified_request);
+
+        // Apply response interceptors
+        match response {
+            Ok(mut resp) => {
+                for interceptor in self.response_interceptors {
+                    resp = interceptor.intercept_response(resp);
+                }
+                return Ok(resp);
+            },
+            Err(error) => {
+                return Err(error);
+            },
+        }
+    }
+
+    pub fn call_with_retry(self, request: RpcRequest) -> Result<RpcResponse, RpcError> {
+        let mut attempts = 0;
+
+        while attempts < self.config.max_retries {
+            let result = self.call(request.clone());
+
+            match result {
+                Ok(response) => return Ok(response),
+                Err(error) => {
+                    attempts = attempts + 1;
+                    if attempts >= self.config.max_retries {
+                        return Err(error);
+                    }
+                    // Wait before retry
+                    // sleep(self.config.retry_delay);
+                },
+            }
+        }
+
+        return Err(RpcError::new(RpcErrorCode::InternalError, "Max retries exceeded"));
+    }
+
+    fn execute_call(self, request: RpcRequest) -> Result<RpcResponse, RpcError> {
+        // In real implementation:
+        // - Serialize request to JSON
+        // - Make HTTP POST to endpoint
+        // - Deserialize response
+        // - Handle errors
+
+        // Mock implementation
+        return Ok(RpcResponse::success(request.id, "mock_result"));
+    }
+
+    pub fn add_request_interceptor(mut self, interceptor: RequestInterceptor) {
+        self.request_interceptors.push(interceptor);
+    }
+
+    pub fn add_response_interceptor(mut self, interceptor: ResponseInterceptor) {
+        self.response_interceptors.push(interceptor);
+    }
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+fn generate_request_id() -> string {
+    // In real implementation: UUID or unique ID generation
+    return "req_" + Date.now().to_string();
+}
+
+// ============================================================================
+// Global RPC Client
+// ============================================================================
+
+static mut GLOBAL_RPC_CLIENT: Option<RpcClient> = None;
+
+pub fn set_global_client(client: RpcClient) {
+    unsafe {
+        GLOBAL_RPC_CLIENT = Some(client);
+    }
+}
+
+pub fn get_global_client() -> Option<RpcClient> {
+    unsafe {
+        return GLOBAL_RPC_CLIENT.clone();
+    }
+}
+
+pub fn rpc_call(method: string, params: Map<string, string>) -> Result<RpcResponse, RpcError> {
+    let client = get_global_client();
+
+    match client {
+        Some(c) => {
+            let request = RpcRequest::new(method);
+            // Add params
+            return c.call(request);
+        },
+        None => {
+            return Err(RpcError::new(RpcErrorCode::InternalError, "No global RPC client configured"));
+        },
+    }
+}
+
+// ============================================================================
+// Batch Requests
+// ============================================================================
+
+pub struct BatchRequest {
+    pub requests: Array<RpcRequest>,
+}
+
+impl BatchRequest {
+    pub fn new() -> BatchRequest {
+        return BatchRequest {
+            requests: Array::new(),
+        };
+    }
+
+    pub fn add(mut self, request: RpcRequest) -> BatchRequest {
+        self.requests.push(request);
+        return self;
+    }
+
+    pub fn size(self) -> int {
+        return self.requests.len();
+    }
+}
+
+pub struct BatchResponse {
+    pub responses: Array<RpcResponse>,
+}
+
+impl BatchResponse {
+    pub fn new() -> BatchResponse {
+        return BatchResponse {
+            responses: Array::new(),
+        };
+    }
+
+    pub fn add(mut self, response: RpcResponse) -> BatchResponse {
+        self.responses.push(response);
+        return self;
+    }
+
+    pub fn all_success(self) -> bool {
+        for response in self.responses {
+            if !response.is_success() {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    pub fn has_errors(self) -> bool {
+        return !self.all_success();
+    }
+}
