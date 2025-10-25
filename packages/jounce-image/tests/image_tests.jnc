@@ -1,0 +1,205 @@
+// Tests for Image, Dimensions, and basic operations
+use jounce_image::{Image, Dimensions, ImageFormat};
+
+#[test]
+fn test_dimensions_creation() {
+    let dim = Dimensions::new(800, 600);
+
+    assert_eq!(dim.width, 800, "Width should be 800");
+    assert_eq!(dim.height, 600, "Height should be 600");
+}
+
+#[test]
+fn test_dimensions_aspect_ratio() {
+    let dim = Dimensions::new(1920, 1080);
+    let ratio = dim.aspect_ratio();
+
+    assert!(ratio > 1.77 && ratio < 1.78, "Should be 16:9 ratio");
+}
+
+#[test]
+fn test_dimensions_total_pixels() {
+    let dim = Dimensions::new(100, 50);
+
+    assert_eq!(dim.total_pixels(), 5000, "Should be 5000 pixels");
+}
+
+#[test]
+fn test_dimensions_is_landscape() {
+    let dim = Dimensions::new(1920, 1080);
+
+    assert!(dim.is_landscape(), "Should be landscape");
+    assert!(!dim.is_portrait(), "Should not be portrait");
+}
+
+#[test]
+fn test_dimensions_is_portrait() {
+    let dim = Dimensions::new(1080, 1920);
+
+    assert!(dim.is_portrait(), "Should be portrait");
+    assert!(!dim.is_landscape(), "Should not be landscape");
+}
+
+#[test]
+fn test_dimensions_is_square() {
+    let dim = Dimensions::new(1000, 1000);
+
+    assert!(dim.is_square(), "Should be square");
+}
+
+#[test]
+fn test_image_format_from_extension() {
+    let format = ImageFormat::from_extension("jpg");
+
+    match format {
+        ImageFormat::JPEG => assert!(true, "Should be JPEG"),
+        _ => assert!(false, "Should be JPEG"),
+    }
+}
+
+#[test]
+fn test_image_format_to_extension() {
+    let ext = ImageFormat::PNG.to_extension();
+
+    assert_eq!(ext, "png", "Should be png");
+}
+
+#[test]
+fn test_image_format_to_mime_type() {
+    let mime = ImageFormat::JPEG.to_mime_type();
+
+    assert_eq!(mime, "image/jpeg", "Should be image/jpeg");
+}
+
+#[test]
+fn test_image_creation() {
+    let image = Image::new(800, 600, ImageFormat::PNG);
+
+    assert_eq!(image.width, 800, "Width should be 800");
+    assert_eq!(image.height, 600, "Height should be 600");
+}
+
+#[test]
+fn test_image_with_data() {
+    let image = Image::new(100, 100, ImageFormat::PNG)
+        .with_data("binary data");
+
+    assert_eq!(image.data, "binary data", "Data should match");
+}
+
+#[test]
+fn test_image_dimensions() {
+    let image = Image::new(1920, 1080, ImageFormat::JPEG);
+    let dim = image.dimensions();
+
+    assert_eq!(dim.width, 1920, "Width should match");
+    assert_eq!(dim.height, 1080, "Height should match");
+}
+
+#[test]
+fn test_image_aspect_ratio() {
+    let image = Image::new(1920, 1080, ImageFormat::JPEG);
+    let ratio = image.aspect_ratio();
+
+    assert!(ratio > 1.77 && ratio < 1.78, "Should be 16:9");
+}
+
+#[test]
+fn test_image_file_size() {
+    let image = Image::new(100, 100, ImageFormat::PNG)
+        .with_data("12345");
+
+    assert_eq!(image.file_size(), 5, "Size should be 5 bytes");
+}
+
+#[test]
+fn test_image_resize() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.resize(400, 300);
+
+    assert_eq!(image.width, 400, "Width should be 400");
+    assert_eq!(image.height, 300, "Height should be 300");
+}
+
+#[test]
+fn test_image_resize_width() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.resize_width(400);
+
+    assert_eq!(image.width, 400, "Width should be 400");
+    assert_eq!(image.height, 300, "Height should maintain aspect ratio");
+}
+
+#[test]
+fn test_image_resize_height() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.resize_height(300);
+
+    assert_eq!(image.width, 400, "Width should maintain aspect ratio");
+    assert_eq!(image.height, 300, "Height should be 300");
+}
+
+#[test]
+fn test_image_crop() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.crop(100, 100, 400, 300);
+
+    assert_eq!(image.width, 400, "Width should be 400");
+    assert_eq!(image.height, 300, "Height should be 300");
+}
+
+#[test]
+fn test_image_rotate_90() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.rotate_90();
+
+    assert_eq!(image.width, 600, "Width should be original height");
+    assert_eq!(image.height, 800, "Height should be original width");
+}
+
+#[test]
+fn test_image_rotate_180() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.rotate_180();
+
+    assert_eq!(image.width, 800, "Width should stay same");
+    assert_eq!(image.height, 600, "Height should stay same");
+}
+
+#[test]
+fn test_image_rotate_270() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.rotate_270();
+
+    assert_eq!(image.width, 600, "Width should be original height");
+    assert_eq!(image.height, 800, "Height should be original width");
+}
+
+#[test]
+fn test_image_flip_horizontal() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.flip_horizontal();
+
+    assert_eq!(image.width, 800, "Dimensions should stay same");
+    assert_eq!(image.height, 600, "Dimensions should stay same");
+}
+
+#[test]
+fn test_image_flip_vertical() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.flip_vertical();
+
+    assert_eq!(image.width, 800, "Dimensions should stay same");
+    assert_eq!(image.height, 600, "Dimensions should stay same");
+}
+
+#[test]
+fn test_image_convert_format() {
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image = image.convert_format(ImageFormat::JPEG);
+
+    match image.format {
+        ImageFormat::JPEG => assert!(true, "Should be JPEG"),
+        _ => assert!(false, "Should be JPEG"),
+    }
+}

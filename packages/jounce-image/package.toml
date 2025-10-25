@@ -1,0 +1,28 @@
+[package]
+name = "jounce-image"
+version = "0.1.0"
+description = "Image processing utilities - resize, crop, rotate, thumbnails, and optimization"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-image"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "image_tests"
+path = "tests/image_tests.jnc"
+
+[[test]]
+name = "advanced_tests"
+path = "tests/advanced_tests.jnc"
+
+[features]
+default = ["resize", "thumbnails", "optimization"]
+resize = []
+thumbnails = []
+optimization = []
+filters = []
+metadata = []

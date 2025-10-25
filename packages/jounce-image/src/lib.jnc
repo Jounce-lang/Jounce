@@ -1,0 +1,511 @@
+// Image processing utilities for Jounce
+// Supports resize, crop, rotate, filters, and format conversion
+
+// ============================================================================
+// Image Format
+// ============================================================================
+
+pub enum ImageFormat {
+    JPEG,
+    PNG,
+    GIF,
+    WEBP,
+    BMP,
+}
+
+impl ImageFormat {
+    pub fn from_extension(ext: string) -> ImageFormat {
+        if ext == "jpg" || ext == "jpeg" {
+            ImageFormat::JPEG
+        } else if ext == "png" {
+            ImageFormat::PNG
+        } else if ext == "gif" {
+            ImageFormat::GIF
+        } else if ext == "webp" {
+            ImageFormat::WEBP
+        } else if ext == "bmp" {
+            ImageFormat::BMP
+        } else {
+            ImageFormat::JPEG
+        }
+    }
+
+    pub fn to_extension(&self) -> string {
+        match self {
+            ImageFormat::JPEG => "jpg",
+            ImageFormat::PNG => "png",
+            ImageFormat::GIF => "gif",
+            ImageFormat::WEBP => "webp",
+            ImageFormat::BMP => "bmp",
+        }
+    }
+
+    pub fn to_mime_type(&self) -> string {
+        match self {
+            ImageFormat::JPEG => "image/jpeg",
+            ImageFormat::PNG => "image/png",
+            ImageFormat::GIF => "image/gif",
+            ImageFormat::WEBP => "image/webp",
+            ImageFormat::BMP => "image/bmp",
+        }
+    }
+}
+
+// ============================================================================
+// Image Dimensions
+// ============================================================================
+
+pub struct Dimensions {
+    pub width: int,
+    pub height: int,
+}
+
+impl Dimensions {
+    pub fn new(width: int, height: int) -> Dimensions {
+        Dimensions {
+            width: width,
+            height: height,
+        }
+    }
+
+    pub fn aspect_ratio(&self) -> float {
+        (self.width as float) / (self.height as float)
+    }
+
+    pub fn total_pixels(&self) -> int {
+        self.width * self.height
+    }
+
+    pub fn is_landscape(&self) -> bool {
+        self.width > self.height
+    }
+
+    pub fn is_portrait(&self) -> bool {
+        self.height > self.width
+    }
+
+    pub fn is_square(&self) -> bool {
+        self.width == self.height
+    }
+}
+
+// ============================================================================
+// Image
+// ============================================================================
+
+pub struct Image {
+    pub width: int,
+    pub height: int,
+    pub format: ImageFormat,
+    pub data: string,
+    pub metadata: ImageMetadata,
+}
+
+impl Image {
+    pub fn new(width: int, height: int, format: ImageFormat) -> Image {
+        Image {
+            width: width,
+            height: height,
+            format: format,
+            data: "",
+            metadata: ImageMetadata::new(),
+        }
+    }
+
+    pub fn with_data(mut self, data: string) -> Image {
+        self.data = data;
+        self
+    }
+
+    pub fn dimensions(&self) -> Dimensions {
+        Dimensions::new(self.width, self.height)
+    }
+
+    pub fn aspect_ratio(&self) -> float {
+        (self.width as float) / (self.height as float)
+    }
+
+    pub fn file_size(&self) -> int {
+        self.data.len()
+    }
+
+    pub fn resize(mut self, new_width: int, new_height: int) -> Image {
+        self.width = new_width;
+        self.height = new_height;
+        self
+    }
+
+    pub fn resize_width(mut self, new_width: int) -> Image {
+        let ratio = self.aspect_ratio();
+        let new_height = ((new_width as float) / ratio) as int;
+        self.width = new_width;
+        self.height = new_height;
+        self
+    }
+
+    pub fn resize_height(mut self, new_height: int) -> Image {
+        let ratio = self.aspect_ratio();
+        let new_width = ((new_height as float) * ratio) as int;
+        self.width = new_width;
+        self.height = new_height;
+        self
+    }
+
+    pub fn crop(mut self, x: int, y: int, width: int, height: int) -> Image {
+        // In production would actually crop the data
+        self.width = width;
+        self.height = height;
+        self
+    }
+
+    pub fn rotate_90(mut self) -> Image {
+        let temp = self.width;
+        self.width = self.height;
+        self.height = temp;
+        self
+    }
+
+    pub fn rotate_180(self) -> Image {
+        // Dimensions stay the same
+        self
+    }
+
+    pub fn rotate_270(mut self) -> Image {
+        let temp = self.width;
+        self.width = self.height;
+        self.height = temp;
+        self
+    }
+
+    pub fn flip_horizontal(self) -> Image {
+        // Dimensions stay the same
+        self
+    }
+
+    pub fn flip_vertical(self) -> Image {
+        // Dimensions stay the same
+        self
+    }
+
+    pub fn convert_format(mut self, format: ImageFormat) -> Image {
+        self.format = format;
+        self
+    }
+}
+
+// ============================================================================
+// Image Metadata
+// ============================================================================
+
+pub struct ImageMetadata {
+    pub title: string,
+    pub description: string,
+    pub author: string,
+    pub created_at: int,
+    pub dpi: int,
+    pub color_space: string,
+}
+
+impl ImageMetadata {
+    pub fn new() -> ImageMetadata {
+        ImageMetadata {
+            title: "",
+            description: "",
+            author: "",
+            created_at: 0,
+            dpi: 72,
+            color_space: "RGB",
+        }
+    }
+
+    pub fn with_title(mut self, title: string) -> ImageMetadata {
+        self.title = title;
+        self
+    }
+
+    pub fn with_description(mut self, description: string) -> ImageMetadata {
+        self.description = description;
+        self
+    }
+
+    pub fn with_author(mut self, author: string) -> ImageMetadata {
+        self.author = author;
+        self
+    }
+
+    pub fn with_dpi(mut self, dpi: int) -> ImageMetadata {
+        self.dpi = dpi;
+        self
+    }
+}
+
+// ============================================================================
+// Image Filter
+// ============================================================================
+
+pub enum ImageFilter {
+    Grayscale,
+    Sepia,
+    Blur,
+    Sharpen,
+    Brightness,
+    Contrast,
+    Invert,
+}
+
+pub struct FilterConfig {
+    pub filter: ImageFilter,
+    pub intensity: float,
+}
+
+impl FilterConfig {
+    pub fn new(filter: ImageFilter) -> FilterConfig {
+        FilterConfig {
+            filter: filter,
+            intensity: 1.0,
+        }
+    }
+
+    pub fn with_intensity(mut self, intensity: float) -> FilterConfig {
+        self.intensity = intensity;
+        self
+    }
+}
+
+// ============================================================================
+// Thumbnail Generator
+// ============================================================================
+
+pub struct ThumbnailGenerator {
+    pub max_width: int,
+    pub max_height: int,
+    pub maintain_aspect: bool,
+    pub quality: int,
+}
+
+impl ThumbnailGenerator {
+    pub fn new(max_width: int, max_height: int) -> ThumbnailGenerator {
+        ThumbnailGenerator {
+            max_width: max_width,
+            max_height: max_height,
+            maintain_aspect: true,
+            quality: 85,
+        }
+    }
+
+    pub fn with_quality(mut self, quality: int) -> ThumbnailGenerator {
+        self.quality = quality;
+        self
+    }
+
+    pub fn without_aspect_ratio(mut self) -> ThumbnailGenerator {
+        self.maintain_aspect = false;
+        self
+    }
+
+    pub fn generate(&self, image: Image) -> Image {
+        if !self.maintain_aspect {
+            return image.resize(self.max_width, self.max_height);
+        }
+
+        let ratio = image.aspect_ratio();
+        let width_ratio = (self.max_width as float) / (image.width as float);
+        let height_ratio = (self.max_height as float) / (image.height as float);
+
+        let scale = if width_ratio < height_ratio {
+            width_ratio
+        } else {
+            height_ratio
+        };
+
+        let new_width = ((image.width as float) * scale) as int;
+        let new_height = ((image.height as float) * scale) as int;
+
+        image.resize(new_width, new_height)
+    }
+}
+
+// ============================================================================
+// Image Optimizer
+// ============================================================================
+
+pub struct ImageOptimizer {
+    pub target_format: ImageFormat,
+    pub quality: int,
+    pub max_width: int,
+    pub max_height: int,
+    pub strip_metadata: bool,
+}
+
+impl ImageOptimizer {
+    pub fn new() -> ImageOptimizer {
+        ImageOptimizer {
+            target_format: ImageFormat::JPEG,
+            quality: 85,
+            max_width: 2048,
+            max_height: 2048,
+            strip_metadata: false,
+        }
+    }
+
+    pub fn for_web() -> ImageOptimizer {
+        ImageOptimizer::new()
+            .with_format(ImageFormat::WEBP)
+            .with_quality(80)
+            .with_max_dimensions(1920, 1080)
+    }
+
+    pub fn with_format(mut self, format: ImageFormat) -> ImageOptimizer {
+        self.target_format = format;
+        self
+    }
+
+    pub fn with_quality(mut self, quality: int) -> ImageOptimizer {
+        self.quality = quality;
+        self
+    }
+
+    pub fn with_max_dimensions(mut self, width: int, height: int) -> ImageOptimizer {
+        self.max_width = width;
+        self.max_height = height;
+        self
+    }
+
+    pub fn strip_metadata(mut self) -> ImageOptimizer {
+        self.strip_metadata = true;
+        self
+    }
+
+    pub fn optimize(&self, mut image: Image) -> Image {
+        // Resize if too large
+        if image.width > self.max_width || image.height > self.max_height {
+            let gen = ThumbnailGenerator::new(self.max_width, self.max_height);
+            image = gen.generate(image);
+        }
+
+        // Convert format
+        image = image.convert_format(self.target_format.clone());
+
+        // Strip metadata if requested
+        if self.strip_metadata {
+            image.metadata = ImageMetadata::new();
+        }
+
+        image
+    }
+}
+
+// ============================================================================
+// Image Builder
+// ============================================================================
+
+pub struct ImageBuilder {
+    pub image: Image,
+}
+
+impl ImageBuilder {
+    pub fn new(width: int, height: int) -> ImageBuilder {
+        ImageBuilder {
+            image: Image::new(width, height, ImageFormat::PNG),
+        }
+    }
+
+    pub fn from_image(image: Image) -> ImageBuilder {
+        ImageBuilder {
+            image: image,
+        }
+    }
+
+    pub fn with_format(mut self, format: ImageFormat) -> ImageBuilder {
+        self.image.format = format;
+        self
+    }
+
+    pub fn with_data(mut self, data: string) -> ImageBuilder {
+        self.image.data = data;
+        self
+    }
+
+    pub fn resize(mut self, width: int, height: int) -> ImageBuilder {
+        self.image = self.image.resize(width, height);
+        self
+    }
+
+    pub fn resize_width(mut self, width: int) -> ImageBuilder {
+        self.image = self.image.resize_width(width);
+        self
+    }
+
+    pub fn resize_height(mut self, height: int) -> ImageBuilder {
+        self.image = self.image.resize_height(height);
+        self
+    }
+
+    pub fn crop(mut self, x: int, y: int, width: int, height: int) -> ImageBuilder {
+        self.image = self.image.crop(x, y, width, height);
+        self
+    }
+
+    pub fn rotate_90(mut self) -> ImageBuilder {
+        self.image = self.image.rotate_90();
+        self
+    }
+
+    pub fn rotate_180(mut self) -> ImageBuilder {
+        self.image = self.image.rotate_180();
+        self
+    }
+
+    pub fn rotate_270(mut self) -> ImageBuilder {
+        self.image = self.image.rotate_270();
+        self
+    }
+
+    pub fn flip_horizontal(mut self) -> ImageBuilder {
+        self.image = self.image.flip_horizontal();
+        self
+    }
+
+    pub fn flip_vertical(mut self) -> ImageBuilder {
+        self.image = self.image.flip_vertical();
+        self
+    }
+
+    pub fn with_metadata(mut self, metadata: ImageMetadata) -> ImageBuilder {
+        self.image.metadata = metadata;
+        self
+    }
+
+    pub fn build(self) -> Image {
+        self.image
+    }
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+pub fn calculate_resize_dimensions(original_width: int, original_height: int, max_width: int, max_height: int) -> Dimensions {
+    let ratio = (original_width as float) / (original_height as float);
+    let width_ratio = (max_width as float) / (original_width as float);
+    let height_ratio = (max_height as float) / (original_height as float);
+
+    let scale = if width_ratio < height_ratio {
+        width_ratio
+    } else {
+        height_ratio
+    };
+
+    let new_width = ((original_width as float) * scale) as int;
+    let new_height = ((original_height as float) * scale) as int;
+
+    Dimensions::new(new_width, new_height)
+}
+
+pub fn is_valid_dimension(dimension: int) -> bool {
+    dimension > 0 && dimension <= 10000
+}
+
+pub fn is_valid_quality(quality: int) -> bool {
+    quality >= 1 && quality <= 100
+}

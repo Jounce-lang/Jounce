@@ -1,0 +1,443 @@
+// Tests for ThumbnailGenerator, ImageOptimizer, and Metadata
+use jounce_image::{Image, ImageFormat, ThumbnailGenerator, ImageOptimizer, ImageMetadata, FilterConfig, ImageFilter};
+
+// ============================================================================
+// Thumbnail Tests
+// ============================================================================
+
+#[test]
+fn test_thumbnail_generator_creation() {
+    let gen = ThumbnailGenerator::new(200, 200);
+
+    assert_eq!(gen.max_width, 200, "Max width should be 200");
+    assert_eq!(gen.max_height, 200, "Max height should be 200");
+    assert!(gen.maintain_aspect, "Should maintain aspect by default");
+}
+
+#[test]
+fn test_thumbnail_generator_with_quality() {
+    let gen = ThumbnailGenerator::new(200, 200)
+        .with_quality(90);
+
+    assert_eq!(gen.quality, 90, "Quality should be 90");
+}
+
+#[test]
+fn test_thumbnail_generator_without_aspect() {
+    let gen = ThumbnailGenerator::new(200, 200)
+        .without_aspect_ratio();
+
+    assert!(!gen.maintain_aspect, "Should not maintain aspect");
+}
+
+#[test]
+fn test_thumbnail_generate_landscape() {
+    let gen = ThumbnailGenerator::new(200, 200);
+    let image = Image::new(800, 600, ImageFormat::JPEG);
+
+    let thumb = gen.generate(image);
+
+    assert_eq!(thumb.width, 200, "Width should be 200");
+    assert_eq!(thumb.height, 150, "Height should maintain aspect");
+}
+
+#[test]
+fn test_thumbnail_generate_portrait() {
+    let gen = ThumbnailGenerator::new(200, 200);
+    let image = Image::new(600, 800, ImageFormat::JPEG);
+
+    let thumb = gen.generate(image);
+
+    assert_eq!(thumb.width, 150, "Width should maintain aspect");
+    assert_eq!(thumb.height, 200, "Height should be 200");
+}
+
+#[test]
+fn test_thumbnail_generate_square() {
+    let gen = ThumbnailGenerator::new(200, 200);
+    let image = Image::new(1000, 1000, ImageFormat::JPEG);
+
+    let thumb = gen.generate(image);
+
+    assert_eq!(thumb.width, 200, "Width should be 200");
+    assert_eq!(thumb.height, 200, "Height should be 200");
+}
+
+#[test]
+fn test_thumbnail_without_aspect() {
+    let gen = ThumbnailGenerator::new(200, 150)
+        .without_aspect_ratio();
+    let image = Image::new(800, 600, ImageFormat::JPEG);
+
+    let thumb = gen.generate(image);
+
+    assert_eq!(thumb.width, 200, "Width should be 200");
+    assert_eq!(thumb.height, 150, "Height should be 150");
+}
+
+// ============================================================================
+// Optimizer Tests
+// ============================================================================
+
+#[test]
+fn test_image_optimizer_creation() {
+    let opt = ImageOptimizer::new();
+
+    assert_eq!(opt.quality, 85, "Default quality should be 85");
+    assert_eq!(opt.max_width, 2048, "Default max width should be 2048");
+}
+
+#[test]
+fn test_image_optimizer_for_web() {
+    let opt = ImageOptimizer::for_web();
+
+    assert_eq!(opt.quality, 80, "Web quality should be 80");
+    assert_eq!(opt.max_width, 1920, "Web max width should be 1920");
+}
+
+#[test]
+fn test_image_optimizer_with_format() {
+    let opt = ImageOptimizer::new()
+        .with_format(ImageFormat::WEBP);
+
+    match opt.target_format {
+        ImageFormat::WEBP => assert!(true, "Should be WEBP"),
+        _ => assert!(false, "Should be WEBP"),
+    }
+}
+
+#[test]
+fn test_image_optimizer_with_quality() {
+    let opt = ImageOptimizer::new()
+        .with_quality(90);
+
+    assert_eq!(opt.quality, 90, "Quality should be 90");
+}
+
+#[test]
+fn test_image_optimizer_with_max_dimensions() {
+    let opt = ImageOptimizer::new()
+        .with_max_dimensions(1024, 768);
+
+    assert_eq!(opt.max_width, 1024, "Max width should be 1024");
+    assert_eq!(opt.max_height, 768, "Max height should be 768");
+}
+
+#[test]
+fn test_image_optimizer_strip_metadata() {
+    let opt = ImageOptimizer::new()
+        .strip_metadata();
+
+    assert!(opt.strip_metadata, "Should strip metadata");
+}
+
+#[test]
+fn test_image_optimizer_optimize_small() {
+    let opt = ImageOptimizer::new();
+    let image = Image::new(800, 600, ImageFormat::PNG);
+
+    let optimized = opt.optimize(image);
+
+    // Should convert to JPEG
+    match optimized.format {
+        ImageFormat::JPEG => assert!(true, "Should be JPEG"),
+        _ => assert!(false, "Should be JPEG"),
+    }
+}
+
+#[test]
+fn test_image_optimizer_optimize_large() {
+    let opt = ImageOptimizer::new();
+    let image = Image::new(4000, 3000, ImageFormat::PNG);
+
+    let optimized = opt.optimize(image);
+
+    // Should be resized
+    assert!(optimized.width <= 2048, "Width should be reduced");
+    assert!(optimized.height <= 2048, "Height should be reduced");
+}
+
+#[test]
+fn test_image_optimizer_optimize_with_strip() {
+    let opt = ImageOptimizer::new()
+        .strip_metadata();
+
+    let mut image = Image::new(800, 600, ImageFormat::PNG);
+    image.metadata = ImageMetadata::new()
+        .with_title("Test Image");
+
+    let optimized = opt.optimize(image);
+
+    assert_eq!(optimized.metadata.title, "", "Metadata should be stripped");
+}
+
+// ============================================================================
+// Metadata Tests
+// ============================================================================
+
+#[test]
+fn test_metadata_creation() {
+    let meta = ImageMetadata::new();
+
+    assert_eq!(meta.title, "", "Title should be empty");
+    assert_eq!(meta.dpi, 72, "Default DPI should be 72");
+}
+
+#[test]
+fn test_metadata_with_title() {
+    let meta = ImageMetadata::new()
+        .with_title("My Image");
+
+    assert_eq!(meta.title, "My Image", "Title should match");
+}
+
+#[test]
+fn test_metadata_with_description() {
+    let meta = ImageMetadata::new()
+        .with_description("A beautiful sunset");
+
+    assert_eq!(meta.description, "A beautiful sunset", "Description should match");
+}
+
+#[test]
+fn test_metadata_with_author() {
+    let meta = ImageMetadata::new()
+        .with_author("John Doe");
+
+    assert_eq!(meta.author, "John Doe", "Author should match");
+}
+
+#[test]
+fn test_metadata_with_dpi() {
+    let meta = ImageMetadata::new()
+        .with_dpi(300);
+
+    assert_eq!(meta.dpi, 300, "DPI should be 300");
+}
+
+// ============================================================================
+// Filter Tests
+// ============================================================================
+
+#[test]
+fn test_filter_config_creation() {
+    let config = FilterConfig::new(ImageFilter::Grayscale);
+
+    assert_eq!(config.intensity, 1.0, "Default intensity should be 1.0");
+}
+
+#[test]
+fn test_filter_config_with_intensity() {
+    let config = FilterConfig::new(ImageFilter::Blur)
+        .with_intensity(0.5);
+
+    assert_eq!(config.intensity, 0.5, "Intensity should be 0.5");
+}
+
+// ============================================================================
+// ImageBuilder Tests
+// ============================================================================
+
+#[test]
+fn test_builder_creation() {
+    let builder = ImageBuilder::new(800, 600);
+
+    assert_eq!(builder.image.width, 800, "Width should be 800");
+    assert_eq!(builder.image.height, 600, "Height should be 600");
+}
+
+#[test]
+fn test_builder_from_image() {
+    let image = Image::new(1024, 768, ImageFormat::JPEG);
+    let builder = ImageBuilder::from_image(image);
+
+    assert_eq!(builder.image.width, 1024, "Width should match");
+}
+
+#[test]
+fn test_builder_with_format() {
+    let builder = ImageBuilder::new(800, 600)
+        .with_format(ImageFormat::WEBP);
+
+    match builder.image.format {
+        ImageFormat::WEBP => assert!(true, "Should be WEBP"),
+        _ => assert!(false, "Should be WEBP"),
+    }
+}
+
+#[test]
+fn test_builder_with_data() {
+    let builder = ImageBuilder::new(100, 100)
+        .with_data("binary data");
+
+    assert_eq!(builder.image.data, "binary data", "Data should match");
+}
+
+#[test]
+fn test_builder_resize() {
+    let builder = ImageBuilder::new(800, 600)
+        .resize(400, 300);
+
+    assert_eq!(builder.image.width, 400, "Width should be 400");
+    assert_eq!(builder.image.height, 300, "Height should be 300");
+}
+
+#[test]
+fn test_builder_resize_width() {
+    let builder = ImageBuilder::new(800, 600)
+        .resize_width(400);
+
+    assert_eq!(builder.image.width, 400, "Width should be 400");
+    assert_eq!(builder.image.height, 300, "Height should maintain aspect");
+}
+
+#[test]
+fn test_builder_resize_height() {
+    let builder = ImageBuilder::new(800, 600)
+        .resize_height(300);
+
+    assert_eq!(builder.image.width, 400, "Width should maintain aspect");
+    assert_eq!(builder.image.height, 300, "Height should be 300");
+}
+
+#[test]
+fn test_builder_crop() {
+    let builder = ImageBuilder::new(800, 600)
+        .crop(100, 100, 400, 300);
+
+    assert_eq!(builder.image.width, 400, "Width should be 400");
+    assert_eq!(builder.image.height, 300, "Height should be 300");
+}
+
+#[test]
+fn test_builder_rotate_90() {
+    let builder = ImageBuilder::new(800, 600)
+        .rotate_90();
+
+    assert_eq!(builder.image.width, 600, "Width should swap");
+    assert_eq!(builder.image.height, 800, "Height should swap");
+}
+
+#[test]
+fn test_builder_rotate_180() {
+    let builder = ImageBuilder::new(800, 600)
+        .rotate_180();
+
+    assert_eq!(builder.image.width, 800, "Width should stay");
+    assert_eq!(builder.image.height, 600, "Height should stay");
+}
+
+#[test]
+fn test_builder_rotate_270() {
+    let builder = ImageBuilder::new(800, 600)
+        .rotate_270();
+
+    assert_eq!(builder.image.width, 600, "Width should swap");
+    assert_eq!(builder.image.height, 800, "Height should swap");
+}
+
+#[test]
+fn test_builder_flip_horizontal() {
+    let builder = ImageBuilder::new(800, 600)
+        .flip_horizontal();
+
+    assert_eq!(builder.image.width, 800, "Dimensions should stay same");
+    assert_eq!(builder.image.height, 600, "Dimensions should stay same");
+}
+
+#[test]
+fn test_builder_flip_vertical() {
+    let builder = ImageBuilder::new(800, 600)
+        .flip_vertical();
+
+    assert_eq!(builder.image.width, 800, "Dimensions should stay same");
+    assert_eq!(builder.image.height, 600, "Dimensions should stay same");
+}
+
+#[test]
+fn test_builder_with_metadata() {
+    let metadata = ImageMetadata::new()
+        .with_title("Test");
+    let builder = ImageBuilder::new(800, 600)
+        .with_metadata(metadata);
+
+    assert_eq!(builder.image.metadata.title, "Test", "Metadata should match");
+}
+
+#[test]
+fn test_builder_chaining() {
+    let image = ImageBuilder::new(1600, 1200)
+        .resize_width(800)
+        .rotate_90()
+        .with_format(ImageFormat::WEBP)
+        .build();
+
+    assert_eq!(image.width, 600, "Width should be processed");
+    assert_eq!(image.height, 800, "Height should be processed");
+}
+
+#[test]
+fn test_builder_build() {
+    let image = ImageBuilder::new(800, 600)
+        .with_data("test")
+        .build();
+
+    assert_eq!(image.width, 800, "Should build image");
+    assert_eq!(image.data, "test", "Data should match");
+}
+
+// ============================================================================
+// Utility Function Tests
+// ============================================================================
+
+#[test]
+fn test_calculate_resize_dimensions_landscape() {
+    let dim = calculate_resize_dimensions(1920, 1080, 640, 480);
+
+    assert_eq!(dim.width, 640, "Width should be 640");
+    assert_eq!(dim.height, 360, "Height should maintain aspect");
+}
+
+#[test]
+fn test_calculate_resize_dimensions_portrait() {
+    let dim = calculate_resize_dimensions(1080, 1920, 480, 640);
+
+    assert_eq!(dim.width, 360, "Width should maintain aspect");
+    assert_eq!(dim.height, 640, "Height should be 640");
+}
+
+#[test]
+fn test_calculate_resize_dimensions_square() {
+    let dim = calculate_resize_dimensions(1000, 1000, 500, 500);
+
+    assert_eq!(dim.width, 500, "Width should be 500");
+    assert_eq!(dim.height, 500, "Height should be 500");
+}
+
+#[test]
+fn test_is_valid_dimension_valid() {
+    assert!(is_valid_dimension(100), "100 should be valid");
+    assert!(is_valid_dimension(1920), "1920 should be valid");
+    assert!(is_valid_dimension(10000), "10000 should be valid");
+}
+
+#[test]
+fn test_is_valid_dimension_invalid() {
+    assert!(!is_valid_dimension(0), "0 should be invalid");
+    assert!(!is_valid_dimension(-100), "Negative should be invalid");
+    assert!(!is_valid_dimension(10001), "10001 should be invalid");
+}
+
+#[test]
+fn test_is_valid_quality_valid() {
+    assert!(is_valid_quality(1), "1 should be valid");
+    assert!(is_valid_quality(85), "85 should be valid");
+    assert!(is_valid_quality(100), "100 should be valid");
+}
+
+#[test]
+fn test_is_valid_quality_invalid() {
+    assert!(!is_valid_quality(0), "0 should be invalid");
+    assert!(!is_valid_quality(-10), "Negative should be invalid");
+    assert!(!is_valid_quality(101), "101 should be invalid");
+}
