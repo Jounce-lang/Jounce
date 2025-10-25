@@ -1,0 +1,140 @@
+// Tests for markdown generation in jounce-docs
+use jounce_docs::{MarkdownGenerator, MarkdownSection};
+
+#[test]
+fn test_markdown_section_creation() {
+    let section = MarkdownSection::new("Introduction", "This is the intro");
+
+    assert_eq!(section.title, "Introduction", "Title should be Introduction");
+    assert_eq!(section.content, "This is the intro", "Content should match");
+    assert_eq!(section.level, 2, "Default level should be 2");
+}
+
+#[test]
+fn test_markdown_section_with_level() {
+    let section = MarkdownSection::new("Title", "Content")
+        .with_level(3);
+
+    assert_eq!(section.level, 3, "Level should be 3");
+}
+
+#[test]
+fn test_markdown_section_to_markdown_level2() {
+    let section = MarkdownSection::new("Section", "Content")
+        .with_level(2);
+
+    let md = section.to_markdown();
+
+    assert!(md.contains("## Section"), "Should have level 2 heading");
+}
+
+#[test]
+fn test_markdown_section_to_markdown_level3() {
+    let section = MarkdownSection::new("Subsection", "Content")
+        .with_level(3);
+
+    let md = section.to_markdown();
+
+    assert!(md.contains("### Subsection"), "Should have level 3 heading");
+}
+
+#[test]
+fn test_markdown_section_to_markdown_content() {
+    let section = MarkdownSection::new("Title", "This is the content");
+
+    let md = section.to_markdown();
+
+    assert!(md.contains("This is the content"), "Should have content");
+}
+
+#[test]
+fn test_markdown_generator_creation() {
+    let generator = MarkdownGenerator::new("My Document");
+
+    assert_eq!(generator.title, "My Document", "Title should be My Document");
+    assert_eq!(generator.sections.len(), 0, "Should have no sections initially");
+}
+
+#[test]
+fn test_markdown_generator_add_section() {
+    let mut generator = MarkdownGenerator::new("Document");
+    let section = MarkdownSection::new("Section 1", "Content 1");
+
+    generator.add_section(section);
+
+    assert_eq!(generator.sections.len(), 1, "Should have 1 section");
+}
+
+#[test]
+fn test_markdown_generator_add_multiple_sections() {
+    let mut generator = MarkdownGenerator::new("Document");
+
+    generator.add_section(MarkdownSection::new("Section 1", "Content 1"));
+    generator.add_section(MarkdownSection::new("Section 2", "Content 2"));
+    generator.add_section(MarkdownSection::new("Section 3", "Content 3"));
+
+    assert_eq!(generator.sections.len(), 3, "Should have 3 sections");
+}
+
+#[test]
+fn test_markdown_generator_generate() {
+    let mut generator = MarkdownGenerator::new("Test Doc");
+    generator.add_section(MarkdownSection::new("Intro", "Introduction text"));
+
+    let md = generator.generate();
+
+    assert!(md.contains("# Test Doc"), "Should have main title");
+    assert!(md.contains("## Intro"), "Should have section heading");
+}
+
+#[test]
+fn test_markdown_generator_multiple_sections() {
+    let mut generator = MarkdownGenerator::new("API Docs");
+
+    generator.add_section(MarkdownSection::new("Overview", "API overview"));
+    generator.add_section(MarkdownSection::new("Usage", "How to use"));
+
+    let md = generator.generate();
+
+    assert!(md.contains("## Overview"), "Should have Overview section");
+    assert!(md.contains("## Usage"), "Should have Usage section");
+}
+
+#[test]
+fn test_markdown_section_level1() {
+    let section = MarkdownSection::new("Main", "Content")
+        .with_level(1);
+
+    let md = section.to_markdown();
+
+    assert!(md.contains("# Main"), "Should have level 1 heading");
+}
+
+#[test]
+fn test_markdown_section_level4() {
+    let section = MarkdownSection::new("Subsubsection", "Content")
+        .with_level(4);
+
+    let md = section.to_markdown();
+
+    assert!(md.contains("#### Subsubsection"), "Should have level 4 heading");
+}
+
+#[test]
+fn test_markdown_section_empty_content() {
+    let section = MarkdownSection::new("Empty", "");
+
+    let md = section.to_markdown();
+
+    assert!(md.contains("## Empty"), "Should have heading even with empty content");
+}
+
+#[test]
+fn test_markdown_generator_empty() {
+    let generator = MarkdownGenerator::new("Empty Doc");
+
+    let md = generator.generate();
+
+    assert!(md.contains("# Empty Doc"), "Should have title");
+    assert_eq!(md.split("\n").length, 3, "Should only have title and newlines");
+}

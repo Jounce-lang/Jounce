@@ -1,0 +1,176 @@
+// Tests for API reference generation in jounce-docs
+use jounce_docs::{ApiReferenceGenerator, Symbol, SymbolType, DocComment};
+
+#[test]
+fn test_api_ref_generator_creation() {
+    let generator = ApiReferenceGenerator::new("my-package", "1.0.0");
+
+    assert_eq!(generator.package_name, "my-package", "Package name should match");
+    assert_eq!(generator.version, "1.0.0", "Version should match");
+    assert_eq!(generator.symbols.len(), 0, "Should have no symbols initially");
+}
+
+#[test]
+fn test_api_ref_generator_add_symbol() {
+    let mut generator = ApiReferenceGenerator::new("pkg", "1.0.0");
+    let symbol = Symbol::new("my_function", SymbolType::Function);
+
+    generator.add_symbol(symbol);
+
+    assert_eq!(generator.symbols.len(), 1, "Should have 1 symbol");
+}
+
+#[test]
+fn test_api_ref_generator_add_multiple_symbols() {
+    let mut generator = ApiReferenceGenerator::new("pkg", "1.0.0");
+
+    generator.add_symbol(Symbol::new("func1", SymbolType::Function));
+    generator.add_symbol(Symbol::new("func2", SymbolType::Function));
+    generator.add_symbol(Symbol::new("struct1", SymbolType::Struct));
+
+    assert_eq!(generator.symbols.len(), 3, "Should have 3 symbols");
+}
+
+#[test]
+fn test_api_ref_generate_basic() {
+    let generator = ApiReferenceGenerator::new("test-package", "0.1.0");
+
+    let md = generator.generate();
+
+    assert!(md.contains("# test-package API Reference"), "Should have title");
+    assert!(md.contains("**Version**: 0.1.0"), "Should have version");
+}
+
+#[test]
+fn test_api_ref_generate_with_functions() {
+    let mut generator = ApiReferenceGenerator::new("pkg", "1.0.0");
+
+    let mut symbol = Symbol::new("add", SymbolType::Function);
+    symbol.visibility = "pub";
+
+    generator.add_symbol(symbol);
+
+    let md = generator.generate();
+
+    assert!(md.contains("## Functions"), "Should have Functions section");
+    assert!(md.contains("### `add`"), "Should have function name");
+}
+
+#[test]
+fn test_api_ref_generate_with_structs() {
+    let mut generator = ApiReferenceGenerator::new("pkg", "1.0.0");
+
+    let mut symbol = Symbol::new("User", SymbolType::Struct);
+    symbol.visibility = "pub";
+
+    generator.add_symbol(symbol);
+
+    let md = generator.generate();
+
+    assert!(md.contains("## Structs"), "Should have Structs section");
+    assert!(md.contains("### `User`"), "Should have struct name");
+}
+
+#[test]
+fn test_api_ref_generate_with_enums() {
+    let mut generator = ApiReferenceGenerator::new("pkg", "1.0.0");
+
+    let mut symbol = Symbol::new("Status", SymbolType::Enum);
+    symbol.visibility = "pub";
+
+    generator.add_symbol(symbol);
+
+    let md = generator.generate();
+
+    assert!(md.contains("## Enums"), "Should have Enums section");
+    assert!(md.contains("### `Status`"), "Should have enum name");
+}
+
+#[test]
+fn test_api_ref_symbol_with_signature() {
+    let mut generator = ApiReferenceGenerator::new("pkg", "1.0.0");
+
+    let mut symbol = Symbol::new("calculate", SymbolType::Function)
+        .with_signature("fn calculate(x: int, y: int) -> int");
+    symbol.visibility = "pub";
+
+    generator.add_symbol(symbol);
+
+    let md = generator.generate();
+
+    assert!(md.contains("fn calculate(x: int, y: int) -> int"), "Should have signature");
+}
+
+#[test]
+fn test_api_ref_symbol_with_doc() {
+    let mut generator = ApiReferenceGenerator::new("pkg", "1.0.0");
+
+    let doc = DocComment::new()
+        .with_summary("Adds two numbers")
+        .with_description("This function performs addition");
+
+    let mut symbol = Symbol::new("add", SymbolType::Function)
+        .with_doc(doc);
+    symbol.visibility = "pub";
+
+    generator.add_symbol(symbol);
+
+    let md = generator.generate();
+
+    assert!(md.contains("Adds two numbers"), "Should have summary");
+    assert!(md.contains("This function performs addition"), "Should have description");
+}
+
+#[test]
+fn test_api_ref_table_of_contents() {
+    let mut generator = ApiReferenceGenerator::new("pkg", "1.0.0");
+
+    let mut func = Symbol::new("my_func", SymbolType::Function);
+    func.visibility = "pub";
+
+    let mut struct_sym = Symbol::new("MyStruct", SymbolType::Struct);
+    struct_sym.visibility = "pub";
+
+    generator.add_symbol(func);
+    generator.add_symbol(struct_sym);
+
+    let md = generator.generate();
+
+    assert!(md.contains("## Table of Contents"), "Should have TOC");
+    assert!(md.contains("[Functions](#functions)"), "Should link to functions");
+    assert!(md.contains("[Structs](#structs)"), "Should link to structs");
+}
+
+#[test]
+fn test_api_ref_mixed_symbol_types() {
+    let mut generator = ApiReferenceGenerator::new("mixed", "1.0.0");
+
+    let mut func = Symbol::new("process", SymbolType::Function);
+    func.visibility = "pub";
+
+    let mut struct_sym = Symbol::new("Config", SymbolType::Struct);
+    struct_sym.visibility = "pub";
+
+    let mut enum_sym = Symbol::new("Mode", SymbolType::Enum);
+    enum_sym.visibility = "pub";
+
+    generator.add_symbol(func);
+    generator.add_symbol(struct_sym);
+    generator.add_symbol(enum_sym);
+
+    let md = generator.generate();
+
+    assert!(md.contains("## Functions"), "Should have Functions");
+    assert!(md.contains("## Structs"), "Should have Structs");
+    assert!(md.contains("## Enums"), "Should have Enums");
+}
+
+#[test]
+fn test_api_ref_empty() {
+    let generator = ApiReferenceGenerator::new("empty", "0.1.0");
+
+    let md = generator.generate();
+
+    assert!(md.contains("# empty API Reference"), "Should have title");
+    assert!(!md.contains("## Functions"), "Should not have Functions section");
+}

@@ -1,0 +1,514 @@
+// jounce-docs - Documentation generation from source code with doc comments
+// Version: 0.1.0
+
+use jounce_utils::{slugify, trim};
+
+// ============================================================================
+// Doc Comment
+// ============================================================================
+
+/// A parsed documentation comment
+pub struct DocComment {
+    pub summary: string,
+    pub description: string,
+    pub tags: Map<string, Array<string>>,
+    pub examples: Array<string>,
+}
+
+impl DocComment {
+    pub fn new() -> DocComment {
+        return DocComment {
+            summary: "",
+            description: "",
+            tags: Map::new(),
+            examples: Array::new(),
+        };
+    }
+
+    pub fn with_summary(mut self, summary: string) -> DocComment {
+        self.summary = summary;
+        return self;
+    }
+
+    pub fn with_description(mut self, description: string) -> DocComment {
+        self.description = description;
+        return self;
+    }
+
+    pub fn add_tag(mut self, tag: string, value: string) {
+        if !self.tags.contains_key(&tag) {
+            self.tags.insert(tag.clone(), Array::new());
+        }
+
+        let mut values = self.tags.get(&tag);
+        values.push(value);
+        self.tags.insert(tag, values);
+    }
+
+    pub fn add_example(mut self, example: string) {
+        self.examples.push(example);
+    }
+}
+
+// ============================================================================
+// Symbol Types
+// ============================================================================
+
+/// Type of documented symbol
+pub enum SymbolType {
+    Function,
+    Struct,
+    Enum,
+    Trait,
+    Impl,
+    Const,
+    Module,
+}
+
+impl SymbolType {
+    pub fn to_string(self) -> string {
+        match self {
+            SymbolType::Function => "function",
+            SymbolType::Struct => "struct",
+            SymbolType::Enum => "enum",
+            SymbolType::Trait => "trait",
+            SymbolType::Impl => "impl",
+            SymbolType::Const => "const",
+            SymbolType::Module => "module",
+        }
+    }
+}
+
+// ============================================================================
+// Documented Symbol
+// ============================================================================
+
+/// A documented code symbol
+pub struct Symbol {
+    pub name: string,
+    pub symbol_type: SymbolType,
+    pub doc_comment: Option<DocComment>,
+    pub signature: string,
+    pub visibility: string,  // "pub" or "private"
+    pub file_path: string,
+    pub line_number: int,
+}
+
+impl Symbol {
+    pub fn new(name: string, symbol_type: SymbolType) -> Symbol {
+        return Symbol {
+            name: name,
+            symbol_type: symbol_type,
+            doc_comment: None,
+            signature: "",
+            visibility: "private",
+            file_path: "",
+            line_number: 0,
+        };
+    }
+
+    pub fn with_doc(mut self, doc: DocComment) -> Symbol {
+        self.doc_comment = Some(doc);
+        return self;
+    }
+
+    pub fn with_signature(mut self, signature: string) -> Symbol {
+        self.signature = signature;
+        return self;
+    }
+
+    pub fn is_public(self) -> bool {
+        return self.visibility == "pub";
+    }
+}
+
+// ============================================================================
+// Documentation Parser
+// ============================================================================
+
+/// Parser for extracting documentation from source code
+pub struct DocParser {
+    pub symbols: Array<Symbol>,
+}
+
+impl DocParser {
+    pub fn new() -> DocParser {
+        return DocParser {
+            symbols: Array::new(),
+        };
+    }
+
+    pub fn parse_file(mut self, file_path: string, content: string) {
+        // In real implementation: parse source code and extract symbols
+        // For now, this is a mock
+    }
+
+    pub fn parse_doc_comment(self, comment: string) -> DocComment {
+        let mut doc = DocComment::new();
+        let lines = comment.split("\n");
+
+        let mut current_section = "summary";
+        let mut description_lines = Array::new();
+        let mut example_lines = Array::new();
+        let mut in_example = false;
+
+        for line in lines {
+            let trimmed = trim(line);
+
+            // Skip /// or //
+            let mut content = trimmed;
+            if content.starts_with("///") {
+                content = content.substring(3);
+            } else if content.starts_with("//") {
+                content = content.substring(2);
+            }
+            content = trim(content);
+
+            // Handle tags
+            if content.starts_with("@") {
+                if content.starts_with("@param") {
+                    doc.add_tag("param", content.substring(6).trim());
+                } else if content.starts_with("@return") {
+                    doc.add_tag("return", content.substring(7).trim());
+                } else if content.starts_with("@example") {
+                    in_example = true;
+                    current_section = "example";
+                } else if content.starts_with("@throws") {
+                    doc.add_tag("throws", content.substring(7).trim());
+                }
+            } else if in_example {
+                if content == "" {
+                    in_example = false;
+                    doc.add_example(example_lines.join("\n"));
+                    example_lines = Array::new();
+                } else {
+                    example_lines.push(content);
+                }
+            } else if current_section == "summary" && doc.summary == "" {
+                doc.summary = content;
+                current_section = "description";
+            } else if current_section == "description" {
+                if content != "" {
+                    description_lines.push(content);
+                }
+            }
+        }
+
+        if description_lines.len() > 0 {
+            doc.description = description_lines.join("\n");
+        }
+
+        if in_example && example_lines.len() > 0 {
+            doc.add_example(example_lines.join("\n"));
+        }
+
+        return doc;
+    }
+
+    pub fn get_public_symbols(self) -> Array<Symbol> {
+        let mut public_symbols = Array::new();
+
+        for symbol in self.symbols {
+            if symbol.is_public() {
+                public_symbols.push(symbol);
+            }
+        }
+
+        return public_symbols;
+    }
+
+    pub fn get_symbols_by_type(self, symbol_type: SymbolType) -> Array<Symbol> {
+        let mut filtered = Array::new();
+
+        for symbol in self.symbols {
+            if symbol.symbol_type.to_string() == symbol_type.to_string() {
+                filtered.push(symbol);
+            }
+        }
+
+        return filtered;
+    }
+}
+
+// ============================================================================
+// Markdown Generator
+// ============================================================================
+
+/// Generator for markdown documentation
+pub struct MarkdownGenerator {
+    pub title: string,
+    pub sections: Array<MarkdownSection>,
+}
+
+impl MarkdownGenerator {
+    pub fn new(title: string) -> MarkdownGenerator {
+        return MarkdownGenerator {
+            title: title,
+            sections: Array::new(),
+        };
+    }
+
+    pub fn add_section(mut self, section: MarkdownSection) {
+        self.sections.push(section);
+    }
+
+    pub fn generate(self) -> string {
+        let mut md = "# " + self.title + "\n\n";
+
+        for section in self.sections {
+            md = md + section.to_markdown() + "\n\n";
+        }
+
+        return md;
+    }
+}
+
+/// A section of markdown documentation
+pub struct MarkdownSection {
+    pub title: string,
+    pub content: string,
+    pub level: int,  // Heading level (1-6)
+}
+
+impl MarkdownSection {
+    pub fn new(title: string, content: string) -> MarkdownSection {
+        return MarkdownSection {
+            title: title,
+            content: content,
+            level: 2,
+        };
+    }
+
+    pub fn with_level(mut self, level: int) -> MarkdownSection {
+        self.level = level;
+        return self;
+    }
+
+    pub fn to_markdown(self) -> string {
+        let mut heading = "";
+        for i in 0..self.level {
+            heading = heading + "#";
+        }
+
+        return heading + " " + self.title + "\n\n" + self.content;
+    }
+}
+
+// ============================================================================
+// API Reference Generator
+// ============================================================================
+
+/// Generator for API reference documentation
+pub struct ApiReferenceGenerator {
+    pub package_name: string,
+    pub version: string,
+    pub symbols: Array<Symbol>,
+}
+
+impl ApiReferenceGenerator {
+    pub fn new(package_name: string, version: string) -> ApiReferenceGenerator {
+        return ApiReferenceGenerator {
+            package_name: package_name,
+            version: version,
+            symbols: Array::new(),
+        };
+    }
+
+    pub fn add_symbol(mut self, symbol: Symbol) {
+        self.symbols.push(symbol);
+    }
+
+    pub fn generate(self) -> string {
+        let mut md = "# " + self.package_name + " API Reference\n\n";
+        md = md + "**Version**: " + self.version + "\n\n";
+
+        // Table of contents
+        md = md + "## Table of Contents\n\n";
+
+        // Group symbols by type
+        let functions = self.get_by_type(SymbolType::Function);
+        let structs = self.get_by_type(SymbolType::Struct);
+        let enums = self.get_by_type(SymbolType::Enum);
+
+        if functions.len() > 0 {
+            md = md + "- [Functions](#functions)\n";
+        }
+        if structs.len() > 0 {
+            md = md + "- [Structs](#structs)\n";
+        }
+        if enums.len() > 0 {
+            md = md + "- [Enums](#enums)\n";
+        }
+
+        md = md + "\n";
+
+        // Functions
+        if functions.len() > 0 {
+            md = md + "## Functions\n\n";
+            for func in functions {
+                md = md + self.format_symbol(func) + "\n\n";
+            }
+        }
+
+        // Structs
+        if structs.len() > 0 {
+            md = md + "## Structs\n\n";
+            for struct_sym in structs {
+                md = md + self.format_symbol(struct_sym) + "\n\n";
+            }
+        }
+
+        // Enums
+        if enums.len() > 0 {
+            md = md + "## Enums\n\n";
+            for enum_sym in enums {
+                md = md + self.format_symbol(enum_sym) + "\n\n";
+            }
+        }
+
+        return md;
+    }
+
+    fn get_by_type(self, symbol_type: SymbolType) -> Array<Symbol> {
+        let mut filtered = Array::new();
+
+        for symbol in self.symbols {
+            if symbol.symbol_type.to_string() == symbol_type.to_string() {
+                filtered.push(symbol);
+            }
+        }
+
+        return filtered;
+    }
+
+    fn format_symbol(self, symbol: Symbol) -> string {
+        let mut md = "### `" + symbol.name + "`\n\n";
+
+        // Signature
+        if symbol.signature != "" {
+            md = md + "```jounce\n" + symbol.signature + "\n```\n\n";
+        }
+
+        // Doc comment
+        if let Some(doc) = symbol.doc_comment {
+            if doc.summary != "" {
+                md = md + doc.summary + "\n\n";
+            }
+
+            if doc.description != "" {
+                md = md + doc.description + "\n\n";
+            }
+
+            // Parameters
+            if doc.tags.contains_key(&"param") {
+                md = md + "**Parameters**:\n\n";
+                let params = doc.tags.get(&"param");
+                for param in params {
+                    md = md + "- " + param + "\n";
+                }
+                md = md + "\n";
+            }
+
+            // Returns
+            if doc.tags.contains_key(&"return") {
+                md = md + "**Returns**: ";
+                let returns = doc.tags.get(&"return");
+                if returns.len() > 0 {
+                    md = md + returns[0] + "\n\n";
+                }
+            }
+
+            // Examples
+            if doc.examples.len() > 0 {
+                md = md + "**Example**:\n\n";
+                for example in doc.examples {
+                    md = md + "```jounce\n" + example + "\n```\n\n";
+                }
+            }
+        }
+
+        return md;
+    }
+}
+
+// ============================================================================
+// Example Extractor
+// ============================================================================
+
+/// Extracts code examples from documentation
+pub struct ExampleExtractor {
+    pub examples: Array<CodeExample>,
+}
+
+impl ExampleExtractor {
+    pub fn new() -> ExampleExtractor {
+        return ExampleExtractor {
+            examples: Array::new(),
+        };
+    }
+
+    pub fn extract_from_doc(mut self, doc: DocComment, symbol_name: string) {
+        for example in doc.examples {
+            let code_example = CodeExample {
+                title: symbol_name + " example",
+                code: example,
+                language: "jounce",
+            };
+            self.examples.push(code_example);
+        }
+    }
+
+    pub fn generate_examples_file(self) -> string {
+        let mut md = "# Code Examples\n\n";
+
+        for example in self.examples {
+            md = md + "## " + example.title + "\n\n";
+            md = md + "```" + example.language + "\n";
+            md = md + example.code + "\n";
+            md = md + "```\n\n";
+        }
+
+        return md;
+    }
+}
+
+/// A code example
+pub struct CodeExample {
+    pub title: string,
+    pub code: string,
+    pub language: string,
+}
+
+// ============================================================================
+// Documentation Configuration
+// ============================================================================
+
+pub struct DocsConfig {
+    pub package_name: string,
+    pub version: string,
+    pub output_dir: string,
+    pub include_private: bool,
+    pub generate_examples: bool,
+}
+
+impl DocsConfig {
+    pub fn new(package_name: string, version: string) -> DocsConfig {
+        return DocsConfig {
+            package_name: package_name,
+            version: version,
+            output_dir: "docs/",
+            include_private: false,
+            generate_examples: true,
+        };
+    }
+
+    pub fn with_output_dir(mut self, dir: string) -> DocsConfig {
+        self.output_dir = dir;
+        return self;
+    }
+
+    pub fn include_private(mut self) -> DocsConfig {
+        self.include_private = true;
+        return self;
+    }
+}

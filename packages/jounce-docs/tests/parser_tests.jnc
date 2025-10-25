@@ -1,0 +1,146 @@
+// Tests for doc comment parsing in jounce-docs
+use jounce_docs::{DocParser, DocComment, Symbol, SymbolType};
+
+#[test]
+fn test_doc_comment_creation() {
+    let doc = DocComment::new();
+
+    assert_eq!(doc.summary, "", "Summary should be empty");
+    assert_eq!(doc.description, "", "Description should be empty");
+    assert_eq!(doc.tags.len(), 0, "Tags should be empty");
+    assert_eq!(doc.examples.len(), 0, "Examples should be empty");
+}
+
+#[test]
+fn test_doc_comment_with_summary() {
+    let doc = DocComment::new()
+        .with_summary("This is a summary");
+
+    assert_eq!(doc.summary, "This is a summary", "Should have summary");
+}
+
+#[test]
+fn test_doc_comment_with_description() {
+    let doc = DocComment::new()
+        .with_description("This is a detailed description");
+
+    assert_eq!(doc.description, "This is a detailed description", "Should have description");
+}
+
+#[test]
+fn test_doc_comment_add_tag() {
+    let mut doc = DocComment::new();
+    doc.add_tag("param", "name: string - The user's name");
+
+    assert_eq!(doc.tags.len(), 1, "Should have 1 tag");
+    assert!(doc.tags.contains_key(&"param"), "Should have param tag");
+}
+
+#[test]
+fn test_doc_comment_multiple_tags() {
+    let mut doc = DocComment::new();
+    doc.add_tag("param", "name: string");
+    doc.add_tag("param", "age: int");
+    doc.add_tag("return", "User object");
+
+    assert_eq!(doc.tags.len(), 2, "Should have 2 tag types");
+}
+
+#[test]
+fn test_doc_comment_add_example() {
+    let mut doc = DocComment::new();
+    doc.add_example("let x = 5;");
+
+    assert_eq!(doc.examples.len(), 1, "Should have 1 example");
+}
+
+#[test]
+fn test_doc_comment_multiple_examples() {
+    let mut doc = DocComment::new();
+    doc.add_example("Example 1");
+    doc.add_example("Example 2");
+
+    assert_eq!(doc.examples.len(), 2, "Should have 2 examples");
+}
+
+#[test]
+fn test_symbol_creation() {
+    let symbol = Symbol::new("my_function", SymbolType::Function);
+
+    assert_eq!(symbol.name, "my_function", "Name should be my_function");
+    assert_eq!(symbol.visibility, "private", "Default visibility should be private");
+}
+
+#[test]
+fn test_symbol_with_doc() {
+    let doc = DocComment::new().with_summary("A test function");
+    let symbol = Symbol::new("test", SymbolType::Function)
+        .with_doc(doc);
+
+    assert!(symbol.doc_comment.is_some(), "Should have doc comment");
+}
+
+#[test]
+fn test_symbol_with_signature() {
+    let symbol = Symbol::new("add", SymbolType::Function)
+        .with_signature("fn add(a: int, b: int) -> int");
+
+    assert_eq!(symbol.signature, "fn add(a: int, b: int) -> int", "Should have signature");
+}
+
+#[test]
+fn test_symbol_is_public() {
+    let mut symbol = Symbol::new("public_fn", SymbolType::Function);
+    symbol.visibility = "pub";
+
+    assert!(symbol.is_public(), "Should be public");
+}
+
+#[test]
+fn test_symbol_is_private() {
+    let symbol = Symbol::new("private_fn", SymbolType::Function);
+
+    assert!(!symbol.is_public(), "Should not be public");
+}
+
+#[test]
+fn test_symbol_type_to_string() {
+    assert_eq!(SymbolType::Function.to_string(), "function", "Function type");
+    assert_eq!(SymbolType::Struct.to_string(), "struct", "Struct type");
+    assert_eq!(SymbolType::Enum.to_string(), "enum", "Enum type");
+    assert_eq!(SymbolType::Trait.to_string(), "trait", "Trait type");
+}
+
+#[test]
+fn test_doc_parser_creation() {
+    let parser = DocParser::new();
+
+    assert_eq!(parser.symbols.len(), 0, "Parser should have no symbols initially");
+}
+
+#[test]
+fn test_doc_parser_parse_doc_comment() {
+    let parser = DocParser::new();
+    let comment = "/// Adds two numbers\n/// This function adds a and b";
+
+    let doc = parser.parse_doc_comment(comment);
+
+    assert!(doc.summary.len() > 0, "Should have summary");
+}
+
+#[test]
+fn test_doc_parser_get_public_symbols() {
+    let mut parser = DocParser::new();
+
+    let mut public_sym = Symbol::new("public_fn", SymbolType::Function);
+    public_sym.visibility = "pub";
+
+    let private_sym = Symbol::new("private_fn", SymbolType::Function);
+
+    parser.symbols.push(public_sym);
+    parser.symbols.push(private_sym);
+
+    let public_symbols = parser.get_public_symbols();
+
+    assert_eq!(public_symbols.len(), 1, "Should have 1 public symbol");
+}

@@ -1,0 +1,167 @@
+// Tests for example extraction and configuration in jounce-docs
+use jounce_docs::{ExampleExtractor, CodeExample, DocsConfig, DocComment};
+
+#[test]
+fn test_code_example_creation() {
+    let example = CodeExample {
+        title: "Example 1",
+        code: "let x = 5;",
+        language: "jounce",
+    };
+
+    assert_eq!(example.title, "Example 1", "Title should match");
+    assert_eq!(example.code, "let x = 5;", "Code should match");
+    assert_eq!(example.language, "jounce", "Language should be jounce");
+}
+
+#[test]
+fn test_example_extractor_creation() {
+    let extractor = ExampleExtractor::new();
+
+    assert_eq!(extractor.examples.len(), 0, "Should have no examples initially");
+}
+
+#[test]
+fn test_example_extractor_extract_from_doc() {
+    let mut extractor = ExampleExtractor::new();
+
+    let mut doc = DocComment::new();
+    doc.add_example("let x = 10;\nlet y = 20;");
+
+    extractor.extract_from_doc(doc, "test_function");
+
+    assert_eq!(extractor.examples.len(), 1, "Should have 1 example");
+}
+
+#[test]
+fn test_example_extractor_multiple_examples() {
+    let mut extractor = ExampleExtractor::new();
+
+    let mut doc = DocComment::new();
+    doc.add_example("Example 1");
+    doc.add_example("Example 2");
+
+    extractor.extract_from_doc(doc, "function");
+
+    assert_eq!(extractor.examples.len(), 2, "Should have 2 examples");
+}
+
+#[test]
+fn test_example_extractor_generate_examples_file() {
+    let mut extractor = ExampleExtractor::new();
+
+    let mut doc = DocComment::new();
+    doc.add_example("let x = 5;");
+
+    extractor.extract_from_doc(doc, "add");
+
+    let md = extractor.generate_examples_file();
+
+    assert!(md.contains("# Code Examples"), "Should have title");
+    assert!(md.contains("## add example"), "Should have example title");
+    assert!(md.contains("let x = 5;"), "Should have example code");
+}
+
+#[test]
+fn test_example_extractor_generate_empty() {
+    let extractor = ExampleExtractor::new();
+
+    let md = extractor.generate_examples_file();
+
+    assert!(md.contains("# Code Examples"), "Should have title");
+}
+
+#[test]
+fn test_docs_config_creation() {
+    let config = DocsConfig::new("my-package", "1.0.0");
+
+    assert_eq!(config.package_name, "my-package", "Package name should match");
+    assert_eq!(config.version, "1.0.0", "Version should match");
+    assert_eq!(config.output_dir, "docs/", "Default output dir should be docs/");
+    assert!(!config.include_private, "Should not include private by default");
+    assert!(config.generate_examples, "Should generate examples by default");
+}
+
+#[test]
+fn test_docs_config_with_output_dir() {
+    let config = DocsConfig::new("pkg", "1.0.0")
+        .with_output_dir("output/");
+
+    assert_eq!(config.output_dir, "output/", "Output dir should be output/");
+}
+
+#[test]
+fn test_docs_config_include_private() {
+    let config = DocsConfig::new("pkg", "1.0.0")
+        .include_private();
+
+    assert!(config.include_private, "Should include private");
+}
+
+#[test]
+fn test_docs_config_builder() {
+    let config = DocsConfig::new("test-pkg", "0.1.0")
+        .with_output_dir("api-docs/")
+        .include_private();
+
+    assert_eq!(config.package_name, "test-pkg", "Package name should match");
+    assert_eq!(config.version, "0.1.0", "Version should match");
+    assert_eq!(config.output_dir, "api-docs/", "Output dir should match");
+    assert!(config.include_private, "Should include private");
+}
+
+#[test]
+fn test_example_extractor_code_blocks() {
+    let mut extractor = ExampleExtractor::new();
+
+    let mut doc = DocComment::new();
+    doc.add_example("fn example() {\n  println(\"Hello\");\n}");
+
+    extractor.extract_from_doc(doc, "example_func");
+
+    let md = extractor.generate_examples_file();
+
+    assert!(md.contains("```jounce"), "Should have code fence");
+    assert!(md.contains("fn example()"), "Should have example code");
+}
+
+#[test]
+fn test_docs_config_default_values() {
+    let config = DocsConfig::new("pkg", "1.0.0");
+
+    assert_eq!(config.output_dir, "docs/", "Default output dir");
+    assert_eq!(config.include_private, false, "Default include_private");
+    assert_eq!(config.generate_examples, true, "Default generate_examples");
+}
+
+#[test]
+fn test_example_extractor_from_multiple_docs() {
+    let mut extractor = ExampleExtractor::new();
+
+    let mut doc1 = DocComment::new();
+    doc1.add_example("Example from doc1");
+
+    let mut doc2 = DocComment::new();
+    doc2.add_example("Example from doc2");
+
+    extractor.extract_from_doc(doc1, "func1");
+    extractor.extract_from_doc(doc2, "func2");
+
+    assert_eq!(extractor.examples.len(), 2, "Should have 2 examples from different docs");
+}
+
+#[test]
+fn test_example_file_formatting() {
+    let mut extractor = ExampleExtractor::new();
+
+    let mut doc = DocComment::new();
+    doc.add_example("let value = 42;");
+
+    extractor.extract_from_doc(doc, "test");
+
+    let md = extractor.generate_examples_file();
+
+    assert!(md.contains("# Code Examples"), "Should have header");
+    assert!(md.contains("## test example"), "Should have section header");
+    assert!(md.contains("```"), "Should have code fence");
+}

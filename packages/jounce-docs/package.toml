@@ -1,0 +1,36 @@
+[package]
+name = "jounce-docs"
+version = "0.1.0"
+description = "Documentation generation from source code with doc comments, markdown, and API references"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-docs"
+
+[dependencies]
+jounce-utils = "0.1.0"
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "parser_tests"
+path = "tests/parser_tests.jnc"
+
+[[test]]
+name = "markdown_tests"
+path = "tests/markdown_tests.jnc"
+
+[[test]]
+name = "apiref_tests"
+path = "tests/apiref_tests.jnc"
+
+[[test]]
+name = "example_tests"
+path = "tests/example_tests.jnc"
+
+[features]
+default = ["parser", "markdown", "api-ref"]
+parser = []
+markdown = []
+api-ref = []
+examples = []
