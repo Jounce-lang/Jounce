@@ -1,0 +1,35 @@
+[package]
+name = "jounce-cache"
+version = "0.1.0"
+description = "In-memory and Redis caching with LRU eviction, TTL support, and cache statistics"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-cache"
+
+[dependencies]
+jounce-utils = "0.1.0"
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "lru_tests"
+path = "tests/lru_tests.jnc"
+
+[[test]]
+name = "ttl_tests"
+path = "tests/ttl_tests.jnc"
+
+[[test]]
+name = "redis_tests"
+path = "tests/redis_tests.jnc"
+
+[[test]]
+name = "manager_tests"
+path = "tests/manager_tests.jnc"
+
+[features]
+default = ["lru", "ttl"]
+lru = []
+ttl = []
+redis = []

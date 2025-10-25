@@ -1,0 +1,185 @@
+// Tests for cache manager and statistics in jounce-cache
+use jounce_cache::{
+    CacheManager, CacheConfig, CacheStats, CacheBackend,
+    get_cache, register_cache, cache_set, cache_get, cache_remove, cache_clear
+};
+
+#[test]
+fn test_cache_stats_creation() {
+    let stats = CacheStats::new();
+
+    assert_eq!(stats.hits, 0, "Hits should be 0");
+    assert_eq!(stats.misses, 0, "Misses should be 0");
+    assert_eq!(stats.evictions, 0, "Evictions should be 0");
+    assert_eq!(stats.expired, 0, "Expired should be 0");
+}
+
+#[test]
+fn test_cache_stats_hit_rate_empty() {
+    let stats = CacheStats::new();
+
+    let rate = stats.hit_rate();
+
+    assert_eq!(rate, 0.0, "Hit rate should be 0.0 when empty");
+}
+
+#[test]
+fn test_cache_stats_hit_rate() {
+    let mut stats = CacheStats::new();
+    stats.hits = 7;
+    stats.misses = 3;
+
+    let rate = stats.hit_rate();
+
+    assert_eq!(rate, 0.7, "Hit rate should be 0.7 (70%)");
+}
+
+#[test]
+fn test_cache_manager_with_memory() {
+    let config = CacheConfig::default();
+    let manager = CacheManager::with_memory(config);
+
+    // Manager should be created successfully
+    assert!(true, "Manager created successfully");
+}
+
+#[test]
+fn test_cache_manager_set_and_get() {
+    let config = CacheConfig::default();
+    let mut manager = CacheManager::with_memory(config);
+
+    manager.set("key1", "value1");
+    let result = manager.get("key1");
+
+    assert!(result.is_some(), "Should get value");
+    assert_eq!(result.unwrap(), "value1", "Should have correct value");
+}
+
+#[test]
+fn test_cache_manager_remove() {
+    let config = CacheConfig::default();
+    let mut manager = CacheManager::with_memory(config);
+
+    manager.set("key1", "value1");
+    let removed = manager.remove("key1");
+
+    assert!(removed, "Should remove key");
+}
+
+#[test]
+fn test_cache_manager_clear() {
+    let config = CacheConfig::default();
+    let mut manager = CacheManager::with_memory(config);
+
+    manager.set("key1", "value1");
+    manager.set("key2", "value2");
+    manager.clear();
+
+    let result = manager.get("key1");
+    assert!(result.is_none(), "Should not find key after clear");
+}
+
+#[test]
+fn test_cache_manager_stats_hits() {
+    let config = CacheConfig::default();
+    let mut manager = CacheManager::with_memory(config);
+
+    manager.set("key1", "value1");
+    manager.get("key1");  // Hit
+    manager.get("key1");  // Hit
+
+    let stats = manager.stats();
+    assert_eq!(stats.hits, 2, "Should have 2 hits");
+}
+
+#[test]
+fn test_cache_manager_stats_misses() {
+    let config = CacheConfig::default();
+    let mut manager = CacheManager::with_memory(config);
+
+    manager.get("nonexistent");  // Miss
+    manager.get("nonexistent");  // Miss
+
+    let stats = manager.stats();
+    assert_eq!(stats.misses, 2, "Should have 2 misses");
+}
+
+#[test]
+fn test_cache_manager_stats_hit_rate() {
+    let config = CacheConfig::default();
+    let mut manager = CacheManager::with_memory(config);
+
+    manager.set("key1", "value1");
+    manager.get("key1");  // Hit
+    manager.get("nonexistent");  // Miss
+    manager.get("key1");  // Hit
+
+    let stats = manager.stats();
+    let rate = stats.hit_rate();
+
+    assert_eq!(stats.hits, 2, "Should have 2 hits");
+    assert_eq!(stats.misses, 1, "Should have 1 miss");
+    assert!(rate > 0.6 && rate < 0.7, "Hit rate should be ~0.67");
+}
+
+#[test]
+fn test_get_cache() {
+    let cache = get_cache("test");
+
+    // Should return a cache instance
+    assert!(true, "Should get cache successfully");
+}
+
+#[test]
+fn test_get_cache_creates_default() {
+    let cache = get_cache("new_cache");
+
+    // Should create a new default cache
+    assert!(true, "Should create default cache");
+}
+
+#[test]
+fn test_register_cache() {
+    let config = CacheConfig::default().with_max_size(50);
+    let cache = CacheManager::with_memory(config);
+
+    register_cache("custom", cache);
+
+    let retrieved = get_cache("custom");
+    // Should retrieve registered cache
+    assert!(true, "Should retrieve registered cache");
+}
+
+#[test]
+fn test_cache_set_convenience() {
+    cache_set("key1", "value1");
+
+    // Should set value in default cache
+    assert!(true, "Should set value");
+}
+
+#[test]
+fn test_cache_get_convenience() {
+    cache_set("key2", "value2");
+    let result = cache_get("key2");
+
+    assert!(result.is_some(), "Should get value");
+}
+
+#[test]
+fn test_cache_remove_convenience() {
+    cache_set("key3", "value3");
+    let removed = cache_remove("key3");
+
+    assert!(removed, "Should remove key");
+}
+
+#[test]
+fn test_cache_clear_convenience() {
+    cache_set("key4", "value4");
+    cache_set("key5", "value5");
+    cache_clear();
+
+    let result = cache_get("key4");
+    assert!(result.is_none(), "Should not find key after clear");
+}

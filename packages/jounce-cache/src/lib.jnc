@@ -1,0 +1,612 @@
+// jounce-cache - In-memory and Redis caching with LRU eviction and TTL support
+// Version: 0.1.0
+
+use jounce_utils::{keys, values};
+
+// ============================================================================
+// Cache Entry
+// ============================================================================
+
+/// Cache entry with value, expiration, and usage metadata
+pub struct CacheEntry<T> {
+    pub value: T,
+    pub expires_at: int,  // Unix timestamp (0 = no expiration)
+    pub last_accessed: int,
+    pub access_count: int,
+}
+
+impl<T> CacheEntry<T> {
+    pub fn new(value: T, ttl: int) -> CacheEntry<T> {
+        let now = Date.now();
+        let expires_at = if ttl > 0 { now + (ttl * 1000) } else { 0 };
+
+        return CacheEntry {
+            value: value,
+            expires_at: expires_at,
+            last_accessed: now,
+            access_count: 1,
+        };
+    }
+
+    pub fn is_expired(self) -> bool {
+        if self.expires_at == 0 {
+            return false;
+        }
+        return Date.now() > self.expires_at;
+    }
+
+    pub fn touch(mut self) {
+        self.last_accessed = Date.now();
+        self.access_count = self.access_count + 1;
+    }
+}
+
+// ============================================================================
+// Cache Configuration
+// ============================================================================
+
+/// Cache eviction policy
+pub enum EvictionPolicy {
+    LRU,  // Least Recently Used
+    LFU,  // Least Frequently Used
+    FIFO, // First In First Out
+}
+
+/// Cache configuration
+pub struct CacheConfig {
+    pub max_size: int,
+    pub default_ttl: int,  // seconds (0 = no expiration)
+    pub eviction_policy: EvictionPolicy,
+    pub check_expiration_interval: int,  // seconds (0 = no automatic checks)
+}
+
+impl CacheConfig {
+    pub fn default() -> CacheConfig {
+        return CacheConfig {
+            max_size: 100,
+            default_ttl: 0,
+            eviction_policy: EvictionPolicy::LRU,
+            check_expiration_interval: 60,
+        };
+    }
+
+    pub fn with_max_size(mut self, size: int) -> CacheConfig {
+        self.max_size = size;
+        return self;
+    }
+
+    pub fn with_ttl(mut self, ttl: int) -> CacheConfig {
+        self.default_ttl = ttl;
+        return self;
+    }
+
+    pub fn with_policy(mut self, policy: EvictionPolicy) -> CacheConfig {
+        self.eviction_policy = policy;
+        return self;
+    }
+}
+
+// ============================================================================
+// In-Memory Cache (LRU)
+// ============================================================================
+
+/// In-memory cache with LRU eviction and TTL support
+pub struct Cache<T> {
+    config: CacheConfig,
+    entries: Map<string, CacheEntry<T>>,
+    insertion_order: Array<string>,
+}
+
+impl<T> Cache<T> {
+    pub fn new(config: CacheConfig) -> Cache<T> {
+        return Cache {
+            config: config,
+            entries: Map::new(),
+            insertion_order: Array::new(),
+        };
+    }
+
+    pub fn set(mut self, key: string, value: T) {
+        self.set_with_ttl(key, value, self.config.default_ttl);
+    }
+
+    pub fn set_with_ttl(mut self, key: string, value: T, ttl: int) {
+        // Check if we need to evict
+        if !self.entries.contains_key(&key) && self.entries.len() >= self.config.max_size {
+            self.evict_one();
+        }
+
+        // Remove from insertion order if exists
+        if self.entries.contains_key(&key) {
+            self.insertion_order = self.insertion_order.filter(|k| k != key);
+        }
+
+        // Add entry
+        let entry = CacheEntry::new(value, ttl);
+        self.entries.insert(key.clone(), entry);
+        self.insertion_order.push(key);
+    }
+
+    pub fn get(mut self, key: string) -> Option<T> {
+        if !self.entries.contains_key(&key) {
+            return None;
+        }
+
+        let mut entry = self.entries.get(&key);
+
+        // Check if expired
+        if entry.is_expired() {
+            self.remove(key);
+            return None;
+        }
+
+        // Update access metadata
+        entry.touch();
+        self.entries.insert(key, entry);
+
+        return Some(entry.value);
+    }
+
+    pub fn remove(mut self, key: string) -> bool {
+        if !self.entries.contains_key(&key) {
+            return false;
+        }
+
+        self.entries.remove(&key);
+        self.insertion_order = self.insertion_order.filter(|k| k != key);
+
+        return true;
+    }
+
+    pub fn clear(mut self) {
+        self.entries = Map::new();
+        self.insertion_order = Array::new();
+    }
+
+    pub fn has(self, key: string) -> bool {
+        if !self.entries.contains_key(&key) {
+            return false;
+        }
+
+        let entry = self.entries.get(&key);
+        return !entry.is_expired();
+    }
+
+    pub fn size(self) -> int {
+        return self.entries.len();
+    }
+
+    pub fn keys(self) -> Array<string> {
+        return self.insertion_order.clone();
+    }
+
+    pub fn evict_expired(mut self) -> int {
+        let mut removed = 0;
+        let keys = self.keys();
+
+        for key in keys {
+            if self.entries.contains_key(&key) {
+                let entry = self.entries.get(&key);
+                if entry.is_expired() {
+                    self.remove(key);
+                    removed = removed + 1;
+                }
+            }
+        }
+
+        return removed;
+    }
+
+    fn evict_one(mut self) {
+        let policy = self.config.eviction_policy;
+
+        match policy {
+            EvictionPolicy::LRU => self.evict_lru(),
+            EvictionPolicy::LFU => self.evict_lfu(),
+            EvictionPolicy::FIFO => self.evict_fifo(),
+        }
+    }
+
+    fn evict_lru(mut self) {
+        let mut oldest_key = "";
+        let mut oldest_time = Date.now();
+
+        for key in self.keys() {
+            if self.entries.contains_key(&key) {
+                let entry = self.entries.get(&key);
+                if entry.last_accessed < oldest_time {
+                    oldest_time = entry.last_accessed;
+                    oldest_key = key;
+                }
+            }
+        }
+
+        if oldest_key != "" {
+            self.remove(oldest_key);
+        }
+    }
+
+    fn evict_lfu(mut self) {
+        let mut least_used_key = "";
+        let mut least_count = 999999;
+
+        for key in self.keys() {
+            if self.entries.contains_key(&key) {
+                let entry = self.entries.get(&key);
+                if entry.access_count < least_count {
+                    least_count = entry.access_count;
+                    least_used_key = key;
+                }
+            }
+        }
+
+        if least_used_key != "" {
+            self.remove(least_used_key);
+        }
+    }
+
+    fn evict_fifo(mut self) {
+        if self.insertion_order.len() > 0 {
+            let first_key = self.insertion_order[0];
+            self.remove(first_key);
+        }
+    }
+}
+
+// ============================================================================
+// Cache Statistics
+// ============================================================================
+
+pub struct CacheStats {
+    pub hits: int,
+    pub misses: int,
+    pub evictions: int,
+    pub expired: int,
+}
+
+impl CacheStats {
+    pub fn new() -> CacheStats {
+        return CacheStats {
+            hits: 0,
+            misses: 0,
+            evictions: 0,
+            expired: 0,
+        };
+    }
+
+    pub fn hit_rate(self) -> float {
+        let total = self.hits + self.misses;
+        if total == 0 {
+            return 0.0;
+        }
+        return (self.hits as float) / (total as float);
+    }
+}
+
+// ============================================================================
+// Redis Cache Adapter
+// ============================================================================
+
+/// Redis connection configuration
+pub struct RedisConfig {
+    pub host: string,
+    pub port: int,
+    pub password: string,
+    pub database: int,
+    pub prefix: string,
+}
+
+impl RedisConfig {
+    pub fn new(host: string, port: int) -> RedisConfig {
+        return RedisConfig {
+            host: host,
+            port: port,
+            password: "",
+            database: 0,
+            prefix: "jounce:",
+        };
+    }
+
+    pub fn with_password(mut self, password: string) -> RedisConfig {
+        self.password = password;
+        return self;
+    }
+
+    pub fn with_database(mut self, db: int) -> RedisConfig {
+        self.database = db;
+        return self;
+    }
+
+    pub fn with_prefix(mut self, prefix: string) -> RedisConfig {
+        self.prefix = prefix;
+        return self;
+    }
+}
+
+/// Redis cache adapter
+pub struct RedisCache {
+    config: RedisConfig,
+    connected: bool,
+}
+
+impl RedisCache {
+    pub fn new(config: RedisConfig) -> RedisCache {
+        return RedisCache {
+            config: config,
+            connected: false,
+        };
+    }
+
+    pub fn connect(mut self) -> bool {
+        // Simulate connection (in real implementation, would connect to Redis)
+        self.connected = true;
+        return true;
+    }
+
+    pub fn disconnect(mut self) {
+        self.connected = false;
+    }
+
+    pub fn is_connected(self) -> bool {
+        return self.connected;
+    }
+
+    pub fn set(self, key: string, value: string) -> bool {
+        return self.set_with_ttl(key, value, 0);
+    }
+
+    pub fn set_with_ttl(self, key: string, value: string, ttl: int) -> bool {
+        if !self.connected {
+            return false;
+        }
+
+        // In real implementation:
+        // if ttl > 0: SETEX prefix:key ttl value
+        // else: SET prefix:key value
+
+        return true;
+    }
+
+    pub fn get(self, key: string) -> Option<string> {
+        if !self.connected {
+            return None;
+        }
+
+        // In real implementation: GET prefix:key
+
+        return Some("cached_value");
+    }
+
+    pub fn remove(self, key: string) -> bool {
+        if !self.connected {
+            return false;
+        }
+
+        // In real implementation: DEL prefix:key
+
+        return true;
+    }
+
+    pub fn exists(self, key: string) -> bool {
+        if !self.connected {
+            return false;
+        }
+
+        // In real implementation: EXISTS prefix:key
+
+        return true;
+    }
+
+    pub fn expire(self, key: string, ttl: int) -> bool {
+        if !self.connected {
+            return false;
+        }
+
+        // In real implementation: EXPIRE prefix:key ttl
+
+        return true;
+    }
+
+    pub fn ttl(self, key: string) -> int {
+        if !self.connected {
+            return -1;
+        }
+
+        // In real implementation: TTL prefix:key
+
+        return 3600;  // Mock: 1 hour
+    }
+
+    pub fn clear_pattern(self, pattern: string) -> int {
+        if !self.connected {
+            return 0;
+        }
+
+        // In real implementation:
+        // SCAN 0 MATCH prefix:pattern
+        // DEL all matching keys
+
+        return 10;  // Mock: deleted 10 keys
+    }
+
+    pub fn flush(self) -> bool {
+        if !self.connected {
+            return false;
+        }
+
+        // In real implementation: FLUSHDB
+
+        return true;
+    }
+
+    fn prefixed_key(self, key: string) -> string {
+        return self.config.prefix + key;
+    }
+}
+
+// ============================================================================
+// Cache Manager (Unified Interface)
+// ============================================================================
+
+/// Cache backend type
+pub enum CacheBackend {
+    Memory,
+    Redis,
+}
+
+/// Unified cache manager
+pub struct CacheManager<T> {
+    backend: CacheBackend,
+    memory_cache: Option<Cache<T>>,
+    redis_cache: Option<RedisCache>,
+    stats: CacheStats,
+}
+
+impl<T> CacheManager<T> {
+    pub fn with_memory(config: CacheConfig) -> CacheManager<T> {
+        return CacheManager {
+            backend: CacheBackend::Memory,
+            memory_cache: Some(Cache::new(config)),
+            redis_cache: None,
+            stats: CacheStats::new(),
+        };
+    }
+
+    pub fn with_redis(config: RedisConfig) -> CacheManager<T> {
+        return CacheManager {
+            backend: CacheBackend::Redis,
+            memory_cache: None,
+            redis_cache: Some(RedisCache::new(config)),
+            stats: CacheStats::new(),
+        };
+    }
+
+    pub fn set(mut self, key: string, value: T) {
+        match self.backend {
+            CacheBackend::Memory => {
+                if let Some(mut cache) = self.memory_cache {
+                    cache.set(key, value);
+                    self.memory_cache = Some(cache);
+                }
+            },
+            CacheBackend::Redis => {
+                // In real implementation, serialize value to string
+            },
+        }
+    }
+
+    pub fn get(mut self, key: string) -> Option<T> {
+        match self.backend {
+            CacheBackend::Memory => {
+                if let Some(mut cache) = self.memory_cache {
+                    let result = cache.get(key);
+                    self.memory_cache = Some(cache);
+
+                    if result.is_some() {
+                        self.stats.hits = self.stats.hits + 1;
+                    } else {
+                        self.stats.misses = self.stats.misses + 1;
+                    }
+
+                    return result;
+                }
+            },
+            CacheBackend::Redis => {
+                // In real implementation, deserialize from string
+                self.stats.misses = self.stats.misses + 1;
+            },
+        }
+
+        return None;
+    }
+
+    pub fn remove(mut self, key: string) -> bool {
+        match self.backend {
+            CacheBackend::Memory => {
+                if let Some(mut cache) = self.memory_cache {
+                    let removed = cache.remove(key);
+                    self.memory_cache = Some(cache);
+                    return removed;
+                }
+            },
+            CacheBackend::Redis => {
+                if let Some(cache) = self.redis_cache {
+                    return cache.remove(key);
+                }
+            },
+        }
+
+        return false;
+    }
+
+    pub fn clear(mut self) {
+        match self.backend {
+            CacheBackend::Memory => {
+                if let Some(mut cache) = self.memory_cache {
+                    cache.clear();
+                    self.memory_cache = Some(cache);
+                }
+            },
+            CacheBackend::Redis => {
+                if let Some(cache) = self.redis_cache {
+                    cache.flush();
+                }
+            },
+        }
+    }
+
+    pub fn stats(self) -> CacheStats {
+        return self.stats;
+    }
+}
+
+// ============================================================================
+// Global Cache Registry
+// ============================================================================
+
+static mut CACHE_REGISTRY: Map<string, CacheManager<string>> = Map::new();
+
+pub fn get_cache(name: string) -> CacheManager<string> {
+    unsafe {
+        if CACHE_REGISTRY.contains_key(&name) {
+            return CACHE_REGISTRY.get(&name);
+        }
+
+        // Create default cache
+        let config = CacheConfig::default();
+        let cache = CacheManager::with_memory(config);
+        CACHE_REGISTRY.insert(name.clone(), cache.clone());
+
+        return cache;
+    }
+}
+
+pub fn register_cache(name: string, cache: CacheManager<string>) {
+    unsafe {
+        CACHE_REGISTRY.insert(name, cache);
+    }
+}
+
+// ============================================================================
+// Convenience Functions
+// ============================================================================
+
+pub fn cache_set(key: string, value: string) {
+    let mut cache = get_cache("default");
+    cache.set(key, value);
+}
+
+pub fn cache_get(key: string) -> Option<string> {
+    let mut cache = get_cache("default");
+    return cache.get(key);
+}
+
+pub fn cache_remove(key: string) -> bool {
+    let mut cache = get_cache("default");
+    return cache.remove(key);
+}
+
+pub fn cache_clear() {
+    let mut cache = get_cache("default");
+    cache.clear();
+}

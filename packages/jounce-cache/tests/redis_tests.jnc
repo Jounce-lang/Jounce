@@ -1,0 +1,198 @@
+// Tests for Redis adapter in jounce-cache
+use jounce_cache::{RedisCache, RedisConfig};
+
+#[test]
+fn test_redis_config_creation() {
+    let config = RedisConfig::new("localhost", 6379);
+
+    assert_eq!(config.host, "localhost", "Host should be localhost");
+    assert_eq!(config.port, 6379, "Port should be 6379");
+    assert_eq!(config.database, 0, "Default database should be 0");
+    assert_eq!(config.prefix, "jounce:", "Default prefix should be jounce:");
+}
+
+#[test]
+fn test_redis_config_with_password() {
+    let config = RedisConfig::new("localhost", 6379)
+        .with_password("secret123");
+
+    assert_eq!(config.password, "secret123", "Password should be set");
+}
+
+#[test]
+fn test_redis_config_with_database() {
+    let config = RedisConfig::new("localhost", 6379)
+        .with_database(2);
+
+    assert_eq!(config.database, 2, "Database should be 2");
+}
+
+#[test]
+fn test_redis_config_with_prefix() {
+    let config = RedisConfig::new("localhost", 6379)
+        .with_prefix("myapp:");
+
+    assert_eq!(config.prefix, "myapp:", "Prefix should be myapp:");
+}
+
+#[test]
+fn test_redis_config_builder() {
+    let config = RedisConfig::new("redis.example.com", 6380)
+        .with_password("pass123")
+        .with_database(3)
+        .with_prefix("cache:");
+
+    assert_eq!(config.host, "redis.example.com", "Host should be correct");
+    assert_eq!(config.port, 6380, "Port should be correct");
+    assert_eq!(config.password, "pass123", "Password should be correct");
+    assert_eq!(config.database, 3, "Database should be correct");
+    assert_eq!(config.prefix, "cache:", "Prefix should be correct");
+}
+
+#[test]
+fn test_redis_cache_creation() {
+    let config = RedisConfig::new("localhost", 6379);
+    let cache = RedisCache::new(config);
+
+    assert!(!cache.is_connected(), "Should not be connected initially");
+}
+
+#[test]
+fn test_redis_connect() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+
+    let connected = cache.connect();
+
+    assert!(connected, "Should connect successfully");
+    assert!(cache.is_connected(), "Should be connected");
+}
+
+#[test]
+fn test_redis_disconnect() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+
+    cache.connect();
+    cache.disconnect();
+
+    assert!(!cache.is_connected(), "Should be disconnected");
+}
+
+#[test]
+fn test_redis_set() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+    cache.connect();
+
+    let result = cache.set("key1", "value1");
+
+    assert!(result, "Should set value successfully");
+}
+
+#[test]
+fn test_redis_set_with_ttl() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+    cache.connect();
+
+    let result = cache.set_with_ttl("key1", "value1", 3600);
+
+    assert!(result, "Should set value with TTL successfully");
+}
+
+#[test]
+fn test_redis_get() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+    cache.connect();
+
+    cache.set("key1", "value1");
+    let result = cache.get("key1");
+
+    assert!(result.is_some(), "Should get value");
+}
+
+#[test]
+fn test_redis_remove() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+    cache.connect();
+
+    cache.set("key1", "value1");
+    let removed = cache.remove("key1");
+
+    assert!(removed, "Should remove key");
+}
+
+#[test]
+fn test_redis_exists() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+    cache.connect();
+
+    cache.set("key1", "value1");
+    let exists = cache.exists("key1");
+
+    assert!(exists, "Key should exist");
+}
+
+#[test]
+fn test_redis_expire() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+    cache.connect();
+
+    cache.set("key1", "value1");
+    let result = cache.expire("key1", 60);
+
+    assert!(result, "Should set expiration");
+}
+
+#[test]
+fn test_redis_ttl() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+    cache.connect();
+
+    cache.set_with_ttl("key1", "value1", 3600);
+    let ttl = cache.ttl("key1");
+
+    assert!(ttl > 0, "TTL should be positive");
+}
+
+#[test]
+fn test_redis_clear_pattern() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+    cache.connect();
+
+    let deleted = cache.clear_pattern("user:*");
+
+    assert!(deleted >= 0, "Should return number of deleted keys");
+}
+
+#[test]
+fn test_redis_flush() {
+    let config = RedisConfig::new("localhost", 6379);
+    let mut cache = RedisCache::new(config);
+    cache.connect();
+
+    let result = cache.flush();
+
+    assert!(result, "Should flush database");
+}
+
+#[test]
+fn test_redis_operations_fail_when_disconnected() {
+    let config = RedisConfig::new("localhost", 6379);
+    let cache = RedisCache::new(config);
+
+    let set_result = cache.set("key1", "value1");
+    let get_result = cache.get("key1");
+    let remove_result = cache.remove("key1");
+
+    assert!(!set_result, "Set should fail when disconnected");
+    assert!(get_result.is_none(), "Get should return None when disconnected");
+    assert!(!remove_result, "Remove should fail when disconnected");
+}

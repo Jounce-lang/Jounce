@@ -1,0 +1,128 @@
+// Tests for TTL expiration in jounce-cache
+use jounce_cache::{Cache, CacheConfig, CacheEntry};
+
+#[test]
+fn test_entry_without_ttl() {
+    let entry = CacheEntry::new("value", 0);
+
+    assert_eq!(entry.value, "value", "Should have correct value");
+    assert_eq!(entry.expires_at, 0, "Should have no expiration");
+    assert!(!entry.is_expired(), "Should not be expired");
+}
+
+#[test]
+fn test_entry_with_ttl() {
+    let entry = CacheEntry::new("value", 3600);
+
+    assert_eq!(entry.value, "value", "Should have correct value");
+    assert!(entry.expires_at > 0, "Should have expiration time");
+    assert!(!entry.is_expired(), "Should not be expired immediately");
+}
+
+#[test]
+fn test_entry_is_expired() {
+    let entry = CacheEntry::new("value", -1);  // Already expired
+
+    assert!(entry.is_expired(), "Should be expired");
+}
+
+#[test]
+fn test_entry_touch() {
+    let mut entry = CacheEntry::new("value", 0);
+    let initial_count = entry.access_count;
+
+    entry.touch();
+
+    assert_eq!(entry.access_count, initial_count + 1, "Access count should increment");
+}
+
+#[test]
+fn test_cache_set_with_ttl() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set_with_ttl("key1", "value1", 3600);
+
+    assert!(cache.has("key1"), "Should have key1");
+}
+
+#[test]
+fn test_cache_default_ttl() {
+    let config = CacheConfig::default().with_ttl(3600);
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+
+    assert!(cache.has("key1"), "Should have key1");
+}
+
+#[test]
+fn test_expired_entry_not_returned() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    // Set with -1 second TTL (already expired)
+    cache.set_with_ttl("key1", "value1", -1);
+
+    let result = cache.get("key1");
+    assert!(result.is_none(), "Should not return expired entry");
+    assert!(!cache.has("key1"), "Should not have expired entry");
+}
+
+#[test]
+fn test_evict_expired() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    // Set some entries
+    cache.set_with_ttl("key1", "value1", -1);  // Expired
+    cache.set_with_ttl("key2", "value2", 3600); // Valid
+    cache.set_with_ttl("key3", "value3", -1);  // Expired
+
+    let removed = cache.evict_expired();
+
+    assert_eq!(removed, 2, "Should remove 2 expired entries");
+    assert_eq!(cache.size(), 1, "Should have 1 entry left");
+    assert!(cache.has("key2"), "Should keep valid entry");
+}
+
+#[test]
+fn test_evict_expired_none() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+    cache.set("key2", "value2");
+
+    let removed = cache.evict_expired();
+
+    assert_eq!(removed, 0, "Should remove no entries");
+    assert_eq!(cache.size(), 2, "Should still have 2 entries");
+}
+
+#[test]
+fn test_ttl_zero_means_no_expiration() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set_with_ttl("key1", "value1", 0);
+
+    assert!(cache.has("key1"), "Should have key1");
+    // Even after evict_expired
+    cache.evict_expired();
+    assert!(cache.has("key1"), "Should still have key1");
+}
+
+#[test]
+fn test_cache_config_default_ttl() {
+    let config = CacheConfig::default();
+
+    assert_eq!(config.default_ttl, 0, "Default TTL should be 0 (no expiration)");
+}
+
+#[test]
+fn test_cache_config_with_ttl() {
+    let config = CacheConfig::default().with_ttl(7200);
+
+    assert_eq!(config.default_ttl, 7200, "TTL should be 7200 seconds");
+}

@@ -1,0 +1,200 @@
+// Tests for LRU cache operations in jounce-cache
+use jounce_cache::{Cache, CacheConfig, EvictionPolicy};
+
+#[test]
+fn test_cache_creation() {
+    let config = CacheConfig::default();
+    let cache = Cache::new(config);
+
+    assert_eq!(cache.size(), 0, "New cache should be empty");
+}
+
+#[test]
+fn test_cache_set_and_get() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+
+    let result = cache.get("key1");
+    assert!(result.is_some(), "Should find key1");
+    assert_eq!(result.unwrap(), "value1", "Should have correct value");
+}
+
+#[test]
+fn test_cache_has() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+
+    assert!(cache.has("key1"), "Should have key1");
+    assert!(!cache.has("key2"), "Should not have key2");
+}
+
+#[test]
+fn test_cache_remove() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+    let removed = cache.remove("key1");
+
+    assert!(removed, "Should remove key1");
+    assert!(!cache.has("key1"), "Should not have key1 after remove");
+}
+
+#[test]
+fn test_cache_size() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+    cache.set("key2", "value2");
+    cache.set("key3", "value3");
+
+    assert_eq!(cache.size(), 3, "Should have 3 items");
+}
+
+#[test]
+fn test_cache_keys() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+    cache.set("key2", "value2");
+
+    let keys = cache.keys();
+    assert_eq!(keys.len(), 2, "Should have 2 keys");
+    assert!(keys.contains(&"key1"), "Should contain key1");
+    assert!(keys.contains(&"key2"), "Should contain key2");
+}
+
+#[test]
+fn test_cache_clear() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+    cache.set("key2", "value2");
+    cache.clear();
+
+    assert_eq!(cache.size(), 0, "Should be empty after clear");
+}
+
+#[test]
+fn test_cache_overwrite() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+    cache.set("key1", "value2");
+
+    let result = cache.get("key1");
+    assert_eq!(result.unwrap(), "value2", "Should have updated value");
+}
+
+#[test]
+fn test_lru_eviction() {
+    let config = CacheConfig::default()
+        .with_max_size(3)
+        .with_policy(EvictionPolicy::LRU);
+
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+    cache.set("key2", "value2");
+    cache.set("key3", "value3");
+
+    // Access key1 to make it more recent
+    cache.get("key1");
+
+    // Add key4, should evict key2 (least recently used)
+    cache.set("key4", "value4");
+
+    assert_eq!(cache.size(), 3, "Should still have max 3 items");
+    assert!(cache.has("key1"), "Should still have key1 (accessed)");
+    assert!(!cache.has("key2"), "Should evict key2 (LRU)");
+    assert!(cache.has("key3"), "Should still have key3");
+    assert!(cache.has("key4"), "Should have key4 (new)");
+}
+
+#[test]
+fn test_lfu_eviction() {
+    let config = CacheConfig::default()
+        .with_max_size(3)
+        .with_policy(EvictionPolicy::LFU);
+
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+    cache.set("key2", "value2");
+    cache.set("key3", "value3");
+
+    // Access key1 multiple times
+    cache.get("key1");
+    cache.get("key1");
+
+    // Access key3 once
+    cache.get("key3");
+
+    // Add key4, should evict key2 (least frequently used)
+    cache.set("key4", "value4");
+
+    assert_eq!(cache.size(), 3, "Should still have max 3 items");
+    assert!(cache.has("key1"), "Should still have key1 (most accessed)");
+    assert!(!cache.has("key2"), "Should evict key2 (LFU)");
+    assert!(cache.has("key3"), "Should still have key3");
+    assert!(cache.has("key4"), "Should have key4 (new)");
+}
+
+#[test]
+fn test_fifo_eviction() {
+    let config = CacheConfig::default()
+        .with_max_size(3)
+        .with_policy(EvictionPolicy::FIFO);
+
+    let mut cache = Cache::new(config);
+
+    cache.set("key1", "value1");
+    cache.set("key2", "value2");
+    cache.set("key3", "value3");
+
+    // Add key4, should evict key1 (first in)
+    cache.set("key4", "value4");
+
+    assert_eq!(cache.size(), 3, "Should still have max 3 items");
+    assert!(!cache.has("key1"), "Should evict key1 (first in)");
+    assert!(cache.has("key2"), "Should still have key2");
+    assert!(cache.has("key3"), "Should still have key3");
+    assert!(cache.has("key4"), "Should have key4 (new)");
+}
+
+#[test]
+fn test_cache_config_builder() {
+    let config = CacheConfig::default()
+        .with_max_size(50)
+        .with_ttl(3600)
+        .with_policy(EvictionPolicy::LRU);
+
+    assert_eq!(config.max_size, 50, "Max size should be 50");
+    assert_eq!(config.default_ttl, 3600, "TTL should be 3600");
+}
+
+#[test]
+fn test_get_nonexistent_key() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    let result = cache.get("nonexistent");
+    assert!(result.is_none(), "Should return None for nonexistent key");
+}
+
+#[test]
+fn test_remove_nonexistent_key() {
+    let config = CacheConfig::default();
+    let mut cache = Cache::new(config);
+
+    let removed = cache.remove("nonexistent");
+    assert!(!removed, "Should return false for nonexistent key");
+}
