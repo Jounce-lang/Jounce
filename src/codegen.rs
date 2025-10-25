@@ -178,6 +178,14 @@ impl CodeGenerator {
                     // Check if let binding has CSS macro
                     self.extract_css_from_expression(&let_stmt.value, "App")?;
                 }
+                Statement::Style(style_block) => {
+                    // Phase 13: Generate CSS from style block
+                    self.generate_style_block_css(style_block)?;
+                }
+                Statement::Theme(theme_block) => {
+                    // Phase 13: Generate CSS custom properties from theme block
+                    self.generate_theme_block_css(theme_block)?;
+                }
                 _ => {}
             }
         }
@@ -2347,6 +2355,92 @@ impl CodeGenerator {
                 }
             }
             _ => {}
+        }
+    }
+
+    // ==================== PHASE 13: STYLE SYSTEM GENERATION ====================
+
+    /// Generate CSS from a theme block (creates CSS custom properties)
+    /// theme DarkMode { primary: #1a1a1a; } -> :root { --DarkMode-primary: #1a1a1a; }
+    fn generate_theme_block_css(&mut self, theme: &ThemeBlock) -> Result<(), CompileError> {
+        self.css_output.push_str(":root {\n");
+
+        for prop in &theme.properties {
+            let var_name = format!("--{}-{}", theme.name.value, prop.name);
+            self.css_output.push_str(&format!("  {}: {};\n", var_name, prop.value));
+        }
+
+        self.css_output.push_str("}\n\n");
+        Ok(())
+    }
+
+    /// Generate CSS from a style block (creates scoped classes)
+    /// style Button { background: blue; } -> .Button_a1b2c3 { background: blue; }
+    fn generate_style_block_css(&mut self, style: &StyleBlock) -> Result<(), CompileError> {
+        // Generate scoped class name with hash
+        let class_name = self.generate_scoped_class_name(&style.name.value);
+
+        // Generate main rule
+        if !style.properties.is_empty() {
+            self.css_output.push_str(&format!(".{} {{\n", class_name));
+
+            for prop in &style.properties {
+                let value = self.resolve_style_value(&prop.value);
+                self.css_output.push_str(&format!("  {}: {};\n", prop.name, value));
+            }
+
+            self.css_output.push_str("}\n\n");
+        }
+
+        // Generate nested selectors
+        for nested in &style.nested {
+            let nested_selector = match &nested.selector {
+                SelectorType::PseudoClass(pseudo) => {
+                    format!(".{}:{}", class_name, pseudo)
+                }
+                SelectorType::Class(cls) => {
+                    format!(".{}.{}", class_name, cls)
+                }
+            };
+
+            if !nested.properties.is_empty() {
+                self.css_output.push_str(&format!("{} {{\n", nested_selector));
+
+                for prop in &nested.properties {
+                    let value = self.resolve_style_value(&prop.value);
+                    self.css_output.push_str(&format!("  {}: {};\n", prop.name, value));
+                }
+
+                self.css_output.push_str("}\n\n");
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Generate a scoped class name with hash
+    /// "Button" -> "Button_a1b2c3"
+    fn generate_scoped_class_name(&self, name: &str) -> String {
+        use sha2::{Sha256, Digest};
+
+        // Create hash from name for now (could include file path for more uniqueness)
+        let mut hasher = Sha256::new();
+        hasher.update(name.as_bytes());
+        let result = hasher.finalize();
+        let hash = format!("{:x}", result)[..6].to_string();
+
+        format!("{}_{}", name, hash)
+    }
+
+    /// Resolve a style value (literal or theme reference)
+    /// StyleValue::Literal("blue") -> "blue"
+    /// StyleValue::ThemeRef { theme: "DarkMode", property: "primary" } -> "var(--DarkMode-primary)"
+    fn resolve_style_value(&self, value: &StyleValue) -> String {
+        match value {
+            StyleValue::Literal(lit) => lit.clone(),
+            StyleValue::ThemeRef { theme, property } => {
+                format!("var(--{}-{})", theme, property)
+            }
         }
     }
 }

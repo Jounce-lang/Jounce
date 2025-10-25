@@ -2860,11 +2860,22 @@ impl<'a> Parser<'a> {
             // Expect colon
             self.expect_and_consume(&TokenKind::Colon)?;
 
-            // Parse value (read until semicolon)
+            // Parse value (read until semicolon) - smart concatenation
             let mut value = String::new();
+            let mut prev_lexeme = String::new();
             while self.current_token().kind != TokenKind::Semicolon && self.current_token().kind != TokenKind::Eof {
-                value.push_str(&self.current_token().lexeme);
-                value.push(' ');
+                let lexeme = &self.current_token().lexeme;
+                // Add space between consecutive values (numbers with units), but not after # or -
+                if !value.is_empty() {
+                    let should_add_space = prev_lexeme.ends_with("px") || prev_lexeme.ends_with("em")
+                        || prev_lexeme.ends_with("rem") || prev_lexeme.ends_with("%");
+                    let prev_is_special = prev_lexeme == "#" || prev_lexeme == "-";
+                    if should_add_space && !prev_is_special {
+                        value.push(' ');
+                    }
+                }
+                value.push_str(lexeme);
+                prev_lexeme = lexeme.clone();
                 self.next_token();
             }
             value = value.trim().to_string();
@@ -3022,11 +3033,22 @@ impl<'a> Parser<'a> {
                 property: prop,
             }
         } else {
-            // Regular literal value - read until semicolon
+            // Regular literal value - read until semicolon - smart concatenation
             let mut val = String::new();
+            let mut prev_lexeme = String::new();
             while self.current_token().kind != TokenKind::Semicolon && self.current_token().kind != TokenKind::Eof {
-                val.push_str(&self.current_token().lexeme);
-                val.push(' ');
+                let lexeme = &self.current_token().lexeme;
+                // Add space between consecutive values (numbers with units), but not after # or -
+                if !val.is_empty() {
+                    let should_add_space = prev_lexeme.ends_with("px") || prev_lexeme.ends_with("em")
+                        || prev_lexeme.ends_with("rem") || prev_lexeme.ends_with("%");
+                    let prev_is_special = prev_lexeme == "#" || prev_lexeme == "-";
+                    if should_add_space && !prev_is_special {
+                        val.push(' ');
+                    }
+                }
+                val.push_str(lexeme);
+                prev_lexeme = lexeme.clone();
                 self.next_token();
             }
             StyleValue::Literal(val.trim().to_string())
