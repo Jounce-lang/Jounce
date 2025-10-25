@@ -21,9 +21,8 @@ impl RPCGenerator {
     pub fn generate_client_stubs(&self) -> String {
         let mut output = String::new();
 
-        // Import RPC client runtime
+        // Note: RPCClient is already imported at the top of the client bundle
         output.push_str("// Auto-generated RPC client stubs\n");
-        output.push_str("import { RPCClient } from './client-runtime.js';\n\n");
         output.push_str("const client = new RPCClient(window.location.origin + '/_rpc');\n\n");
 
         // Generate stub for each server function
