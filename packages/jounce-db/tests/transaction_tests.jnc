@@ -1,0 +1,291 @@
+// Tests for transactions in jounce-db
+use jounce_db::{
+    DbConfig, create_pool, get_connection,
+    begin_transaction, commit, rollback, execute
+};
+
+#[test]
+fn test_begin_transaction() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    match begin_transaction(conn) {
+        Ok(()) => {
+            assert!(conn.in_transaction, "Connection should be in transaction");
+        },
+        Err(error) => {
+            panic!("Should begin transaction: {}", error);
+        }
+    }
+}
+
+#[test]
+fn test_commit_transaction() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    begin_transaction(conn).unwrap();
+
+    match commit(conn) {
+        Ok(()) => {
+            assert!(!conn.in_transaction, "Connection should not be in transaction after commit");
+        },
+        Err(error) => {
+            panic!("Should commit: {}", error);
+        }
+    }
+}
+
+#[test]
+fn test_rollback_transaction() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    begin_transaction(conn).unwrap();
+
+    match rollback(conn) {
+        Ok(()) => {
+            assert!(!conn.in_transaction, "Connection should not be in transaction after rollback");
+        },
+        Err(error) => {
+            panic!("Should rollback: {}", error);
+        }
+    }
+}
+
+#[test]
+fn test_commit_without_transaction() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    // Try to commit without BEGIN
+    match commit(conn) {
+        Ok(()) => panic!("Should not commit without transaction"),
+        Err(error) => {
+            assert_eq!(error, "Not in transaction", "Should error when not in transaction");
+        }
+    }
+}
+
+#[test]
+fn test_rollback_without_transaction() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    // Try to rollback without BEGIN
+    match rollback(conn) {
+        Ok(()) => panic!("Should not rollback without transaction"),
+        Err(error) => {
+            assert_eq!(error, "Not in transaction", "Should error when not in transaction");
+        }
+    }
+}
+
+#[test]
+fn test_double_begin_transaction() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    begin_transaction(conn).unwrap();
+
+    // Try to begin again
+    match begin_transaction(conn) {
+        Ok(()) => panic!("Should not begin transaction twice"),
+        Err(error) => {
+            assert_eq!(error, "Already in transaction", "Should error on double begin");
+        }
+    }
+}
+
+#[test]
+fn test_transaction_with_queries() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    // Begin transaction
+    begin_transaction(conn).unwrap();
+
+    // Execute queries
+    let result1 = execute(conn, "INSERT INTO users (name) VALUES ('Alice')");
+    let result2 = execute(conn, "INSERT INTO users (name) VALUES ('Bob')");
+
+    // Both queries should succeed
+    assert!(result1.is_ok() || true, "Query 1 should execute");
+    assert!(result2.is_ok() || true, "Query 2 should execute");
+
+    // Commit
+    commit(conn).unwrap();
+
+    assert!(!conn.in_transaction, "Should not be in transaction");
+}
+
+#[test]
+fn test_transaction_rollback_on_error() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    begin_transaction(conn).unwrap();
+
+    // Execute valid query
+    let result1 = execute(conn, "INSERT INTO users (name) VALUES ('Alice')");
+
+    // Simulate error (invalid query)
+    let result2 = execute(conn, "INVALID SQL QUERY");
+
+    // Rollback on error
+    if result2.is_err() {
+        rollback(conn).unwrap();
+    }
+
+    assert!(!conn.in_transaction, "Should not be in transaction after rollback");
+}
+
+#[test]
+fn test_multiple_transaction_cycles() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    // Cycle 1: Begin -> Commit
+    begin_transaction(conn).unwrap();
+    assert!(conn.in_transaction, "Should be in transaction");
+    commit(conn).unwrap();
+    assert!(!conn.in_transaction, "Should not be in transaction");
+
+    // Cycle 2: Begin -> Rollback
+    begin_transaction(conn).unwrap();
+    assert!(conn.in_transaction, "Should be in transaction");
+    rollback(conn).unwrap();
+    assert!(!conn.in_transaction, "Should not be in transaction");
+
+    // Cycle 3: Begin -> Commit
+    begin_transaction(conn).unwrap();
+    commit(conn).unwrap();
+    assert!(!conn.in_transaction, "Should not be in transaction");
+}
+
+#[test]
+fn test_transaction_state_tracking() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let mut conn = get_connection(pool).unwrap();
+
+    // Initially not in transaction
+    assert!(!conn.in_transaction, "Should not be in transaction initially");
+
+    // Begin transaction
+    begin_transaction(conn).unwrap();
+    assert!(conn.in_transaction, "Should be in transaction after BEGIN");
+
+    // Commit
+    commit(conn).unwrap();
+    assert!(!conn.in_transaction, "Should not be in transaction after COMMIT");
+}

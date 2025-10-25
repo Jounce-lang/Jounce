@@ -1,0 +1,598 @@
+// jounce-db - Database Abstraction Package
+// Version: 0.1.0
+//
+// Provides PostgreSQL and SQLite adapters, connection pooling,
+// query builder, and transaction support for Jounce applications.
+
+// ============================================================================
+// Database Connection
+// ============================================================================
+
+/// Database configuration
+pub struct DbConfig {
+    driver: string,        // "postgres" or "sqlite"
+    host: string,          // Database host (postgres only)
+    port: int,             // Database port (postgres only)
+    database: string,      // Database name
+    username: string,      // Username (postgres only)
+    password: string,      // Password (postgres only)
+    pool_size: int,        // Max connections in pool
+    timeout: int,          // Connection timeout in seconds
+}
+
+/// Database connection
+pub struct Connection {
+    id: string,
+    driver: string,
+    is_open: bool,
+    in_transaction: bool,
+}
+
+/// Connection pool
+pub struct ConnectionPool {
+    config: DbConfig,
+    connections: Vec<Connection>,
+    available: Vec<string>,
+    in_use: Vec<string>,
+}
+
+// ============================================================================
+// Query Result
+// ============================================================================
+
+/// Query result row
+pub struct Row {
+    columns: Vec<string>,
+    values: Vec<any>,
+}
+
+/// Query result set
+pub struct QueryResult {
+    rows: Vec<Row>,
+    rows_affected: int,
+    last_insert_id: int,
+}
+
+impl Row {
+    /// Get value by column name
+    pub fn get<T>(self, column: string) -> Option<T> {
+        for i in 0..self.columns.len() {
+            if self.columns[i] == column {
+                return Some(self.values[i] as T);
+            }
+        }
+        return None;
+    }
+
+    /// Get value by column index
+    pub fn get_at<T>(self, index: int) -> Option<T> {
+        if index >= 0 && index < self.values.len() {
+            return Some(self.values[index] as T);
+        }
+        return None;
+    }
+}
+
+// ============================================================================
+// Connection Pool Management
+// ============================================================================
+
+/// Create new connection pool
+pub fn create_pool(config: DbConfig) -> ConnectionPool {
+    let mut pool = ConnectionPool {
+        config: config.clone(),
+        connections: vec![],
+        available: vec![],
+        in_use: vec![],
+    };
+
+    // Create initial connections
+    for i in 0..config.pool_size {
+        let conn = create_connection(config.clone());
+        pool.connections.push(conn.clone());
+        pool.available.push(conn.id.clone());
+    }
+
+    return pool;
+}
+
+/// Get connection from pool
+pub fn get_connection(mut pool: ConnectionPool) -> Result<Connection, string> {
+    if pool.available.len() == 0 {
+        return Err("No available connections in pool");
+    }
+
+    let conn_id = pool.available.pop().unwrap();
+    pool.in_use.push(conn_id.clone());
+
+    for conn in pool.connections {
+        if conn.id == conn_id {
+            return Ok(conn.clone());
+        }
+    }
+
+    return Err("Connection not found");
+}
+
+/// Release connection back to pool
+pub fn release_connection(mut pool: ConnectionPool, conn: Connection) {
+    pool.in_use.retain(|id| id != &conn.id);
+    pool.available.push(conn.id.clone());
+}
+
+/// Close all connections in pool
+pub fn close_pool(mut pool: ConnectionPool) {
+    for mut conn in pool.connections {
+        close_connection(conn);
+    }
+    pool.connections.clear();
+    pool.available.clear();
+    pool.in_use.clear();
+}
+
+// ============================================================================
+// Connection Management
+// ============================================================================
+
+/// Create database connection
+fn create_connection(config: DbConfig) -> Connection {
+    let conn_id = generate_connection_id();
+
+    match config.driver {
+        "postgres" => {
+            // Connect to PostgreSQL
+            postgres_connect(config);
+        },
+        "sqlite" => {
+            // Connect to SQLite
+            sqlite_connect(config);
+        },
+        _ => {
+            panic!("Unsupported database driver: {}", config.driver);
+        },
+    }
+
+    return Connection {
+        id: conn_id,
+        driver: config.driver.clone(),
+        is_open: true,
+        in_transaction: false,
+    };
+}
+
+/// Close database connection
+fn close_connection(mut conn: Connection) {
+    if conn.is_open {
+        match conn.driver {
+            "postgres" => postgres_close(conn.id),
+            "sqlite" => sqlite_close(conn.id),
+            _ => {},
+        }
+        conn.is_open = false;
+    }
+}
+
+// ============================================================================
+// Query Execution
+// ============================================================================
+
+/// Execute query
+pub fn execute(conn: Connection, sql: string) -> Result<QueryResult, string> {
+    if !conn.is_open {
+        return Err("Connection is closed");
+    }
+
+    match conn.driver {
+        "postgres" => postgres_execute(conn.id, sql),
+        "sqlite" => sqlite_execute(conn.id, sql),
+        _ => Err("Unsupported driver"),
+    }
+}
+
+/// Execute query with parameters (prepared statement)
+pub fn execute_prepared(conn: Connection, sql: string, params: Vec<any>) -> Result<QueryResult, string> {
+    if !conn.is_open {
+        return Err("Connection is closed");
+    }
+
+    match conn.driver {
+        "postgres" => postgres_execute_prepared(conn.id, sql, params),
+        "sqlite" => sqlite_execute_prepared(conn.id, sql, params),
+        _ => Err("Unsupported driver"),
+    }
+}
+
+/// Query and return results
+pub fn query(conn: Connection, sql: string) -> Result<Vec<Row>, string> {
+    match execute(conn, sql) {
+        Ok(result) => Ok(result.rows),
+        Err(error) => Err(error),
+    }
+}
+
+/// Query with parameters
+pub fn query_prepared(conn: Connection, sql: string, params: Vec<any>) -> Result<Vec<Row>, string> {
+    match execute_prepared(conn, sql, params) {
+        Ok(result) => Ok(result.rows),
+        Err(error) => Err(error),
+    }
+}
+
+/// Query single row
+pub fn query_one(conn: Connection, sql: string) -> Result<Option<Row>, string> {
+    match query(conn, sql) {
+        Ok(rows) => {
+            if rows.len() > 0 {
+                Ok(Some(rows[0].clone()))
+            } else {
+                Ok(None)
+            }
+        },
+        Err(error) => Err(error),
+    }
+}
+
+// ============================================================================
+// Transaction Support
+// ============================================================================
+
+/// Begin transaction
+pub fn begin_transaction(mut conn: Connection) -> Result<(), string> {
+    if conn.in_transaction {
+        return Err("Already in transaction");
+    }
+
+    let result = execute(conn.clone(), "BEGIN");
+    match result {
+        Ok(_) => {
+            conn.in_transaction = true;
+            Ok(())
+        },
+        Err(error) => Err(error),
+    }
+}
+
+/// Commit transaction
+pub fn commit(mut conn: Connection) -> Result<(), string> {
+    if !conn.in_transaction {
+        return Err("Not in transaction");
+    }
+
+    let result = execute(conn.clone(), "COMMIT");
+    match result {
+        Ok(_) => {
+            conn.in_transaction = false;
+            Ok(())
+        },
+        Err(error) => Err(error),
+    }
+}
+
+/// Rollback transaction
+pub fn rollback(mut conn: Connection) -> Result<(), string> {
+    if !conn.in_transaction {
+        return Err("Not in transaction");
+    }
+
+    let result = execute(conn.clone(), "ROLLBACK");
+    match result {
+        Ok(_) => {
+            conn.in_transaction = false;
+            Ok(())
+        },
+        Err(error) => Err(error),
+    }
+}
+
+// ============================================================================
+// Query Builder
+// ============================================================================
+
+/// Query builder for constructing SQL queries
+pub struct QueryBuilder {
+    query_type: string,       // SELECT, INSERT, UPDATE, DELETE
+    table: string,
+    columns: Vec<string>,
+    values: Vec<any>,
+    where_clauses: Vec<string>,
+    where_params: Vec<any>,
+    order_by: Vec<string>,
+    limit: int,
+    offset: int,
+}
+
+impl QueryBuilder {
+    /// Create new query builder
+    pub fn new() -> QueryBuilder {
+        return QueryBuilder {
+            query_type: "",
+            table: "",
+            columns: vec![],
+            values: vec![],
+            where_clauses: vec![],
+            where_params: vec![],
+            order_by: vec![],
+            limit: -1,
+            offset: 0,
+        };
+    }
+
+    /// SELECT query
+    pub fn select(mut self, columns: Vec<string>) -> QueryBuilder {
+        self.query_type = "SELECT";
+        self.columns = columns;
+        return self;
+    }
+
+    /// SELECT all columns
+    pub fn select_all(mut self) -> QueryBuilder {
+        self.query_type = "SELECT";
+        self.columns = vec!["*"];
+        return self;
+    }
+
+    /// FROM table
+    pub fn from(mut self, table: string) -> QueryBuilder {
+        self.table = table;
+        return self;
+    }
+
+    /// INSERT INTO
+    pub fn insert_into(mut self, table: string) -> QueryBuilder {
+        self.query_type = "INSERT";
+        self.table = table;
+        return self;
+    }
+
+    /// VALUES
+    pub fn values(mut self, columns: Vec<string>, values: Vec<any>) -> QueryBuilder {
+        self.columns = columns;
+        self.values = values;
+        return self;
+    }
+
+    /// UPDATE table
+    pub fn update(mut self, table: string) -> QueryBuilder {
+        self.query_type = "UPDATE";
+        self.table = table;
+        return self;
+    }
+
+    /// SET columns
+    pub fn set(mut self, columns: Vec<string>, values: Vec<any>) -> QueryBuilder {
+        self.columns = columns;
+        self.values = values;
+        return self;
+    }
+
+    /// DELETE FROM
+    pub fn delete_from(mut self, table: string) -> QueryBuilder {
+        self.query_type = "DELETE";
+        self.table = table;
+        return self;
+    }
+
+    /// WHERE clause
+    pub fn where(mut self, condition: string, params: Vec<any>) -> QueryBuilder {
+        self.where_clauses.push(condition);
+        for param in params {
+            self.where_params.push(param);
+        }
+        return self;
+    }
+
+    /// WHERE equals
+    pub fn where_eq(mut self, column: string, value: any) -> QueryBuilder {
+        self.where_clauses.push(column + " = ?");
+        self.where_params.push(value);
+        return self;
+    }
+
+    /// ORDER BY
+    pub fn order_by(mut self, column: string, direction: string) -> QueryBuilder {
+        self.order_by.push(column + " " + direction);
+        return self;
+    }
+
+    /// LIMIT
+    pub fn limit(mut self, n: int) -> QueryBuilder {
+        self.limit = n;
+        return self;
+    }
+
+    /// OFFSET
+    pub fn offset(mut self, n: int) -> QueryBuilder {
+        self.offset = n;
+        return self;
+    }
+
+    /// Build SQL query
+    pub fn build(self) -> (string, Vec<any>) {
+        let mut sql = "";
+        let params = self.where_params.clone();
+
+        match self.query_type {
+            "SELECT" => {
+                sql = "SELECT " + self.columns.join(", ") + " FROM " + self.table;
+
+                if self.where_clauses.len() > 0 {
+                    sql = sql + " WHERE " + self.where_clauses.join(" AND ");
+                }
+
+                if self.order_by.len() > 0 {
+                    sql = sql + " ORDER BY " + self.order_by.join(", ");
+                }
+
+                if self.limit >= 0 {
+                    sql = sql + " LIMIT " + self.limit.to_string();
+                }
+
+                if self.offset > 0 {
+                    sql = sql + " OFFSET " + self.offset.to_string();
+                }
+            },
+            "INSERT" => {
+                let placeholders = vec!["?"; self.values.len()].join(", ");
+                sql = "INSERT INTO " + self.table + " (" + self.columns.join(", ") + ") VALUES (" + placeholders + ")";
+                return (sql, self.values);
+            },
+            "UPDATE" => {
+                let mut set_clauses = vec![];
+                for col in self.columns {
+                    set_clauses.push(col + " = ?");
+                }
+                sql = "UPDATE " + self.table + " SET " + set_clauses.join(", ");
+
+                if self.where_clauses.len() > 0 {
+                    sql = sql + " WHERE " + self.where_clauses.join(" AND ");
+                }
+
+                // Combine SET values and WHERE params
+                let mut all_params = self.values.clone();
+                for param in self.where_params {
+                    all_params.push(param);
+                }
+                return (sql, all_params);
+            },
+            "DELETE" => {
+                sql = "DELETE FROM " + self.table;
+
+                if self.where_clauses.len() > 0 {
+                    sql = sql + " WHERE " + self.where_clauses.join(" AND ");
+                }
+            },
+            _ => {},
+        }
+
+        return (sql, params);
+    }
+
+    /// Execute query
+    pub fn exec(self, conn: Connection) -> Result<QueryResult, string> {
+        let (sql, params) = self.build();
+
+        if params.len() > 0 {
+            return execute_prepared(conn, sql, params);
+        } else {
+            return execute(conn, sql);
+        }
+    }
+
+    /// Execute and get rows
+    pub fn fetch(self, conn: Connection) -> Result<Vec<Row>, string> {
+        let (sql, params) = self.build();
+
+        if params.len() > 0 {
+            return query_prepared(conn, sql, params);
+        } else {
+            return query(conn, sql);
+        }
+    }
+
+    /// Execute and get first row
+    pub fn fetch_one(self, conn: Connection) -> Result<Option<Row>, string> {
+        match self.fetch(conn) {
+            Ok(rows) => {
+                if rows.len() > 0 {
+                    Ok(Some(rows[0].clone()))
+                } else {
+                    Ok(None)
+                }
+            },
+            Err(error) => Err(error),
+        }
+    }
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+fn generate_connection_id() -> string {
+    // Generate unique connection ID
+    return "conn_" + random_string(16);
+}
+
+fn random_string(len: int) -> string {
+    // Generate random string
+    return "abc123"; // Placeholder
+}
+
+// ============================================================================
+// Driver-Specific Functions (Placeholders)
+// ============================================================================
+
+fn postgres_connect(config: DbConfig) {
+    // PostgreSQL connection implementation
+}
+
+fn postgres_close(conn_id: string) {
+    // Close PostgreSQL connection
+}
+
+fn postgres_execute(conn_id: string, sql: string) -> Result<QueryResult, string> {
+    // Execute PostgreSQL query
+    return Ok(QueryResult {
+        rows: vec![],
+        rows_affected: 0,
+        last_insert_id: 0,
+    });
+}
+
+fn postgres_execute_prepared(conn_id: string, sql: string, params: Vec<any>) -> Result<QueryResult, string> {
+    // Execute prepared PostgreSQL query
+    return Ok(QueryResult {
+        rows: vec![],
+        rows_affected: 0,
+        last_insert_id: 0,
+    });
+}
+
+fn sqlite_connect(config: DbConfig) {
+    // SQLite connection implementation
+}
+
+fn sqlite_close(conn_id: string) {
+    // Close SQLite connection
+}
+
+fn sqlite_execute(conn_id: string, sql: string) -> Result<QueryResult, string> {
+    // Execute SQLite query
+    return Ok(QueryResult {
+        rows: vec![],
+        rows_affected: 0,
+        last_insert_id: 0,
+    });
+}
+
+fn sqlite_execute_prepared(conn_id: string, sql: string, params: Vec<any>) -> Result<QueryResult, string> {
+    // Execute prepared SQLite query
+    return Ok(QueryResult {
+        rows: vec![],
+        rows_affected: 0,
+        last_insert_id: 0,
+    });
+}
+
+// Export main types and functions
+pub use DbConfig;
+pub use Connection;
+pub use ConnectionPool;
+pub use Row;
+pub use QueryResult;
+pub use QueryBuilder;
+
+pub use create_pool;
+pub use get_connection;
+pub use release_connection;
+pub use close_pool;
+
+pub use execute;
+pub use execute_prepared;
+pub use query;
+pub use query_prepared;
+pub use query_one;
+
+pub use begin_transaction;
+pub use commit;
+pub use rollback;

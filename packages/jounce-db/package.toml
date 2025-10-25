@@ -1,0 +1,38 @@
+[package]
+name = "jounce-db"
+version = "0.1.0"
+description = "Database abstraction layer with PostgreSQL and SQLite support"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-db"
+
+[dependencies]
+# Database drivers would be added here in real implementation
+# postgres = "0.19"
+# rusqlite = "0.28"
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "pool_tests"
+path = "tests/pool_tests.jnc"
+
+[[test]]
+name = "query_tests"
+path = "tests/query_tests.jnc"
+
+[[test]]
+name = "transaction_tests"
+path = "tests/transaction_tests.jnc"
+
+[[test]]
+name = "builder_tests"
+path = "tests/builder_tests.jnc"
+
+[features]
+default = ["postgres", "sqlite", "pooling"]
+postgres = []
+sqlite = []
+pooling = []
+transactions = []

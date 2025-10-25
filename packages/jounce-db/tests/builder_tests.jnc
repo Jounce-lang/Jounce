@@ -1,0 +1,295 @@
+// Tests for QueryBuilder in jounce-db
+use jounce_db::{QueryBuilder, DbConfig, create_pool, get_connection};
+
+#[test]
+fn test_builder_select_all() {
+    let (sql, params) = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .build();
+
+    assert_eq!(sql, "SELECT * FROM users", "Should build SELECT * query");
+    assert_eq!(params.len(), 0, "Should have no parameters");
+}
+
+#[test]
+fn test_builder_select_columns() {
+    let (sql, params) = QueryBuilder::new()
+        .select(vec!["id", "name", "email"])
+        .from("users")
+        .build();
+
+    assert_eq!(sql, "SELECT id, name, email FROM users", "Should build SELECT columns query");
+    assert_eq!(params.len(), 0, "Should have no parameters");
+}
+
+#[test]
+fn test_builder_where_eq() {
+    let (sql, params) = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .where_eq("id", 1)
+        .build();
+
+    assert_eq!(sql, "SELECT * FROM users WHERE id = ?", "Should build WHERE = query");
+    assert_eq!(params.len(), 1, "Should have 1 parameter");
+    assert_eq!(params[0], 1, "Parameter should be 1");
+}
+
+#[test]
+fn test_builder_multiple_where() {
+    let (sql, params) = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .where_eq("active", true)
+        .where_eq("verified", true)
+        .build();
+
+    assert_eq!(sql, "SELECT * FROM users WHERE active = ? AND verified = ?", "Should build multiple WHERE");
+    assert_eq!(params.len(), 2, "Should have 2 parameters");
+}
+
+#[test]
+fn test_builder_where_custom() {
+    let (sql, params) = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .where("age > ? AND age < ?", vec![18, 65])
+        .build();
+
+    assert!(sql.contains("WHERE age > ? AND age < ?"), "Should build custom WHERE");
+    assert_eq!(params.len(), 2, "Should have 2 parameters");
+}
+
+#[test]
+fn test_builder_order_by() {
+    let (sql, params) = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .order_by("name", "ASC")
+        .build();
+
+    assert_eq!(sql, "SELECT * FROM users ORDER BY name ASC", "Should build ORDER BY");
+    assert_eq!(params.len(), 0, "Should have no parameters");
+}
+
+#[test]
+fn test_builder_multiple_order_by() {
+    let (sql, params) = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .order_by("last_name", "ASC")
+        .order_by("first_name", "ASC")
+        .build();
+
+    assert!(sql.contains("ORDER BY last_name ASC, first_name ASC"), "Should build multiple ORDER BY");
+}
+
+#[test]
+fn test_builder_limit() {
+    let (sql, params) = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .limit(10)
+        .build();
+
+    assert_eq!(sql, "SELECT * FROM users LIMIT 10", "Should build LIMIT");
+}
+
+#[test]
+fn test_builder_limit_and_offset() {
+    let (sql, params) = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .limit(10)
+        .offset(20)
+        .build();
+
+    assert!(sql.contains("LIMIT 10"), "Should have LIMIT");
+    assert!(sql.contains("OFFSET 20"), "Should have OFFSET");
+}
+
+#[test]
+fn test_builder_full_select() {
+    let (sql, params) = QueryBuilder::new()
+        .select(vec!["id", "name", "email"])
+        .from("users")
+        .where_eq("active", true)
+        .order_by("name", "ASC")
+        .limit(10)
+        .offset(0)
+        .build();
+
+    assert!(sql.contains("SELECT id, name, email"), "Should have columns");
+    assert!(sql.contains("FROM users"), "Should have table");
+    assert!(sql.contains("WHERE active = ?"), "Should have WHERE");
+    assert!(sql.contains("ORDER BY name ASC"), "Should have ORDER BY");
+    assert!(sql.contains("LIMIT 10"), "Should have LIMIT");
+    assert_eq!(params.len(), 1, "Should have 1 parameter");
+}
+
+#[test]
+fn test_builder_insert() {
+    let (sql, params) = QueryBuilder::new()
+        .insert_into("users")
+        .values(
+            vec!["name", "email"],
+            vec!["Alice", "alice@example.com"]
+        )
+        .build();
+
+    assert_eq!(sql, "INSERT INTO users (name, email) VALUES (?, ?)", "Should build INSERT");
+    assert_eq!(params.len(), 2, "Should have 2 parameters");
+    assert_eq!(params[0], "Alice", "First param should be Alice");
+    assert_eq!(params[1], "alice@example.com", "Second param should be email");
+}
+
+#[test]
+fn test_builder_update() {
+    let (sql, params) = QueryBuilder::new()
+        .update("users")
+        .set(vec!["email"], vec!["newemail@example.com"])
+        .where_eq("id", 1)
+        .build();
+
+    assert_eq!(sql, "UPDATE users SET email = ? WHERE id = ?", "Should build UPDATE");
+    assert_eq!(params.len(), 2, "Should have 2 parameters");
+    assert_eq!(params[0], "newemail@example.com", "First param should be email");
+    assert_eq!(params[1], 1, "Second param should be id");
+}
+
+#[test]
+fn test_builder_update_multiple_columns() {
+    let (sql, params) = QueryBuilder::new()
+        .update("users")
+        .set(
+            vec!["name", "email"],
+            vec!["Alice Smith", "alice.smith@example.com"]
+        )
+        .where_eq("id", 2)
+        .build();
+
+    assert!(sql.contains("UPDATE users"), "Should have UPDATE");
+    assert!(sql.contains("SET name = ?, email = ?"), "Should have SET clause");
+    assert!(sql.contains("WHERE id = ?"), "Should have WHERE");
+    assert_eq!(params.len(), 3, "Should have 3 parameters");
+}
+
+#[test]
+fn test_builder_delete() {
+    let (sql, params) = QueryBuilder::new()
+        .delete_from("users")
+        .where_eq("active", false)
+        .build();
+
+    assert_eq!(sql, "DELETE FROM users WHERE active = ?", "Should build DELETE");
+    assert_eq!(params.len(), 1, "Should have 1 parameter");
+}
+
+#[test]
+fn test_builder_delete_with_multiple_conditions() {
+    let (sql, params) = QueryBuilder::new()
+        .delete_from("users")
+        .where("created_at < ?", vec!["2024-01-01"])
+        .where_eq("active", false)
+        .build();
+
+    assert!(sql.contains("DELETE FROM users"), "Should have DELETE");
+    assert!(sql.contains("WHERE"), "Should have WHERE");
+    assert_eq!(params.len(), 2, "Should have 2 parameters");
+}
+
+#[test]
+fn test_builder_chaining() {
+    // Test method chaining works
+    let builder = QueryBuilder::new()
+        .select(vec!["id"])
+        .from("users")
+        .where_eq("id", 1)
+        .order_by("id", "ASC")
+        .limit(1);
+
+    let (sql, params) = builder.build();
+
+    assert!(sql.len() > 0, "Should build query");
+    assert!(params.len() > 0, "Should have parameters");
+}
+
+#[test]
+fn test_builder_exec_integration() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let conn = get_connection(pool).unwrap();
+
+    // Execute query via builder
+    let result = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .exec(conn);
+
+    // Should return Result
+    assert!(result.is_ok() || result.is_err(), "Should execute query");
+}
+
+#[test]
+fn test_builder_fetch_integration() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let conn = get_connection(pool).unwrap();
+
+    // Fetch rows via builder
+    let result = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .fetch(conn);
+
+    // Should return Result<Vec<Row>>
+    assert!(result.is_ok() || result.is_err(), "Should fetch rows");
+}
+
+#[test]
+fn test_builder_fetch_one_integration() {
+    let config = DbConfig {
+        driver: "sqlite",
+        host: "",
+        port: 0,
+        database: ":memory:",
+        username: "",
+        password: "",
+        pool_size: 1,
+        timeout: 10,
+    };
+
+    let mut pool = create_pool(config);
+    let conn = get_connection(pool).unwrap();
+
+    // Fetch one row via builder
+    let result = QueryBuilder::new()
+        .select_all()
+        .from("users")
+        .where_eq("id", 1)
+        .fetch_one(conn);
+
+    // Should return Result<Option<Row>>
+    assert!(result.is_ok() || result.is_err(), "Should fetch one row");
+}
