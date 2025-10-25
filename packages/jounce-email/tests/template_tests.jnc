@@ -1,0 +1,301 @@
+// Tests for EmailTemplate, TemplateManager, and EmailBuilder in jounce-email
+use jounce_email::{EmailTemplate, TemplateManager, EmailBuilder, EmailAddress};
+
+#[test]
+fn test_email_template_creation() {
+    let template = EmailTemplate::new("welcome");
+
+    assert_eq!(template.name, "welcome", "Name should match");
+    assert!(!template.is_html, "Should not be HTML by default");
+}
+
+#[test]
+fn test_email_template_with_subject() {
+    let template = EmailTemplate::new("welcome")
+        .with_subject("Welcome {{name}}!");
+
+    assert_eq!(template.subject_template, "Welcome {{name}}!", "Subject template should match");
+}
+
+#[test]
+fn test_email_template_with_body() {
+    let template = EmailTemplate::new("welcome")
+        .with_body("Hello {{name}}, welcome to {{app}}!");
+
+    assert_eq!(template.body_template, "Hello {{name}}, welcome to {{app}}!", "Body template should match");
+}
+
+#[test]
+fn test_email_template_as_html() {
+    let template = EmailTemplate::new("welcome")
+        .as_html();
+
+    assert!(template.is_html, "Should be HTML");
+}
+
+#[test]
+fn test_email_template_render() {
+    let template = EmailTemplate::new("welcome")
+        .with_subject("Welcome {{name}}!")
+        .with_body("Hello {{name}}, welcome to {{app}}!");
+
+    let mut vars = Map::new();
+    vars.insert("name", "John");
+    vars.insert("app", "MyApp");
+
+    let rendered = template.render(vars);
+
+    assert_eq!(rendered.subject, "Welcome John!", "Subject should be rendered");
+    assert_eq!(rendered.body, "Hello John, welcome to MyApp!", "Body should be rendered");
+}
+
+#[test]
+fn test_email_template_render_html() {
+    let template = EmailTemplate::new("welcome")
+        .with_body("<p>Hello {{name}}</p>")
+        .as_html();
+
+    let mut vars = Map::new();
+    vars.insert("name", "John");
+
+    let rendered = template.render(vars);
+
+    assert!(rendered.is_html, "Should be HTML");
+    assert_eq!(rendered.body, "<p>Hello John</p>", "HTML body should be rendered");
+}
+
+#[test]
+fn test_template_manager_creation() {
+    let manager = TemplateManager::new();
+
+    assert_eq!(manager.templates.size(), 0, "Should have no templates");
+}
+
+#[test]
+fn test_template_manager_add_template() {
+    let mut manager = TemplateManager::new();
+    let template = EmailTemplate::new("welcome");
+
+    manager = manager.add_template(template);
+
+    assert_eq!(manager.templates.size(), 1, "Should have 1 template");
+}
+
+#[test]
+fn test_template_manager_get_template() {
+    let mut manager = TemplateManager::new();
+    let template = EmailTemplate::new("welcome")
+        .with_subject("Welcome!");
+
+    manager = manager.add_template(template);
+
+    let retrieved = manager.get_template("welcome");
+
+    assert!(retrieved.is_some(), "Should retrieve template");
+    assert_eq!(retrieved.unwrap().subject_template, "Welcome!", "Subject should match");
+}
+
+#[test]
+fn test_template_manager_has_template() {
+    let mut manager = TemplateManager::new();
+    let template = EmailTemplate::new("welcome");
+
+    manager = manager.add_template(template);
+
+    assert!(manager.has_template("welcome"), "Should have template");
+    assert!(!manager.has_template("other"), "Should not have other template");
+}
+
+#[test]
+fn test_template_manager_render_template() {
+    let mut manager = TemplateManager::new();
+    let template = EmailTemplate::new("welcome")
+        .with_subject("Welcome {{name}}!")
+        .with_body("Hello {{name}}!");
+
+    manager = manager.add_template(template);
+
+    let mut vars = Map::new();
+    vars.insert("name", "John");
+
+    let rendered = manager.render_template("welcome", vars);
+
+    assert!(rendered.is_some(), "Should render template");
+    assert_eq!(rendered.unwrap().subject, "Welcome John!", "Subject should be rendered");
+}
+
+#[test]
+fn test_template_manager_render_nonexistent() {
+    let manager = TemplateManager::new();
+    let vars = Map::new();
+
+    let rendered = manager.render_template("nonexistent", vars);
+
+    assert!(rendered.is_none(), "Should not render nonexistent template");
+}
+
+#[test]
+fn test_email_builder_creation() {
+    let builder = EmailBuilder::new();
+
+    assert_eq!(builder.email.to.len(), 0, "Should have no recipients");
+}
+
+#[test]
+fn test_email_builder_from() {
+    let builder = EmailBuilder::new()
+        .from("from@example.com");
+
+    assert_eq!(builder.email.from.email, "from@example.com", "From should match");
+}
+
+#[test]
+fn test_email_builder_from_with_name() {
+    let builder = EmailBuilder::new()
+        .from_with_name("from@example.com", "John Doe");
+
+    assert_eq!(builder.email.from.email, "from@example.com", "From email should match");
+    assert_eq!(builder.email.from.name, "John Doe", "From name should match");
+}
+
+#[test]
+fn test_email_builder_to() {
+    let builder = EmailBuilder::new()
+        .to("to@example.com");
+
+    assert_eq!(builder.email.to.len(), 1, "Should have 1 recipient");
+    assert_eq!(builder.email.to[0].email, "to@example.com", "To should match");
+}
+
+#[test]
+fn test_email_builder_to_with_name() {
+    let builder = EmailBuilder::new()
+        .to_with_name("to@example.com", "Jane Doe");
+
+    assert_eq!(builder.email.to[0].email, "to@example.com", "To email should match");
+    assert_eq!(builder.email.to[0].name, "Jane Doe", "To name should match");
+}
+
+#[test]
+fn test_email_builder_cc() {
+    let builder = EmailBuilder::new()
+        .cc("cc@example.com");
+
+    assert_eq!(builder.email.cc.len(), 1, "Should have 1 CC");
+}
+
+#[test]
+fn test_email_builder_bcc() {
+    let builder = EmailBuilder::new()
+        .bcc("bcc@example.com");
+
+    assert_eq!(builder.email.bcc.len(), 1, "Should have 1 BCC");
+}
+
+#[test]
+fn test_email_builder_subject() {
+    let builder = EmailBuilder::new()
+        .subject("Test Subject");
+
+    assert_eq!(builder.email.subject, "Test Subject", "Subject should match");
+}
+
+#[test]
+fn test_email_builder_text_body() {
+    let builder = EmailBuilder::new()
+        .text_body("Plain text");
+
+    assert_eq!(builder.email.body_text, "Plain text", "Text body should match");
+}
+
+#[test]
+fn test_email_builder_html_body() {
+    let builder = EmailBuilder::new()
+        .html_body("<p>HTML</p>");
+
+    assert_eq!(builder.email.body_html, "<p>HTML</p>", "HTML body should match");
+}
+
+#[test]
+fn test_email_builder_attach_file() {
+    let builder = EmailBuilder::new()
+        .attach_file("file.pdf", "data");
+
+    assert_eq!(builder.email.attachments.len(), 1, "Should have 1 attachment");
+}
+
+#[test]
+fn test_email_builder_reply_to() {
+    let builder = EmailBuilder::new()
+        .reply_to("reply@example.com");
+
+    assert!(builder.email.reply_to.is_some(), "Should have reply-to");
+}
+
+#[test]
+fn test_email_builder_from_template() {
+    let template = EmailTemplate::new("welcome")
+        .with_subject("Welcome {{name}}!")
+        .with_body("Hello {{name}}!");
+
+    let mut vars = Map::new();
+    vars.insert("name", "John");
+
+    let builder = EmailBuilder::new()
+        .from_template(template, vars);
+
+    assert_eq!(builder.email.subject, "Welcome John!", "Subject should be rendered");
+    assert_eq!(builder.email.body_text, "Hello John!", "Body should be rendered");
+}
+
+#[test]
+fn test_email_builder_from_template_html() {
+    let template = EmailTemplate::new("welcome")
+        .with_subject("Welcome {{name}}!")
+        .with_body("<p>Hello {{name}}!</p>")
+        .as_html();
+
+    let mut vars = Map::new();
+    vars.insert("name", "John");
+
+    let builder = EmailBuilder::new()
+        .from_template(template, vars);
+
+    assert_eq!(builder.email.body_html, "<p>Hello John!</p>", "HTML body should be rendered");
+}
+
+#[test]
+fn test_email_builder_build() {
+    let email = EmailBuilder::new()
+        .from("from@example.com")
+        .to("to@example.com")
+        .subject("Test")
+        .text_body("Body")
+        .build();
+
+    assert_eq!(email.from.email, "from@example.com", "From should match");
+    assert_eq!(email.to[0].email, "to@example.com", "To should match");
+    assert_eq!(email.subject, "Test", "Subject should match");
+    assert_eq!(email.body_text, "Body", "Body should match");
+}
+
+#[test]
+fn test_email_builder_chain() {
+    let email = EmailBuilder::new()
+        .from("from@example.com")
+        .to("to1@example.com")
+        .to("to2@example.com")
+        .cc("cc@example.com")
+        .bcc("bcc@example.com")
+        .subject("Test")
+        .text_body("Body")
+        .html_body("<p>Body</p>")
+        .attach_file("file.pdf", "data")
+        .reply_to("reply@example.com")
+        .build();
+
+    assert_eq!(email.to.len(), 2, "Should have 2 recipients");
+    assert_eq!(email.cc.len(), 1, "Should have 1 CC");
+    assert_eq!(email.bcc.len(), 1, "Should have 1 BCC");
+    assert_eq!(email.attachments.len(), 1, "Should have 1 attachment");
+}

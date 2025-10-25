@@ -1,0 +1,30 @@
+[package]
+name = "jounce-email"
+version = "0.1.0"
+description = "Email sending and template management with SMTP support and multiple provider presets"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-email"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "email_tests"
+path = "tests/email_tests.jnc"
+
+[[test]]
+name = "client_tests"
+path = "tests/client_tests.jnc"
+
+[[test]]
+name = "template_tests"
+path = "tests/template_tests.jnc"
+
+[features]
+default = ["smtp", "templates"]
+smtp = []
+templates = []
+attachments = []

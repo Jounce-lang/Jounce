@@ -1,0 +1,234 @@
+// Tests for Email, EmailAddress, and Attachment in jounce-email
+use jounce_email::{Email, EmailAddress, Attachment, validate_email, extract_domain};
+
+#[test]
+fn test_email_address_creation() {
+    let addr = EmailAddress::new("test@example.com");
+
+    assert_eq!(addr.email, "test@example.com", "Email should match");
+    assert_eq!(addr.name, "", "Name should be empty");
+}
+
+#[test]
+fn test_email_address_with_name() {
+    let addr = EmailAddress::new("test@example.com")
+        .with_name("Test User");
+
+    assert_eq!(addr.name, "Test User", "Name should match");
+}
+
+#[test]
+fn test_email_address_to_string() {
+    let addr = EmailAddress::new("test@example.com")
+        .with_name("Test User");
+
+    assert_eq!(addr.to_string(), "Test User <test@example.com>", "Should format with name");
+}
+
+#[test]
+fn test_email_address_to_string_no_name() {
+    let addr = EmailAddress::new("test@example.com");
+
+    assert_eq!(addr.to_string(), "test@example.com", "Should format without name");
+}
+
+#[test]
+fn test_email_address_is_valid() {
+    let addr = EmailAddress::new("test@example.com");
+
+    assert!(addr.is_valid(), "Should be valid");
+}
+
+#[test]
+fn test_email_address_invalid() {
+    let addr = EmailAddress::new("invalid");
+
+    assert!(!addr.is_valid(), "Should be invalid");
+}
+
+#[test]
+fn test_attachment_creation() {
+    let attachment = Attachment::new("file.pdf", "content");
+
+    assert_eq!(attachment.filename, "file.pdf", "Filename should match");
+    assert_eq!(attachment.content, "content", "Content should match");
+    assert_eq!(attachment.content_type, "application/octet-stream", "Should have default content type");
+}
+
+#[test]
+fn test_attachment_with_content_type() {
+    let attachment = Attachment::new("image.png", "data")
+        .with_content_type("image/png");
+
+    assert_eq!(attachment.content_type, "image/png", "Content type should match");
+}
+
+#[test]
+fn test_email_creation() {
+    let email = Email::new();
+
+    assert_eq!(email.to.len(), 0, "Should have no recipients");
+    assert_eq!(email.subject, "", "Subject should be empty");
+}
+
+#[test]
+fn test_email_from() {
+    let mut email = Email::new();
+    email = email.from(EmailAddress::new("from@example.com"));
+
+    assert_eq!(email.from.email, "from@example.com", "From should match");
+}
+
+#[test]
+fn test_email_to() {
+    let mut email = Email::new();
+    email = email.to(EmailAddress::new("to@example.com"));
+
+    assert_eq!(email.to.len(), 1, "Should have 1 recipient");
+    assert_eq!(email.to[0].email, "to@example.com", "To should match");
+}
+
+#[test]
+fn test_email_multiple_to() {
+    let mut email = Email::new();
+    email = email
+        .to(EmailAddress::new("to1@example.com"))
+        .to(EmailAddress::new("to2@example.com"));
+
+    assert_eq!(email.to.len(), 2, "Should have 2 recipients");
+}
+
+#[test]
+fn test_email_cc() {
+    let mut email = Email::new();
+    email = email.cc(EmailAddress::new("cc@example.com"));
+
+    assert_eq!(email.cc.len(), 1, "Should have 1 CC");
+}
+
+#[test]
+fn test_email_bcc() {
+    let mut email = Email::new();
+    email = email.bcc(EmailAddress::new("bcc@example.com"));
+
+    assert_eq!(email.bcc.len(), 1, "Should have 1 BCC");
+}
+
+#[test]
+fn test_email_subject() {
+    let mut email = Email::new();
+    email = email.subject("Test Subject");
+
+    assert_eq!(email.subject, "Test Subject", "Subject should match");
+}
+
+#[test]
+fn test_email_text_body() {
+    let mut email = Email::new();
+    email = email.text_body("Plain text body");
+
+    assert_eq!(email.body_text, "Plain text body", "Text body should match");
+}
+
+#[test]
+fn test_email_html_body() {
+    let mut email = Email::new();
+    email = email.html_body("<p>HTML body</p>");
+
+    assert_eq!(email.body_html, "<p>HTML body</p>", "HTML body should match");
+}
+
+#[test]
+fn test_email_attach() {
+    let mut email = Email::new();
+    email = email.attach(Attachment::new("file.pdf", "data"));
+
+    assert_eq!(email.attachments.len(), 1, "Should have 1 attachment");
+}
+
+#[test]
+fn test_email_reply_to() {
+    let mut email = Email::new();
+    email = email.reply_to(EmailAddress::new("reply@example.com"));
+
+    assert!(email.reply_to.is_some(), "Should have reply-to");
+    assert_eq!(email.reply_to.unwrap().email, "reply@example.com", "Reply-to should match");
+}
+
+#[test]
+fn test_email_header() {
+    let mut email = Email::new();
+    email = email.header("X-Custom", "value");
+
+    assert_eq!(email.headers.size(), 1, "Should have 1 header");
+    assert_eq!(email.headers.get("X-Custom").unwrap(), "value", "Header should match");
+}
+
+#[test]
+fn test_email_validate_valid() {
+    let email = Email::new()
+        .from(EmailAddress::new("from@example.com"))
+        .to(EmailAddress::new("to@example.com"))
+        .subject("Test")
+        .text_body("Body");
+
+    assert!(email.validate(), "Should be valid");
+}
+
+#[test]
+fn test_email_validate_no_from() {
+    let email = Email::new()
+        .to(EmailAddress::new("to@example.com"))
+        .subject("Test")
+        .text_body("Body");
+
+    assert!(!email.validate(), "Should be invalid without from");
+}
+
+#[test]
+fn test_email_validate_no_to() {
+    let email = Email::new()
+        .from(EmailAddress::new("from@example.com"))
+        .subject("Test")
+        .text_body("Body");
+
+    assert!(!email.validate(), "Should be invalid without to");
+}
+
+#[test]
+fn test_email_validate_no_subject() {
+    let email = Email::new()
+        .from(EmailAddress::new("from@example.com"))
+        .to(EmailAddress::new("to@example.com"))
+        .text_body("Body");
+
+    assert!(!email.validate(), "Should be invalid without subject");
+}
+
+#[test]
+fn test_email_validate_no_body() {
+    let email = Email::new()
+        .from(EmailAddress::new("from@example.com"))
+        .to(EmailAddress::new("to@example.com"))
+        .subject("Test");
+
+    assert!(!email.validate(), "Should be invalid without body");
+}
+
+#[test]
+fn test_validate_email_function() {
+    assert!(validate_email("test@example.com"), "Should be valid");
+    assert!(!validate_email("invalid"), "Should be invalid");
+}
+
+#[test]
+fn test_extract_domain() {
+    let domain = extract_domain("test@example.com");
+    assert_eq!(domain, "example.com", "Should extract domain");
+}
+
+#[test]
+fn test_extract_domain_invalid() {
+    let domain = extract_domain("invalid");
+    assert_eq!(domain, "", "Should return empty for invalid");
+}

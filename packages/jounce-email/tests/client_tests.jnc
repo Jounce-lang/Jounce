@@ -1,0 +1,179 @@
+// Tests for EmailClient and SmtpConfig in jounce-email
+use jounce_email::{EmailClient, SmtpConfig, Email, EmailAddress};
+
+#[test]
+fn test_smtp_config_creation() {
+    let config = SmtpConfig::new("smtp.example.com", 587);
+
+    assert_eq!(config.host, "smtp.example.com", "Host should match");
+    assert_eq!(config.port, 587, "Port should match");
+    assert!(config.use_tls, "Should use TLS by default");
+}
+
+#[test]
+fn test_smtp_config_with_credentials() {
+    let config = SmtpConfig::new("smtp.example.com", 587)
+        .with_credentials("user", "pass");
+
+    assert_eq!(config.username, "user", "Username should match");
+    assert_eq!(config.password, "pass", "Password should match");
+}
+
+#[test]
+fn test_smtp_config_with_tls() {
+    let config = SmtpConfig::new("smtp.example.com", 587)
+        .with_tls(false);
+
+    assert!(!config.use_tls, "Should not use TLS");
+}
+
+#[test]
+fn test_smtp_config_with_timeout() {
+    let config = SmtpConfig::new("smtp.example.com", 587)
+        .with_timeout(60000);
+
+    assert_eq!(config.timeout, 60000, "Timeout should match");
+}
+
+#[test]
+fn test_smtp_config_gmail() {
+    let config = SmtpConfig::gmail("user@gmail.com", "password");
+
+    assert_eq!(config.host, "smtp.gmail.com", "Host should be Gmail");
+    assert_eq!(config.port, 587, "Port should be 587");
+    assert!(config.use_tls, "Should use TLS");
+}
+
+#[test]
+fn test_smtp_config_sendgrid() {
+    let config = SmtpConfig::sendgrid("api_key");
+
+    assert_eq!(config.host, "smtp.sendgrid.net", "Host should be SendGrid");
+    assert_eq!(config.port, 587, "Port should be 587");
+    assert_eq!(config.username, "apikey", "Username should be apikey");
+}
+
+#[test]
+fn test_smtp_config_mailgun() {
+    let config = SmtpConfig::mailgun("user", "pass");
+
+    assert_eq!(config.host, "smtp.mailgun.org", "Host should be Mailgun");
+    assert_eq!(config.port, 587, "Port should be 587");
+}
+
+#[test]
+fn test_email_client_creation() {
+    let config = SmtpConfig::new("smtp.example.com", 587);
+    let client = EmailClient::new(config);
+
+    assert_eq!(client.sent_count, 0, "Should have 0 sent");
+    assert_eq!(client.failed_count, 0, "Should have 0 failed");
+}
+
+#[test]
+fn test_email_client_with_default_from() {
+    let config = SmtpConfig::new("smtp.example.com", 587);
+    let client = EmailClient::new(config)
+        .with_default_from(EmailAddress::new("default@example.com"));
+
+    assert!(client.default_from.is_some(), "Should have default from");
+}
+
+#[test]
+fn test_email_client_send_valid() {
+    let config = SmtpConfig::new("smtp.example.com", 587);
+    let mut client = EmailClient::new(config);
+
+    let email = Email::new()
+        .from(EmailAddress::new("from@example.com"))
+        .to(EmailAddress::new("to@example.com"))
+        .subject("Test")
+        .text_body("Body");
+
+    let result = client.send(email);
+
+    assert!(result.is_ok(), "Should send successfully");
+    client = result.unwrap();
+    assert_eq!(client.sent_count, 1, "Should have 1 sent");
+}
+
+#[test]
+fn test_email_client_send_invalid() {
+    let config = SmtpConfig::new("smtp.example.com", 587);
+    let mut client = EmailClient::new(config);
+
+    let email = Email::new(); // Invalid - no from, to, subject, body
+
+    let result = client.send(email);
+
+    assert!(result.is_err(), "Should fail to send");
+}
+
+#[test]
+fn test_email_client_send_batch() {
+    let config = SmtpConfig::new("smtp.example.com", 587);
+    let mut client = EmailClient::new(config);
+
+    let email1 = Email::new()
+        .from(EmailAddress::new("from@example.com"))
+        .to(EmailAddress::new("to1@example.com"))
+        .subject("Test 1")
+        .text_body("Body 1");
+
+    let email2 = Email::new()
+        .from(EmailAddress::new("from@example.com"))
+        .to(EmailAddress::new("to2@example.com"))
+        .subject("Test 2")
+        .text_body("Body 2");
+
+    client = client.send_batch([email1, email2]);
+
+    assert_eq!(client.sent_count, 2, "Should have 2 sent");
+}
+
+#[test]
+fn test_email_client_send_batch_mixed() {
+    let config = SmtpConfig::new("smtp.example.com", 587);
+    let mut client = EmailClient::new(config);
+
+    let valid_email = Email::new()
+        .from(EmailAddress::new("from@example.com"))
+        .to(EmailAddress::new("to@example.com"))
+        .subject("Test")
+        .text_body("Body");
+
+    let invalid_email = Email::new(); // Invalid
+
+    client = client.send_batch([valid_email, invalid_email]);
+
+    assert_eq!(client.sent_count, 1, "Should have 1 sent");
+    assert_eq!(client.failed_count, 1, "Should have 1 failed");
+}
+
+#[test]
+fn test_email_client_success_rate() {
+    let config = SmtpConfig::new("smtp.example.com", 587);
+    let mut client = EmailClient::new(config);
+
+    let email = Email::new()
+        .from(EmailAddress::new("from@example.com"))
+        .to(EmailAddress::new("to@example.com"))
+        .subject("Test")
+        .text_body("Body");
+
+    client = client.send(email.clone()).unwrap();
+    client = client.send(email.clone()).unwrap();
+    let _ = client.send(Email::new()); // Invalid - will fail
+
+    let rate = client.get_success_rate();
+    assert!(rate > 0.6 && rate < 0.7, "Success rate should be ~66%");
+}
+
+#[test]
+fn test_email_client_success_rate_zero() {
+    let config = SmtpConfig::new("smtp.example.com", 587);
+    let client = EmailClient::new(config);
+
+    let rate = client.get_success_rate();
+    assert_eq!(rate, 0.0, "Success rate should be 0 with no sends");
+}

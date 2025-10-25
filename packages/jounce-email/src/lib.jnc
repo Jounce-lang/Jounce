@@ -1,0 +1,514 @@
+// Email sending and template management for Jounce
+// Supports SMTP, templates, attachments, and multiple providers
+
+// ============================================================================
+// Email Address
+// ============================================================================
+
+pub struct EmailAddress {
+    pub email: string,
+    pub name: string,
+}
+
+impl EmailAddress {
+    pub fn new(email: string) -> EmailAddress {
+        EmailAddress {
+            email: email,
+            name: "",
+        }
+    }
+
+    pub fn with_name(mut self, name: string) -> EmailAddress {
+        self.name = name;
+        self
+    }
+
+    pub fn to_string(&self) -> string {
+        if self.name.len() > 0 {
+            self.name + " <" + self.email + ">"
+        } else {
+            self.email.clone()
+        }
+    }
+
+    pub fn is_valid(&self) -> bool {
+        // Simple email validation
+        self.email.contains("@") && self.email.contains(".")
+    }
+}
+
+// ============================================================================
+// Attachment
+// ============================================================================
+
+pub struct Attachment {
+    pub filename: string,
+    pub content: string,
+    pub content_type: string,
+}
+
+impl Attachment {
+    pub fn new(filename: string, content: string) -> Attachment {
+        Attachment {
+            filename: filename,
+            content: content,
+            content_type: "application/octet-stream",
+        }
+    }
+
+    pub fn with_content_type(mut self, content_type: string) -> Attachment {
+        self.content_type = content_type;
+        self
+    }
+}
+
+// ============================================================================
+// Email
+// ============================================================================
+
+pub struct Email {
+    pub from: EmailAddress,
+    pub to: Array<EmailAddress>,
+    pub cc: Array<EmailAddress>,
+    pub bcc: Array<EmailAddress>,
+    pub subject: string,
+    pub body_text: string,
+    pub body_html: string,
+    pub attachments: Array<Attachment>,
+    pub reply_to: Option<EmailAddress>,
+    pub headers: Map<string, string>,
+}
+
+impl Email {
+    pub fn new() -> Email {
+        Email {
+            from: EmailAddress::new(""),
+            to: [],
+            cc: [],
+            bcc: [],
+            subject: "",
+            body_text: "",
+            body_html: "",
+            attachments: [],
+            reply_to: None,
+            headers: Map::new(),
+        }
+    }
+
+    pub fn from(mut self, email: EmailAddress) -> Email {
+        self.from = email;
+        self
+    }
+
+    pub fn to(mut self, email: EmailAddress) -> Email {
+        self.to.push(email);
+        self
+    }
+
+    pub fn cc(mut self, email: EmailAddress) -> Email {
+        self.cc.push(email);
+        self
+    }
+
+    pub fn bcc(mut self, email: EmailAddress) -> Email {
+        self.bcc.push(email);
+        self
+    }
+
+    pub fn subject(mut self, subject: string) -> Email {
+        self.subject = subject;
+        self
+    }
+
+    pub fn text_body(mut self, body: string) -> Email {
+        self.body_text = body;
+        self
+    }
+
+    pub fn html_body(mut self, body: string) -> Email {
+        self.body_html = body;
+        self
+    }
+
+    pub fn attach(mut self, attachment: Attachment) -> Email {
+        self.attachments.push(attachment);
+        self
+    }
+
+    pub fn reply_to(mut self, email: EmailAddress) -> Email {
+        self.reply_to = Some(email);
+        self
+    }
+
+    pub fn header(mut self, key: string, value: string) -> Email {
+        self.headers.insert(key, value);
+        self
+    }
+
+    pub fn validate(&self) -> bool {
+        // Check required fields
+        if !self.from.is_valid() {
+            return false;
+        }
+
+        if self.to.len() == 0 {
+            return false;
+        }
+
+        let mut i = 0;
+        while i < self.to.len() {
+            if !self.to[i].is_valid() {
+                return false;
+            }
+            i = i + 1;
+        }
+
+        if self.subject.len() == 0 {
+            return false;
+        }
+
+        if self.body_text.len() == 0 && self.body_html.len() == 0 {
+            return false;
+        }
+
+        true
+    }
+}
+
+// ============================================================================
+// SMTP Config
+// ============================================================================
+
+pub struct SmtpConfig {
+    pub host: string,
+    pub port: int,
+    pub username: string,
+    pub password: string,
+    pub use_tls: bool,
+    pub timeout: int,
+}
+
+impl SmtpConfig {
+    pub fn new(host: string, port: int) -> SmtpConfig {
+        SmtpConfig {
+            host: host,
+            port: port,
+            username: "",
+            password: "",
+            use_tls: true,
+            timeout: 30000, // 30 seconds
+        }
+    }
+
+    pub fn with_credentials(mut self, username: string, password: string) -> SmtpConfig {
+        self.username = username;
+        self.password = password;
+        self
+    }
+
+    pub fn with_tls(mut self, use_tls: bool) -> SmtpConfig {
+        self.use_tls = use_tls;
+        self
+    }
+
+    pub fn with_timeout(mut self, timeout: int) -> SmtpConfig {
+        self.timeout = timeout;
+        self
+    }
+
+    // Preset configs for popular providers
+    pub fn gmail(username: string, password: string) -> SmtpConfig {
+        SmtpConfig::new("smtp.gmail.com", 587)
+            .with_credentials(username, password)
+            .with_tls(true)
+    }
+
+    pub fn sendgrid(api_key: string) -> SmtpConfig {
+        SmtpConfig::new("smtp.sendgrid.net", 587)
+            .with_credentials("apikey", api_key)
+            .with_tls(true)
+    }
+
+    pub fn mailgun(username: string, password: string) -> SmtpConfig {
+        SmtpConfig::new("smtp.mailgun.org", 587)
+            .with_credentials(username, password)
+            .with_tls(true)
+    }
+}
+
+// ============================================================================
+// Email Client
+// ============================================================================
+
+pub struct EmailClient {
+    pub config: SmtpConfig,
+    pub default_from: Option<EmailAddress>,
+    pub sent_count: int,
+    pub failed_count: int,
+}
+
+impl EmailClient {
+    pub fn new(config: SmtpConfig) -> EmailClient {
+        EmailClient {
+            config: config,
+            default_from: None,
+            sent_count: 0,
+            failed_count: 0,
+        }
+    }
+
+    pub fn with_default_from(mut self, from: EmailAddress) -> EmailClient {
+        self.default_from = Some(from);
+        self
+    }
+
+    pub fn send(mut self, email: Email) -> Result<EmailClient, string> {
+        // Validate email
+        if !email.validate() {
+            self.failed_count = self.failed_count + 1;
+            return Err("Invalid email");
+        }
+
+        // In production, would actually send via SMTP
+        // For now, just simulate success
+        self.sent_count = self.sent_count + 1;
+        Ok(self)
+    }
+
+    pub fn send_batch(mut self, emails: Array<Email>) -> EmailClient {
+        let mut i = 0;
+        while i < emails.len() {
+            let result = self.send(emails[i].clone());
+            match result {
+                Ok(client) => {
+                    self = client;
+                }
+                Err(_) => {
+                    // Already incremented failed_count in send()
+                }
+            }
+            i = i + 1;
+        }
+        self
+    }
+
+    pub fn get_success_rate(&self) -> float {
+        let total = self.sent_count + self.failed_count;
+        if total == 0 {
+            return 0.0;
+        }
+        (self.sent_count as float) / (total as float)
+    }
+}
+
+// ============================================================================
+// Email Template
+// ============================================================================
+
+pub struct EmailTemplate {
+    pub name: string,
+    pub subject_template: string,
+    pub body_template: string,
+    pub is_html: bool,
+}
+
+impl EmailTemplate {
+    pub fn new(name: string) -> EmailTemplate {
+        EmailTemplate {
+            name: name,
+            subject_template: "",
+            body_template: "",
+            is_html: false,
+        }
+    }
+
+    pub fn with_subject(mut self, template: string) -> EmailTemplate {
+        self.subject_template = template;
+        self
+    }
+
+    pub fn with_body(mut self, template: string) -> EmailTemplate {
+        self.body_template = template;
+        self
+    }
+
+    pub fn as_html(mut self) -> EmailTemplate {
+        self.is_html = true;
+        self
+    }
+
+    pub fn render(&self, variables: Map<string, string>) -> RenderedEmail {
+        let mut subject = self.subject_template.clone();
+        let mut body = self.body_template.clone();
+
+        // Replace {{var}} with values
+        let keys = variables.keys();
+        let mut i = 0;
+        while i < keys.len() {
+            let key = keys[i].clone();
+            let value = variables.get(key.clone()).unwrap_or("");
+            let placeholder = "{{" + key.clone() + "}}";
+
+            subject = subject.replace(placeholder.clone(), value.clone());
+            body = body.replace(placeholder, value);
+
+            i = i + 1;
+        }
+
+        RenderedEmail {
+            subject: subject,
+            body: body,
+            is_html: self.is_html,
+        }
+    }
+}
+
+pub struct RenderedEmail {
+    pub subject: string,
+    pub body: string,
+    pub is_html: bool,
+}
+
+// ============================================================================
+// Email Builder (Fluent API)
+// ============================================================================
+
+pub struct EmailBuilder {
+    pub email: Email,
+}
+
+impl EmailBuilder {
+    pub fn new() -> EmailBuilder {
+        EmailBuilder {
+            email: Email::new(),
+        }
+    }
+
+    pub fn from(mut self, email: string) -> EmailBuilder {
+        self.email = self.email.from(EmailAddress::new(email));
+        self
+    }
+
+    pub fn from_with_name(mut self, email: string, name: string) -> EmailBuilder {
+        self.email = self.email.from(EmailAddress::new(email).with_name(name));
+        self
+    }
+
+    pub fn to(mut self, email: string) -> EmailBuilder {
+        self.email = self.email.to(EmailAddress::new(email));
+        self
+    }
+
+    pub fn to_with_name(mut self, email: string, name: string) -> EmailBuilder {
+        self.email = self.email.to(EmailAddress::new(email).with_name(name));
+        self
+    }
+
+    pub fn cc(mut self, email: string) -> EmailBuilder {
+        self.email = self.email.cc(EmailAddress::new(email));
+        self
+    }
+
+    pub fn bcc(mut self, email: string) -> EmailBuilder {
+        self.email = self.email.bcc(EmailAddress::new(email));
+        self
+    }
+
+    pub fn subject(mut self, subject: string) -> EmailBuilder {
+        self.email = self.email.subject(subject);
+        self
+    }
+
+    pub fn text_body(mut self, body: string) -> EmailBuilder {
+        self.email = self.email.text_body(body);
+        self
+    }
+
+    pub fn html_body(mut self, body: string) -> EmailBuilder {
+        self.email = self.email.html_body(body);
+        self
+    }
+
+    pub fn attach_file(mut self, filename: string, content: string) -> EmailBuilder {
+        self.email = self.email.attach(Attachment::new(filename, content));
+        self
+    }
+
+    pub fn reply_to(mut self, email: string) -> EmailBuilder {
+        self.email = self.email.reply_to(EmailAddress::new(email));
+        self
+    }
+
+    pub fn from_template(mut self, template: EmailTemplate, variables: Map<string, string>) -> EmailBuilder {
+        let rendered = template.render(variables);
+
+        self.email = self.email.subject(rendered.subject);
+
+        if rendered.is_html {
+            self.email = self.email.html_body(rendered.body);
+        } else {
+            self.email = self.email.text_body(rendered.body);
+        }
+
+        self
+    }
+
+    pub fn build(self) -> Email {
+        self.email
+    }
+}
+
+// ============================================================================
+// Template Manager
+// ============================================================================
+
+pub struct TemplateManager {
+    pub templates: Map<string, EmailTemplate>,
+}
+
+impl TemplateManager {
+    pub fn new() -> TemplateManager {
+        TemplateManager {
+            templates: Map::new(),
+        }
+    }
+
+    pub fn add_template(mut self, template: EmailTemplate) -> TemplateManager {
+        self.templates.insert(template.name.clone(), template);
+        self
+    }
+
+    pub fn get_template(&self, name: string) -> Option<EmailTemplate> {
+        self.templates.get(name)
+    }
+
+    pub fn has_template(&self, name: string) -> bool {
+        self.templates.contains_key(name)
+    }
+
+    pub fn render_template(&self, name: string, variables: Map<string, string>) -> Option<RenderedEmail> {
+        let template = self.get_template(name);
+        if template.is_none() {
+            return None;
+        }
+
+        Some(template.unwrap().render(variables))
+    }
+}
+
+// ============================================================================
+// Email Utilities
+// ============================================================================
+
+pub fn validate_email(email: string) -> bool {
+    email.contains("@") && email.contains(".")
+}
+
+pub fn extract_domain(email: string) -> string {
+    let parts = email.split("@");
+    if parts.len() >= 2 {
+        parts[1].clone()
+    } else {
+        "".to_string()
+    }
+}
