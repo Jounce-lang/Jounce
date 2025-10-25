@@ -1,0 +1,206 @@
+// Tests for log formatting in jounce-logger
+use jounce_logger::{LogEntry, LogLevel};
+
+#[test]
+fn test_log_entry_json_basic() {
+    let entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::INFO,
+        message: "Test message",
+        logger_name: "test",
+        fields: Map::new(),
+    };
+
+    let json = entry.to_json();
+
+    assert!(json.contains("\"timestamp\":\"2025-10-24 12:00:00\""), "Should have timestamp");
+    assert!(json.contains("\"level\":\"INFO\""), "Should have level");
+    assert!(json.contains("\"logger\":\"test\""), "Should have logger name");
+    assert!(json.contains("\"message\":\"Test message\""), "Should have message");
+}
+
+#[test]
+fn test_log_entry_json_with_fields() {
+    let entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::ERROR,
+        message: "Error occurred",
+        logger_name: "app",
+        fields: Map::from([
+            ("error_code", "500"),
+            ("user_id", "12345")
+        ]),
+    };
+
+    let json = entry.to_json();
+
+    assert!(json.contains("\"fields\""), "Should have fields object");
+    assert!(json.contains("\"error_code\":\"500\""), "Should have error_code field");
+    assert!(json.contains("\"user_id\":\"12345\""), "Should have user_id field");
+}
+
+#[test]
+fn test_log_entry_text_basic() {
+    let entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::INFO,
+        message: "Test message",
+        logger_name: "test",
+        fields: Map::new(),
+    };
+
+    let text = entry.to_text();
+
+    assert!(text.contains("[2025-10-24 12:00:00]"), "Should have timestamp");
+    assert!(text.contains("INFO"), "Should have level");
+    assert!(text.contains("[test]"), "Should have logger name");
+    assert!(text.contains("Test message"), "Should have message");
+}
+
+#[test]
+fn test_log_entry_text_with_fields() {
+    let entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::WARN,
+        message: "Warning message",
+        logger_name: "app",
+        fields: Map::from([
+            ("status", "degraded"),
+            ("reason", "high load")
+        ]),
+    };
+
+    let text = entry.to_text();
+
+    assert!(text.contains("{"), "Should have fields opening brace");
+    assert!(text.contains("}"), "Should have fields closing brace");
+    assert!(text.contains("status=degraded"), "Should have status field");
+    assert!(text.contains("reason=high load"), "Should have reason field");
+}
+
+#[test]
+fn test_log_entry_levels() {
+    let debug = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::DEBUG,
+        message: "Debug",
+        logger_name: "test",
+        fields: Map::new(),
+    };
+    assert!(debug.to_json().contains("\"level\":\"DEBUG\""), "DEBUG level in JSON");
+    assert!(debug.to_text().contains("DEBUG"), "DEBUG level in text");
+
+    let warn = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::WARN,
+        message: "Warning",
+        logger_name: "test",
+        fields: Map::new(),
+    };
+    assert!(warn.to_json().contains("\"level\":\"WARN\""), "WARN level in JSON");
+    assert!(warn.to_text().contains("WARN"), "WARN level in text");
+
+    let fatal = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::FATAL,
+        message: "Fatal",
+        logger_name: "test",
+        fields: Map::new(),
+    };
+    assert!(fatal.to_json().contains("\"level\":\"FATAL\""), "FATAL level in JSON");
+    assert!(fatal.to_text().contains("FATAL"), "FATAL level in text");
+}
+
+#[test]
+fn test_log_entry_json_structure() {
+    let entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::INFO,
+        message: "Test",
+        logger_name: "test",
+        fields: Map::new(),
+    };
+
+    let json = entry.to_json();
+
+    assert!(json.starts_with("{"), "JSON should start with {");
+    assert!(json.ends_with("}"), "JSON should end with }");
+}
+
+#[test]
+fn test_log_entry_empty_fields() {
+    let entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::INFO,
+        message: "No fields",
+        logger_name: "test",
+        fields: Map::new(),
+    };
+
+    let json = entry.to_json();
+    let text = entry.to_text();
+
+    // JSON should not have fields object if empty
+    assert!(!json.contains("\"fields\""), "JSON should not have fields for empty map");
+
+    // Text should not have braces if no fields
+    assert!(!text.ends_with("}"), "Text should not have braces for empty fields");
+}
+
+#[test]
+fn test_log_entry_multiple_fields() {
+    let entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::INFO,
+        message: "Multiple fields",
+        logger_name: "test",
+        fields: Map::from([
+            ("field1", "value1"),
+            ("field2", "value2"),
+            ("field3", "value3")
+        ]),
+    };
+
+    let json = entry.to_json();
+
+    assert!(json.contains("\"field1\":\"value1\""), "Should have field1");
+    assert!(json.contains("\"field2\":\"value2\""), "Should have field2");
+    assert!(json.contains("\"field3\":\"value3\""), "Should have field3");
+}
+
+#[test]
+fn test_log_entry_special_characters_in_message() {
+    let entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::INFO,
+        message: "Message with \"quotes\" and 'apostrophes'",
+        logger_name: "test",
+        fields: Map::new(),
+    };
+
+    let json = entry.to_json();
+
+    assert!(json.contains("Message with"), "Should contain message");
+}
+
+#[test]
+fn test_log_entry_different_loggers() {
+    let api_entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::INFO,
+        message: "API request",
+        logger_name: "api",
+        fields: Map::new(),
+    };
+
+    let db_entry = LogEntry {
+        timestamp: "2025-10-24 12:00:00",
+        level: LogLevel::INFO,
+        message: "Database query",
+        logger_name: "database",
+        fields: Map::new(),
+    };
+
+    assert!(api_entry.to_json().contains("\"logger\":\"api\""), "Should have api logger");
+    assert!(db_entry.to_json().contains("\"logger\":\"database\""), "Should have database logger");
+}

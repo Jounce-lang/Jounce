@@ -1,0 +1,199 @@
+// Tests for Logger in jounce-logger
+use jounce_logger::{
+    Logger, LoggerConfig, LogLevel, OutputFormat, OutputTarget,
+    get_logger, register_logger, default_logger
+};
+
+#[test]
+fn test_logger_creation() {
+    let config = LoggerConfig {
+        name: "test",
+        min_level: LogLevel::INFO,
+        format: OutputFormat::Text,
+        target: OutputTarget::Console,
+        file_path: "",
+        max_file_size: 0,
+        max_files: 0,
+    };
+
+    let logger = Logger::new(config);
+
+    assert_eq!(logger.config.name, "test", "Logger should have correct name");
+    assert_eq!(logger.context_fields.len(), 0, "Should have no context fields initially");
+}
+
+#[test]
+fn test_logger_with_field() {
+    let config = LoggerConfig {
+        name: "test",
+        min_level: LogLevel::INFO,
+        format: OutputFormat::Text,
+        target: OutputTarget::Console,
+        file_path: "",
+        max_file_size: 0,
+        max_files: 0,
+    };
+
+    let logger = Logger::new(config)
+        .with_field("service", "api")
+        .with_field("version", "1.0");
+
+    assert_eq!(logger.context_fields.len(), 2, "Should have 2 context fields");
+    assert!(logger.context_fields.contains_key(&"service"), "Should have service field");
+    assert!(logger.context_fields.contains_key(&"version"), "Should have version field");
+}
+
+#[test]
+fn test_get_logger() {
+    let logger1 = get_logger("app");
+    let logger2 = get_logger("app");
+
+    assert_eq!(logger1.config.name, "app", "Logger should be named app");
+    assert_eq!(logger2.config.name, "app", "Should get same logger");
+}
+
+#[test]
+fn test_get_different_loggers() {
+    let logger1 = get_logger("api");
+    let logger2 = get_logger("database");
+
+    assert_eq!(logger1.config.name, "api", "First logger should be api");
+    assert_eq!(logger2.config.name, "database", "Second logger should be database");
+}
+
+#[test]
+fn test_default_logger() {
+    let logger = default_logger();
+
+    assert_eq!(logger.config.name, "default", "Default logger should be named default");
+}
+
+#[test]
+fn test_register_custom_logger() {
+    let config = LoggerConfig {
+        name: "custom",
+        min_level: LogLevel::DEBUG,
+        format: OutputFormat::JSON,
+        target: OutputTarget::File,
+        file_path: "/var/log/custom.log",
+        max_file_size: 1024 * 1024,
+        max_files: 3,
+    };
+
+    let logger = Logger::new(config);
+    register_logger(logger);
+
+    let retrieved = get_logger("custom");
+    assert_eq!(retrieved.config.name, "custom", "Should retrieve custom logger");
+    assert_eq!(retrieved.config.min_level.to_int(), LogLevel::DEBUG.to_int(), "Should have DEBUG level");
+}
+
+#[test]
+fn test_logger_json_format() {
+    let config = LoggerConfig {
+        name: "json-logger",
+        min_level: LogLevel::INFO,
+        format: OutputFormat::JSON,
+        target: OutputTarget::Console,
+        file_path: "",
+        max_file_size: 0,
+        max_files: 0,
+    };
+
+    let logger = Logger::new(config);
+
+    match logger.config.format {
+        OutputFormat::JSON => assert!(true, "Should be JSON format"),
+        _ => assert!(false, "Should be JSON format"),
+    }
+}
+
+#[test]
+fn test_logger_text_format() {
+    let config = LoggerConfig {
+        name: "text-logger",
+        min_level: LogLevel::INFO,
+        format: OutputFormat::Text,
+        target: OutputTarget::Console,
+        file_path: "",
+        max_file_size: 0,
+        max_files: 0,
+    };
+
+    let logger = Logger::new(config);
+
+    match logger.config.format {
+        OutputFormat::Text => assert!(true, "Should be Text format"),
+        _ => assert!(false, "Should be Text format"),
+    }
+}
+
+#[test]
+fn test_logger_output_targets() {
+    let config1 = LoggerConfig {
+        name: "console",
+        min_level: LogLevel::INFO,
+        format: OutputFormat::Text,
+        target: OutputTarget::Console,
+        file_path: "",
+        max_file_size: 0,
+        max_files: 0,
+    };
+
+    let logger1 = Logger::new(config1);
+    match logger1.config.target {
+        OutputTarget::Console => assert!(true, "Should be Console target"),
+        _ => assert!(false, "Should be Console target"),
+    }
+
+    let config2 = LoggerConfig {
+        name: "file",
+        min_level: LogLevel::INFO,
+        format: OutputFormat::Text,
+        target: OutputTarget::File,
+        file_path: "/var/log/app.log",
+        max_file_size: 0,
+        max_files: 0,
+    };
+
+    let logger2 = Logger::new(config2);
+    match logger2.config.target {
+        OutputTarget::File => assert!(true, "Should be File target"),
+        _ => assert!(false, "Should be File target"),
+    }
+}
+
+#[test]
+fn test_logger_file_rotation_config() {
+    let config = LoggerConfig {
+        name: "rotating",
+        min_level: LogLevel::INFO,
+        format: OutputFormat::Text,
+        target: OutputTarget::File,
+        file_path: "/var/log/app.log",
+        max_file_size: 10 * 1024 * 1024, // 10MB
+        max_files: 5,
+    };
+
+    let logger = Logger::new(config);
+
+    assert_eq!(logger.config.max_file_size, 10 * 1024 * 1024, "Should have correct max size");
+    assert_eq!(logger.config.max_files, 5, "Should keep 5 rotated files");
+}
+
+#[test]
+fn test_logger_level_filtering() {
+    let config = LoggerConfig {
+        name: "filtered",
+        min_level: LogLevel::WARN,
+        format: OutputFormat::Text,
+        target: OutputTarget::Console,
+        file_path: "",
+        max_file_size: 0,
+        max_files: 0,
+    };
+
+    let logger = Logger::new(config);
+
+    assert_eq!(logger.config.min_level.to_int(), LogLevel::WARN.to_int(), "Min level should be WARN");
+}

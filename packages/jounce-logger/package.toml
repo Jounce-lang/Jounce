@@ -1,0 +1,30 @@
+[package]
+name = "jounce-logger"
+version = "0.1.0"
+description = "Structured logging with log levels, JSON output, and file rotation"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-logger"
+
+[dependencies]
+jounce-utils = "0.1.0"
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "level_tests"
+path = "tests/level_tests.jnc"
+
+[[test]]
+name = "logger_tests"
+path = "tests/logger_tests.jnc"
+
+[[test]]
+name = "format_tests"
+path = "tests/format_tests.jnc"
+
+[features]
+default = ["json", "rotation"]
+json = []
+rotation = []

@@ -1,0 +1,83 @@
+// Tests for log levels in jounce-logger
+use jounce_logger::LogLevel;
+
+#[test]
+fn test_level_to_string() {
+    assert_eq!(LogLevel::DEBUG.to_string(), "DEBUG", "DEBUG should convert to string");
+    assert_eq!(LogLevel::INFO.to_string(), "INFO", "INFO should convert to string");
+    assert_eq!(LogLevel::WARN.to_string(), "WARN", "WARN should convert to string");
+    assert_eq!(LogLevel::ERROR.to_string(), "ERROR", "ERROR should convert to string");
+    assert_eq!(LogLevel::FATAL.to_string(), "FATAL", "FATAL should convert to string");
+}
+
+#[test]
+fn test_level_to_int() {
+    assert_eq!(LogLevel::DEBUG.to_int(), 0, "DEBUG should be 0");
+    assert_eq!(LogLevel::INFO.to_int(), 1, "INFO should be 1");
+    assert_eq!(LogLevel::WARN.to_int(), 2, "WARN should be 2");
+    assert_eq!(LogLevel::ERROR.to_int(), 3, "ERROR should be 3");
+    assert_eq!(LogLevel::FATAL.to_int(), 4, "FATAL should be 4");
+}
+
+#[test]
+fn test_level_ordering() {
+    assert!(LogLevel::DEBUG.to_int() < LogLevel::INFO.to_int(), "DEBUG < INFO");
+    assert!(LogLevel::INFO.to_int() < LogLevel::WARN.to_int(), "INFO < WARN");
+    assert!(LogLevel::WARN.to_int() < LogLevel::ERROR.to_int(), "WARN < ERROR");
+    assert!(LogLevel::ERROR.to_int() < LogLevel::FATAL.to_int(), "ERROR < FATAL");
+}
+
+#[test]
+fn test_level_gte_equal() {
+    assert!(LogLevel::INFO.gte(LogLevel::INFO), "INFO >= INFO");
+    assert!(LogLevel::WARN.gte(LogLevel::WARN), "WARN >= WARN");
+}
+
+#[test]
+fn test_level_gte_greater() {
+    assert!(LogLevel::INFO.gte(LogLevel::DEBUG), "INFO >= DEBUG");
+    assert!(LogLevel::WARN.gte(LogLevel::INFO), "WARN >= INFO");
+    assert!(LogLevel::ERROR.gte(LogLevel::WARN), "ERROR >= WARN");
+    assert!(LogLevel::FATAL.gte(LogLevel::ERROR), "FATAL >= ERROR");
+}
+
+#[test]
+fn test_level_gte_lesser() {
+    assert!(!LogLevel::DEBUG.gte(LogLevel::INFO), "DEBUG not >= INFO");
+    assert!(!LogLevel::INFO.gte(LogLevel::WARN), "INFO not >= WARN");
+    assert!(!LogLevel::WARN.gte(LogLevel::ERROR), "WARN not >= ERROR");
+    assert!(!LogLevel::ERROR.gte(LogLevel::FATAL), "ERROR not >= FATAL");
+}
+
+#[test]
+fn test_level_filtering_debug() {
+    let min_level = LogLevel::DEBUG;
+
+    assert!(LogLevel::DEBUG.gte(min_level), "DEBUG passes DEBUG filter");
+    assert!(LogLevel::INFO.gte(min_level), "INFO passes DEBUG filter");
+    assert!(LogLevel::WARN.gte(min_level), "WARN passes DEBUG filter");
+    assert!(LogLevel::ERROR.gte(min_level), "ERROR passes DEBUG filter");
+    assert!(LogLevel::FATAL.gte(min_level), "FATAL passes DEBUG filter");
+}
+
+#[test]
+fn test_level_filtering_warn() {
+    let min_level = LogLevel::WARN;
+
+    assert!(!LogLevel::DEBUG.gte(min_level), "DEBUG filtered by WARN");
+    assert!(!LogLevel::INFO.gte(min_level), "INFO filtered by WARN");
+    assert!(LogLevel::WARN.gte(min_level), "WARN passes WARN filter");
+    assert!(LogLevel::ERROR.gte(min_level), "ERROR passes WARN filter");
+    assert!(LogLevel::FATAL.gte(min_level), "FATAL passes WARN filter");
+}
+
+#[test]
+fn test_level_filtering_error() {
+    let min_level = LogLevel::ERROR;
+
+    assert!(!LogLevel::DEBUG.gte(min_level), "DEBUG filtered by ERROR");
+    assert!(!LogLevel::INFO.gte(min_level), "INFO filtered by ERROR");
+    assert!(!LogLevel::WARN.gte(min_level), "WARN filtered by ERROR");
+    assert!(LogLevel::ERROR.gte(min_level), "ERROR passes ERROR filter");
+    assert!(LogLevel::FATAL.gte(min_level), "FATAL passes ERROR filter");
+}
