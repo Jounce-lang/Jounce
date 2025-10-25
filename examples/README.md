@@ -1,222 +1,248 @@
 # Jounce Examples
 
-A comprehensive collection of examples that progress from absolute basics to advanced full-stack applications.
+**Comprehensive examples demonstrating the Jounce programming language**
 
-## 📚 Organization
+---
 
-Examples are organized by difficulty and concept, with each category building on the previous:
+## 📂 Directory Structure
 
-### 01-basics/ - Absolute Fundamentals
-**Difficulty**: Beginner | **Lines**: 5-20 per example | **Time**: 30-60 mins total
+```
+examples/
+├── README.md (you are here)
+├── apps/ - 20-Application Progressive Series
+│   └── 01-hello-counter/ - Simple JSX demonstration
+├── tutorials/ - Beginner to Advanced Tutorials
+│   ├── 01-basics/ - Variables, functions, comments (10 examples)
+│   ├── 02-control-flow/ - If/else, loops, match (10 examples)
+│   ├── 03-functions/ - Recursion, closures, HOF (8 examples)
+│   ├── 04-patterns/ - Option, Result, error handling (8 examples)
+│   ├── 05-advanced-types/ - Generics, traits (6 examples)
+│   └── 06-async/ - Async/await, concurrency (6 examples)
+├── features/ - Single-Feature Demonstrations
+│   ├── reactivity/ - Signal, computed, effect demos
+│   ├── forms/ - Form validation examples
+│   ├── styling/ - Styled components
+│   └── modules/ - Multi-file imports
+├── projects/ - Larger Multi-Feature Projects
+│   ├── task-dashboard/ - Full task management
+│   ├── devboard/ - Developer dashboard
+│   ├── taskflow/ - Workflow management
+│   └── bluebird-backend/ - Backend API example
+└── archived/ - Old examples and legacy apps
+    ├── loose-jnc-files/ - Standalone .jnc files
+    └── old-apps/ - Deprecated applications
+```
 
-Start here if you're new to Jounce! These examples introduce one concept at a time.
+---
 
-1. **01_hello_world.jnc** - Your first program: println! macro
-2. **02_variables_let.jnc** - Variable bindings with let
-3. **03_variables_mut.jnc** - Mutable variables with mut
-4. **04_integers.jnc** - Integer arithmetic (+, -, *, /)
-5. **05_strings.jnc** - String literals and formatting
-6. **06_booleans.jnc** - Boolean values and comparisons
-7. **07_simple_function.jnc** - Functions with parameters
-8. **08_function_return.jnc** - Explicit return statements
-9. **09_implicit_return.jnc** - Implicit returns (Rust-style)
-10. **10_comments.jnc** - Comment syntax and best practices
+## 🚀 Quick Start
 
-### 02-control-flow/ - Making Decisions
-**Difficulty**: Beginner-Intermediate | **Lines**: 20-40 per example | **Time**: 1-2 hours
-
-Learn how to control program flow with conditions and loops.
-
-1. **01_simple_if.jnc** - Simple if without else
-2. **02_if_else.jnc** - If/else with both branches
-3. **03_if_else_expression.jnc** - If/else as an expression
-4. **04_nested_if_2_levels.jnc** - Two levels of nested if/else
-5. **05_nested_if_3_levels.jnc** - Three levels of nested if/else
-6. **06_for_loop_exclusive.jnc** - For loop with exclusive range (1..10)
-7. **07_for_loop_inclusive.jnc** - For loop with inclusive range (1..=10)
-8. **08_while_loop.jnc** - While loop with counter
-9. **09_match_simple.jnc** - Basic match expression
-10. **10_arrays.jnc** - Array creation and indexing
-
-### 03-functions/ - Advanced Functions
-**Difficulty**: Intermediate | **Lines**: 30-50 per example | **Time**: 2-3 hours
-
-Master function concepts including recursion and closures.
-
-1. **01_factorial_recursion.jnc** - Classic factorial recursion
-2. **02_fibonacci_recursion.jnc** - Fibonacci sequence with recursion
-3. **03_mutual_recursion.jnc** - Even/odd with mutual recursion
-4. **04_higher_order_map.jnc** - Map pattern (transforming arrays)
-5. **05_higher_order_filter.jnc** - Filter pattern (predicates)
-6. **06_closures_basic.jnc** - Basic closures and variable capture
-7. **07_closures_typed.jnc** - Closures with type annotations
-8. **08_function_composition.jnc** - Composing and chaining functions
-
-### 04-patterns/ - Error Handling
-**Difficulty**: Intermediate | **Lines**: 40-60 per example | **Time**: 2-3 hours
-
-Learn Jounce's powerful pattern matching and error handling.
-
-1. **01_option_basic.jnc** - Basic Option<T> with Some/None
-2. **02_option_pattern_match.jnc** - Pattern matching on Option
-3. **03_result_basic.jnc** - Result<T,E> for error handling
-4. **04_result_pattern_match.jnc** - Pattern matching with Result
-5. **05_try_operator.jnc** - Try operator (?) for error propagation
-6. **06_nested_patterns.jnc** - Nested Option<Result<T,E>> patterns
-7. **07_combining_results.jnc** - Combining multiple Result operations
-8. **08_real_world_errors.jnc** - Real-world error handling pipeline
-
-### 05-advanced-types/ - Type System ✅
-**Difficulty**: Advanced | **Lines**: 50-80 per example | **Time**: 2-3 hours
-
-Explore Jounce's advanced type system features.
-
-1. **01_generic_functions.jnc** - Generic functions with type parameters
-2. **02_generic_structs.jnc** - Generic structs (Box, Pair, Container)
-3. **03_sized_arrays.jnc** - Sized arrays [T; N] syntax
-4. **04_generic_algorithms.jnc** - Generic algorithms (map, reduce, find)
-5. **05_generics_advanced.jnc** - Advanced generics with higher-order functions
-6. **06_real_world_generics.jnc** - Real-world leaderboard system
-
-### 06-async/ - Asynchronous Programming ✅
-**Difficulty**: Advanced | **Lines**: 60-150 per example | **Time**: 2-3 hours
-
-Learn async/await and concurrent programming patterns.
-
-1. **01_async_basic.jnc** - Async/await fundamentals (basic syntax)
-2. **02_async_functions.jnc** - Async functions with return values
-3. **03_concurrent_operations.jnc** - Sequential vs concurrent patterns
-4. **04_async_error_handling.jnc** - Async with Result<T,E> and Option<T>
-5. **05_async_loops.jnc** - Using async operations in loops
-6. **06_real_world_async.jnc** - Complete async data pipeline
-
-### 07-fullstack/ - Full-Stack Features
-**Difficulty**: Advanced | **Lines**: 100-200 per example
-
-Discover Jounce's unique full-stack capabilities.
-
-- @server and @client annotations
-- Automatic RPC generation
-- JSX components
-- State management
-
-*(Coming in Sprint 7)*
-
-### 08-apps/ - Real-World Applications
-**Difficulty**: Advanced | **Lines**: 200-400 per example
-
-Complete applications demonstrating best practices.
-
-- Todo App (full-stack)
-- Blog Engine
-- E-commerce Cart
-- User Authentication
-
-*(Coming in Sprint 8)*
-
-## 🚀 How to Run Examples
-
-### Quick Start (Any Example)
+### Running an App
 
 ```bash
-# Compile an example
-raven compile examples/01-basics/01_hello_world.jnc
+# From the Jounce root directory
+cd /Users/jordanhill/Documents/jrez-soft-projects/Jounce
 
-# Run the compiled output
-cd dist && node server.js
+# Compile an app
+cargo run -- compile examples/apps/01-hello-counter/main.jnc
+
+# Run the Node.js server
+cd dist
+node server.js
+
+# Open http://localhost:3000
+```
+
+### HMR Development Server (Auto-Reload)
+
+```bash
+# From the Jounce root directory
+cargo run -- compile examples/apps/01-hello-counter/main.jnc
+
+# Start HMR server with live reload
+node scripts/hmr-server.js
+
+# Open http://localhost:3000
+# Edit files and see changes instantly!
+```
+
+**See [DEV_SERVER_GUIDE.md](../DEV_SERVER_GUIDE.md) for complete server documentation.**
+
+---
+
+## 📚 Learning Path
+
+### 1. Complete Beginner (New to Programming)
+1. Start with `tutorials/01-basics/` - Learn variables, functions, comments
+2. Move to `tutorials/02-control-flow/` - Learn if/else, loops
+3. Practice `tutorials/03-functions/` - Learn recursion, closures
+
+### 2. Experienced Developer (Learning Jounce)
+1. Skim `tutorials/01-basics/` for syntax differences
+2. Focus on `tutorials/04-patterns/` - Option, Result, match patterns
+3. Explore `tutorials/05-advanced-types/` - Generics and traits
+4. Try `apps/01-hello-counter/` - See JSX in action
+
+### 3. Building Real Apps
+1. Study `apps/01-hello-counter/` - Simple JSX demo
+2. Review `features/reactivity/` - Signal-based state management
+3. Explore `features/styling/` - Styled components
+4. Build `projects/task-dashboard/` - Full-featured app
+
+---
+
+## 🎯 20 Applications Roadmap
+
+Progressive complexity series designed to test all 35 Jounce packages:
+
+| Tier | Apps | Complexity | Lines | Packages | Time |
+|------|------|------------|-------|----------|------|
+| **Tier 1** | 1-5 | Beginner | 50-150 | 0-2 | ~5h |
+| **Tier 2** | 6-10 | Intermediate | 200-400 | 3-5 | ~12h |
+| **Tier 3** | 11-15 | Advanced | 500-1000 | 6-10 | ~25h |
+| **Tier 4** | 16-20 | Portfolio | 1000-2500 | 10+ | ~50h |
+
+### Current Progress
+
+**Apps Complete**: 1/20
+
+- ✅ **App 1: Hello Counter** - Simple JSX demonstration
+
+**Apps Planned**:
+- App 2: Color Picker (jounce-theme)
+- App 3: Markdown Previewer (jounce-markdown, jounce-sanitizer)
+- App 4: Todo List (jounce-store, local storage)
+- App 5: Weather Widget (jounce-http, external API)
+- ...and 15 more!
+
+**See [20_APPS_PLAN.md](../20_APPS_PLAN.md) for complete roadmap.**
+
+---
+
+## 📖 Tutorial Series
+
+### 01-basics/ - Absolute Fundamentals
+**Difficulty**: Beginner | **Time**: 30-60 mins
+
+1. `01_hello_world.jnc` - Your first program
+2. `02_variables_let.jnc` - Variable bindings
+3. `03_variables_mut.jnc` - Mutable variables
+4. `04_integers.jnc` - Integer arithmetic
+5. `05_strings.jnc` - String literals
+6. `06_booleans.jnc` - Boolean values
+7. `07_simple_function.jnc` - Functions with parameters
+8. `08_function_return.jnc` - Return statements
+9. `09_implicit_return.jnc` - Implicit returns
+10. `10_comments.jnc` - Comment syntax
+
+### 02-control-flow/ - Making Decisions
+**Difficulty**: Beginner-Intermediate | **Time**: 1-2 hours
+
+1. `01_simple_if.jnc` - Simple if statements
+2. `02_if_else.jnc` - If/else branches
+3. `03_if_else_expression.jnc` - If/else as expression
+4. `04_nested_if_2_levels.jnc` - Nested if/else
+5. `05_nested_if_3_levels.jnc` - Three-level nesting
+6. `06_for_loop_exclusive.jnc` - For loops (exclusive range)
+7. `07_for_loop_inclusive.jnc` - For loops (inclusive range)
+8. `08_while_loop.jnc` - While loops
+9. `09_match_simple.jnc` - Match expressions
+10. `10_arrays.jnc` - Array creation and indexing
+
+### 03-functions/ - Advanced Functions
+**Difficulty**: Intermediate | **Time**: 2-3 hours
+
+1. `01_factorial_recursion.jnc` - Factorial recursion
+2. `02_fibonacci_recursion.jnc` - Fibonacci sequence
+3. `03_mutual_recursion.jnc` - Even/odd mutual recursion
+4. `04_higher_order_map.jnc` - Map pattern
+5. `05_higher_order_filter.jnc` - Filter pattern
+6. `06_closures_basic.jnc` - Basic closures
+7. `07_closures_typed.jnc` - Typed closures
+8. `08_function_composition.jnc` - Function composition
+
+### 04-patterns/ - Error Handling
+**Difficulty**: Intermediate | **Time**: 2-3 hours
+
+1. `01_option_basic.jnc` - Option<T> basics
+2. `02_option_pattern_match.jnc` - Pattern matching on Option
+3. `03_result_basic.jnc` - Result<T,E> error handling
+4. `04_result_pattern_match.jnc` - Pattern matching with Result
+5. `05_try_operator.jnc` - Try operator (?)
+6. `06_nested_patterns.jnc` - Nested Option<Result<T,E>>
+7. `07_combining_results.jnc` - Combining Results
+8. `08_real_world_errors.jnc` - Real-world error handling
+
+### 05-advanced-types/ - Type System
+**Difficulty**: Advanced | **Time**: 2-3 hours
+
+1. `01_generic_functions.jnc` - Generic functions
+2. `02_generic_structs.jnc` - Generic structs
+3. `03_sized_arrays.jnc` - Sized arrays [T; N]
+4. `04_generic_algorithms.jnc` - Generic algorithms
+5. `05_generics_advanced.jnc` - Advanced generics
+6. `06_real_world_generics.jnc` - Real-world leaderboard
+
+### 06-async/ - Asynchronous Programming
+**Difficulty**: Advanced | **Time**: 2-3 hours
+
+1. `01_async_basic.jnc` - Async/await fundamentals
+2. `02_async_functions.jnc` - Async functions with returns
+3. `03_concurrent_operations.jnc` - Sequential vs concurrent
+4. `04_async_error_handling.jnc` - Async with Result/Option
+5. `05_async_loops.jnc` - Async in loops
+6. `06_real_world_async.jnc` - Complete async pipeline
+
+---
+
+## 🔧 Running Examples
+
+### Compile a Single Example
+
+```bash
+# From Jounce root
+cargo run -- compile examples/tutorials/01-basics/01_hello_world.jnc
+
+# View output in dist/
 ```
 
 ### Run All Examples in a Category
 
 ```bash
 # Test all basics examples
-for file in examples/01-basics/*.jnc; do
-    echo "Running: $file"
-    raven compile "$file"
-    cd dist && node server.js
-    cd ..
+for file in examples/tutorials/01-basics/*.jnc; do
+    echo "Compiling: $file"
+    cargo run -- compile "$file"
 done
 ```
 
 ### Watch Mode (Auto-recompile)
 
 ```bash
-# Auto-recompile on file changes
-raven watch examples/01-basics/01_hello_world.jnc
+cargo run -- watch examples/apps/01-hello-counter/main.jnc
 ```
 
-## 📖 Learning Path
-
-### Complete Beginner (Never programmed before)
-1. Start with **01-basics** (examples 01-10)
-2. Move to **02-control-flow** (if/else, loops)
-3. Practice **03-functions** (recursion, closures)
-
-### Experienced Developer (Learning Jounce)
-1. Skim **01-basics** for syntax differences
-2. Focus on **04-patterns** (Option, Result, match)
-3. Explore **05-advanced-types** (generics, traits)
-4. Try **07-fullstack** (unique Jounce features)
-
-### LLM Training (AI Learning Jounce)
-1. Process all examples in order (01-basics → 08-apps)
-2. Each example demonstrates one concept clearly
-3. Comments explain WHY not just WHAT
-4. Expected output is provided for verification
-
-## 🎯 Example Template
-
-Each example follows a consistent structure:
-
-```raven
-// examples/category/example_name.jnc
-//
-// CONCEPT: What this example teaches
-// DIFFICULTY: Beginner/Intermediate/Advanced
-// FEATURES: Specific language features used
-//
-// Detailed explanation of the concept
-// Multiple lines explaining WHY and HOW
-
-fn main() {
-    // Clear, commented code
-}
-
-// EXPECTED OUTPUT:
-// What you should see when running this
-
-// TRY IT:
-// Command to compile and run
-
-// BEST PRACTICES: (optional)
-// Tips and recommendations
-```
-
-## 🧪 Testing Examples
-
-All examples serve as compiler tests. To verify all examples compile:
-
-```bash
-# Test all examples compile
-./scripts/test_examples.sh
-
-# Or manually:
-find examples -name "*.jnc" -exec raven compile {} \;
-```
+---
 
 ## 📊 Statistics
 
-- **Total Examples**: 48 (Sprint 1 + Sprint 2 + Sprint 3 + Sprint 4 + Sprint 5 + Sprint 6 complete)
-  - 01-basics: 10 examples ✅
-  - 02-control-flow: 10 examples ✅
-  - 03-functions: 8 examples ✅
-  - 04-patterns: 8 examples ✅
-  - 05-advanced-types: 6 examples ✅
-  - 06-async: 6 examples ✅
-- **Total Planned**: ~60 examples across 8 categories
+- **Total Examples**: 48+ tutorial examples
+- **Tutorial Progress**: 6/6 categories complete
+- **Apps Progress**: 1/20 apps complete
 - **Test Coverage**: 100% of examples compile successfully
-- **Difficulty Levels**: 3 (Beginner, Intermediate, Advanced)
-- **Progress**: 80% complete (48/60)
+- **Package Coverage**: Testing 35 ecosystem packages
+
+---
+
+## 🎓 Learning Tips
+
+1. **Type Out Examples**: Don't just read - type them yourself
+2. **Experiment**: Modify examples and see what breaks
+3. **Expected Output**: Verify your output matches expectations
+4. **Progression**: Complete categories in order
+5. **Practice**: Write your own variations
+
+---
 
 ## 🤝 Contributing
 
@@ -226,32 +252,33 @@ Want to add examples? Follow these guidelines:
 2. **Progressive**: Build on previous examples
 3. **Commented**: Explain WHY, not just WHAT
 4. **Tested**: Ensure it compiles and runs
-5. **Template**: Follow the example template above
+5. **Template**: Follow existing example structure
+
+---
 
 ## 📚 Additional Resources
 
 - [Getting Started Guide](../docs/GETTING_STARTED.md)
+- [Development Server Guide](../DEV_SERVER_GUIDE.md)
+- [20 Apps Roadmap](../20_APPS_PLAN.md)
 - [Language Reference](../CLAUDE.md)
 - [API Documentation](../docs/guides/STDLIB_API_REFERENCE.md)
 - [LSP Features](../docs/guides/LSP_FEATURES.md)
 
-## 🎓 Learning Tips
+---
 
-1. **Type Out Examples**: Don't just read - type them yourself
-2. **Experiment**: Modify examples and see what happens
-3. **Expected Output**: Verify your output matches the expected
-4. **Progression**: Complete categories in order
-5. **Practice**: Write your own variations
+## 📁 Archived Content
+
+The `archived/` directory contains:
+- Legacy analytics dashboard demo
+- Old standalone .jnc files
+- Deprecated applications
+- Historical deployment guides
+
+These are kept for reference but are not actively maintained.
 
 ---
 
-**Sprint Status**: Phase 6 Sprint 6 Complete (48/48 examples total)
-- Sprint 1 ✅ Complete: 01-basics (10 examples)
-- Sprint 2 ✅ Complete: 02-control-flow (10 examples)
-- Sprint 3 ✅ Complete: 03-functions (8 examples)
-- Sprint 4 ✅ Complete: 04-patterns (8 examples)
-- Sprint 5 ✅ Complete: 05-advanced-types (6 examples)
-- Sprint 6 ✅ Complete: 06-async (6 examples)
-
-**Next Sprint**: Sprint 7 - Full-Stack Features (5 examples: @server/@client, RPC, JSX, state)
-**Last Updated**: 2025-10-22
+**Last Updated**: October 24, 2025
+**Jounce Version**: v0.8.0
+**Total Examples**: 48 tutorials + 1 app + 20+ feature demos
