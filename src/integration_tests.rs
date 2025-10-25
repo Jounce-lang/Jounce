@@ -3870,4 +3870,604 @@ mod tests {
         assert!(client_js.contains("batch("), "Should create batch");
         assert!(client_js.contains("import { signal, computed, effect, batch }"), "Should import all primitives");
     }
+
+    // ============================================================================
+    // PHASE 13: STYLE SYSTEM INTEGRATION TESTS
+    // ============================================================================
+
+    /// Helper function to compile source and return CSS output
+    fn compile_source_with_css(source: &str) -> Result<(String, String, String), CompileError> {
+        use crate::codegen::CodeGenerator;
+        use crate::BuildTarget;
+
+        // Lexer
+        let mut lexer = Lexer::new(source.to_string());
+
+        // Parser
+        let mut parser = Parser::new(&mut lexer);
+        let program = parser.parse_program()?;
+
+        // Semantic Analyzer
+        let mut analyzer = SemanticAnalyzer::new();
+        analyzer.analyze_program(&program)?;
+
+        // Type Checker
+        let mut type_checker = TypeChecker::new();
+        type_checker.check_program(&program.statements)?;
+
+        // Borrow Checker
+        let mut borrow_checker = BorrowChecker::new();
+        borrow_checker.check_program(&program)?;
+
+        // Code Generation
+        let emitter = JSEmitter::new(&program);
+        let server_js = emitter.generate_server_js();
+        let client_js = emitter.generate_client_js();
+
+        // CSS Generation
+        let mut code_gen = CodeGenerator::new(BuildTarget::Client);
+        code_gen.generate_program(&program)?;
+        let css = code_gen.get_css_output().to_string();
+
+        Ok((server_js, client_js, css))
+    }
+
+    // ============================================================================
+    // Theme Block Tests
+    // ============================================================================
+
+    #[test]
+    fn test_style_basic_theme_block() {
+        let source = r#"
+            theme DarkMode {
+                primary: #1a1a1a;
+                text: #ffffff;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Basic theme block should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains(":root {"), "CSS should contain :root selector");
+        assert!(css.contains("--DarkMode-primary: #1a1a1a;"), "Should define primary custom property");
+        assert!(css.contains("--DarkMode-text: #ffffff;"), "Should define text custom property");
+    }
+
+    #[test]
+    fn test_style_theme_with_multiple_properties() {
+        let source = r#"
+            theme AppTheme {
+                primary: #3b82f6;
+                secondary: #8b5cf6;
+                background: #ffffff;
+                text: #1f2937;
+                border: #e5e7eb;
+                spacing: 8px;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Theme with multiple properties should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains("--AppTheme-primary:"), "Should have primary");
+        assert!(css.contains("--AppTheme-secondary:"), "Should have secondary");
+        assert!(css.contains("--AppTheme-background:"), "Should have background");
+        assert!(css.contains("--AppTheme-text:"), "Should have text");
+        assert!(css.contains("--AppTheme-border:"), "Should have border");
+        assert!(css.contains("--AppTheme-spacing:"), "Should have spacing");
+    }
+
+    #[test]
+    fn test_style_multiple_themes() {
+        let source = r#"
+            theme Light {
+                bg: #ffffff;
+            }
+
+            theme Dark {
+                bg: #000000;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Multiple themes should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains("--Light-bg: #ffffff;"), "Should have Light theme");
+        assert!(css.contains("--Dark-bg: #000000;"), "Should have Dark theme");
+    }
+
+    // ============================================================================
+    // Style Block Tests
+    // ============================================================================
+
+    #[test]
+    fn test_style_basic_style_block() {
+        let source = r#"
+            style Button {
+                background: #3b82f6;
+                color: #ffffff;
+                padding: 10px 20px;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Basic style block should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains(".Button_"), "Should generate scoped class name");
+        assert!(css.contains("background: #3b82f6;"), "Should have background property");
+        assert!(css.contains("color: #ffffff;"), "Should have color property");
+        assert!(css.contains("padding: 10px 20px;"), "Should have padding with proper spacing");
+    }
+
+    #[test]
+    fn test_style_scoped_class_name_format() {
+        let source = r#"
+            style MyComponent {
+                display: block;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Style block should compile");
+
+        let (_, _, css) = result.unwrap();
+        // Class name should be in format: ComponentName_hash
+        assert!(css.contains(".MyComponent_"), "Should have component name prefix");
+
+        // Extract the class name to verify hash format
+        let lines: Vec<&str> = css.lines().collect();
+        let class_line = lines.iter().find(|l| l.contains(".MyComponent_")).unwrap();
+        // Should be like .MyComponent_abc123 {
+        assert!(class_line.contains("_"), "Should have underscore separator");
+        assert!(class_line.contains("{"), "Should have opening brace");
+    }
+
+    #[test]
+    fn test_style_hyphenated_property_names() {
+        let source = r#"
+            style Card {
+                background-color: #f9fafb;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Hyphenated properties should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains("background-color:"), "Should handle background-color");
+        assert!(css.contains("border-radius:"), "Should handle border-radius");
+        assert!(css.contains("box-shadow:"), "Should handle box-shadow");
+    }
+
+    #[test]
+    fn test_style_multiple_style_blocks() {
+        let source = r#"
+            style Button {
+                padding: 10px;
+            }
+
+            style Card {
+                margin: 20px;
+            }
+
+            style Header {
+                height: 60px;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Multiple style blocks should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains(".Button_"), "Should have Button styles");
+        assert!(css.contains(".Card_"), "Should have Card styles");
+        assert!(css.contains(".Header_"), "Should have Header styles");
+        assert!(css.contains("padding: 10px;"), "Should have Button padding");
+        assert!(css.contains("margin: 20px;"), "Should have Card margin");
+        assert!(css.contains("height: 60px;"), "Should have Header height");
+    }
+
+    // ============================================================================
+    // Nested Selector Tests
+    // ============================================================================
+
+    #[test]
+    fn test_style_pseudo_class_hover() {
+        let source = r#"
+            style Button {
+                background: blue;
+
+                &:hover {
+                    background: darkblue;
+                }
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Pseudo-class :hover should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains(".Button_"), "Should have base class");
+        assert!(css.contains(":hover"), "Should have :hover pseudo-class");
+        assert!(css.contains("background: blue;"), "Should have base background");
+        assert!(css.contains("background: darkblue;"), "Should have hover background");
+    }
+
+    #[test]
+    fn test_style_pseudo_class_disabled() {
+        let source = r#"
+            style Input {
+                opacity: 1;
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Pseudo-class :disabled should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains(":disabled"), "Should have :disabled pseudo-class");
+        assert!(css.contains("opacity: 0.5;"), "Should have disabled opacity");
+        assert!(css.contains("cursor: not-allowed;"), "Should handle hyphenated value");
+    }
+
+    #[test]
+    fn test_style_class_modifier() {
+        let source = r#"
+            style Button {
+                background: gray;
+
+                &.primary {
+                    background: blue;
+                }
+
+                &.danger {
+                    background: red;
+                }
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Class modifiers should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains(".primary"), "Should have .primary class modifier");
+        assert!(css.contains(".danger"), "Should have .danger class modifier");
+    }
+
+    #[test]
+    fn test_style_multiple_nested_selectors() {
+        let source = r#"
+            style Link {
+                color: blue;
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+
+                &:visited {
+                    color: purple;
+                }
+
+                &.active {
+                    font-weight: bold;
+                }
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Multiple nested selectors should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains(":hover"), "Should have :hover");
+        assert!(css.contains(":visited"), "Should have :visited");
+        assert!(css.contains(".active"), "Should have .active");
+    }
+
+    // ============================================================================
+    // Theme Reference Tests
+    // ============================================================================
+
+    #[test]
+    fn test_style_theme_reference() {
+        let source = r#"
+            theme DarkMode {
+                primary: #1a1a1a;
+                text: #ffffff;
+            }
+
+            style Button {
+                background: theme.DarkMode.primary;
+                color: theme.DarkMode.text;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Theme references should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains("--DarkMode-primary:"), "Should define theme variable");
+        assert!(css.contains("--DarkMode-text:"), "Should define theme variable");
+        assert!(css.contains("background: var(--DarkMode-primary);"), "Should reference theme in background");
+        assert!(css.contains("color: var(--DarkMode-text);"), "Should reference theme in color");
+    }
+
+    #[test]
+    fn test_style_theme_reference_in_nested_selector() {
+        let source = r#"
+            theme AppTheme {
+                accent: #3b82f6;
+            }
+
+            style Button {
+                background: white;
+
+                &:hover {
+                    background: theme.AppTheme.accent;
+                }
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Theme reference in nested selector should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains("var(--AppTheme-accent)"), "Should use var() for theme reference");
+        assert!(css.contains(":hover"), "Should have hover selector");
+    }
+
+    // ============================================================================
+    // Integration Tests (Complete Scenarios)
+    // ============================================================================
+
+    #[test]
+    fn test_style_complete_button_component() {
+        let source = r#"
+            theme DarkMode {
+                primary: #1a1a1a;
+                text: #ffffff;
+                accent: #3b82f6;
+            }
+
+            style Button {
+                background: theme.DarkMode.primary;
+                color: theme.DarkMode.text;
+                padding: 10px 20px;
+                border-radius: 4px;
+                border: none;
+                cursor: pointer;
+
+                &:hover {
+                    background: theme.DarkMode.accent;
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        if let Err(ref e) = result {
+            eprintln!("Compilation error: {:?}", e);
+        }
+        assert!(result.is_ok(), "Complete button component should compile");
+
+        let (_, _, css) = result.unwrap();
+
+        // Theme should be defined
+        assert!(css.contains(":root {"), "Should have root");
+        assert!(css.contains("--DarkMode-primary:"), "Should have theme vars");
+
+        // Base styles
+        assert!(css.contains(".Button_"), "Should have scoped class");
+        assert!(css.contains("padding: 10px 20px;"), "Should have padding");
+        assert!(css.contains("border-radius: 4px;"), "Should have border-radius");
+
+        // Theme references
+        assert!(css.contains("var(--DarkMode-primary)"), "Should use theme vars");
+
+        // Nested selectors
+        assert!(css.contains(":hover"), "Should have hover");
+        assert!(css.contains(":disabled"), "Should have disabled");
+    }
+
+    #[test]
+    fn test_style_multiple_components_with_shared_theme() {
+        let source = r#"
+            theme Brand {
+                primary: #3b82f6;
+                secondary: #8b5cf6;
+            }
+
+            style Button {
+                background: theme.Brand.primary;
+            }
+
+            style Link {
+                color: theme.Brand.secondary;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Multiple components with shared theme should compile");
+
+        let (_, _, css) = result.unwrap();
+
+        // Theme defined once
+        assert!(css.contains("--Brand-primary:"), "Should have theme");
+        assert!(css.contains("--Brand-secondary:"), "Should have theme");
+
+        // Both components use theme
+        assert!(css.contains(".Button_"), "Should have Button");
+        assert!(css.contains(".Link_"), "Should have Link");
+    }
+
+    #[test]
+    fn test_style_complex_values() {
+        let source = r#"
+            style Complex {
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+                background: linear-gradient(to bottom,#ffffff,#f3f4f6);
+                transform: translateY(-2px);
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Complex CSS values should compile");
+
+        let (_, _, css) = result.unwrap();
+        assert!(css.contains("box-shadow:"), "Should handle box-shadow");
+        assert!(css.contains("background:"), "Should handle gradient");
+        assert!(css.contains("transform:"), "Should handle transform");
+    }
+
+    #[test]
+    fn test_style_hex_colors_no_extra_spaces() {
+        let source = r#"
+            style ColorTest {
+                color: #1a1a1a;
+                background: #ffffff;
+                border-color: #3b82f6;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Hex colors should compile");
+
+        let (_, _, css) = result.unwrap();
+
+        // Verify no spaces in hex colors
+        assert!(css.contains("#1a1a1a"), "Hex color should not have spaces");
+        assert!(css.contains("#ffffff"), "Hex color should not have spaces");
+        assert!(css.contains("#3b82f6"), "Hex color should not have spaces");
+
+        // Verify hex colors are not broken
+        assert!(!css.contains("# 1a1a1a"), "Should not have space after #");
+        assert!(!css.contains("#1 a1a1a"), "Should not have spaces in hex");
+    }
+
+    #[test]
+    fn test_style_unit_spacing() {
+        let source = r#"
+            style Spacing {
+                padding: 10px 20px 30px 40px;
+                margin: 5em 10em;
+                width: 100%;
+            }
+
+            fn main() {
+                let x = 42;
+            }
+        "#;
+
+        let result = compile_source_with_css(source);
+        assert!(result.is_ok(), "Unit spacing should compile");
+
+        let (_, _, css) = result.unwrap();
+
+        // Verify proper spacing between values with units
+        assert!(css.contains("10px 20px 30px 40px"), "Should have spaces between px values");
+        assert!(css.contains("5em 10em"), "Should have spaces between em values");
+        assert!(css.contains("100%"), "Should handle percentage");
+
+        // Verify units are attached to numbers
+        assert!(!css.contains("10 px"), "Should not have space before px");
+        assert!(!css.contains("5 em"), "Should not have space before em");
+    }
 }

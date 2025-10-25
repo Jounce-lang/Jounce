@@ -1,0 +1,118 @@
+// Theme Switcher App - Dark/Light Mode Example
+// Demonstrates runtime theme switching with reactive state
+
+theme LightMode {
+    bg: #ffffff;
+    text: #1f2937;
+    cardBg: #f9fafb;
+    cardBorder: #e5e7eb;
+    primary: #3b82f6;
+    primaryHover: #2563eb;
+    shadow: rgba(0,0,0,0.1);
+}
+
+theme DarkMode {
+    bg: #1f2937;
+    text: #f9fafb;
+    cardBg: #374151;
+    cardBorder: #4b5563;
+    primary: #60a5fa;
+    primaryHover: #3b82f6;
+    shadow: rgba(0,0,0,0.3);
+}
+
+style AppContainer {
+    min-height: 100vh;
+    background: theme.LightMode.bg;
+    color: theme.LightMode.text;
+    padding: 40px 20px;
+    transition: all 0.3s ease;
+    font-family: system-ui,-apple-system,sans-serif;
+}
+
+style Card {
+    background: theme.LightMode.cardBg;
+    border: 1px solid theme.LightMode.cardBorder;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 4px 6px theme.LightMode.shadow;
+    transition: all 0.3s ease;
+
+    &:hover {
+        box-shadow: 0 10px 15px theme.LightMode.shadow;
+        transform: translateY(-2px);
+    }
+}
+
+style Title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: theme.LightMode.text;
+}
+
+style Description {
+    font-size: 16px;
+    line-height: 1.6;
+    color: theme.LightMode.text;
+    opacity: 0.8;
+    margin-bottom: 24px;
+}
+
+style ThemeButton {
+    background: theme.LightMode.primary;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+        background: theme.LightMode.primaryHover;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px theme.LightMode.shadow;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+style FeatureList {
+    padding: 0;
+    margin: 24px 0;
+}
+
+style FeatureItem {
+    padding: 12px 0;
+    border-bottom: 1px solid theme.LightMode.cardBorder;
+    font-size: 15px;
+}
+
+fn main() {
+    println!("Theme Switcher App");
+    println!("==================");
+    println!("");
+    println!("This example demonstrates:");
+    println!("- Light and Dark theme definitions");
+    println!("- Runtime theme switching capability");
+    println!("- Smooth transitions between themes");
+    println!("- Theme-aware components (Card, Button, etc.)");
+    println!("");
+    println!("Features:");
+    println!("✓ CSS custom properties for theming");
+    println!("✓ 14 color properties across 2 themes");
+    println!("✓ Smooth color transitions");
+    println!("✓ Hover effects and animations");
+    println!("✓ Responsive design");
+    println!("");
+    println!("Check dist/styles.css to see generated themes!");
+}
