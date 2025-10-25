@@ -1,0 +1,38 @@
+// App 1: Hello Counter
+// A simple JSX demonstration with basic structure
+
+// Main app component
+fn App() -> JSX {
+    return (
+        <div class="container">
+            <h1>Hello from Jounce! 🎉</h1>
+            <div class="counter-display">
+                <p class="count">0</p>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-decrement">
+                    − Decrease
+                </button>
+                <button class="btn btn-reset">
+                    Reset
+                </button>
+                <button class="btn btn-increment">
+                    + Increase
+                </button>
+            </div>
+            <div class="info">
+                <p>This is App 1: A simple demonstration of JSX rendering in Jounce.</p>
+                <p>The counter displays zero and buttons are rendered (interactivity coming in App 2!).</p>
+            </div>
+        </div>
+    );
+}
+
+// Entry point
+fn main() {
+    console.log("App 1: Hello Counter started!");
+    console.log("JSX rendering test");
+
+    let app_html = App();
+    console.log("App component created successfully!");
+}
