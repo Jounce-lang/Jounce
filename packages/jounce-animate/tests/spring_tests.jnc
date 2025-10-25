@@ -1,0 +1,177 @@
+// Tests for spring animations and controllers in jounce-animate
+use jounce_animate::{SpringConfig, SpringAnimation, AnimationController, AnimationState};
+
+#[test]
+fn test_spring_config_default() {
+    let config = SpringConfig::default();
+
+    assert_eq!(config.stiffness, 100.0, "Default stiffness should be 100.0");
+    assert_eq!(config.damping, 10.0, "Default damping should be 10.0");
+    assert_eq!(config.mass, 1.0, "Default mass should be 1.0");
+}
+
+#[test]
+fn test_spring_config_gentle() {
+    let config = SpringConfig::gentle();
+
+    assert_eq!(config.stiffness, 120.0, "Gentle stiffness should be 120.0");
+    assert_eq!(config.damping, 14.0, "Gentle damping should be 14.0");
+}
+
+#[test]
+fn test_spring_config_wobbly() {
+    let config = SpringConfig::wobbly();
+
+    assert_eq!(config.stiffness, 180.0, "Wobbly stiffness should be 180.0");
+    assert_eq!(config.damping, 12.0, "Wobbly damping should be 12.0");
+}
+
+#[test]
+fn test_spring_config_stiff() {
+    let config = SpringConfig::stiff();
+
+    assert_eq!(config.stiffness, 210.0, "Stiff stiffness should be 210.0");
+    assert_eq!(config.damping, 20.0, "Stiff damping should be 20.0");
+}
+
+#[test]
+fn test_spring_config_slow() {
+    let config = SpringConfig::slow();
+
+    assert_eq!(config.stiffness, 280.0, "Slow stiffness should be 280.0");
+    assert_eq!(config.damping, 60.0, "Slow damping should be 60.0");
+    assert_eq!(config.mass, 3.0, "Slow mass should be 3.0");
+}
+
+#[test]
+fn test_spring_config_molasses() {
+    let config = SpringConfig::molasses();
+
+    assert_eq!(config.stiffness, 280.0, "Molasses stiffness should be 280.0");
+    assert_eq!(config.damping, 120.0, "Molasses damping should be 120.0");
+    assert_eq!(config.mass, 10.0, "Molasses mass should be 10.0");
+}
+
+#[test]
+fn test_spring_animation_creation() {
+    let config = SpringConfig::default();
+    let animation = SpringAnimation::new(0.0, 1.0, config);
+
+    assert_eq!(animation.from, 0.0, "From should be 0.0");
+    assert_eq!(animation.to, 1.0, "To should be 1.0");
+}
+
+#[test]
+fn test_spring_animation_duration() {
+    let config = SpringConfig::default();
+    let animation = SpringAnimation::new(0.0, 100.0, config);
+
+    let duration = animation.duration();
+
+    assert!(duration > 0, "Duration should be positive");
+}
+
+#[test]
+fn test_spring_animation_gentle_duration() {
+    let config = SpringConfig::gentle();
+    let animation = SpringAnimation::new(0.0, 1.0, config);
+
+    let duration = animation.duration();
+
+    assert!(duration > 0, "Gentle spring should have positive duration");
+}
+
+#[test]
+fn test_spring_animation_stiff_duration() {
+    let config = SpringConfig::stiff();
+    let animation = SpringAnimation::new(0.0, 1.0, config);
+
+    let duration = animation.duration();
+
+    assert!(duration > 0, "Stiff spring should have positive duration");
+}
+
+#[test]
+fn test_animation_controller_creation() {
+    let controller = AnimationController::new("element1", 1000);
+
+    assert_eq!(controller.element_id, "element1", "Element ID should be element1");
+    assert_eq!(controller.duration, 1000, "Duration should be 1000ms");
+    assert_eq!(controller.current_time, 0, "Current time should be 0");
+}
+
+#[test]
+fn test_animation_controller_initial_state() {
+    let controller = AnimationController::new("element1", 500);
+
+    assert!(controller.is_running(), "Should be running initially");
+    assert!(!controller.is_paused(), "Should not be paused initially");
+    assert!(!controller.is_finished(), "Should not be finished initially");
+}
+
+#[test]
+fn test_animation_controller_play() {
+    let mut controller = AnimationController::new("element1", 500);
+
+    controller.play();
+
+    assert!(controller.is_running(), "Should be running after play");
+}
+
+#[test]
+fn test_animation_controller_pause() {
+    let mut controller = AnimationController::new("element1", 500);
+
+    controller.pause();
+
+    assert!(controller.is_paused(), "Should be paused after pause");
+    assert!(!controller.is_running(), "Should not be running after pause");
+}
+
+#[test]
+fn test_animation_controller_stop() {
+    let mut controller = AnimationController::new("element1", 500);
+
+    controller.stop();
+
+    assert!(controller.is_finished(), "Should be finished after stop");
+    assert_eq!(controller.current_time, 0, "Current time should reset to 0");
+}
+
+#[test]
+fn test_animation_controller_progress_start() {
+    let controller = AnimationController::new("element1", 1000);
+
+    let progress = controller.progress();
+
+    assert_eq!(progress, 0.0, "Progress should be 0.0 at start");
+}
+
+#[test]
+fn test_animation_controller_progress_halfway() {
+    let mut controller = AnimationController::new("element1", 1000);
+    controller.current_time = 500;
+
+    let progress = controller.progress();
+
+    assert_eq!(progress, 0.5, "Progress should be 0.5 at halfway");
+}
+
+#[test]
+fn test_animation_controller_progress_complete() {
+    let mut controller = AnimationController::new("element1", 1000);
+    controller.current_time = 1000;
+
+    let progress = controller.progress();
+
+    assert_eq!(progress, 1.0, "Progress should be 1.0 when complete");
+}
+
+#[test]
+fn test_animation_controller_zero_duration() {
+    let controller = AnimationController::new("element1", 0);
+
+    let progress = controller.progress();
+
+    assert_eq!(progress, 1.0, "Progress should be 1.0 for zero duration");
+}

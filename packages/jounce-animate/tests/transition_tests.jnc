@@ -1,0 +1,136 @@
+// Tests for CSS transitions in jounce-animate
+use jounce_animate::{Transition, EasingFunction};
+
+#[test]
+fn test_transition_creation() {
+    let transition = Transition::new("opacity", 300);
+
+    assert_eq!(transition.property, "opacity", "Property should be opacity");
+    assert_eq!(transition.duration, 300, "Duration should be 300ms");
+    assert_eq!(transition.delay, 0, "Default delay should be 0");
+}
+
+#[test]
+fn test_transition_with_easing() {
+    let transition = Transition::new("transform", 500)
+        .with_easing(EasingFunction::EaseInOut);
+
+    assert_eq!(transition.duration, 500, "Duration should be 500ms");
+}
+
+#[test]
+fn test_transition_with_delay() {
+    let transition = Transition::new("opacity", 300)
+        .with_delay(100);
+
+    assert_eq!(transition.delay, 100, "Delay should be 100ms");
+}
+
+#[test]
+fn test_transition_builder() {
+    let transition = Transition::new("all", 400)
+        .with_easing(EasingFunction::EaseOut)
+        .with_delay(50);
+
+    assert_eq!(transition.property, "all", "Property should be all");
+    assert_eq!(transition.duration, 400, "Duration should be 400ms");
+    assert_eq!(transition.delay, 50, "Delay should be 50ms");
+}
+
+#[test]
+fn test_transition_to_css() {
+    let transition = Transition::new("opacity", 300);
+    let css = transition.to_css();
+
+    assert!(css.contains("opacity"), "CSS should contain property");
+    assert!(css.contains("300ms"), "CSS should contain duration");
+}
+
+#[test]
+fn test_transition_to_css_with_delay() {
+    let transition = Transition::new("transform", 500)
+        .with_delay(100);
+    let css = transition.to_css();
+
+    assert!(css.contains("transform"), "CSS should contain property");
+    assert!(css.contains("500ms"), "CSS should contain duration");
+    assert!(css.contains("100ms"), "CSS should contain delay");
+}
+
+#[test]
+fn test_transition_to_css_with_easing() {
+    let transition = Transition::new("width", 200)
+        .with_easing(EasingFunction::EaseInOut);
+    let css = transition.to_css();
+
+    assert!(css.contains("width"), "CSS should contain property");
+    assert!(css.contains("200ms"), "CSS should contain duration");
+    assert!(css.contains("ease-in-out"), "CSS should contain easing");
+}
+
+#[test]
+fn test_transition_opacity() {
+    let transition = Transition::new("opacity", 250)
+        .with_easing(EasingFunction::Linear);
+    let css = transition.to_css();
+
+    assert!(css.contains("opacity"), "Should animate opacity");
+    assert!(css.contains("linear"), "Should use linear easing");
+}
+
+#[test]
+fn test_transition_transform() {
+    let transition = Transition::new("transform", 400)
+        .with_easing(EasingFunction::EaseInOutCubic);
+    let css = transition.to_css();
+
+    assert!(css.contains("transform"), "Should animate transform");
+}
+
+#[test]
+fn test_transition_all() {
+    let transition = Transition::new("all", 300);
+    let css = transition.to_css();
+
+    assert!(css.contains("all"), "Should animate all properties");
+}
+
+#[test]
+fn test_transition_color() {
+    let transition = Transition::new("color", 200)
+        .with_easing(EasingFunction::EaseOut);
+    let css = transition.to_css();
+
+    assert!(css.contains("color"), "Should animate color");
+}
+
+#[test]
+fn test_transition_background() {
+    let transition = Transition::new("background", 350);
+    let css = transition.to_css();
+
+    assert!(css.contains("background"), "Should animate background");
+}
+
+#[test]
+fn test_transition_no_delay() {
+    let transition = Transition::new("opacity", 300);
+    let css = transition.to_css();
+
+    // Should not have delay in CSS if delay is 0
+    assert_eq!(transition.delay, 0, "Delay should be 0");
+}
+
+#[test]
+fn test_transition_fast() {
+    let transition = Transition::new("opacity", 100);
+
+    assert_eq!(transition.duration, 100, "Fast transition should be 100ms");
+}
+
+#[test]
+fn test_transition_slow() {
+    let transition = Transition::new("opacity", 1000);
+
+    assert_eq!(transition.duration, 1000, "Slow transition should be 1000ms");
+}

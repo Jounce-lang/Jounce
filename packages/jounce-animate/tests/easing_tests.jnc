@@ -1,0 +1,138 @@
+// Tests for easing functions in jounce-animate
+use jounce_animate::EasingFunction;
+
+#[test]
+fn test_linear_easing() {
+    let easing = EasingFunction::Linear;
+
+    assert_eq!(easing.to_css(), "linear", "Linear should have correct CSS");
+    assert_eq!(easing.to_string(), "linear", "Linear should have correct string");
+}
+
+#[test]
+fn test_ease_in() {
+    let easing = EasingFunction::EaseIn;
+
+    assert_eq!(easing.to_css(), "ease-in", "EaseIn should have correct CSS");
+    assert_eq!(easing.to_string(), "ease-in", "EaseIn should have correct string");
+}
+
+#[test]
+fn test_ease_out() {
+    let easing = EasingFunction::EaseOut;
+
+    assert_eq!(easing.to_css(), "ease-out", "EaseOut should have correct CSS");
+    assert_eq!(easing.to_string(), "ease-out", "EaseOut should have correct string");
+}
+
+#[test]
+fn test_ease_in_out() {
+    let easing = EasingFunction::EaseInOut;
+
+    assert_eq!(easing.to_css(), "ease-in-out", "EaseInOut should have correct CSS");
+    assert_eq!(easing.to_string(), "ease-in-out", "EaseInOut should have correct string");
+}
+
+#[test]
+fn test_ease_in_quad() {
+    let easing = EasingFunction::EaseInQuad;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseInQuad should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-in-quad", "EaseInQuad should have correct string");
+}
+
+#[test]
+fn test_ease_out_quad() {
+    let easing = EasingFunction::EaseOutQuad;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseOutQuad should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-out-quad", "EaseOutQuad should have correct string");
+}
+
+#[test]
+fn test_ease_in_out_quad() {
+    let easing = EasingFunction::EaseInOutQuad;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseInOutQuad should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-in-out-quad", "EaseInOutQuad should have correct string");
+}
+
+#[test]
+fn test_ease_in_cubic() {
+    let easing = EasingFunction::EaseInCubic;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseInCubic should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-in-cubic", "EaseInCubic should have correct string");
+}
+
+#[test]
+fn test_ease_out_cubic() {
+    let easing = EasingFunction::EaseOutCubic;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseOutCubic should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-out-cubic", "EaseOutCubic should have correct string");
+}
+
+#[test]
+fn test_ease_in_out_cubic() {
+    let easing = EasingFunction::EaseInOutCubic;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseInOutCubic should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-in-out-cubic", "EaseInOutCubic should have correct string");
+}
+
+#[test]
+fn test_ease_in_back() {
+    let easing = EasingFunction::EaseInBack;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseInBack should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-in-back", "EaseInBack should have correct string");
+}
+
+#[test]
+fn test_ease_out_back() {
+    let easing = EasingFunction::EaseOutBack;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseOutBack should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-out-back", "EaseOutBack should have correct string");
+}
+
+#[test]
+fn test_ease_in_out_back() {
+    let easing = EasingFunction::EaseInOutBack;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseInOutBack should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-in-out-back", "EaseInOutBack should have correct string");
+}
+
+#[test]
+fn test_ease_in_elastic() {
+    let easing = EasingFunction::EaseInElastic;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseInElastic should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-in-elastic", "EaseInElastic should have correct string");
+}
+
+#[test]
+fn test_ease_out_elastic() {
+    let easing = EasingFunction::EaseOutElastic;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseOutElastic should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-out-elastic", "EaseOutElastic should have correct string");
+}
+
+#[test]
+fn test_ease_in_bounce() {
+    let easing = EasingFunction::EaseInBounce;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseInBounce should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-in-bounce", "EaseInBounce should have correct string");
+}
+
+#[test]
+fn test_ease_out_bounce() {
+    let easing = EasingFunction::EaseOutBounce;
+
+    assert!(easing.to_css().contains("cubic-bezier"), "EaseOutBounce should use cubic-bezier");
+    assert_eq!(easing.to_string(), "ease-out-bounce", "EaseOutBounce should have correct string");
+}

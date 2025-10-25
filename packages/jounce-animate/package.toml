@@ -1,0 +1,34 @@
+[package]
+name = "jounce-animate"
+version = "0.1.0"
+description = "CSS transitions, spring animations, and keyframe animations for Jounce applications"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-animate"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "easing_tests"
+path = "tests/easing_tests.jnc"
+
+[[test]]
+name = "transition_tests"
+path = "tests/transition_tests.jnc"
+
+[[test]]
+name = "keyframe_tests"
+path = "tests/keyframe_tests.jnc"
+
+[[test]]
+name = "spring_tests"
+path = "tests/spring_tests.jnc"
+
+[features]
+default = ["transitions", "keyframes", "springs"]
+transitions = []
+keyframes = []
+springs = []

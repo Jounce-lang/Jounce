@@ -1,0 +1,185 @@
+// Tests for keyframe animations in jounce-animate
+use jounce_animate::{
+    Keyframe, KeyframeAnimation, EasingFunction,
+    fade_in, fade_out, slide_in_left, slide_in_right,
+    scale_in, bounce, shake, spin, pulse
+};
+
+#[test]
+fn test_keyframe_creation() {
+    let keyframe = Keyframe::new(0.0);
+
+    assert_eq!(keyframe.offset, 0.0, "Offset should be 0.0");
+    assert_eq!(keyframe.properties.len(), 0, "Should have no properties initially");
+}
+
+#[test]
+fn test_keyframe_with_property() {
+    let keyframe = Keyframe::new(0.5)
+        .with_property("opacity", "0.5");
+
+    assert_eq!(keyframe.offset, 0.5, "Offset should be 0.5");
+    assert_eq!(keyframe.properties.len(), 1, "Should have 1 property");
+}
+
+#[test]
+fn test_keyframe_multiple_properties() {
+    let keyframe = Keyframe::new(1.0)
+        .with_property("opacity", "1")
+        .with_property("transform", "scale(1)");
+
+    assert_eq!(keyframe.properties.len(), 2, "Should have 2 properties");
+}
+
+#[test]
+fn test_keyframe_to_css() {
+    let keyframe = Keyframe::new(0.0)
+        .with_property("opacity", "0");
+    let css = keyframe.to_css();
+
+    assert!(css.contains("0%"), "CSS should contain percentage");
+    assert!(css.contains("opacity"), "CSS should contain property");
+}
+
+#[test]
+fn test_keyframe_animation_creation() {
+    let animation = KeyframeAnimation::new("fade", 300);
+
+    assert_eq!(animation.name, "fade", "Name should be fade");
+    assert_eq!(animation.duration, 300, "Duration should be 300ms");
+    assert_eq!(animation.keyframes.len(), 0, "Should have no keyframes initially");
+}
+
+#[test]
+fn test_keyframe_animation_add_keyframe() {
+    let animation = KeyframeAnimation::new("test", 500)
+        .add_keyframe(Keyframe::new(0.0).with_property("opacity", "0"))
+        .add_keyframe(Keyframe::new(1.0).with_property("opacity", "1"));
+
+    assert_eq!(animation.keyframes.len(), 2, "Should have 2 keyframes");
+}
+
+#[test]
+fn test_keyframe_animation_with_easing() {
+    let animation = KeyframeAnimation::new("test", 300)
+        .with_easing(EasingFunction::EaseInOut);
+
+    assert_eq!(animation.duration, 300, "Duration should be 300ms");
+}
+
+#[test]
+fn test_keyframe_animation_with_iterations() {
+    let animation = KeyframeAnimation::new("test", 500)
+        .with_iterations(3);
+
+    assert_eq!(animation.iteration_count, 3, "Should have 3 iterations");
+}
+
+#[test]
+fn test_keyframe_animation_infinite() {
+    let animation = KeyframeAnimation::new("test", 1000)
+        .with_iterations(0);
+
+    assert_eq!(animation.iteration_count, 0, "0 means infinite");
+}
+
+#[test]
+fn test_keyframe_animation_direction() {
+    let animation = KeyframeAnimation::new("test", 400)
+        .with_direction("alternate");
+
+    assert_eq!(animation.direction, "alternate", "Direction should be alternate");
+}
+
+#[test]
+fn test_keyframe_animation_to_css_keyframes() {
+    let animation = KeyframeAnimation::new("fade", 300)
+        .add_keyframe(Keyframe::new(0.0).with_property("opacity", "0"))
+        .add_keyframe(Keyframe::new(1.0).with_property("opacity", "1"));
+
+    let css = animation.to_css_keyframes();
+
+    assert!(css.contains("@keyframes"), "Should contain @keyframes");
+    assert!(css.contains("fade"), "Should contain animation name");
+}
+
+#[test]
+fn test_keyframe_animation_to_css_animation() {
+    let animation = KeyframeAnimation::new("slide", 400);
+    let css = animation.to_css_animation();
+
+    assert!(css.contains("slide"), "Should contain animation name");
+    assert!(css.contains("400ms"), "Should contain duration");
+}
+
+#[test]
+fn test_fade_in_preset() {
+    let animation = fade_in(300);
+
+    assert_eq!(animation.name, "fade-in", "Name should be fade-in");
+    assert_eq!(animation.duration, 300, "Duration should be 300ms");
+    assert_eq!(animation.keyframes.len(), 2, "Should have 2 keyframes");
+}
+
+#[test]
+fn test_fade_out_preset() {
+    let animation = fade_out(500);
+
+    assert_eq!(animation.name, "fade-out", "Name should be fade-out");
+    assert_eq!(animation.duration, 500, "Duration should be 500ms");
+}
+
+#[test]
+fn test_slide_in_left_preset() {
+    let animation = slide_in_left(400);
+
+    assert_eq!(animation.name, "slide-in-left", "Name should be slide-in-left");
+    assert_eq!(animation.keyframes.len(), 2, "Should have 2 keyframes");
+}
+
+#[test]
+fn test_slide_in_right_preset() {
+    let animation = slide_in_right(400);
+
+    assert_eq!(animation.name, "slide-in-right", "Name should be slide-in-right");
+}
+
+#[test]
+fn test_scale_in_preset() {
+    let animation = scale_in(350);
+
+    assert_eq!(animation.name, "scale-in", "Name should be scale-in");
+    assert_eq!(animation.duration, 350, "Duration should be 350ms");
+}
+
+#[test]
+fn test_bounce_preset() {
+    let animation = bounce(600);
+
+    assert_eq!(animation.name, "bounce", "Name should be bounce");
+    assert!(animation.keyframes.len() > 2, "Bounce should have multiple keyframes");
+}
+
+#[test]
+fn test_shake_preset() {
+    let animation = shake(500);
+
+    assert_eq!(animation.name, "shake", "Name should be shake");
+    assert!(animation.keyframes.len() > 5, "Shake should have many keyframes");
+}
+
+#[test]
+fn test_spin_preset() {
+    let animation = spin(1000);
+
+    assert_eq!(animation.name, "spin", "Name should be spin");
+    assert_eq!(animation.iteration_count, 0, "Spin should be infinite");
+}
+
+#[test]
+fn test_pulse_preset() {
+    let animation = pulse(800);
+
+    assert_eq!(animation.name, "pulse", "Name should be pulse");
+    assert_eq!(animation.iteration_count, 0, "Pulse should be infinite");
+}

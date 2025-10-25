@@ -1,0 +1,583 @@
+// jounce-animate - CSS transitions, spring animations, and keyframe animations
+// Version: 0.1.0
+
+// ============================================================================
+// Easing Functions
+// ============================================================================
+
+/// Easing function type
+pub enum EasingFunction {
+    Linear,
+    EaseIn,
+    EaseOut,
+    EaseInOut,
+    EaseInQuad,
+    EaseOutQuad,
+    EaseInOutQuad,
+    EaseInCubic,
+    EaseOutCubic,
+    EaseInOutCubic,
+    EaseInQuart,
+    EaseOutQuart,
+    EaseInOutQuart,
+    EaseInBack,
+    EaseOutBack,
+    EaseInOutBack,
+    EaseInElastic,
+    EaseOutElastic,
+    EaseInOutElastic,
+    EaseInBounce,
+    EaseOutBounce,
+    EaseInOutBounce,
+}
+
+impl EasingFunction {
+    pub fn to_css(self) -> string {
+        match self {
+            EasingFunction::Linear => "linear",
+            EasingFunction::EaseIn => "ease-in",
+            EasingFunction::EaseOut => "ease-out",
+            EasingFunction::EaseInOut => "ease-in-out",
+            EasingFunction::EaseInQuad => "cubic-bezier(0.55, 0.085, 0.68, 0.53)",
+            EasingFunction::EaseOutQuad => "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+            EasingFunction::EaseInOutQuad => "cubic-bezier(0.455, 0.03, 0.515, 0.955)",
+            EasingFunction::EaseInCubic => "cubic-bezier(0.55, 0.055, 0.675, 0.19)",
+            EasingFunction::EaseOutCubic => "cubic-bezier(0.215, 0.61, 0.355, 1)",
+            EasingFunction::EaseInOutCubic => "cubic-bezier(0.645, 0.045, 0.355, 1)",
+            EasingFunction::EaseInQuart => "cubic-bezier(0.895, 0.03, 0.685, 0.22)",
+            EasingFunction::EaseOutQuart => "cubic-bezier(0.165, 0.84, 0.44, 1)",
+            EasingFunction::EaseInOutQuart => "cubic-bezier(0.77, 0, 0.175, 1)",
+            EasingFunction::EaseInBack => "cubic-bezier(0.6, -0.28, 0.735, 0.045)",
+            EasingFunction::EaseOutBack => "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+            EasingFunction::EaseInOutBack => "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+            EasingFunction::EaseInElastic => "cubic-bezier(0.6, 0.04, 0.98, 0.335)",
+            EasingFunction::EaseOutElastic => "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+            EasingFunction::EaseInOutElastic => "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+            EasingFunction::EaseInBounce => "cubic-bezier(0.6, 0.04, 0.98, 0.335)",
+            EasingFunction::EaseOutBounce => "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+            EasingFunction::EaseInOutBounce => "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+        }
+    }
+
+    pub fn to_string(self) -> string {
+        match self {
+            EasingFunction::Linear => "linear",
+            EasingFunction::EaseIn => "ease-in",
+            EasingFunction::EaseOut => "ease-out",
+            EasingFunction::EaseInOut => "ease-in-out",
+            EasingFunction::EaseInQuad => "ease-in-quad",
+            EasingFunction::EaseOutQuad => "ease-out-quad",
+            EasingFunction::EaseInOutQuad => "ease-in-out-quad",
+            EasingFunction::EaseInCubic => "ease-in-cubic",
+            EasingFunction::EaseOutCubic => "ease-out-cubic",
+            EasingFunction::EaseInOutCubic => "ease-in-out-cubic",
+            EasingFunction::EaseInQuart => "ease-in-quart",
+            EasingFunction::EaseOutQuart => "ease-out-quart",
+            EasingFunction::EaseInOutQuart => "ease-in-out-quart",
+            EasingFunction::EaseInBack => "ease-in-back",
+            EasingFunction::EaseOutBack => "ease-out-back",
+            EasingFunction::EaseInOutBack => "ease-in-out-back",
+            EasingFunction::EaseInElastic => "ease-in-elastic",
+            EasingFunction::EaseOutElastic => "ease-out-elastic",
+            EasingFunction::EaseInOutElastic => "ease-in-out-elastic",
+            EasingFunction::EaseInBounce => "ease-in-bounce",
+            EasingFunction::EaseOutBounce => "ease-out-bounce",
+            EasingFunction::EaseInOutBounce => "ease-in-out-bounce",
+        }
+    }
+}
+
+// ============================================================================
+// CSS Transition
+// ============================================================================
+
+/// CSS transition configuration
+pub struct Transition {
+    pub property: string,
+    pub duration: int,  // milliseconds
+    pub easing: EasingFunction,
+    pub delay: int,     // milliseconds
+}
+
+impl Transition {
+    pub fn new(property: string, duration: int) -> Transition {
+        return Transition {
+            property: property,
+            duration: duration,
+            easing: EasingFunction::EaseInOut,
+            delay: 0,
+        };
+    }
+
+    pub fn with_easing(mut self, easing: EasingFunction) -> Transition {
+        self.easing = easing;
+        return self;
+    }
+
+    pub fn with_delay(mut self, delay: int) -> Transition {
+        self.delay = delay;
+        return self;
+    }
+
+    pub fn to_css(self) -> string {
+        let duration_str = self.duration.to_string() + "ms";
+        let delay_str = if self.delay > 0 { " " + self.delay.to_string() + "ms" } else { "" };
+
+        return self.property + " " + duration_str + " " + self.easing.to_css() + delay_str;
+    }
+}
+
+// ============================================================================
+// Spring Animation
+// ============================================================================
+
+/// Spring physics configuration
+pub struct SpringConfig {
+    pub stiffness: float,
+    pub damping: float,
+    pub mass: float,
+}
+
+impl SpringConfig {
+    pub fn default() -> SpringConfig {
+        return SpringConfig {
+            stiffness: 100.0,
+            damping: 10.0,
+            mass: 1.0,
+        };
+    }
+
+    pub fn gentle() -> SpringConfig {
+        return SpringConfig {
+            stiffness: 120.0,
+            damping: 14.0,
+            mass: 1.0,
+        };
+    }
+
+    pub fn wobbly() -> SpringConfig {
+        return SpringConfig {
+            stiffness: 180.0,
+            damping: 12.0,
+            mass: 1.0,
+        };
+    }
+
+    pub fn stiff() -> SpringConfig {
+        return SpringConfig {
+            stiffness: 210.0,
+            damping: 20.0,
+            mass: 1.0,
+        };
+    }
+
+    pub fn slow() -> SpringConfig {
+        return SpringConfig {
+            stiffness: 280.0,
+            damping: 60.0,
+            mass: 3.0,
+        };
+    }
+
+    pub fn molasses() -> SpringConfig {
+        return SpringConfig {
+            stiffness: 280.0,
+            damping: 120.0,
+            mass: 10.0,
+        };
+    }
+}
+
+/// Spring animation
+pub struct SpringAnimation {
+    pub from: float,
+    pub to: float,
+    pub config: SpringConfig,
+}
+
+impl SpringAnimation {
+    pub fn new(from: float, to: float, config: SpringConfig) -> SpringAnimation {
+        return SpringAnimation {
+            from: from,
+            to: to,
+            config: config,
+        };
+    }
+
+    pub fn duration(self) -> int {
+        // Estimate duration based on spring config
+        let k = self.config.stiffness;
+        let d = self.config.damping;
+        let m = self.config.mass;
+
+        // Natural frequency
+        let omega = (k / m).sqrt();
+
+        // Damping ratio
+        let zeta = d / (2.0 * (k * m).sqrt());
+
+        // Estimated settling time (ms)
+        if zeta < 1.0 {
+            return ((4.0 / (zeta * omega)) * 1000.0) as int;
+        } else {
+            return ((4.0 / omega) * 1000.0) as int;
+        }
+    }
+}
+
+// ============================================================================
+// Keyframe Animation
+// ============================================================================
+
+/// Keyframe step
+pub struct Keyframe {
+    pub offset: float,  // 0.0 to 1.0
+    pub properties: Map<string, string>,
+}
+
+impl Keyframe {
+    pub fn new(offset: float) -> Keyframe {
+        return Keyframe {
+            offset: offset,
+            properties: Map::new(),
+        };
+    }
+
+    pub fn with_property(mut self, property: string, value: string) -> Keyframe {
+        self.properties.insert(property, value);
+        return self;
+    }
+
+    pub fn to_css(self) -> string {
+        let percent = (self.offset * 100.0) as int;
+        let mut css = percent.to_string() + "% {";
+
+        let keys = self.properties.keys();
+        for key in keys {
+            let value = self.properties.get(&key);
+            css = css + " " + key + ": " + value + ";";
+        }
+
+        css = css + " }";
+        return css;
+    }
+}
+
+/// Keyframe animation configuration
+pub struct KeyframeAnimation {
+    pub name: string,
+    pub keyframes: Array<Keyframe>,
+    pub duration: int,  // milliseconds
+    pub easing: EasingFunction,
+    pub iteration_count: int,  // 0 = infinite
+    pub direction: string,  // "normal", "reverse", "alternate", "alternate-reverse"
+}
+
+impl KeyframeAnimation {
+    pub fn new(name: string, duration: int) -> KeyframeAnimation {
+        return KeyframeAnimation {
+            name: name,
+            keyframes: Array::new(),
+            duration: duration,
+            easing: EasingFunction::Linear,
+            iteration_count: 1,
+            direction: "normal",
+        };
+    }
+
+    pub fn add_keyframe(mut self, keyframe: Keyframe) -> KeyframeAnimation {
+        self.keyframes.push(keyframe);
+        return self;
+    }
+
+    pub fn with_easing(mut self, easing: EasingFunction) -> KeyframeAnimation {
+        self.easing = easing;
+        return self;
+    }
+
+    pub fn with_iterations(mut self, count: int) -> KeyframeAnimation {
+        self.iteration_count = count;
+        return self;
+    }
+
+    pub fn with_direction(mut self, direction: string) -> KeyframeAnimation {
+        self.direction = direction;
+        return self;
+    }
+
+    pub fn to_css_keyframes(self) -> string {
+        let mut css = "@keyframes " + self.name + " {";
+
+        for keyframe in self.keyframes {
+            css = css + " " + keyframe.to_css();
+        }
+
+        css = css + " }";
+        return css;
+    }
+
+    pub fn to_css_animation(self) -> string {
+        let duration_str = self.duration.to_string() + "ms";
+        let iteration_str = if self.iteration_count == 0 { "infinite" } else { self.iteration_count.to_string() };
+
+        return self.name + " " + duration_str + " " + self.easing.to_css() + " 0ms " + iteration_str + " " + self.direction;
+    }
+}
+
+// ============================================================================
+// Animation Controller
+// ============================================================================
+
+/// Animation playback state
+pub enum AnimationState {
+    Running,
+    Paused,
+    Finished,
+}
+
+/// Animation controller for managing animation playback
+pub struct AnimationController {
+    pub element_id: string,
+    pub state: AnimationState,
+    pub current_time: int,  // milliseconds
+    pub duration: int,
+}
+
+impl AnimationController {
+    pub fn new(element_id: string, duration: int) -> AnimationController {
+        return AnimationController {
+            element_id: element_id,
+            state: AnimationState::Running,
+            current_time: 0,
+            duration: duration,
+        };
+    }
+
+    pub fn play(mut self) {
+        self.state = AnimationState::Running;
+        // In real implementation: element.style.animationPlayState = "running"
+    }
+
+    pub fn pause(mut self) {
+        self.state = AnimationState::Paused;
+        // In real implementation: element.style.animationPlayState = "paused"
+    }
+
+    pub fn stop(mut self) {
+        self.state = AnimationState::Finished;
+        self.current_time = 0;
+        // In real implementation: remove animation
+    }
+
+    pub fn reverse(mut self) {
+        // In real implementation: reverse animation direction
+    }
+
+    pub fn is_running(self) -> bool {
+        match self.state {
+            AnimationState::Running => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_paused(self) -> bool {
+        match self.state {
+            AnimationState::Paused => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_finished(self) -> bool {
+        match self.state {
+            AnimationState::Finished => true,
+            _ => false,
+        }
+    }
+
+    pub fn progress(self) -> float {
+        if self.duration == 0 {
+            return 1.0;
+        }
+        return (self.current_time as float) / (self.duration as float);
+    }
+}
+
+// ============================================================================
+// Common Animation Presets
+// ============================================================================
+
+pub fn fade_in(duration: int) -> KeyframeAnimation {
+    return KeyframeAnimation::new("fade-in", duration)
+        .add_keyframe(
+            Keyframe::new(0.0)
+                .with_property("opacity", "0")
+        )
+        .add_keyframe(
+            Keyframe::new(1.0)
+                .with_property("opacity", "1")
+        );
+}
+
+pub fn fade_out(duration: int) -> KeyframeAnimation {
+    return KeyframeAnimation::new("fade-out", duration)
+        .add_keyframe(
+            Keyframe::new(0.0)
+                .with_property("opacity", "1")
+        )
+        .add_keyframe(
+            Keyframe::new(1.0)
+                .with_property("opacity", "0")
+        );
+}
+
+pub fn slide_in_left(duration: int) -> KeyframeAnimation {
+    return KeyframeAnimation::new("slide-in-left", duration)
+        .add_keyframe(
+            Keyframe::new(0.0)
+                .with_property("transform", "translateX(-100%)")
+                .with_property("opacity", "0")
+        )
+        .add_keyframe(
+            Keyframe::new(1.0)
+                .with_property("transform", "translateX(0)")
+                .with_property("opacity", "1")
+        );
+}
+
+pub fn slide_in_right(duration: int) -> KeyframeAnimation {
+    return KeyframeAnimation::new("slide-in-right", duration)
+        .add_keyframe(
+            Keyframe::new(0.0)
+                .with_property("transform", "translateX(100%)")
+                .with_property("opacity", "0")
+        )
+        .add_keyframe(
+            Keyframe::new(1.0)
+                .with_property("transform", "translateX(0)")
+                .with_property("opacity", "1")
+        );
+}
+
+pub fn scale_in(duration: int) -> KeyframeAnimation {
+    return KeyframeAnimation::new("scale-in", duration)
+        .add_keyframe(
+            Keyframe::new(0.0)
+                .with_property("transform", "scale(0)")
+                .with_property("opacity", "0")
+        )
+        .add_keyframe(
+            Keyframe::new(1.0)
+                .with_property("transform", "scale(1)")
+                .with_property("opacity", "1")
+        );
+}
+
+pub fn bounce(duration: int) -> KeyframeAnimation {
+    return KeyframeAnimation::new("bounce", duration)
+        .add_keyframe(
+            Keyframe::new(0.0)
+                .with_property("transform", "translateY(0)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.2)
+                .with_property("transform", "translateY(0)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.4)
+                .with_property("transform", "translateY(-30px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.5)
+                .with_property("transform", "translateY(0)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.6)
+                .with_property("transform", "translateY(-15px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.8)
+                .with_property("transform", "translateY(0)")
+        )
+        .add_keyframe(
+            Keyframe::new(1.0)
+                .with_property("transform", "translateY(0)")
+        );
+}
+
+pub fn shake(duration: int) -> KeyframeAnimation {
+    return KeyframeAnimation::new("shake", duration)
+        .add_keyframe(
+            Keyframe::new(0.0)
+                .with_property("transform", "translateX(0)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.1)
+                .with_property("transform", "translateX(-10px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.2)
+                .with_property("transform", "translateX(10px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.3)
+                .with_property("transform", "translateX(-10px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.4)
+                .with_property("transform", "translateX(10px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.5)
+                .with_property("transform", "translateX(-10px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.6)
+                .with_property("transform", "translateX(10px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.7)
+                .with_property("transform", "translateX(-10px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.8)
+                .with_property("transform", "translateX(10px)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.9)
+                .with_property("transform", "translateX(-10px)")
+        )
+        .add_keyframe(
+            Keyframe::new(1.0)
+                .with_property("transform", "translateX(0)")
+        );
+}
+
+pub fn spin(duration: int) -> KeyframeAnimation {
+    return KeyframeAnimation::new("spin", duration)
+        .add_keyframe(
+            Keyframe::new(0.0)
+                .with_property("transform", "rotate(0deg)")
+        )
+        .add_keyframe(
+            Keyframe::new(1.0)
+                .with_property("transform", "rotate(360deg)")
+        )
+        .with_iterations(0);  // Infinite
+}
+
+pub fn pulse(duration: int) -> KeyframeAnimation {
+    return KeyframeAnimation::new("pulse", duration)
+        .add_keyframe(
+            Keyframe::new(0.0)
+                .with_property("transform", "scale(1)")
+        )
+        .add_keyframe(
+            Keyframe::new(0.5)
+                .with_property("transform", "scale(1.05)")
+        )
+        .add_keyframe(
+            Keyframe::new(1.0)
+                .with_property("transform", "scale(1)")
+        )
+        .with_iterations(0);  // Infinite
+}
