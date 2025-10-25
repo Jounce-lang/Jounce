@@ -1,0 +1,31 @@
+[package]
+name = "jounce-rate-limit"
+version = "0.1.0"
+description = "Rate limiting strategies with multiple algorithms for API protection and resource management"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-rate-limit"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "fixed_window_tests"
+path = "tests/fixed_window_tests.jnc"
+
+[[test]]
+name = "token_bucket_tests"
+path = "tests/token_bucket_tests.jnc"
+
+[[test]]
+name = "other_limiters_tests"
+path = "tests/other_limiters_tests.jnc"
+
+[features]
+default = ["fixed_window", "sliding_window", "token_bucket", "leaky_bucket"]
+fixed_window = []
+sliding_window = []
+token_bucket = []
+leaky_bucket = []

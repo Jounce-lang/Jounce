@@ -1,0 +1,275 @@
+// Tests for SlidingWindowLimiter, LeakyBucketLimiter, and utilities
+use jounce_rate_limit::{SlidingWindowLimiter, LeakyBucketLimiter, RateLimiterConfig, RateLimitStrategy, RateLimitHeaders, create_key};
+
+// ============================================================================
+// Sliding Window Tests
+// ============================================================================
+
+#[test]
+fn test_sliding_window_creation() {
+    let limiter = SlidingWindowLimiter::new(10, 1000);
+
+    assert_eq!(limiter.max_requests, 10, "Max requests should be 10");
+    assert_eq!(limiter.window_size, 1000, "Window size should be 1000");
+}
+
+#[test]
+fn test_sliding_window_first_request() {
+    let mut limiter = SlidingWindowLimiter::new(10, 1000);
+    let (updated, result) = limiter.check("user1", 1000);
+
+    limiter = updated;
+    assert!(result.allowed, "First request should be allowed");
+    assert_eq!(result.remaining, 9, "Should have 9 remaining");
+}
+
+#[test]
+fn test_sliding_window_multiple_requests() {
+    let mut limiter = SlidingWindowLimiter::new(3, 1000);
+
+    let (updated, result1) = limiter.check("user1", 1000);
+    limiter = updated;
+    assert!(result1.allowed, "Request 1 should be allowed");
+
+    let (updated, result2) = limiter.check("user1", 1100);
+    limiter = updated;
+    assert!(result2.allowed, "Request 2 should be allowed");
+
+    let (updated, result3) = limiter.check("user1", 1200);
+    limiter = updated;
+    assert!(result3.allowed, "Request 3 should be allowed");
+}
+
+#[test]
+fn test_sliding_window_exceed_limit() {
+    let mut limiter = SlidingWindowLimiter::new(2, 1000);
+
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    let (updated, _) = limiter.check("user1", 1100);
+    limiter = updated;
+
+    let (updated, result) = limiter.check("user1", 1200);
+    limiter = updated;
+
+    assert!(!result.allowed, "Third request should be denied");
+}
+
+#[test]
+fn test_sliding_window_old_requests_removed() {
+    let mut limiter = SlidingWindowLimiter::new(2, 1000);
+
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    let (updated, _) = limiter.check("user1", 1100);
+    limiter = updated;
+
+    // Third denied (within window)
+    let (updated, result1) = limiter.check("user1", 1200);
+    limiter = updated;
+    assert!(!result1.allowed, "Should be denied");
+
+    // After 1000ms, first request expires
+    let (updated, result2) = limiter.check("user1", 2100);
+    limiter = updated;
+    assert!(result2.allowed, "Should be allowed after oldest expires");
+}
+
+#[test]
+fn test_sliding_window_reset() {
+    let mut limiter = SlidingWindowLimiter::new(2, 1000);
+
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    limiter = limiter.reset("user1");
+
+    let (updated, result) = limiter.check("user1", 1100);
+    limiter = updated;
+    assert!(result.allowed, "Should be allowed after reset");
+}
+
+// ============================================================================
+// Leaky Bucket Tests
+// ============================================================================
+
+#[test]
+fn test_leaky_bucket_creation() {
+    let limiter = LeakyBucketLimiter::new(10, 1, 1000);
+
+    assert_eq!(limiter.capacity, 10, "Capacity should be 10");
+    assert_eq!(limiter.leak_rate, 1, "Leak rate should be 1");
+    assert_eq!(limiter.leak_interval, 1000, "Leak interval should be 1000");
+}
+
+#[test]
+fn test_leaky_bucket_first_request() {
+    let mut limiter = LeakyBucketLimiter::new(10, 1, 1000);
+    let (updated, result) = limiter.check("user1", 1000);
+
+    limiter = updated;
+    assert!(result.allowed, "First request should be allowed");
+    assert_eq!(result.remaining, 9, "Should have 9 remaining capacity");
+}
+
+#[test]
+fn test_leaky_bucket_fill() {
+    let mut limiter = LeakyBucketLimiter::new(5, 1, 1000);
+
+    let mut i = 0;
+    while i < 5 {
+        let (updated, result) = limiter.check("user1", 1000 + i);
+        limiter = updated;
+        assert!(result.allowed, "Request " + i.to_string() + " should be allowed");
+        i = i + 1;
+    }
+
+    // Bucket is full
+    let (updated, result) = limiter.check("user1", 1005);
+    limiter = updated;
+    assert!(!result.allowed, "Should be denied when bucket is full");
+}
+
+#[test]
+fn test_leaky_bucket_leak() {
+    let mut limiter = LeakyBucketLimiter::new(5, 2, 1000);
+
+    // Fill bucket to 3
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+    let (updated, _) = limiter.check("user1", 1100);
+    limiter = updated;
+    let (updated, _) = limiter.check("user1", 1200);
+    limiter = updated;
+
+    // Wait for leak (1 interval = 2 leaked)
+    let (updated, result) = limiter.check("user1", 2200);
+    limiter = updated;
+
+    assert!(result.allowed, "Should be allowed after leak");
+}
+
+#[test]
+fn test_leaky_bucket_reset() {
+    let mut limiter = LeakyBucketLimiter::new(2, 1, 1000);
+
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    limiter = limiter.reset("user1");
+
+    let (updated, result) = limiter.check("user1", 1100);
+    limiter = updated;
+    assert!(result.allowed, "Should be allowed after reset");
+}
+
+// ============================================================================
+// Config Tests
+// ============================================================================
+
+#[test]
+fn test_rate_limiter_config_creation() {
+    let config = RateLimiterConfig::new(10, 1000);
+
+    assert_eq!(config.max_requests, 10, "Max requests should be 10");
+    assert_eq!(config.window_size, 1000, "Window size should be 1000");
+}
+
+#[test]
+fn test_rate_limiter_config_with_strategy() {
+    let config = RateLimiterConfig::new(10, 1000)
+        .with_strategy(RateLimitStrategy::SlidingWindow);
+
+    match config.strategy {
+        RateLimitStrategy::SlidingWindow => assert!(true, "Should be sliding window"),
+        _ => assert!(false, "Should be sliding window"),
+    }
+}
+
+#[test]
+fn test_rate_limiter_config_per_second() {
+    let config = RateLimiterConfig::per_second(60);
+
+    assert_eq!(config.max_requests, 60, "Max requests should be 60");
+    assert_eq!(config.window_size, 1000, "Window should be 1 second");
+}
+
+#[test]
+fn test_rate_limiter_config_per_minute() {
+    let config = RateLimiterConfig::per_minute(100);
+
+    assert_eq!(config.max_requests, 100, "Max requests should be 100");
+    assert_eq!(config.window_size, 60000, "Window should be 1 minute");
+}
+
+#[test]
+fn test_rate_limiter_config_per_hour() {
+    let config = RateLimiterConfig::per_hour(1000);
+
+    assert_eq!(config.max_requests, 1000, "Max requests should be 1000");
+    assert_eq!(config.window_size, 3600000, "Window should be 1 hour");
+}
+
+#[test]
+fn test_rate_limiter_config_per_day() {
+    let config = RateLimiterConfig::per_day(10000);
+
+    assert_eq!(config.max_requests, 10000, "Max requests should be 10000");
+    assert_eq!(config.window_size, 86400000, "Window should be 1 day");
+}
+
+// ============================================================================
+// Headers Tests
+// ============================================================================
+
+#[test]
+fn test_rate_limit_headers_from_result() {
+    let result = RateLimitResult::allowed(5, 2000);
+    let headers = RateLimitHeaders::from_result(result, 10);
+
+    assert_eq!(headers.limit, 10, "Limit should be 10");
+    assert_eq!(headers.remaining, 5, "Remaining should be 5");
+    assert_eq!(headers.reset, 2000, "Reset should be 2000");
+}
+
+#[test]
+fn test_rate_limit_headers_to_map() {
+    let result = RateLimitResult::allowed(5, 2000);
+    let headers = RateLimitHeaders::from_result(result, 10);
+
+    let map = headers.to_map();
+
+    assert_eq!(map.get("X-RateLimit-Limit").unwrap(), "10", "Limit header should match");
+    assert_eq!(map.get("X-RateLimit-Remaining").unwrap(), "5", "Remaining header should match");
+    assert_eq!(map.get("X-RateLimit-Reset").unwrap(), "2000", "Reset header should match");
+}
+
+#[test]
+fn test_rate_limit_headers_with_retry_after() {
+    let result = RateLimitResult::denied(1500, 2000);
+    let headers = RateLimitHeaders::from_result(result, 10);
+
+    let map = headers.to_map();
+
+    assert_eq!(map.get("Retry-After").unwrap(), "1500", "Retry-After should be set");
+}
+
+// ============================================================================
+// Utility Tests
+// ============================================================================
+
+#[test]
+fn test_create_key() {
+    let key = create_key("api", "user123");
+
+    assert_eq!(key, "api:user123", "Key should be formatted correctly");
+}
+
+#[test]
+fn test_create_key_empty() {
+    let key = create_key("", "user123");
+
+    assert_eq!(key, ":user123", "Should handle empty prefix");
+}

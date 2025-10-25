@@ -1,0 +1,449 @@
+// Rate limiting strategies for Jounce
+// Supports fixed window, sliding window, token bucket, and leaky bucket algorithms
+
+// ============================================================================
+// Rate Limit Result
+// ============================================================================
+
+pub struct RateLimitResult {
+    pub allowed: bool,
+    pub remaining: int,
+    pub reset_at: int,
+    pub retry_after: int,
+}
+
+impl RateLimitResult {
+    pub fn allowed(remaining: int, reset_at: int) -> RateLimitResult {
+        RateLimitResult {
+            allowed: true,
+            remaining: remaining,
+            reset_at: reset_at,
+            retry_after: 0,
+        }
+    }
+
+    pub fn denied(retry_after: int, reset_at: int) -> RateLimitResult {
+        RateLimitResult {
+            allowed: false,
+            remaining: 0,
+            reset_at: reset_at,
+            retry_after: retry_after,
+        }
+    }
+}
+
+// ============================================================================
+// Fixed Window Rate Limiter
+// ============================================================================
+
+pub struct FixedWindowLimiter {
+    pub max_requests: int,
+    pub window_size: int,
+    pub requests: Map<string, WindowData>,
+}
+
+struct WindowData {
+    count: int,
+    window_start: int,
+}
+
+impl FixedWindowLimiter {
+    pub fn new(max_requests: int, window_size: int) -> FixedWindowLimiter {
+        FixedWindowLimiter {
+            max_requests: max_requests,
+            window_size: window_size,
+            requests: Map::new(),
+        }
+    }
+
+    pub fn check(mut self, key: string, now: int) -> (FixedWindowLimiter, RateLimitResult) {
+        let window_start = (now / self.window_size) * self.window_size;
+
+        let data = self.requests.get(key.clone());
+
+        if data.is_none() {
+            // First request in window
+            let new_data = WindowData {
+                count: 1,
+                window_start: window_start,
+            };
+            self.requests.insert(key, new_data);
+            let reset_at = window_start + self.window_size;
+            return (self, RateLimitResult::allowed(self.max_requests - 1, reset_at));
+        }
+
+        let mut existing = data.unwrap();
+
+        if existing.window_start < window_start {
+            // New window
+            existing.count = 1;
+            existing.window_start = window_start;
+            self.requests.insert(key, existing);
+            let reset_at = window_start + self.window_size;
+            return (self, RateLimitResult::allowed(self.max_requests - 1, reset_at));
+        }
+
+        // Same window
+        if existing.count >= self.max_requests {
+            let reset_at = window_start + self.window_size;
+            let retry_after = reset_at - now;
+            return (self, RateLimitResult::denied(retry_after, reset_at));
+        }
+
+        existing.count = existing.count + 1;
+        self.requests.insert(key, existing);
+        let reset_at = window_start + self.window_size;
+        return (self, RateLimitResult::allowed(self.max_requests - existing.count, reset_at));
+    }
+
+    pub fn reset(mut self, key: string) -> FixedWindowLimiter {
+        self.requests.remove(key);
+        self
+    }
+}
+
+// ============================================================================
+// Token Bucket Rate Limiter
+// ============================================================================
+
+pub struct TokenBucketLimiter {
+    pub capacity: int,
+    pub refill_rate: int,
+    pub refill_interval: int,
+    pub buckets: Map<string, BucketData>,
+}
+
+struct BucketData {
+    tokens: int,
+    last_refill: int,
+}
+
+impl TokenBucketLimiter {
+    pub fn new(capacity: int, refill_rate: int, refill_interval: int) -> TokenBucketLimiter {
+        TokenBucketLimiter {
+            capacity: capacity,
+            refill_rate: refill_rate,
+            refill_interval: refill_interval,
+            buckets: Map::new(),
+        }
+    }
+
+    pub fn check(mut self, key: string, now: int) -> (TokenBucketLimiter, RateLimitResult) {
+        let data = self.buckets.get(key.clone());
+
+        if data.is_none() {
+            // First request - start with full bucket minus one
+            let new_data = BucketData {
+                tokens: self.capacity - 1,
+                last_refill: now,
+            };
+            self.buckets.insert(key, new_data);
+            return (self, RateLimitResult::allowed(self.capacity - 1, now + self.refill_interval));
+        }
+
+        let mut bucket = data.unwrap();
+
+        // Refill tokens based on time elapsed
+        let time_passed = now - bucket.last_refill;
+        let refills = time_passed / self.refill_interval;
+
+        if refills > 0 {
+            let tokens_to_add = refills * self.refill_rate;
+            bucket.tokens = bucket.tokens + tokens_to_add;
+            if bucket.tokens > self.capacity {
+                bucket.tokens = self.capacity;
+            }
+            bucket.last_refill = bucket.last_refill + (refills * self.refill_interval);
+        }
+
+        // Check if we have tokens
+        if bucket.tokens <= 0 {
+            let next_refill = bucket.last_refill + self.refill_interval;
+            let retry_after = next_refill - now;
+            return (self, RateLimitResult::denied(retry_after, next_refill));
+        }
+
+        // Consume a token
+        bucket.tokens = bucket.tokens - 1;
+        self.buckets.insert(key, bucket);
+
+        let next_refill = bucket.last_refill + self.refill_interval;
+        return (self, RateLimitResult::allowed(bucket.tokens, next_refill));
+    }
+
+    pub fn reset(mut self, key: string) -> TokenBucketLimiter {
+        self.buckets.remove(key);
+        self
+    }
+}
+
+// ============================================================================
+// Sliding Window Rate Limiter
+// ============================================================================
+
+pub struct SlidingWindowLimiter {
+    pub max_requests: int,
+    pub window_size: int,
+    pub requests: Map<string, Array<int>>,
+}
+
+impl SlidingWindowLimiter {
+    pub fn new(max_requests: int, window_size: int) -> SlidingWindowLimiter {
+        SlidingWindowLimiter {
+            max_requests: max_requests,
+            window_size: window_size,
+            requests: Map::new(),
+        }
+    }
+
+    pub fn check(mut self, key: string, now: int) -> (SlidingWindowLimiter, RateLimitResult) {
+        let timestamps = self.requests.get(key.clone());
+
+        let mut valid_timestamps = [];
+
+        if timestamps.is_some() {
+            let existing = timestamps.unwrap();
+            // Filter out old timestamps
+            let cutoff = now - self.window_size;
+            let mut i = 0;
+            while i < existing.len() {
+                if existing[i] > cutoff {
+                    valid_timestamps.push(existing[i]);
+                }
+                i = i + 1;
+            }
+        }
+
+        // Check if we're at the limit
+        if valid_timestamps.len() >= self.max_requests {
+            let oldest = valid_timestamps[0];
+            let reset_at = oldest + self.window_size;
+            let retry_after = reset_at - now;
+            return (self, RateLimitResult::denied(retry_after, reset_at));
+        }
+
+        // Add current timestamp
+        valid_timestamps.push(now);
+        self.requests.insert(key, valid_timestamps);
+
+        let remaining = self.max_requests - valid_timestamps.len();
+        let reset_at = now + self.window_size;
+        return (self, RateLimitResult::allowed(remaining, reset_at));
+    }
+
+    pub fn reset(mut self, key: string) -> SlidingWindowLimiter {
+        self.requests.remove(key);
+        self
+    }
+}
+
+// ============================================================================
+// Leaky Bucket Rate Limiter
+// ============================================================================
+
+pub struct LeakyBucketLimiter {
+    pub capacity: int,
+    pub leak_rate: int,
+    pub leak_interval: int,
+    pub buckets: Map<string, LeakyBucketData>,
+}
+
+struct LeakyBucketData {
+    level: int,
+    last_leak: int,
+}
+
+impl LeakyBucketLimiter {
+    pub fn new(capacity: int, leak_rate: int, leak_interval: int) -> LeakyBucketLimiter {
+        LeakyBucketLimiter {
+            capacity: capacity,
+            leak_rate: leak_rate,
+            leak_interval: leak_interval,
+            buckets: Map::new(),
+        }
+    }
+
+    pub fn check(mut self, key: string, now: int) -> (LeakyBucketLimiter, RateLimitResult) {
+        let data = self.buckets.get(key.clone());
+
+        if data.is_none() {
+            // First request
+            let new_data = LeakyBucketData {
+                level: 1,
+                last_leak: now,
+            };
+            self.buckets.insert(key, new_data);
+            return (self, RateLimitResult::allowed(self.capacity - 1, now + self.leak_interval));
+        }
+
+        let mut bucket = data.unwrap();
+
+        // Leak based on time elapsed
+        let time_passed = now - bucket.last_leak;
+        let leaks = time_passed / self.leak_interval;
+
+        if leaks > 0 {
+            let leaked = leaks * self.leak_rate;
+            bucket.level = bucket.level - leaked;
+            if bucket.level < 0 {
+                bucket.level = 0;
+            }
+            bucket.last_leak = bucket.last_leak + (leaks * self.leak_interval);
+        }
+
+        // Check if bucket is full
+        if bucket.level >= self.capacity {
+            let next_leak = bucket.last_leak + self.leak_interval;
+            let retry_after = next_leak - now;
+            return (self, RateLimitResult::denied(retry_after, next_leak));
+        }
+
+        // Add request to bucket
+        bucket.level = bucket.level + 1;
+        self.buckets.insert(key, bucket);
+
+        let next_leak = bucket.last_leak + self.leak_interval;
+        return (self, RateLimitResult::allowed(self.capacity - bucket.level, next_leak));
+    }
+
+    pub fn reset(mut self, key: string) -> LeakyBucketLimiter {
+        self.buckets.remove(key);
+        self
+    }
+}
+
+// ============================================================================
+// Rate Limiter Config
+// ============================================================================
+
+pub struct RateLimiterConfig {
+    pub max_requests: int,
+    pub window_size: int,
+    pub strategy: RateLimitStrategy,
+}
+
+pub enum RateLimitStrategy {
+    FixedWindow,
+    SlidingWindow,
+    TokenBucket,
+    LeakyBucket,
+}
+
+impl RateLimiterConfig {
+    pub fn new(max_requests: int, window_size: int) -> RateLimiterConfig {
+        RateLimiterConfig {
+            max_requests: max_requests,
+            window_size: window_size,
+            strategy: RateLimitStrategy::FixedWindow,
+        }
+    }
+
+    pub fn with_strategy(mut self, strategy: RateLimitStrategy) -> RateLimiterConfig {
+        self.strategy = strategy;
+        self
+    }
+
+    // Preset configs
+    pub fn per_second(max_requests: int) -> RateLimiterConfig {
+        RateLimiterConfig::new(max_requests, 1000)
+    }
+
+    pub fn per_minute(max_requests: int) -> RateLimiterConfig {
+        RateLimiterConfig::new(max_requests, 60000)
+    }
+
+    pub fn per_hour(max_requests: int) -> RateLimiterConfig {
+        RateLimiterConfig::new(max_requests, 3600000)
+    }
+
+    pub fn per_day(max_requests: int) -> RateLimiterConfig {
+        RateLimiterConfig::new(max_requests, 86400000)
+    }
+}
+
+// ============================================================================
+// Rate Limit Headers
+// ============================================================================
+
+pub struct RateLimitHeaders {
+    pub limit: int,
+    pub remaining: int,
+    pub reset: int,
+    pub retry_after: int,
+}
+
+impl RateLimitHeaders {
+    pub fn from_result(result: RateLimitResult, limit: int) -> RateLimitHeaders {
+        RateLimitHeaders {
+            limit: limit,
+            remaining: result.remaining,
+            reset: result.reset_at,
+            retry_after: result.retry_after,
+        }
+    }
+
+    pub fn to_map(&self) -> Map<string, string> {
+        let mut headers = Map::new();
+        headers.insert("X-RateLimit-Limit", self.limit.to_string());
+        headers.insert("X-RateLimit-Remaining", self.remaining.to_string());
+        headers.insert("X-RateLimit-Reset", self.reset.to_string());
+
+        if self.retry_after > 0 {
+            headers.insert("Retry-After", self.retry_after.to_string());
+        }
+
+        headers
+    }
+}
+
+// ============================================================================
+// Rate Limiter Manager
+// ============================================================================
+
+pub struct RateLimiterManager {
+    pub limiters: Map<string, FixedWindowLimiter>,
+    pub default_config: RateLimiterConfig,
+}
+
+impl RateLimiterManager {
+    pub fn new(config: RateLimiterConfig) -> RateLimiterManager {
+        RateLimiterManager {
+            limiters: Map::new(),
+            default_config: config,
+        }
+    }
+
+    pub fn get_or_create_limiter(&mut self, name: string) -> FixedWindowLimiter {
+        let limiter = self.limiters.get(name.clone());
+
+        if limiter.is_some() {
+            return limiter.unwrap();
+        }
+
+        // Create new limiter with default config
+        let new_limiter = FixedWindowLimiter::new(
+            self.default_config.max_requests,
+            self.default_config.window_size
+        );
+
+        new_limiter
+    }
+
+    pub fn update_limiter(mut self, name: string, limiter: FixedWindowLimiter) -> RateLimiterManager {
+        self.limiters.insert(name, limiter);
+        self
+    }
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+pub fn create_key(prefix: string, identifier: string) -> string {
+    prefix + ":" + identifier
+}
+
+pub fn extract_ip(request: string) -> string {
+    // Simplified - in production would parse from request headers
+    request.clone()
+}

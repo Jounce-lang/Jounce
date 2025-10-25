@@ -1,0 +1,210 @@
+// Tests for FixedWindowLimiter in jounce-rate-limit
+use jounce_rate_limit::{FixedWindowLimiter, RateLimitResult};
+
+#[test]
+fn test_fixed_window_creation() {
+    let limiter = FixedWindowLimiter::new(10, 1000);
+
+    assert_eq!(limiter.max_requests, 10, "Max requests should be 10");
+    assert_eq!(limiter.window_size, 1000, "Window size should be 1000");
+}
+
+#[test]
+fn test_fixed_window_first_request() {
+    let mut limiter = FixedWindowLimiter::new(10, 1000);
+    let (updated, result) = limiter.check("user1", 1000);
+
+    limiter = updated;
+    assert!(result.allowed, "First request should be allowed");
+    assert_eq!(result.remaining, 9, "Should have 9 remaining");
+}
+
+#[test]
+fn test_fixed_window_multiple_requests() {
+    let mut limiter = FixedWindowLimiter::new(3, 1000);
+
+    let (updated, result1) = limiter.check("user1", 1000);
+    limiter = updated;
+    assert!(result1.allowed, "Request 1 should be allowed");
+
+    let (updated, result2) = limiter.check("user1", 1100);
+    limiter = updated;
+    assert!(result2.allowed, "Request 2 should be allowed");
+
+    let (updated, result3) = limiter.check("user1", 1200);
+    limiter = updated;
+    assert!(result3.allowed, "Request 3 should be allowed");
+}
+
+#[test]
+fn test_fixed_window_exceed_limit() {
+    let mut limiter = FixedWindowLimiter::new(2, 1000);
+
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    let (updated, _) = limiter.check("user1", 1100);
+    limiter = updated;
+
+    let (updated, result) = limiter.check("user1", 1200);
+    limiter = updated;
+
+    assert!(!result.allowed, "Third request should be denied");
+    assert_eq!(result.remaining, 0, "Should have 0 remaining");
+}
+
+#[test]
+fn test_fixed_window_new_window() {
+    let mut limiter = FixedWindowLimiter::new(2, 1000);
+
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    let (updated, _) = limiter.check("user1", 1100);
+    limiter = updated;
+
+    // Third request denied (same window)
+    let (updated, result1) = limiter.check("user1", 1200);
+    limiter = updated;
+    assert!(!result1.allowed, "Should be denied in same window");
+
+    // New window starts at 2000
+    let (updated, result2) = limiter.check("user1", 2000);
+    limiter = updated;
+    assert!(result2.allowed, "Should be allowed in new window");
+}
+
+#[test]
+fn test_fixed_window_multiple_users() {
+    let mut limiter = FixedWindowLimiter::new(2, 1000);
+
+    let (updated, result1) = limiter.check("user1", 1000);
+    limiter = updated;
+    assert!(result1.allowed, "User1 request should be allowed");
+
+    let (updated, result2) = limiter.check("user2", 1000);
+    limiter = updated;
+    assert!(result2.allowed, "User2 request should be allowed");
+
+    // Each user has independent limits
+    let (updated, result3) = limiter.check("user1", 1100);
+    limiter = updated;
+    assert!(result3.allowed, "User1 second request should be allowed");
+
+    let (updated, result4) = limiter.check("user2", 1100);
+    limiter = updated;
+    assert!(result4.allowed, "User2 second request should be allowed");
+}
+
+#[test]
+fn test_fixed_window_reset() {
+    let mut limiter = FixedWindowLimiter::new(2, 1000);
+
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    let (updated, _) = limiter.check("user1", 1100);
+    limiter = updated;
+
+    // Reset user1
+    limiter = limiter.reset("user1");
+
+    // Should be allowed after reset
+    let (updated, result) = limiter.check("user1", 1200);
+    limiter = updated;
+    assert!(result.allowed, "Should be allowed after reset");
+    assert_eq!(result.remaining, 1, "Should have 1 remaining");
+}
+
+#[test]
+fn test_fixed_window_retry_after() {
+    let mut limiter = FixedWindowLimiter::new(1, 1000);
+
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    let (updated, result) = limiter.check("user1", 1500);
+    limiter = updated;
+
+    assert!(!result.allowed, "Should be denied");
+    assert!(result.retry_after > 0, "Should have retry_after");
+}
+
+#[test]
+fn test_fixed_window_reset_at() {
+    let mut limiter = FixedWindowLimiter::new(10, 1000);
+
+    let (updated, result) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    assert_eq!(result.reset_at, 2000, "Reset should be at next window");
+}
+
+#[test]
+fn test_fixed_window_remaining_count() {
+    let mut limiter = FixedWindowLimiter::new(5, 1000);
+
+    let (updated, result1) = limiter.check("user1", 1000);
+    limiter = updated;
+    assert_eq!(result1.remaining, 4, "Should have 4 remaining");
+
+    let (updated, result2) = limiter.check("user1", 1100);
+    limiter = updated;
+    assert_eq!(result2.remaining, 3, "Should have 3 remaining");
+
+    let (updated, result3) = limiter.check("user1", 1200);
+    limiter = updated;
+    assert_eq!(result3.remaining, 2, "Should have 2 remaining");
+}
+
+#[test]
+fn test_fixed_window_exact_limit() {
+    let mut limiter = FixedWindowLimiter::new(3, 1000);
+
+    let (updated, _) = limiter.check("user1", 1000);
+    limiter = updated;
+
+    let (updated, _) = limiter.check("user1", 1100);
+    limiter = updated;
+
+    let (updated, result3) = limiter.check("user1", 1200);
+    limiter = updated;
+    assert!(result3.allowed, "Third request should be allowed");
+    assert_eq!(result3.remaining, 0, "Should have 0 remaining");
+
+    let (updated, result4) = limiter.check("user1", 1300);
+    limiter = updated;
+    assert!(!result4.allowed, "Fourth request should be denied");
+}
+
+#[test]
+fn test_fixed_window_boundary() {
+    let mut limiter = FixedWindowLimiter::new(2, 1000);
+
+    // Request at end of first window
+    let (updated, result1) = limiter.check("user1", 1999);
+    limiter = updated;
+    assert!(result1.allowed, "Should be allowed");
+
+    // Request at start of second window
+    let (updated, result2) = limiter.check("user1", 2000);
+    limiter = updated;
+    assert!(result2.allowed, "Should be allowed in new window");
+}
+
+#[test]
+fn test_fixed_window_large_window() {
+    let mut limiter = FixedWindowLimiter::new(100, 60000);
+
+    let mut i = 0;
+    while i < 100 {
+        let (updated, result) = limiter.check("user1", 1000 + i);
+        limiter = updated;
+        assert!(result.allowed, "Request " + i.to_string() + " should be allowed");
+        i = i + 1;
+    }
+
+    let (updated, result) = limiter.check("user1", 2000);
+    limiter = updated;
+    assert!(!result.allowed, "101st request should be denied");
+}
