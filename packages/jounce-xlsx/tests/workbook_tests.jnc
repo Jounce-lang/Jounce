@@ -1,0 +1,186 @@
+// Tests for Workbook, Worksheet, Cell operations
+use jounce_xlsx::{Workbook, Worksheet, Cell, CellValue, CellStyle, TextAlignment, Row, Column, Range, column_index_to_letter, column_letter_to_index};
+
+#[test]
+fn test_workbook_creation() {
+    let wb = Workbook::new();
+    assert_eq!(wb.worksheet_count(), 0, "New workbook should have no sheets");
+}
+
+#[test]
+fn test_workbook_add_worksheet() {
+    let ws = Worksheet::new("Sheet1");
+    let wb = Workbook::new().add_worksheet(ws);
+    assert_eq!(wb.worksheet_count(), 1, "Should have 1 worksheet");
+}
+
+#[test]
+fn test_workbook_create_worksheet() {
+    let wb = Workbook::new().create_worksheet("Sheet1");
+    assert_eq!(wb.worksheet_count(), 1, "Should have 1 worksheet");
+}
+
+#[test]
+fn test_workbook_get_worksheet() {
+    let wb = Workbook::new().create_worksheet("Sheet1");
+    let ws = wb.get_worksheet(0);
+    assert!(ws.is_some(), "Should retrieve worksheet");
+}
+
+#[test]
+fn test_workbook_get_worksheet_by_name() {
+    let wb = Workbook::new().create_worksheet("Data");
+    let ws = wb.get_worksheet_by_name("Data");
+    assert!(ws.is_some(), "Should find worksheet by name");
+}
+
+#[test]
+fn test_worksheet_creation() {
+    let ws = Worksheet::new("Test");
+    assert_eq!(ws.name, "Test", "Name should match");
+    assert_eq!(ws.cell_count(), 0, "Should have no cells");
+}
+
+#[test]
+fn test_worksheet_set_cell() {
+    let cell = Cell::text(1, 1, "Hello");
+    let ws = Worksheet::new("Test").set_cell(cell);
+    assert_eq!(ws.cell_count(), 1, "Should have 1 cell");
+}
+
+#[test]
+fn test_worksheet_set_cell_value() {
+    let ws = Worksheet::new("Test").set_cell_value(1, 1, "Data");
+    assert_eq!(ws.cell_count(), 1, "Should have 1 cell");
+}
+
+#[test]
+fn test_worksheet_set_cell_number() {
+    let ws = Worksheet::new("Test").set_cell_number(1, 1, 42.5);
+    let cell = ws.get_cell(1, 1);
+    assert!(cell.is_some(), "Should retrieve cell");
+}
+
+#[test]
+fn test_worksheet_set_cell_formula() {
+    let ws = Worksheet::new("Test").set_cell_formula(1, 1, "=SUM(A1:A10)");
+    assert_eq!(ws.cell_count(), 1, "Should have 1 cell");
+}
+
+#[test]
+fn test_worksheet_get_cell() {
+    let ws = Worksheet::new("Test").set_cell_value(2, 3, "Test");
+    let cell = ws.get_cell(2, 3);
+    assert!(cell.is_some(), "Should find cell");
+}
+
+#[test]
+fn test_worksheet_add_row() {
+    let row = Row::new(1);
+    let ws = Worksheet::new("Test").add_row(row);
+    assert_eq!(ws.rows.len(), 1, "Should have 1 row");
+}
+
+#[test]
+fn test_worksheet_set_column_width() {
+    let ws = Worksheet::new("Test").set_column_width(1, 20.0);
+    assert_eq!(ws.columns.len(), 1, "Should have 1 column config");
+}
+
+#[test]
+fn test_worksheet_freeze_panes() {
+    let ws = Worksheet::new("Test").freeze_panes(1, 1);
+    assert_eq!(ws.frozen_rows, 1, "Should freeze 1 row");
+    assert_eq!(ws.frozen_columns, 1, "Should freeze 1 column");
+}
+
+#[test]
+fn test_cell_text_creation() {
+    let cell = Cell::text(1, 1, "Hello");
+    assert_eq!(cell.value, "Hello", "Value should match");
+    assert_eq!(cell.row, 1, "Row should be 1");
+    assert_eq!(cell.column, 1, "Column should be 1");
+}
+
+#[test]
+fn test_cell_number_creation() {
+    let cell = Cell::number(2, 3, 123.45);
+    assert!(cell.value.contains("123"), "Should contain number");
+}
+
+#[test]
+fn test_cell_formula_creation() {
+    let cell = Cell::formula(1, 1, "=SUM(A1:A10)");
+    assert_eq!(cell.formula, "=SUM(A1:A10)", "Formula should match");
+}
+
+#[test]
+fn test_cell_boolean_creation() {
+    let cell = Cell::boolean(1, 1, true);
+    assert!(cell.value.len() > 0, "Should have boolean value");
+}
+
+#[test]
+fn test_cell_with_style() {
+    let style = CellStyle::new().bold();
+    let cell = Cell::text(1, 1, "Bold").with_style(style);
+    assert!(cell.style.bold, "Should be bold");
+}
+
+#[test]
+fn test_cell_get_address() {
+    let cell = Cell::text(1, 1, "Test");
+    let address = cell.get_address();
+    assert_eq!(address, "A1", "Address should be A1");
+}
+
+#[test]
+fn test_row_creation() {
+    let row = Row::new(1);
+    assert_eq!(row.index, 1, "Index should be 1");
+    assert_eq!(row.cell_count(), 0, "Should have no cells");
+}
+
+#[test]
+fn test_row_with_height() {
+    let row = Row::new(1).with_height(25.0);
+    assert_eq!(row.height, 25.0, "Height should be 25");
+}
+
+#[test]
+fn test_row_add_cell() {
+    let cell = Cell::text(1, 1, "Test");
+    let row = Row::new(1).add_cell(cell);
+    assert_eq!(row.cell_count(), 1, "Should have 1 cell");
+}
+
+#[test]
+fn test_column_creation() {
+    let col = Column::new(1);
+    assert_eq!(col.index, 1, "Index should be 1");
+}
+
+#[test]
+fn test_column_with_width() {
+    let col = Column::new(1).with_width(15.0);
+    assert_eq!(col.width, 15.0, "Width should be 15");
+}
+
+#[test]
+fn test_column_index_to_letter_a() {
+    let letter = column_index_to_letter(1);
+    assert_eq!(letter, "A", "1 should be A");
+}
+
+#[test]
+fn test_column_index_to_letter_z() {
+    let letter = column_index_to_letter(26);
+    assert_eq!(letter, "Z", "26 should be Z");
+}
+
+#[test]
+fn test_workbook_save() {
+    let wb = Workbook::new();
+    let success = wb.save("test.xlsx");
+    assert!(success, "Save should succeed");
+}

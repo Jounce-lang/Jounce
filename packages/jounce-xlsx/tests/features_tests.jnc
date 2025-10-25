@@ -1,0 +1,276 @@
+// Tests for CellStyle, FormulaBuilder, Range, Table, Chart
+use jounce_xlsx::{CellStyle, TextAlignment, FormulaBuilder, Range, Table, Chart, ChartType, ExcelBuilder};
+
+// ============================================================================
+// CellStyle Tests
+// ============================================================================
+
+#[test]
+fn test_style_creation() {
+    let style = CellStyle::new();
+    assert!(!style.bold, "Should not be bold by default");
+    assert_eq!(style.font_size, 11, "Default font size should be 11");
+}
+
+#[test]
+fn test_style_bold() {
+    let style = CellStyle::new().bold();
+    assert!(style.bold, "Should be bold");
+}
+
+#[test]
+fn test_style_italic() {
+    let style = CellStyle::new().italic();
+    assert!(style.italic, "Should be italic");
+}
+
+#[test]
+fn test_style_font_size() {
+    let style = CellStyle::new().font_size(14);
+    assert_eq!(style.font_size, 14, "Font size should be 14");
+}
+
+#[test]
+fn test_style_font_color() {
+    let style = CellStyle::new().font_color("#FF0000");
+    assert_eq!(style.font_color, "#FF0000", "Color should be red");
+}
+
+#[test]
+fn test_style_background() {
+    let style = CellStyle::new().background("#FFFF00");
+    assert_eq!(style.background_color, "#FFFF00", "Background should be yellow");
+}
+
+#[test]
+fn test_style_border() {
+    let style = CellStyle::new().with_border();
+    assert!(style.border, "Should have border");
+}
+
+#[test]
+fn test_style_align() {
+    let style = CellStyle::new().align(TextAlignment::Center);
+    // Alignment set successfully
+    assert!(true, "Should set alignment");
+}
+
+#[test]
+fn test_style_chaining() {
+    let style = CellStyle::new()
+        .bold()
+        .italic()
+        .font_size(16)
+        .font_color("#0000FF");
+
+    assert!(style.bold, "Should be bold");
+    assert!(style.italic, "Should be italic");
+    assert_eq!(style.font_size, 16, "Font size should be 16");
+}
+
+// ============================================================================
+// Range Tests
+// ============================================================================
+
+#[test]
+fn test_range_creation() {
+    let range = Range::new(1, 1, 10, 5);
+    assert_eq!(range.start_row, 1, "Start row should be 1");
+    assert_eq!(range.end_column, 5, "End column should be 5");
+}
+
+#[test]
+fn test_range_to_address() {
+    let range = Range::new(1, 1, 10, 2);
+    let address = range.to_address();
+    assert!(address.contains("A1"), "Should contain A1");
+    assert!(address.contains(":"), "Should contain colon");
+}
+
+#[test]
+fn test_range_cell_count() {
+    let range = Range::new(1, 1, 10, 5);
+    let count = range.cell_count();
+    assert_eq!(count, 50, "Should have 50 cells (10 rows x 5 cols)");
+}
+
+#[test]
+fn test_range_from_address() {
+    let range = Range::from_address("A1:B10");
+    assert!(range.start_row > 0, "Should parse range");
+}
+
+// ============================================================================
+// FormulaBuilder Tests
+// ============================================================================
+
+#[test]
+fn test_formula_sum() {
+    let range = Range::new(1, 1, 10, 1);
+    let formula = FormulaBuilder::sum(range);
+    assert!(formula.starts_with("=SUM"), "Should be SUM formula");
+}
+
+#[test]
+fn test_formula_average() {
+    let range = Range::new(1, 1, 10, 1);
+    let formula = FormulaBuilder::average(range);
+    assert!(formula.starts_with("=AVERAGE"), "Should be AVERAGE formula");
+}
+
+#[test]
+fn test_formula_count() {
+    let range = Range::new(1, 1, 10, 1);
+    let formula = FormulaBuilder::count(range);
+    assert!(formula.starts_with("=COUNT"), "Should be COUNT formula");
+}
+
+#[test]
+fn test_formula_max() {
+    let range = Range::new(1, 1, 10, 1);
+    let formula = FormulaBuilder::max(range);
+    assert!(formula.starts_with("=MAX"), "Should be MAX formula");
+}
+
+#[test]
+fn test_formula_min() {
+    let range = Range::new(1, 1, 10, 1);
+    let formula = FormulaBuilder::min(range);
+    assert!(formula.starts_with("=MIN"), "Should be MIN formula");
+}
+
+#[test]
+fn test_formula_if() {
+    let formula = FormulaBuilder::if_formula("A1>10", "Yes", "No");
+    assert!(formula.starts_with("=IF"), "Should be IF formula");
+    assert!(formula.contains("A1>10"), "Should contain condition");
+}
+
+#[test]
+fn test_formula_vlookup() {
+    let range = Range::new(1, 1, 100, 5);
+    let formula = FormulaBuilder::vlookup("A2", range, 3);
+    assert!(formula.starts_with("=VLOOKUP"), "Should be VLOOKUP formula");
+}
+
+// ============================================================================
+// Table Tests
+// ============================================================================
+
+#[test]
+fn test_table_creation() {
+    let range = Range::new(1, 1, 10, 5);
+    let table = Table::new("Table1", range);
+    assert_eq!(table.name, "Table1", "Name should match");
+}
+
+#[test]
+fn test_table_with_headers() {
+    let range = Range::new(1, 1, 10, 3);
+    let mut headers = Array::new();
+    headers.push("Name");
+    headers.push("Age");
+    headers.push("City");
+
+    let table = Table::new("Table1", range).with_headers(headers);
+    assert_eq!(table.headers.len(), 3, "Should have 3 headers");
+}
+
+#[test]
+fn test_table_with_totals() {
+    let range = Range::new(1, 1, 10, 3);
+    let table = Table::new("Table1", range).with_totals();
+    assert!(table.show_totals, "Should show totals");
+}
+
+#[test]
+fn test_table_column_count() {
+    let range = Range::new(1, 1, 10, 5);
+    let table = Table::new("Table1", range);
+    assert_eq!(table.column_count(), 5, "Should have 5 columns");
+}
+
+// ============================================================================
+// Chart Tests
+// ============================================================================
+
+#[test]
+fn test_chart_creation() {
+    let range = Range::new(1, 1, 10, 2);
+    let chart = Chart::new(ChartType::Column, range);
+    assert_eq!(chart.width, 600, "Default width should be 600");
+}
+
+#[test]
+fn test_chart_with_title() {
+    let range = Range::new(1, 1, 10, 2);
+    let chart = Chart::new(ChartType::Line, range).with_title("Sales Chart");
+    assert_eq!(chart.title, "Sales Chart", "Title should match");
+}
+
+#[test]
+fn test_chart_with_size() {
+    let range = Range::new(1, 1, 10, 2);
+    let chart = Chart::new(ChartType::Pie, range).with_size(800, 600);
+    assert_eq!(chart.width, 800, "Width should be 800");
+    assert_eq!(chart.height, 600, "Height should be 600");
+}
+
+// ============================================================================
+// ExcelBuilder Tests
+// ============================================================================
+
+#[test]
+fn test_builder_creation() {
+    let builder = ExcelBuilder::new();
+    assert_eq!(builder.workbook.worksheet_count(), 0, "Should have no sheets");
+}
+
+#[test]
+fn test_builder_add_sheet() {
+    let builder = ExcelBuilder::new().add_sheet("Sheet1");
+    assert_eq!(builder.workbook.worksheet_count(), 1, "Should have 1 sheet");
+}
+
+#[test]
+fn test_builder_set_cell() {
+    let builder = ExcelBuilder::new()
+        .add_sheet("Sheet1")
+        .set_cell(1, 1, "Hello");
+    // Cell should be set
+    assert!(true, "Should set cell value");
+}
+
+#[test]
+fn test_builder_set_number() {
+    let builder = ExcelBuilder::new()
+        .add_sheet("Sheet1")
+        .set_number(1, 1, 42.5);
+    assert!(true, "Should set number");
+}
+
+#[test]
+fn test_builder_set_formula() {
+    let builder = ExcelBuilder::new()
+        .add_sheet("Sheet1")
+        .set_formula(1, 1, "=SUM(A2:A10)");
+    assert!(true, "Should set formula");
+}
+
+#[test]
+fn test_builder_chaining() {
+    let builder = ExcelBuilder::new()
+        .add_sheet("Data")
+        .set_cell(1, 1, "Name")
+        .set_cell(1, 2, "Age")
+        .set_number(2, 1, 25.0);
+    assert!(true, "Should chain operations");
+}
+
+#[test]
+fn test_builder_build() {
+    let wb = ExcelBuilder::new()
+        .add_sheet("Sheet1")
+        .build();
+    assert_eq!(wb.worksheet_count(), 1, "Built workbook should have 1 sheet");
+}

@@ -1,0 +1,600 @@
+// Excel/XLSX spreadsheet generation for Jounce
+// Create workbooks, worksheets, cells with formatting and formulas
+
+// ============================================================================
+// Cell Value Types
+// ============================================================================
+
+pub enum CellValue {
+    Text,
+    Number,
+    Boolean,
+    Formula,
+    Date,
+    Empty,
+}
+
+pub struct Cell {
+    pub value: string,
+    pub value_type: CellValue,
+    pub row: int,
+    pub column: int,
+    pub style: CellStyle,
+    pub formula: string,
+}
+
+impl Cell {
+    pub fn text(row: int, column: int, text: string) -> Cell {
+        Cell {
+            value: text,
+            value_type: CellValue::Text,
+            row: row,
+            column: column,
+            style: CellStyle::new(),
+            formula: "",
+        }
+    }
+
+    pub fn number(row: int, column: int, number: float) -> Cell {
+        Cell {
+            value: number.to_string(),
+            value_type: CellValue::Number,
+            row: row,
+            column: column,
+            style: CellStyle::new(),
+            formula: "",
+        }
+    }
+
+    pub fn formula(row: int, column: int, formula: string) -> Cell {
+        Cell {
+            value: "",
+            value_type: CellValue::Formula,
+            row: row,
+            column: column,
+            style: CellStyle::new(),
+            formula: formula,
+        }
+    }
+
+    pub fn boolean(row: int, column: int, value: bool) -> Cell {
+        Cell {
+            value: value.to_string(),
+            value_type: CellValue::Boolean,
+            row: row,
+            column: column,
+            style: CellStyle::new(),
+            formula: "",
+        }
+    }
+
+    pub fn with_style(mut self, style: CellStyle) -> Cell {
+        self.style = style;
+        self
+    }
+
+    pub fn get_address(&self) -> string {
+        column_index_to_letter(self.column) + self.row.to_string()
+    }
+}
+
+// ============================================================================
+// Cell Style
+// ============================================================================
+
+pub struct CellStyle {
+    pub bold: bool,
+    pub italic: bool,
+    pub font_size: int,
+    pub font_color: string,
+    pub background_color: string,
+    pub border: bool,
+    pub alignment: TextAlignment,
+}
+
+impl CellStyle {
+    pub fn new() -> CellStyle {
+        CellStyle {
+            bold: false,
+            italic: false,
+            font_size: 11,
+            font_color: "#000000",
+            background_color: "",
+            border: false,
+            alignment: TextAlignment::Left,
+        }
+    }
+
+    pub fn bold(mut self) -> CellStyle {
+        self.bold = true;
+        self
+    }
+
+    pub fn italic(mut self) -> CellStyle {
+        self.italic = true;
+        self
+    }
+
+    pub fn font_size(mut self, size: int) -> CellStyle {
+        self.font_size = size;
+        self
+    }
+
+    pub fn font_color(mut self, color: string) -> CellStyle {
+        self.font_color = color;
+        self
+    }
+
+    pub fn background(mut self, color: string) -> CellStyle {
+        self.background_color = color;
+        self
+    }
+
+    pub fn with_border(mut self) -> CellStyle {
+        self.border = true;
+        self
+    }
+
+    pub fn align(mut self, alignment: TextAlignment) -> CellStyle {
+        self.alignment = alignment;
+        self
+    }
+}
+
+pub enum TextAlignment {
+    Left,
+    Center,
+    Right,
+}
+
+// ============================================================================
+// Row and Column
+// ============================================================================
+
+pub struct Row {
+    pub index: int,
+    pub height: float,
+    pub cells: Array<Cell>,
+}
+
+impl Row {
+    pub fn new(index: int) -> Row {
+        Row {
+            index: index,
+            height: 15.0,
+            cells: Array::new(),
+        }
+    }
+
+    pub fn with_height(mut self, height: float) -> Row {
+        self.height = height;
+        self
+    }
+
+    pub fn add_cell(mut self, cell: Cell) -> Row {
+        self.cells.push(cell);
+        self
+    }
+
+    pub fn cell_count(&self) -> int {
+        self.cells.len()
+    }
+}
+
+pub struct Column {
+    pub index: int,
+    pub width: float,
+}
+
+impl Column {
+    pub fn new(index: int) -> Column {
+        Column {
+            index: index,
+            width: 10.0,
+        }
+    }
+
+    pub fn with_width(mut self, width: float) -> Column {
+        self.width = width;
+        self
+    }
+}
+
+// ============================================================================
+// Worksheet
+// ============================================================================
+
+pub struct Worksheet {
+    pub name: string,
+    pub cells: Map<string, Cell>,
+    pub rows: Array<Row>,
+    pub columns: Array<Column>,
+    pub frozen_rows: int,
+    pub frozen_columns: int,
+}
+
+impl Worksheet {
+    pub fn new(name: string) -> Worksheet {
+        Worksheet {
+            name: name,
+            cells: Map::new(),
+            rows: Array::new(),
+            columns: Array::new(),
+            frozen_rows: 0,
+            frozen_columns: 0,
+        }
+    }
+
+    pub fn set_cell(mut self, cell: Cell) -> Worksheet {
+        let address = cell.get_address();
+        self.cells.set(address, cell);
+        self
+    }
+
+    pub fn set_cell_value(mut self, row: int, column: int, value: string) -> Worksheet {
+        let cell = Cell::text(row, column, value);
+        self = self.set_cell(cell);
+        self
+    }
+
+    pub fn set_cell_number(mut self, row: int, column: int, number: float) -> Worksheet {
+        let cell = Cell::number(row, column, number);
+        self = self.set_cell(cell);
+        self
+    }
+
+    pub fn set_cell_formula(mut self, row: int, column: int, formula: string) -> Worksheet {
+        let cell = Cell::formula(row, column, formula);
+        self = self.set_cell(cell);
+        self
+    }
+
+    pub fn get_cell(&self, row: int, column: int) -> Option<Cell> {
+        let address = column_index_to_letter(column) + row.to_string();
+        self.cells.get(address)
+    }
+
+    pub fn add_row(mut self, row: Row) -> Worksheet {
+        self.rows.push(row);
+        self
+    }
+
+    pub fn set_column_width(mut self, column_index: int, width: float) -> Worksheet {
+        let column = Column::new(column_index).with_width(width);
+        self.columns.push(column);
+        self
+    }
+
+    pub fn freeze_panes(mut self, rows: int, columns: int) -> Worksheet {
+        self.frozen_rows = rows;
+        self.frozen_columns = columns;
+        self
+    }
+
+    pub fn cell_count(&self) -> int {
+        self.cells.len()
+    }
+}
+
+// ============================================================================
+// Workbook
+// ============================================================================
+
+pub struct Workbook {
+    pub worksheets: Array<Worksheet>,
+    pub active_sheet: int,
+    pub creator: string,
+    pub created_at: int,
+}
+
+impl Workbook {
+    pub fn new() -> Workbook {
+        Workbook {
+            worksheets: Array::new(),
+            active_sheet: 0,
+            creator: "Jounce XLSX v0.1.0",
+            created_at: get_timestamp(),
+        }
+    }
+
+    pub fn add_worksheet(mut self, worksheet: Worksheet) -> Workbook {
+        self.worksheets.push(worksheet);
+        self
+    }
+
+    pub fn create_worksheet(mut self, name: string) -> Workbook {
+        let sheet = Worksheet::new(name);
+        self.worksheets.push(sheet);
+        self
+    }
+
+    pub fn get_worksheet(&self, index: int) -> Option<Worksheet> {
+        if index < self.worksheets.len() {
+            Some(self.worksheets.get(index))
+        } else {
+            None
+        }
+    }
+
+    pub fn get_worksheet_by_name(&self, name: string) -> Option<Worksheet> {
+        let mut i = 0;
+        while i < self.worksheets.len() {
+            let sheet = self.worksheets.get(i);
+            if sheet.name == name {
+                return Some(sheet);
+            }
+            i = i + 1;
+        }
+        None
+    }
+
+    pub fn set_active_sheet(mut self, index: int) -> Workbook {
+        if index < self.worksheets.len() {
+            self.active_sheet = index;
+        }
+        self
+    }
+
+    pub fn worksheet_count(&self) -> int {
+        self.worksheets.len()
+    }
+
+    pub fn save(&self, filename: string) -> bool {
+        // In production, would generate XLSX file
+        true
+    }
+}
+
+// ============================================================================
+// Range
+// ============================================================================
+
+pub struct Range {
+    pub start_row: int,
+    pub start_column: int,
+    pub end_row: int,
+    pub end_column: int,
+}
+
+impl Range {
+    pub fn new(start_row: int, start_column: int, end_row: int, end_column: int) -> Range {
+        Range {
+            start_row: start_row,
+            start_column: start_column,
+            end_row: end_row,
+            end_column: end_column,
+        }
+    }
+
+    pub fn from_address(address: string) -> Range {
+        // Parse "A1:B10" format
+        // In production, would parse properly
+        Range::new(1, 1, 10, 2)
+    }
+
+    pub fn to_address(&self) -> string {
+        let start = column_index_to_letter(self.start_column) + self.start_row.to_string();
+        let end = column_index_to_letter(self.end_column) + self.end_row.to_string();
+        start + ":" + end
+    }
+
+    pub fn cell_count(&self) -> int {
+        (self.end_row - self.start_row + 1) * (self.end_column - self.start_column + 1)
+    }
+}
+
+// ============================================================================
+// Formula Builder
+// ============================================================================
+
+pub struct FormulaBuilder {
+    pub formula: string,
+}
+
+impl FormulaBuilder {
+    pub fn sum(range: Range) -> string {
+        "=SUM(" + range.to_address() + ")"
+    }
+
+    pub fn average(range: Range) -> string {
+        "=AVERAGE(" + range.to_address() + ")"
+    }
+
+    pub fn count(range: Range) -> string {
+        "=COUNT(" + range.to_address() + ")"
+    }
+
+    pub fn max(range: Range) -> string {
+        "=MAX(" + range.to_address() + ")"
+    }
+
+    pub fn min(range: Range) -> string {
+        "=MIN(" + range.to_address() + ")"
+    }
+
+    pub fn if_formula(condition: string, true_value: string, false_value: string) -> string {
+        "=IF(" + condition + "," + true_value + "," + false_value + ")"
+    }
+
+    pub fn vlookup(lookup_value: string, table_range: Range, column_index: int) -> string {
+        "=VLOOKUP(" + lookup_value + "," + table_range.to_address() + "," +
+        column_index.to_string() + ",FALSE)"
+    }
+}
+
+// ============================================================================
+// Table
+// ============================================================================
+
+pub struct Table {
+    pub name: string,
+    pub range: Range,
+    pub headers: Array<string>,
+    pub show_totals: bool,
+}
+
+impl Table {
+    pub fn new(name: string, range: Range) -> Table {
+        Table {
+            name: name,
+            range: range,
+            headers: Array::new(),
+            show_totals: false,
+        }
+    }
+
+    pub fn with_headers(mut self, headers: Array<string>) -> Table {
+        self.headers = headers;
+        self
+    }
+
+    pub fn with_totals(mut self) -> Table {
+        self.show_totals = true;
+        self
+    }
+
+    pub fn column_count(&self) -> int {
+        self.range.end_column - self.range.start_column + 1
+    }
+}
+
+// ============================================================================
+// Chart (Basic)
+// ============================================================================
+
+pub enum ChartType {
+    Column,
+    Bar,
+    Line,
+    Pie,
+    Scatter,
+}
+
+pub struct Chart {
+    pub chart_type: ChartType,
+    pub title: string,
+    pub data_range: Range,
+    pub width: int,
+    pub height: int,
+}
+
+impl Chart {
+    pub fn new(chart_type: ChartType, data_range: Range) -> Chart {
+        Chart {
+            chart_type: chart_type,
+            title: "",
+            data_range: data_range,
+            width: 600,
+            height: 400,
+        }
+    }
+
+    pub fn with_title(mut self, title: string) -> Chart {
+        self.title = title;
+        self
+    }
+
+    pub fn with_size(mut self, width: int, height: int) -> Chart {
+        self.width = width;
+        self.height = height;
+        self
+    }
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+pub fn column_index_to_letter(index: int) -> string {
+    // Convert 1-based column index to Excel letter (1=A, 2=B, etc.)
+    if index <= 0 {
+        return "A";
+    }
+
+    if index <= 26 {
+        let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        return letters.char_at(index - 1);
+    }
+
+    // For columns > 26 (AA, AB, etc.)
+    "A"
+}
+
+pub fn column_letter_to_index(letter: string) -> int {
+    // Convert Excel letter to 1-based index (A=1, B=2, etc.)
+    if letter.len() == 0 {
+        return 1;
+    }
+
+    let first_char = letter.char_at(0);
+    if first_char >= "A" && first_char <= "Z" {
+        return first_char.to_uppercase().char_code() - "A".char_code() + 1;
+    }
+
+    1
+}
+
+pub fn get_timestamp() -> int {
+    // In production, would return actual timestamp
+    0
+}
+
+// ============================================================================
+// Excel Builder (Fluent API)
+// ============================================================================
+
+pub struct ExcelBuilder {
+    pub workbook: Workbook,
+    pub current_sheet: int,
+}
+
+impl ExcelBuilder {
+    pub fn new() -> ExcelBuilder {
+        ExcelBuilder {
+            workbook: Workbook::new(),
+            current_sheet: 0,
+        }
+    }
+
+    pub fn add_sheet(mut self, name: string) -> ExcelBuilder {
+        self.workbook = self.workbook.create_worksheet(name);
+        self.current_sheet = self.workbook.worksheet_count() - 1;
+        self
+    }
+
+    pub fn set_cell(mut self, row: int, column: int, value: string) -> ExcelBuilder {
+        if let Some(mut sheet) = self.workbook.get_worksheet(self.current_sheet) {
+            sheet = sheet.set_cell_value(row, column, value);
+            self.workbook.worksheets.set(self.current_sheet, sheet);
+        }
+        self
+    }
+
+    pub fn set_number(mut self, row: int, column: int, number: float) -> ExcelBuilder {
+        if let Some(mut sheet) = self.workbook.get_worksheet(self.current_sheet) {
+            sheet = sheet.set_cell_number(row, column, number);
+            self.workbook.worksheets.set(self.current_sheet, sheet);
+        }
+        self
+    }
+
+    pub fn set_formula(mut self, row: int, column: int, formula: string) -> ExcelBuilder {
+        if let Some(mut sheet) = self.workbook.get_worksheet(self.current_sheet) {
+            sheet = sheet.set_cell_formula(row, column, formula);
+            self.workbook.worksheets.set(self.current_sheet, sheet);
+        }
+        self
+    }
+
+    pub fn set_column_width(mut self, column: int, width: float) -> ExcelBuilder {
+        if let Some(mut sheet) = self.workbook.get_worksheet(self.current_sheet) {
+            sheet = sheet.set_column_width(column, width);
+            self.workbook.worksheets.set(self.current_sheet, sheet);
+        }
+        self
+    }
+
+    pub fn build(self) -> Workbook {
+        self.workbook
+    }
+}

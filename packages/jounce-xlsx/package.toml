@@ -1,0 +1,28 @@
+[package]
+name = "jounce-xlsx"
+version = "0.1.0"
+description = "Excel/XLSX spreadsheet generation - workbooks, worksheets, cells, formulas, and styling"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-xlsx"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "workbook_tests"
+path = "tests/workbook_tests.jnc"
+
+[[test]]
+name = "features_tests"
+path = "tests/features_tests.jnc"
+
+[features]
+default = ["cells", "formulas", "styling"]
+cells = []
+formulas = []
+styling = []
+charts = []
+tables = []
