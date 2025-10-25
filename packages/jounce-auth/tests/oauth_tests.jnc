@@ -1,0 +1,163 @@
+// Tests for OAuth 2.0 helpers in jounce-auth
+use jounce_auth::{OAuthProvider, oauth_auth_url, oauth_exchange_code, oauth_refresh_token};
+
+#[test]
+fn test_oauth_provider_creation() {
+    let provider = OAuthProvider {
+        name: "google",
+        client_id: "client123",
+        client_secret: "secret456",
+        auth_url: "https://accounts.google.com/o/oauth2/v2/auth",
+        token_url: "https://oauth2.googleapis.com/token",
+        redirect_uri: "https://myapp.com/callback",
+    };
+
+    assert_eq!(provider.name, "google", "Provider name should match");
+    assert_eq!(provider.client_id, "client123", "Client ID should match");
+}
+
+#[test]
+fn test_oauth_auth_url_basic() {
+    let provider = OAuthProvider {
+        name: "github",
+        client_id: "abc123",
+        client_secret: "secret",
+        auth_url: "https://github.com/login/oauth/authorize",
+        token_url: "https://github.com/login/oauth/access_token",
+        redirect_uri: "https://myapp.com/callback",
+    };
+
+    let scopes = vec!["user", "repo"];
+    let auth_url = oauth_auth_url(provider, "random_state", scopes);
+
+    assert!(auth_url.contains("client_id=abc123"), "Should contain client ID");
+    assert!(auth_url.contains("state=random_state"), "Should contain state");
+    assert!(auth_url.contains("response_type=code"), "Should be code flow");
+}
+
+#[test]
+fn test_oauth_auth_url_with_scopes() {
+    let provider = OAuthProvider {
+        name: "google",
+        client_id: "client123",
+        client_secret: "secret",
+        auth_url: "https://accounts.google.com/o/oauth2/v2/auth",
+        token_url: "https://oauth2.googleapis.com/token",
+        redirect_uri: "https://myapp.com/callback",
+    };
+
+    let scopes = vec!["email", "profile", "openid"];
+    let auth_url = oauth_auth_url(provider, "state123", scopes);
+
+    assert!(auth_url.contains("scope="), "Should contain scope parameter");
+}
+
+#[test]
+fn test_oauth_auth_url_with_redirect_uri() {
+    let provider = OAuthProvider {
+        name: "facebook",
+        client_id: "fb123",
+        client_secret: "secret",
+        auth_url: "https://www.facebook.com/v12.0/dialog/oauth",
+        token_url: "https://graph.facebook.com/v12.0/oauth/access_token",
+        redirect_uri: "https://myapp.com/oauth/callback",
+    };
+
+    let scopes = vec!["public_profile"];
+    let auth_url = oauth_auth_url(provider, "state", scopes);
+
+    assert!(auth_url.contains("redirect_uri="), "Should contain redirect URI");
+}
+
+#[test]
+fn test_oauth_exchange_code() {
+    let provider = OAuthProvider {
+        name: "google",
+        client_id: "client123",
+        client_secret: "secret456",
+        auth_url: "https://accounts.google.com/o/oauth2/v2/auth",
+        token_url: "https://oauth2.googleapis.com/token",
+        redirect_uri: "https://myapp.com/callback",
+    };
+
+    let result = oauth_exchange_code(provider, "auth_code_123");
+
+    assert!(result.is_ok(), "Should successfully exchange code");
+}
+
+#[test]
+fn test_oauth_exchange_code_returns_token() {
+    let provider = OAuthProvider {
+        name: "github",
+        client_id: "abc123",
+        client_secret: "secret",
+        auth_url: "https://github.com/login/oauth/authorize",
+        token_url: "https://github.com/login/oauth/access_token",
+        redirect_uri: "https://myapp.com/callback",
+    };
+
+    let result = oauth_exchange_code(provider, "code_xyz");
+
+    if let Ok(token) = result {
+        assert!(!token.access_token.is_empty() || token.token_type == "Bearer", "Should have token data");
+    }
+}
+
+#[test]
+fn test_oauth_refresh_token() {
+    let provider = OAuthProvider {
+        name: "google",
+        client_id: "client123",
+        client_secret: "secret456",
+        auth_url: "https://accounts.google.com/o/oauth2/v2/auth",
+        token_url: "https://oauth2.googleapis.com/token",
+        redirect_uri: "https://myapp.com/callback",
+    };
+
+    let result = oauth_refresh_token(provider, "refresh_token_abc");
+
+    assert!(result.is_ok(), "Should successfully refresh token");
+}
+
+#[test]
+fn test_oauth_token_structure() {
+    let provider = OAuthProvider {
+        name: "google",
+        client_id: "client123",
+        client_secret: "secret456",
+        auth_url: "https://accounts.google.com/o/oauth2/v2/auth",
+        token_url: "https://oauth2.googleapis.com/token",
+        redirect_uri: "https://myapp.com/callback",
+    };
+
+    let result = oauth_exchange_code(provider, "code123");
+
+    if let Ok(token) = result {
+        assert_eq!(token.token_type, "Bearer", "Token type should be Bearer");
+        assert!(token.expires_in > 0, "Expires in should be positive");
+    }
+}
+
+#[test]
+fn test_oauth_multiple_providers() {
+    let google = OAuthProvider {
+        name: "google",
+        client_id: "google123",
+        client_secret: "secret",
+        auth_url: "https://accounts.google.com/o/oauth2/v2/auth",
+        token_url: "https://oauth2.googleapis.com/token",
+        redirect_uri: "https://myapp.com/callback",
+    };
+
+    let github = OAuthProvider {
+        name: "github",
+        client_id: "github456",
+        client_secret: "secret",
+        auth_url: "https://github.com/login/oauth/authorize",
+        token_url: "https://github.com/login/oauth/access_token",
+        redirect_uri: "https://myapp.com/callback",
+    };
+
+    assert_eq!(google.name, "google", "Google provider should be configured");
+    assert_eq!(github.name, "github", "GitHub provider should be configured");
+}

@@ -1,0 +1,237 @@
+// Tests for RBAC (Role-Based Access Control) in jounce-auth
+use jounce_auth::{
+    User, Role, Permission,
+    has_role, has_permission, authorize,
+    admin_role, user_role, guest_role
+};
+
+#[test]
+fn test_user_creation() {
+    let user = User {
+        id: "user123",
+        email: "user@example.com",
+        roles: vec!["user"],
+    };
+
+    assert_eq!(user.id, "user123", "User ID should match");
+    assert_eq!(user.email, "user@example.com", "Email should match");
+    assert_eq!(user.roles.len(), 1, "Should have 1 role");
+}
+
+#[test]
+fn test_has_role_true() {
+    let user = User {
+        id: "user123",
+        email: "user@example.com",
+        roles: vec!["admin", "user"],
+    };
+
+    assert!(has_role(user, "admin"), "Should have admin role");
+}
+
+#[test]
+fn test_has_role_false() {
+    let user = User {
+        id: "user123",
+        email: "user@example.com",
+        roles: vec!["user"],
+    };
+
+    assert!(!has_role(user, "admin"), "Should not have admin role");
+}
+
+#[test]
+fn test_has_role_multiple_roles() {
+    let user = User {
+        id: "user123",
+        email: "user@example.com",
+        roles: vec!["guest", "user", "moderator"],
+    };
+
+    assert!(has_role(user.clone(), "guest"), "Should have guest role");
+    assert!(has_role(user.clone(), "user"), "Should have user role");
+    assert!(has_role(user.clone(), "moderator"), "Should have moderator role");
+    assert!(!has_role(user, "admin"), "Should not have admin role");
+}
+
+#[test]
+fn test_admin_role_has_all_permissions() {
+    let admin = admin_role();
+
+    assert_eq!(admin.name, "admin", "Role name should be admin");
+    assert!(admin.permissions.len() > 0, "Should have permissions");
+
+    // Admin should have wildcard permission
+    let perm = admin.permissions[0];
+    assert_eq!(perm.resource, "*", "Should have wildcard resource");
+    assert_eq!(perm.action, "*", "Should have wildcard action");
+}
+
+#[test]
+fn test_user_role_permissions() {
+    let user_r = user_role();
+
+    assert_eq!(user_r.name, "user", "Role name should be user");
+    assert!(user_r.permissions.len() >= 2, "Should have at least 2 permissions");
+}
+
+#[test]
+fn test_guest_role_permissions() {
+    let guest = guest_role();
+
+    assert_eq!(guest.name, "guest", "Role name should be guest");
+    assert!(guest.permissions.len() > 0, "Should have permissions");
+}
+
+#[test]
+fn test_has_permission_admin() {
+    let user = User {
+        id: "admin123",
+        email: "admin@example.com",
+        roles: vec!["admin"],
+    };
+
+    assert!(has_permission(user.clone(), "posts", "create"), "Admin should have permission");
+    assert!(has_permission(user.clone(), "users", "delete"), "Admin should have permission");
+    assert!(has_permission(user, "anything", "everything"), "Admin should have all permissions");
+}
+
+#[test]
+fn test_has_permission_user() {
+    let user = User {
+        id: "user123",
+        email: "user@example.com",
+        roles: vec!["user"],
+    };
+
+    assert!(has_permission(user.clone(), "profile", "read"), "User should read profile");
+    assert!(has_permission(user.clone(), "profile", "update"), "User should update profile");
+}
+
+#[test]
+fn test_has_permission_guest() {
+    let user = User {
+        id: "guest123",
+        email: "guest@example.com",
+        roles: vec!["guest"],
+    };
+
+    assert!(has_permission(user.clone(), "public", "read"), "Guest should read public");
+    assert!(!has_permission(user, "profile", "update"), "Guest should not update profile");
+}
+
+#[test]
+fn test_has_permission_no_role() {
+    let user = User {
+        id: "user123",
+        email: "user@example.com",
+        roles: vec![],
+    };
+
+    assert!(!has_permission(user, "anything", "anything"), "No roles should have no permissions");
+}
+
+#[test]
+fn test_authorize_success() {
+    let user = User {
+        id: "admin123",
+        email: "admin@example.com",
+        roles: vec!["admin"],
+    };
+
+    let result = authorize(user, "posts", "create");
+
+    assert!(result.is_ok(), "Admin should be authorized");
+}
+
+#[test]
+fn test_authorize_failure() {
+    let user = User {
+        id: "guest123",
+        email: "guest@example.com",
+        roles: vec!["guest"],
+    };
+
+    let result = authorize(user, "users", "delete");
+
+    assert!(result.is_err(), "Guest should not be authorized");
+}
+
+#[test]
+fn test_authorize_user_profile_read() {
+    let user = User {
+        id: "user123",
+        email: "user@example.com",
+        roles: vec!["user"],
+    };
+
+    let result = authorize(user, "profile", "read");
+
+    assert!(result.is_ok(), "User should be authorized to read profile");
+}
+
+#[test]
+fn test_authorize_user_profile_update() {
+    let user = User {
+        id: "user123",
+        email: "user@example.com",
+        roles: vec!["user"],
+    };
+
+    let result = authorize(user, "profile", "update");
+
+    assert!(result.is_ok(), "User should be authorized to update profile");
+}
+
+#[test]
+fn test_permission_structure() {
+    let perm = Permission {
+        resource: "posts",
+        action: "create",
+    };
+
+    assert_eq!(perm.resource, "posts", "Resource should be posts");
+    assert_eq!(perm.action, "create", "Action should be create");
+}
+
+#[test]
+fn test_role_structure() {
+    let role = Role {
+        name: "moderator",
+        permissions: vec![
+            Permission { resource: "posts", action: "edit" },
+            Permission { resource: "comments", action: "delete" },
+        ],
+    };
+
+    assert_eq!(role.name, "moderator", "Role name should match");
+    assert_eq!(role.permissions.len(), 2, "Should have 2 permissions");
+}
+
+#[test]
+fn test_user_with_multiple_roles() {
+    let user = User {
+        id: "user123",
+        email: "user@example.com",
+        roles: vec!["user", "admin"],
+    };
+
+    // Should have permissions from both roles
+    assert!(has_role(user.clone(), "user"), "Should have user role");
+    assert!(has_role(user.clone(), "admin"), "Should have admin role");
+    assert!(has_permission(user, "anything", "anything"), "Should have admin permissions");
+}
+
+#[test]
+fn test_wildcard_permission() {
+    let user = User {
+        id: "superadmin",
+        email: "superadmin@example.com",
+        roles: vec!["admin"],
+    };
+
+    // Admin has wildcard permissions
+    assert!(has_permission(user.clone(), "anything", "create"), "Should have any permission");
+    assert!(has_permission(user.clone(), "resource", "delete"), "Should have any permission");
+    assert!(has_permission(user, "x", "y"), "Should have any permission");
+}

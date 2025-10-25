@@ -26,6 +26,10 @@ path = "tests/session_tests.jnc"
 name = "rbac_tests"
 path = "tests/rbac_tests.jnc"
 
+[[test]]
+name = "oauth_tests"
+path = "tests/oauth_tests.jnc"
+
 [features]
 default = ["jwt", "sessions", "oauth", "rbac"]
 jwt = []
