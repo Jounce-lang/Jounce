@@ -1,0 +1,30 @@
+[package]
+name = "jounce-markdown"
+version = "0.1.0"
+description = "Markdown parsing and HTML rendering with GitHub Flavored Markdown support"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-markdown"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "parser_tests"
+path = "tests/parser_tests.jnc"
+
+[[test]]
+name = "renderer_tests"
+path = "tests/renderer_tests.jnc"
+
+[[test]]
+name = "builder_tests"
+path = "tests/builder_tests.jnc"
+
+[features]
+default = ["gfm", "sanitize"]
+gfm = []            # GitHub Flavored Markdown
+sanitize = []       # HTML sanitization
+tables = []         # Table support (future)

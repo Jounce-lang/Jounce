@@ -1,0 +1,199 @@
+// Tests for MarkdownBuilder in jounce-markdown
+use jounce_markdown::{MarkdownBuilder, parse_markdown};
+
+#[test]
+fn test_builder_heading() {
+    let md = MarkdownBuilder::new()
+        .heading(1, "Title")
+        .build();
+
+    assert_eq!(md, "# Title\n\n", "Should build heading");
+}
+
+#[test]
+fn test_builder_multiple_headings() {
+    let md = MarkdownBuilder::new()
+        .heading(1, "H1")
+        .heading(2, "H2")
+        .build();
+
+    assert!(md.contains("# H1"), "Should have H1");
+    assert!(md.contains("## H2"), "Should have H2");
+}
+
+#[test]
+fn test_builder_paragraph() {
+    let md = MarkdownBuilder::new()
+        .paragraph("This is text")
+        .build();
+
+    assert_eq!(md, "This is text\n\n", "Should build paragraph");
+}
+
+#[test]
+fn test_builder_code_block() {
+    let md = MarkdownBuilder::new()
+        .code_block("const x = 5;", "javascript")
+        .build();
+
+    assert!(md.contains("```javascript"), "Should have language");
+    assert!(md.contains("const x = 5;"), "Should have code");
+    assert!(md.contains("```"), "Should have closing fence");
+}
+
+#[test]
+fn test_builder_list_item() {
+    let md = MarkdownBuilder::new()
+        .list_item("Item 1")
+        .list_item("Item 2")
+        .build();
+
+    assert!(md.contains("- Item 1"), "Should have first item");
+    assert!(md.contains("- Item 2"), "Should have second item");
+}
+
+#[test]
+fn test_builder_ordered_list_item() {
+    let md = MarkdownBuilder::new()
+        .ordered_list_item(1, "First")
+        .ordered_list_item(2, "Second")
+        .build();
+
+    assert!(md.contains("1. First"), "Should have first item");
+    assert!(md.contains("2. Second"), "Should have second item");
+}
+
+#[test]
+fn test_builder_link() {
+    let md = MarkdownBuilder::new()
+        .link("Google", "https://google.com")
+        .build();
+
+    assert_eq!(md, "[Google](https://google.com)", "Should build link");
+}
+
+#[test]
+fn test_builder_image() {
+    let md = MarkdownBuilder::new()
+        .image("Logo", "logo.png")
+        .build();
+
+    assert!(md.contains("![Logo](logo.png)"), "Should build image");
+}
+
+#[test]
+fn test_builder_blockquote() {
+    let md = MarkdownBuilder::new()
+        .blockquote("This is a quote")
+        .build();
+
+    assert_eq!(md, "> This is a quote\n\n", "Should build blockquote");
+}
+
+#[test]
+fn test_builder_horizontal_rule() {
+    let md = MarkdownBuilder::new()
+        .horizontal_rule()
+        .build();
+
+    assert_eq!(md, "---\n\n", "Should build horizontal rule");
+}
+
+#[test]
+fn test_builder_task_item_unchecked() {
+    let md = MarkdownBuilder::new()
+        .task_item("Todo", false)
+        .build();
+
+    assert_eq!(md, "- [ ] Todo\n", "Should build unchecked task");
+}
+
+#[test]
+fn test_builder_task_item_checked() {
+    let md = MarkdownBuilder::new()
+        .task_item("Done", true)
+        .build();
+
+    assert_eq!(md, "- [x] Done\n", "Should build checked task");
+}
+
+#[test]
+fn test_builder_complete_document() {
+    let md = MarkdownBuilder::new()
+        .heading(1, "My Document")
+        .paragraph("Introduction text")
+        .heading(2, "Section")
+        .list_item("Item 1")
+        .list_item("Item 2")
+        .code_block("console.log('hi')", "js")
+        .build();
+
+    assert!(md.contains("# My Document"), "Should have title");
+    assert!(md.contains("Introduction text"), "Should have intro");
+    assert!(md.contains("## Section"), "Should have section");
+    assert!(md.contains("- Item 1"), "Should have list");
+    assert!(md.contains("```js"), "Should have code");
+}
+
+#[test]
+fn test_builder_then_parse() {
+    let md = MarkdownBuilder::new()
+        .heading(1, "Test")
+        .paragraph("Content")
+        .build();
+
+    let html = parse_markdown(md);
+
+    assert!(html.contains("<h1>Test</h1>"), "Should parse heading");
+    assert!(html.contains("<p>Content</p>"), "Should parse paragraph");
+}
+
+#[test]
+fn test_builder_task_list() {
+    let md = MarkdownBuilder::new()
+        .task_item("Buy milk", false)
+        .task_item("Walk dog", true)
+        .task_item("Write code", false)
+        .build();
+
+    assert!(md.contains("- [ ] Buy milk"), "Should have todo");
+    assert!(md.contains("- [x] Walk dog"), "Should have done");
+    assert!(md.contains("- [ ] Write code"), "Should have todo");
+}
+
+#[test]
+fn test_builder_mixed_list() {
+    let md = MarkdownBuilder::new()
+        .heading(2, "Shopping")
+        .list_item("Apples")
+        .list_item("Bananas")
+        .heading(2, "Tasks")
+        .task_item("Buy groceries", false)
+        .build();
+
+    let html = parse_markdown(md);
+    assert!(html.len() > 0, "Should parse mixed content");
+}
+
+#[test]
+fn test_builder_empty() {
+    let md = MarkdownBuilder::new().build();
+    assert_eq!(md, "", "Empty builder should be empty");
+}
+
+#[test]
+fn test_builder_chain() {
+    let md = MarkdownBuilder::new()
+        .heading(1, "Title")
+        .paragraph("Para 1")
+        .paragraph("Para 2")
+        .horizontal_rule()
+        .paragraph("Para 3")
+        .build();
+
+    assert!(md.contains("# Title"), "Should chain heading");
+    assert!(md.contains("Para 1"), "Should chain para 1");
+    assert!(md.contains("Para 2"), "Should chain para 2");
+    assert!(md.contains("---"), "Should chain HR");
+    assert!(md.contains("Para 3"), "Should chain para 3");
+}

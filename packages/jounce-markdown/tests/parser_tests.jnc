@@ -1,0 +1,200 @@
+// Tests for Markdown parsing in jounce-markdown
+use jounce_markdown::{Markdown, MarkdownParser, Node, NodeType};
+
+#[test]
+fn test_parse_heading_h1() {
+    let md = Markdown::new("# Hello").parse();
+    let ast = md.get_ast();
+
+    assert!(ast.is_some(), "Should have AST");
+    let doc = ast.unwrap();
+    assert_eq!(doc.children.len(), 1, "Should have 1 child");
+
+    match doc.children[0].node_type {
+        NodeType::Heading => assert!(true, "Should be heading"),
+        _ => assert!(false, "Should be heading"),
+    }
+
+    assert_eq!(doc.children[0].level, 1, "Should be level 1");
+    assert_eq!(doc.children[0].content, "Hello", "Content should match");
+}
+
+#[test]
+fn test_parse_heading_h2() {
+    let md = Markdown::new("## World").parse();
+    let ast = md.get_ast().unwrap();
+
+    assert_eq!(ast.children[0].level, 2, "Should be level 2");
+    assert_eq!(ast.children[0].content, "World", "Content should match");
+}
+
+#[test]
+fn test_parse_heading_h3() {
+    let md = Markdown::new("### Test").parse();
+    let ast = md.get_ast().unwrap();
+
+    assert_eq!(ast.children[0].level, 3, "Should be level 3");
+}
+
+#[test]
+fn test_parse_paragraph() {
+    let md = Markdown::new("This is a paragraph.").parse();
+    let ast = md.get_ast().unwrap();
+
+    match ast.children[0].node_type {
+        NodeType::Paragraph => assert!(true, "Should be paragraph"),
+        _ => assert!(false, "Should be paragraph"),
+    }
+}
+
+#[test]
+fn test_parse_horizontal_rule() {
+    let md = Markdown::new("---").parse();
+    let ast = md.get_ast().unwrap();
+
+    match ast.children[0].node_type {
+        NodeType::HorizontalRule => assert!(true, "Should be horizontal rule"),
+        _ => assert!(false, "Should be horizontal rule"),
+    }
+}
+
+#[test]
+fn test_parse_code_block() {
+    let source = "```javascript\nconst x = 5;\n```";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+
+    match ast.children[0].node_type {
+        NodeType::CodeBlock => assert!(true, "Should be code block"),
+        _ => assert!(false, "Should be code block"),
+    }
+
+    assert_eq!(ast.children[0].language, "javascript", "Language should match");
+    assert_eq!(ast.children[0].content, "const x = 5;", "Code should match");
+}
+
+#[test]
+fn test_parse_code_block_no_language() {
+    let source = "```\ncode here\n```";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+
+    assert_eq!(ast.children[0].language, "", "Language should be empty");
+}
+
+#[test]
+fn test_parse_blockquote() {
+    let md = Markdown::new("> This is a quote").parse();
+    let ast = md.get_ast().unwrap();
+
+    match ast.children[0].node_type {
+        NodeType::Blockquote => assert!(true, "Should be blockquote"),
+        _ => assert!(false, "Should be blockquote"),
+    }
+
+    assert_eq!(ast.children[0].content, "This is a quote", "Content should match");
+}
+
+#[test]
+fn test_parse_unordered_list() {
+    let source = "- Item 1\n- Item 2\n- Item 3";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+
+    match ast.children[0].node_type {
+        NodeType::List => assert!(true, "Should be list"),
+        _ => assert!(false, "Should be list"),
+    }
+
+    assert!(!ast.children[0].ordered, "Should be unordered");
+    assert_eq!(ast.children[0].children.len(), 3, "Should have 3 items");
+}
+
+#[test]
+fn test_parse_ordered_list() {
+    let source = "1. First\n2. Second\n3. Third";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+
+    match ast.children[0].node_type {
+        NodeType::List => assert!(true, "Should be list"),
+        _ => assert!(false, "Should be list"),
+    }
+
+    assert!(ast.children[0].ordered, "Should be ordered");
+    assert_eq!(ast.children[0].children.len(), 3, "Should have 3 items");
+}
+
+#[test]
+fn test_parse_list_items() {
+    let source = "- Item 1\n- Item 2";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+    let list = &ast.children[0];
+
+    assert_eq!(list.children[0].content, "Item 1", "First item should match");
+    assert_eq!(list.children[1].content, "Item 2", "Second item should match");
+}
+
+#[test]
+fn test_parse_task_list() {
+    let source = "- [ ] Todo\n- [x] Done";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+
+    match ast.children[0].node_type {
+        NodeType::TaskList => assert!(true, "Should be task list"),
+        _ => assert!(false, "Should be task list"),
+    }
+
+    assert_eq!(ast.children[0].children.len(), 2, "Should have 2 tasks");
+}
+
+#[test]
+fn test_parse_task_item_unchecked() {
+    let source = "- [ ] Todo item";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+    let task = &ast.children[0].children[0];
+
+    assert!(!task.checked, "Should be unchecked");
+    assert_eq!(task.content, "Todo item", "Content should match");
+}
+
+#[test]
+fn test_parse_task_item_checked() {
+    let source = "- [x] Done item";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+    let task = &ast.children[0].children[0];
+
+    assert!(task.checked, "Should be checked");
+    assert_eq!(task.content, "Done item", "Content should match");
+}
+
+#[test]
+fn test_parse_multiple_elements() {
+    let source = "# Title\n\nParagraph text\n\n- List item";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+
+    assert_eq!(ast.children.len(), 3, "Should have 3 elements");
+}
+
+#[test]
+fn test_parse_empty_lines() {
+    let source = "# Title\n\n\n\nParagraph";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+
+    assert_eq!(ast.children.len(), 2, "Should skip empty lines");
+}
+
+#[test]
+fn test_parse_mixed_content() {
+    let source = "# Heading\n\nSome text\n\n```js\ncode\n```\n\n> Quote";
+    let md = Markdown::new(source).parse();
+    let ast = md.get_ast().unwrap();
+
+    assert_eq!(ast.children.len(), 4, "Should have 4 elements");
+}

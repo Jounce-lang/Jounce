@@ -1,0 +1,173 @@
+// Tests for HTML rendering in jounce-markdown
+use jounce_markdown::{Markdown, parse_markdown, parse_markdown_safe, parse_markdown_unsafe};
+
+#[test]
+fn test_render_heading_h1() {
+    let html = parse_markdown("# Hello");
+    assert_eq!(html, "<h1>Hello</h1>", "Should render H1");
+}
+
+#[test]
+fn test_render_heading_h2() {
+    let html = parse_markdown("## World");
+    assert_eq!(html, "<h2>World</h2>", "Should render H2");
+}
+
+#[test]
+fn test_render_heading_h3() {
+    let html = parse_markdown("### Test");
+    assert_eq!(html, "<h3>Test</h3>", "Should render H3");
+}
+
+#[test]
+fn test_render_heading_h6() {
+    let html = parse_markdown("###### Level 6");
+    assert_eq!(html, "<h6>Level 6</h6>", "Should render H6");
+}
+
+#[test]
+fn test_render_paragraph() {
+    let html = parse_markdown("This is text.");
+    assert_eq!(html, "<p>This is text.</p>", "Should render paragraph");
+}
+
+#[test]
+fn test_render_horizontal_rule() {
+    let html = parse_markdown("---");
+    assert_eq!(html, "<hr/>", "Should render HR");
+}
+
+#[test]
+fn test_render_code_block() {
+    let source = "```javascript\nconst x = 5;\n```";
+    let html = parse_markdown(source);
+    assert!(html.contains("<pre><code"), "Should have pre/code");
+    assert!(html.contains("language-javascript"), "Should have language class");
+    assert!(html.contains("const x = 5;"), "Should have code content");
+}
+
+#[test]
+fn test_render_code_block_no_language() {
+    let source = "```\ncode\n```";
+    let html = parse_markdown(source);
+    assert!(html.contains("<pre><code>"), "Should have pre/code");
+    assert!(html.contains("code"), "Should have content");
+}
+
+#[test]
+fn test_render_blockquote() {
+    let html = parse_markdown("> Quote text");
+    assert_eq!(html, "<blockquote>Quote text</blockquote>", "Should render blockquote");
+}
+
+#[test]
+fn test_render_unordered_list() {
+    let source = "- Item 1\n- Item 2";
+    let html = parse_markdown(source);
+    assert!(html.contains("<ul>"), "Should have UL");
+    assert!(html.contains("<li>Item 1</li>"), "Should have first item");
+    assert!(html.contains("<li>Item 2</li>"), "Should have second item");
+    assert!(html.contains("</ul>"), "Should close UL");
+}
+
+#[test]
+fn test_render_ordered_list() {
+    let source = "1. First\n2. Second";
+    let html = parse_markdown(source);
+    assert!(html.contains("<ol>"), "Should have OL");
+    assert!(html.contains("<li>First</li>"), "Should have first item");
+    assert!(html.contains("<li>Second</li>"), "Should have second item");
+    assert!(html.contains("</ol>"), "Should close OL");
+}
+
+#[test]
+fn test_render_task_list() {
+    let source = "- [ ] Todo\n- [x] Done";
+    let html = parse_markdown(source);
+    assert!(html.contains("task-list"), "Should have task-list class");
+    assert!(html.contains("checkbox"), "Should have checkbox");
+}
+
+#[test]
+fn test_render_task_unchecked() {
+    let source = "- [ ] Todo";
+    let html = parse_markdown(source);
+    assert!(html.contains("type=\"checkbox\""), "Should have checkbox");
+    assert!(!html.contains(" checked"), "Should not be checked");
+}
+
+#[test]
+fn test_render_task_checked() {
+    let source = "- [x] Done";
+    let html = parse_markdown(source);
+    assert!(html.contains("type=\"checkbox\""), "Should have checkbox");
+    assert!(html.contains(" checked"), "Should be checked");
+}
+
+#[test]
+fn test_render_multiple_headings() {
+    let source = "# H1\n## H2\n### H3";
+    let html = parse_markdown(source);
+    assert!(html.contains("<h1>H1</h1>"), "Should have H1");
+    assert!(html.contains("<h2>H2</h2>"), "Should have H2");
+    assert!(html.contains("<h3>H3</h3>"), "Should have H3");
+}
+
+#[test]
+fn test_render_mixed_content() {
+    let source = "# Title\n\nParagraph\n\n- List";
+    let html = parse_markdown(source);
+    assert!(html.contains("<h1>Title</h1>"), "Should have heading");
+    assert!(html.contains("<p>Paragraph</p>"), "Should have paragraph");
+    assert!(html.contains("<ul>"), "Should have list");
+}
+
+#[test]
+fn test_escape_html_in_code() {
+    let source = "```\n<script>alert('xss')</script>\n```";
+    let html = parse_markdown(source);
+    assert!(html.contains("&lt;script&gt;"), "Should escape HTML");
+    assert!(!html.contains("<script>"), "Should not have script tag");
+}
+
+#[test]
+fn test_safe_rendering() {
+    let source = "<script>alert('xss')</script>";
+    let html = parse_markdown_safe(source);
+    // Paragraph should escape the content
+    assert!(!html.contains("<script>"), "Should not have script tag in safe mode");
+}
+
+#[test]
+fn test_unsafe_rendering() {
+    let md = Markdown::new("test")
+        .with_sanitize(false)
+        .parse();
+
+    // Just verify it parses
+    assert!(md.get_ast().is_some(), "Should parse in unsafe mode");
+}
+
+#[test]
+fn test_render_complete_document() {
+    let source = "# My Document\n\nThis is **bold** text.\n\n## Section\n\n- Item 1\n- Item 2\n\n```js\ncode\n```";
+    let html = parse_markdown(source);
+
+    assert!(html.len() > 0, "Should render complete document");
+    assert!(html.contains("<h1>"), "Should have H1");
+    assert!(html.contains("<h2>"), "Should have H2");
+    assert!(html.contains("<ul>"), "Should have list");
+    assert!(html.contains("<pre>"), "Should have code block");
+}
+
+#[test]
+fn test_render_empty_string() {
+    let html = parse_markdown("");
+    assert_eq!(html, "", "Empty markdown should render empty");
+}
+
+#[test]
+fn test_render_whitespace_only() {
+    let html = parse_markdown("   \n\n   ");
+    assert_eq!(html, "", "Whitespace only should render empty");
+}

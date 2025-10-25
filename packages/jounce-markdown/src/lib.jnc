@@ -1,0 +1,580 @@
+// Markdown parsing and rendering for Jounce
+// Supports standard markdown and GitHub Flavored Markdown (GFM)
+
+// ============================================================================
+// AST Node Types
+// ============================================================================
+
+pub enum NodeType {
+    Document,
+    Heading,
+    Paragraph,
+    Text,
+    Strong,
+    Emphasis,
+    Code,
+    CodeBlock,
+    Link,
+    Image,
+    List,
+    ListItem,
+    Blockquote,
+    HorizontalRule,
+    Table,
+    TableRow,
+    TableCell,
+    Strikethrough,
+    TaskList,
+    TaskItem,
+}
+
+pub struct Node {
+    pub node_type: NodeType,
+    pub content: string,
+    pub children: Array<Node>,
+    pub level: int,           // For headings (1-6)
+    pub ordered: bool,        // For lists
+    pub url: string,          // For links and images
+    pub alt: string,          // For images
+    pub language: string,     // For code blocks
+    pub checked: bool,        // For task items
+}
+
+impl Node {
+    pub fn new(node_type: NodeType) -> Node {
+        Node {
+            node_type: node_type,
+            content: "",
+            children: [],
+            level: 0,
+            ordered: false,
+            url: "",
+            alt: "",
+            language: "",
+            checked: false,
+        }
+    }
+
+    pub fn with_content(mut self, content: string) -> Node {
+        self.content = content;
+        self
+    }
+
+    pub fn with_level(mut self, level: int) -> Node {
+        self.level = level;
+        self
+    }
+
+    pub fn with_url(mut self, url: string) -> Node {
+        self.url = url;
+        self
+    }
+
+    pub fn add_child(mut self, child: Node) -> Node {
+        self.children.push(child);
+        self
+    }
+}
+
+// ============================================================================
+// Markdown Parser
+// ============================================================================
+
+pub struct MarkdownParser {
+    pub source: string,
+    pub position: int,
+    pub current_line: string,
+}
+
+impl MarkdownParser {
+    pub fn new(source: string) -> MarkdownParser {
+        MarkdownParser {
+            source: source,
+            position: 0,
+            current_line: "",
+        }
+    }
+
+    pub fn parse(&mut self) -> Node {
+        let mut doc = Node::new(NodeType::Document);
+        let lines = self.source.split("\n");
+
+        let mut i = 0;
+        while i < lines.len() {
+            let line = lines[i].trim();
+
+            if line.len() == 0 {
+                i = i + 1;
+                continue;
+            }
+
+            // Headings
+            if line.starts_with("#") {
+                let heading = self.parse_heading(line);
+                doc = doc.add_child(heading);
+            }
+            // Horizontal rule
+            else if line == "---" || line == "***" || line == "___" {
+                doc = doc.add_child(Node::new(NodeType::HorizontalRule));
+            }
+            // Code block
+            else if line.starts_with("```") {
+                let code_block = self.parse_code_block(lines, &mut i);
+                doc = doc.add_child(code_block);
+            }
+            // Blockquote
+            else if line.starts_with(">") {
+                let quote = self.parse_blockquote(line);
+                doc = doc.add_child(quote);
+            }
+            // Unordered list
+            else if line.starts_with("- ") || line.starts_with("* ") || line.starts_with("+ ") {
+                let list = self.parse_list(lines, &mut i, false);
+                doc = doc.add_child(list);
+            }
+            // Ordered list
+            else if self.is_ordered_list(line) {
+                let list = self.parse_list(lines, &mut i, true);
+                doc = doc.add_child(list);
+            }
+            // Task list
+            else if line.starts_with("- [ ]") || line.starts_with("- [x]") {
+                let task_list = self.parse_task_list(lines, &mut i);
+                doc = doc.add_child(task_list);
+            }
+            // Paragraph
+            else {
+                let para = self.parse_paragraph(line);
+                doc = doc.add_child(para);
+            }
+
+            i = i + 1;
+        }
+
+        doc
+    }
+
+    fn parse_heading(&self, line: string) -> Node {
+        let mut level = 0;
+        let mut content = line.clone();
+
+        // Count # symbols
+        while content.starts_with("#") {
+            level = level + 1;
+            content = content.substring(1, content.len());
+        }
+
+        Node::new(NodeType::Heading)
+            .with_level(level)
+            .with_content(content.trim())
+    }
+
+    fn parse_code_block(&self, lines: Array<string>, i: &mut int) -> Node {
+        let mut language = lines[*i].substring(3, lines[*i].len()).trim();
+        let mut code = "";
+
+        *i = *i + 1;
+        while *i < lines.len() {
+            if lines[*i].starts_with("```") {
+                break;
+            }
+            code = code + lines[*i] + "\n";
+            *i = *i + 1;
+        }
+
+        let mut node = Node::new(NodeType::CodeBlock)
+            .with_content(code.trim());
+        node.language = language;
+        node
+    }
+
+    fn parse_blockquote(&self, line: string) -> Node {
+        let content = line.substring(1, line.len()).trim();
+        Node::new(NodeType::Blockquote)
+            .with_content(content)
+    }
+
+    fn parse_list(&self, lines: Array<string>, i: &mut int, ordered: bool) -> Node {
+        let mut list = Node::new(NodeType::List);
+        list.ordered = ordered;
+
+        while *i < lines.len() {
+            let line = lines[*i].trim();
+
+            if line.len() == 0 {
+                break;
+            }
+
+            if ordered {
+                if !self.is_ordered_list(line) {
+                    break;
+                }
+            } else {
+                if !line.starts_with("- ") && !line.starts_with("* ") && !line.starts_with("+ ") {
+                    break;
+                }
+            }
+
+            // Extract list item content
+            let content = if ordered {
+                // Skip "1. ", "2. ", etc.
+                let mut idx = 0;
+                while idx < line.len() && line.char_at(idx) != '.' {
+                    idx = idx + 1;
+                }
+                line.substring(idx + 2, line.len())
+            } else {
+                line.substring(2, line.len())
+            };
+
+            let item = Node::new(NodeType::ListItem)
+                .with_content(content);
+            list = list.add_child(item);
+
+            *i = *i + 1;
+        }
+
+        *i = *i - 1; // Adjust for outer loop
+        list
+    }
+
+    fn parse_task_list(&self, lines: Array<string>, i: &mut int) -> Node {
+        let mut list = Node::new(NodeType::TaskList);
+
+        while *i < lines.len() {
+            let line = lines[*i].trim();
+
+            if line.len() == 0 {
+                break;
+            }
+
+            if !line.starts_with("- [ ]") && !line.starts_with("- [x]") && !line.starts_with("- [X]") {
+                break;
+            }
+
+            let checked = line.starts_with("- [x]") || line.starts_with("- [X]");
+            let content = line.substring(5, line.len()).trim();
+
+            let mut item = Node::new(NodeType::TaskItem)
+                .with_content(content);
+            item.checked = checked;
+            list = list.add_child(item);
+
+            *i = *i + 1;
+        }
+
+        *i = *i - 1;
+        list
+    }
+
+    fn parse_paragraph(&self, line: string) -> Node {
+        let para = Node::new(NodeType::Paragraph);
+        self.parse_inline(para, line)
+    }
+
+    fn parse_inline(&self, mut node: Node, text: string) -> Node {
+        // Parse inline elements: **bold**, *italic*, `code`, [link](url), ![alt](url), ~~strikethrough~~
+        let mut content = text.clone();
+
+        // For simplicity, just add text node for now
+        // In production, would parse inline markdown
+        node.children.push(
+            Node::new(NodeType::Text)
+                .with_content(content)
+        );
+
+        node
+    }
+
+    fn is_ordered_list(&self, line: string) -> bool {
+        if line.len() < 3 {
+            return false;
+        }
+
+        let first_char = line.char_at(0);
+        if first_char < '0' || first_char > '9' {
+            return false;
+        }
+
+        let second_char = line.char_at(1);
+        second_char == '.'
+    }
+}
+
+// ============================================================================
+// HTML Renderer
+// ============================================================================
+
+pub struct HtmlRenderer {
+    pub sanitize: bool,
+}
+
+impl HtmlRenderer {
+    pub fn new() -> HtmlRenderer {
+        HtmlRenderer {
+            sanitize: true,
+        }
+    }
+
+    pub fn with_sanitize(mut self, sanitize: bool) -> HtmlRenderer {
+        self.sanitize = sanitize;
+        self
+    }
+
+    pub fn render(&self, node: &Node) -> string {
+        match node.node_type {
+            NodeType::Document => self.render_document(node),
+            NodeType::Heading => self.render_heading(node),
+            NodeType::Paragraph => self.render_paragraph(node),
+            NodeType::Text => node.content.clone(),
+            NodeType::Strong => "<strong>" + node.content + "</strong>",
+            NodeType::Emphasis => "<em>" + node.content + "</em>",
+            NodeType::Code => "<code>" + self.escape_html(node.content.clone()) + "</code>",
+            NodeType::CodeBlock => self.render_code_block(node),
+            NodeType::Link => self.render_link(node),
+            NodeType::Image => self.render_image(node),
+            NodeType::List => self.render_list(node),
+            NodeType::ListItem => self.render_list_item(node),
+            NodeType::Blockquote => self.render_blockquote(node),
+            NodeType::HorizontalRule => "<hr/>",
+            NodeType::TaskList => self.render_task_list(node),
+            NodeType::TaskItem => self.render_task_item(node),
+            NodeType::Strikethrough => "<s>" + node.content + "</s>",
+            _ => "",
+        }
+    }
+
+    fn render_document(&self, node: &Node) -> string {
+        let mut html = "";
+        let mut i = 0;
+        while i < node.children.len() {
+            html = html + self.render(&node.children[i]);
+            i = i + 1;
+        }
+        html
+    }
+
+    fn render_heading(&self, node: &Node) -> string {
+        let tag = "h" + node.level.to_string();
+        "<" + tag + ">" + node.content + "</" + tag + ">"
+    }
+
+    fn render_paragraph(&self, node: &Node) -> string {
+        let mut content = "";
+        let mut i = 0;
+        while i < node.children.len() {
+            content = content + self.render(&node.children[i]);
+            i = i + 1;
+        }
+        "<p>" + content + "</p>"
+    }
+
+    fn render_code_block(&self, node: &Node) -> string {
+        let lang_class = if node.language.len() > 0 {
+            " class=\"language-" + node.language + "\""
+        } else {
+            ""
+        };
+        "<pre><code" + lang_class + ">" + self.escape_html(node.content.clone()) + "</code></pre>"
+    }
+
+    fn render_link(&self, node: &Node) -> string {
+        "<a href=\"" + node.url + "\">" + node.content + "</a>"
+    }
+
+    fn render_image(&self, node: &Node) -> string {
+        "<img src=\"" + node.url + "\" alt=\"" + node.alt + "\"/>"
+    }
+
+    fn render_list(&self, node: &Node) -> string {
+        let tag = if node.ordered { "ol" } else { "ul" };
+        let mut items = "";
+        let mut i = 0;
+        while i < node.children.len() {
+            items = items + self.render(&node.children[i]);
+            i = i + 1;
+        }
+        "<" + tag + ">" + items + "</" + tag + ">"
+    }
+
+    fn render_list_item(&self, node: &Node) -> string {
+        "<li>" + node.content + "</li>"
+    }
+
+    fn render_blockquote(&self, node: &Node) -> string {
+        "<blockquote>" + node.content + "</blockquote>"
+    }
+
+    fn render_task_list(&self, node: &Node) -> string {
+        let mut items = "";
+        let mut i = 0;
+        while i < node.children.len() {
+            items = items + self.render(&node.children[i]);
+            i = i + 1;
+        }
+        "<ul class=\"task-list\">" + items + "</ul>"
+    }
+
+    fn render_task_item(&self, node: &Node) -> string {
+        let checked = if node.checked { " checked" } else { "" };
+        "<li class=\"task-list-item\"><input type=\"checkbox\" disabled" + checked + "/> " + node.content + "</li>"
+    }
+
+    fn escape_html(&self, text: string) -> string {
+        if !self.sanitize {
+            return text;
+        }
+
+        text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&#39;")
+    }
+}
+
+// ============================================================================
+// Markdown (Main API)
+// ============================================================================
+
+pub struct Markdown {
+    pub source: string,
+    pub ast: Option<Node>,
+    pub sanitize: bool,
+}
+
+impl Markdown {
+    pub fn new(source: string) -> Markdown {
+        Markdown {
+            source: source,
+            ast: None,
+            sanitize: true,
+        }
+    }
+
+    pub fn with_sanitize(mut self, sanitize: bool) -> Markdown {
+        self.sanitize = sanitize;
+        self
+    }
+
+    pub fn parse(mut self) -> Markdown {
+        let mut parser = MarkdownParser::new(self.source.clone());
+        self.ast = Some(parser.parse());
+        self
+    }
+
+    pub fn to_html(&self) -> string {
+        if self.ast.is_none() {
+            return "";
+        }
+
+        let renderer = HtmlRenderer::new()
+            .with_sanitize(self.sanitize);
+        renderer.render(&self.ast.unwrap())
+    }
+
+    pub fn get_ast(&self) -> Option<Node> {
+        self.ast.clone()
+    }
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+pub fn parse_markdown(source: string) -> string {
+    Markdown::new(source)
+        .parse()
+        .to_html()
+}
+
+pub fn parse_markdown_safe(source: string) -> string {
+    Markdown::new(source)
+        .with_sanitize(true)
+        .parse()
+        .to_html()
+}
+
+pub fn parse_markdown_unsafe(source: string) -> string {
+    Markdown::new(source)
+        .with_sanitize(false)
+        .parse()
+        .to_html()
+}
+
+// ============================================================================
+// MarkdownBuilder (Fluent API for creating markdown)
+// ============================================================================
+
+pub struct MarkdownBuilder {
+    pub content: string,
+}
+
+impl MarkdownBuilder {
+    pub fn new() -> MarkdownBuilder {
+        MarkdownBuilder {
+            content: "",
+        }
+    }
+
+    pub fn heading(mut self, level: int, text: string) -> MarkdownBuilder {
+        let mut hashes = "";
+        let mut i = 0;
+        while i < level {
+            hashes = hashes + "#";
+            i = i + 1;
+        }
+        self.content = self.content + hashes + " " + text + "\n\n";
+        self
+    }
+
+    pub fn paragraph(mut self, text: string) -> MarkdownBuilder {
+        self.content = self.content + text + "\n\n";
+        self
+    }
+
+    pub fn code_block(mut self, code: string, language: string) -> MarkdownBuilder {
+        self.content = self.content + "```" + language + "\n" + code + "\n```\n\n";
+        self
+    }
+
+    pub fn list_item(mut self, text: string) -> MarkdownBuilder {
+        self.content = self.content + "- " + text + "\n";
+        self
+    }
+
+    pub fn ordered_list_item(mut self, num: int, text: string) -> MarkdownBuilder {
+        self.content = self.content + num.to_string() + ". " + text + "\n";
+        self
+    }
+
+    pub fn link(mut self, text: string, url: string) -> MarkdownBuilder {
+        self.content = self.content + "[" + text + "](" + url + ")";
+        self
+    }
+
+    pub fn image(mut self, alt: string, url: string) -> MarkdownBuilder {
+        self.content = self.content + "![" + alt + "](" + url + ")\n\n";
+        self
+    }
+
+    pub fn blockquote(mut self, text: string) -> MarkdownBuilder {
+        self.content = self.content + "> " + text + "\n\n";
+        self
+    }
+
+    pub fn horizontal_rule(mut self) -> MarkdownBuilder {
+        self.content = self.content + "---\n\n";
+        self
+    }
+
+    pub fn task_item(mut self, text: string, checked: bool) -> MarkdownBuilder {
+        let checkbox = if checked { "[x]" } else { "[ ]" };
+        self.content = self.content + "- " + checkbox + " " + text + "\n";
+        self
+    }
+
+    pub fn build(self) -> string {
+        self.content
+    }
+}
