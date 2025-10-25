@@ -23,7 +23,7 @@ impl RPCGenerator {
 
         // Import RPC client runtime
         output.push_str("// Auto-generated RPC client stubs\n");
-        output.push_str("import { RPCClient } from '../dist/client-runtime.js';\n\n");
+        output.push_str("import { RPCClient } from './client-runtime.js';\n\n");
         output.push_str("const client = new RPCClient(window.location.origin + '/_rpc');\n\n");
 
         // Generate stub for each server function

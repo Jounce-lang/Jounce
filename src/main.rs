@@ -350,15 +350,30 @@ fn main() {
                 println!("   ✓ {}", css_path.display());
             }
 
-            // Copy server-runtime.js to dist/
-            let runtime_source = std::path::PathBuf::from("runtime/server-runtime.js");
-            if runtime_source.exists() {
-                let runtime_dest = output_dir.join("server-runtime.js");
-                if let Err(e) = fs::copy(&runtime_source, &runtime_dest) {
-                    eprintln!("⚠️  Warning: Failed to copy server-runtime.js: {}", e);
-                } else {
-                    println!("   ✓ {}", runtime_dest.display());
-                }
+            // Write embedded runtime files
+            const SERVER_RUNTIME: &str = include_str!("../runtime/server-runtime.js");
+            const CLIENT_RUNTIME: &str = include_str!("../runtime/client-runtime.js");
+            const REACTIVITY_RUNTIME: &str = include_str!("../runtime/reactivity.js");
+
+            let server_runtime_path = output_dir.join("server-runtime.js");
+            if let Err(e) = fs::write(&server_runtime_path, SERVER_RUNTIME) {
+                eprintln!("⚠️  Warning: Failed to write server-runtime.js: {}", e);
+            } else {
+                println!("   ✓ {}", server_runtime_path.display());
+            }
+
+            let client_runtime_path = output_dir.join("client-runtime.js");
+            if let Err(e) = fs::write(&client_runtime_path, CLIENT_RUNTIME) {
+                eprintln!("⚠️  Warning: Failed to write client-runtime.js: {}", e);
+            } else {
+                println!("   ✓ {}", client_runtime_path.display());
+            }
+
+            let reactivity_path = output_dir.join("reactivity.js");
+            if let Err(e) = fs::write(&reactivity_path, REACTIVITY_RUNTIME) {
+                eprintln!("⚠️  Warning: Failed to write reactivity.js: {}", e);
+            } else {
+                println!("   ✓ {}", reactivity_path.display());
             }
 
             // Create index.html
