@@ -46,18 +46,46 @@ A simple counter application demonstrating the core features of Jounce:
 
 ## 🚀 How to Run
 
+### Method 1: Production Server (Recommended)
+
 ```bash
 # From the Jounce root directory
-cd examples/apps/01-hello-counter
+cd /Users/jordanhill/Documents/jrez-soft-projects/Jounce
 
 # Compile the app
-jnc compile main.jnc
+cargo run -- compile examples/apps/01-hello-counter/main.jnc
 
-# Run the development server
-cd dist && node ../../../scripts/serve.py
+# Run the Node.js server
+cd dist
+node server.js
 
 # Open browser to http://localhost:3000
 ```
+
+### Method 2: HMR Dev Server (Live Reload)
+
+```bash
+# From the Jounce root directory
+cargo run -- compile examples/apps/01-hello-counter/main.jnc
+
+# Start HMR server with auto-reload
+node scripts/hmr-server.js
+
+# Open browser to http://localhost:3000
+# Edit main.jnc and see changes instantly!
+```
+
+### Method 3: Static File (Quick Test)
+
+```bash
+# Just open the HTML file directly
+cd dist
+open index.html  # macOS
+# or: xdg-open index.html  # Linux
+# or: start index.html  # Windows
+```
+
+**See [DEV_SERVER_GUIDE.md](../../../DEV_SERVER_GUIDE.md) for complete server documentation.**
 
 ---
 
