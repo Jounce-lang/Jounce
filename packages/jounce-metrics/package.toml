@@ -1,0 +1,33 @@
+[package]
+name = "jounce-metrics"
+version = "0.1.0"
+description = "Performance metrics and monitoring - counters, gauges, histograms, timers, and more"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-metrics"
+
+[dependencies]
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "metrics_tests"
+path = "tests/metrics_tests.jnc"
+
+[[test]]
+name = "monitor_tests"
+path = "tests/monitor_tests.jnc"
+
+[[test]]
+name = "registry_tests"
+path = "tests/registry_tests.jnc"
+
+[features]
+default = ["counter", "gauge", "histogram", "timer"]
+counter = []
+gauge = []
+histogram = []
+timer = []
+summary = []
+registry = []

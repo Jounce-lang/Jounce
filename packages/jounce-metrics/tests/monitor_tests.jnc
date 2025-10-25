@@ -1,0 +1,275 @@
+// Tests for Stopwatch and PerformanceMonitor
+use jounce_metrics::{Stopwatch, PerformanceMonitor, milliseconds_to_seconds, seconds_to_milliseconds};
+
+// ============================================================================
+// Stopwatch Tests
+// ============================================================================
+
+#[test]
+fn test_stopwatch_creation() {
+    let sw = Stopwatch::new();
+
+    assert!(!sw.running, "Should not be running");
+    assert_eq!(sw.lap_times.len(), 0, "Should have no laps");
+}
+
+#[test]
+fn test_stopwatch_start() {
+    let sw = Stopwatch::new()
+        .start();
+
+    assert!(sw.running, "Should be running after start");
+}
+
+#[test]
+fn test_stopwatch_stop() {
+    let sw = Stopwatch::new()
+        .start()
+        .stop();
+
+    assert!(!sw.running, "Should not be running after stop");
+    assert_eq!(sw.lap_times.len(), 1, "Should have 1 lap time");
+}
+
+#[test]
+fn test_stopwatch_lap() {
+    let sw = Stopwatch::new()
+        .start()
+        .lap();
+
+    assert_eq!(sw.lap_times.len(), 1, "Should have 1 lap");
+    assert!(sw.running, "Should still be running");
+}
+
+#[test]
+fn test_stopwatch_multiple_laps() {
+    let sw = Stopwatch::new()
+        .start()
+        .lap()
+        .lap()
+        .lap();
+
+    assert_eq!(sw.lap_count(), 3, "Should have 3 laps");
+}
+
+#[test]
+fn test_stopwatch_get_lap() {
+    let sw = Stopwatch::new()
+        .start()
+        .lap();
+
+    let lap_time = sw.get_lap(0);
+    assert!(lap_time >= 0, "Lap time should be non-negative");
+}
+
+#[test]
+fn test_stopwatch_reset() {
+    let sw = Stopwatch::new()
+        .start()
+        .lap()
+        .stop()
+        .reset();
+
+    assert!(!sw.running, "Should not be running");
+    assert_eq!(sw.lap_times.len(), 0, "Laps should be cleared");
+}
+
+#[test]
+fn test_stopwatch_elapsed_not_running() {
+    let sw = Stopwatch::new();
+
+    assert_eq!(sw.elapsed(), 0, "Elapsed should be 0");
+}
+
+// ============================================================================
+// PerformanceMonitor Tests
+// ============================================================================
+
+#[test]
+fn test_performance_monitor_creation() {
+    let monitor = PerformanceMonitor::new("api_response");
+
+    assert_eq!(monitor.name, "api_response", "Name should match");
+    assert_eq!(monitor.samples.len(), 0, "Should have no samples");
+}
+
+#[test]
+fn test_performance_monitor_record() {
+    let monitor = PerformanceMonitor::new("latency")
+        .record(150.0)
+        .record(200.0);
+
+    assert_eq!(monitor.samples.len(), 2, "Should have 2 samples");
+}
+
+#[test]
+fn test_performance_monitor_average() {
+    let monitor = PerformanceMonitor::new("response_time")
+        .record(100.0)
+        .record(200.0)
+        .record(300.0);
+
+    let avg = monitor.average();
+    assert!(avg > 199.0 && avg < 201.0, "Average should be 200");
+}
+
+#[test]
+fn test_performance_monitor_average_empty() {
+    let monitor = PerformanceMonitor::new("empty");
+
+    assert_eq!(monitor.average(), 0.0, "Average should be 0 when empty");
+}
+
+#[test]
+fn test_performance_monitor_with_threshold() {
+    let monitor = PerformanceMonitor::new("slow_query")
+        .with_threshold(500.0);
+
+    assert_eq!(monitor.threshold, 500.0, "Threshold should be 500");
+}
+
+#[test]
+fn test_performance_monitor_is_above_threshold() {
+    let monitor = PerformanceMonitor::new("timing")
+        .with_threshold(100.0)
+        .record(50.0)
+        .record(50.0);
+
+    assert!(!monitor.is_above_threshold(), "Should not be above threshold");
+}
+
+#[test]
+fn test_performance_monitor_is_above_threshold_true() {
+    let monitor = PerformanceMonitor::new("timing")
+        .with_threshold(100.0)
+        .record(150.0)
+        .record(200.0);
+
+    assert!(monitor.is_above_threshold(), "Should be above threshold");
+}
+
+#[test]
+fn test_performance_monitor_violations() {
+    let monitor = PerformanceMonitor::new("sla")
+        .with_threshold(200.0)
+        .record(100.0)
+        .record(250.0)
+        .record(300.0)
+        .record(150.0);
+
+    assert_eq!(monitor.violations(), 2, "Should have 2 violations");
+}
+
+#[test]
+fn test_performance_monitor_violations_none() {
+    let monitor = PerformanceMonitor::new("good")
+        .with_threshold(1000.0)
+        .record(100.0)
+        .record(200.0);
+
+    assert_eq!(monitor.violations(), 0, "Should have no violations");
+}
+
+#[test]
+fn test_performance_monitor_with_max_samples() {
+    let monitor = PerformanceMonitor::new("limited")
+        .with_max_samples(3);
+
+    assert_eq!(monitor.max_samples, 3, "Max samples should be 3");
+}
+
+#[test]
+fn test_performance_monitor_max_samples_limit() {
+    let monitor = PerformanceMonitor::new("rolling")
+        .with_max_samples(2)
+        .record(1.0)
+        .record(2.0)
+        .record(3.0);
+
+    assert_eq!(monitor.samples.len(), 2, "Should only keep 2 samples");
+}
+
+// ============================================================================
+// Utility Function Tests
+// ============================================================================
+
+#[test]
+fn test_milliseconds_to_seconds() {
+    let seconds = milliseconds_to_seconds(5000);
+
+    assert_eq!(seconds, 5.0, "5000ms should be 5 seconds");
+}
+
+#[test]
+fn test_milliseconds_to_seconds_fractional() {
+    let seconds = milliseconds_to_seconds(1500);
+
+    assert_eq!(seconds, 1.5, "1500ms should be 1.5 seconds");
+}
+
+#[test]
+fn test_seconds_to_milliseconds() {
+    let ms = seconds_to_milliseconds(3.0);
+
+    assert_eq!(ms, 3000, "3 seconds should be 3000ms");
+}
+
+#[test]
+fn test_seconds_to_milliseconds_fractional() {
+    let ms = seconds_to_milliseconds(2.5);
+
+    assert_eq!(ms, 2500, "2.5 seconds should be 2500ms");
+}
+
+#[test]
+fn test_time_conversion_roundtrip() {
+    let original = 7500;
+    let seconds = milliseconds_to_seconds(original);
+    let back = seconds_to_milliseconds(seconds);
+
+    assert_eq!(back, original, "Conversion should be reversible");
+}
+
+// ============================================================================
+// Integration Tests
+// ============================================================================
+
+#[test]
+fn test_monitor_tracking_performance() {
+    let monitor = PerformanceMonitor::new("api_endpoint")
+        .with_threshold(300.0)
+        .record(150.0)
+        .record(200.0)
+        .record(400.0)
+        .record(500.0)
+        .record(100.0);
+
+    let avg = monitor.average();
+    assert!(avg > 269.0 && avg < 271.0, "Average should be 270");
+
+    let violations = monitor.violations();
+    assert_eq!(violations, 2, "Should have 2 SLA violations");
+}
+
+#[test]
+fn test_stopwatch_lap_timing() {
+    let sw = Stopwatch::new()
+        .start()
+        .lap()
+        .lap()
+        .lap()
+        .stop();
+
+    assert_eq!(sw.lap_count(), 4, "Should have 4 laps (3 laps + stop)");
+}
+
+#[test]
+fn test_monitor_with_millisecond_conversion() {
+    let monitor = PerformanceMonitor::new("request")
+        .with_threshold(1000.0);
+
+    let ms = seconds_to_milliseconds(2.5);
+    let monitor = monitor.record(ms as float);
+
+    assert!(monitor.is_above_threshold(), "2500ms should exceed 1000ms threshold");
+}

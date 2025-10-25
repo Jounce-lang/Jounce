@@ -1,0 +1,355 @@
+// Tests for Counter, Gauge, Histogram, Timer, and Summary
+use jounce_metrics::{Counter, Gauge, Histogram, Timer, Summary};
+
+// ============================================================================
+// Counter Tests
+// ============================================================================
+
+#[test]
+fn test_counter_creation() {
+    let counter = Counter::new("requests");
+
+    assert_eq!(counter.name, "requests", "Name should match");
+    assert_eq!(counter.value, 0, "Initial value should be 0");
+}
+
+#[test]
+fn test_counter_increment() {
+    let counter = Counter::new("clicks")
+        .increment();
+
+    assert_eq!(counter.value, 1, "Value should be 1");
+}
+
+#[test]
+fn test_counter_increment_multiple() {
+    let counter = Counter::new("events")
+        .increment()
+        .increment()
+        .increment();
+
+    assert_eq!(counter.value, 3, "Value should be 3");
+}
+
+#[test]
+fn test_counter_increment_by() {
+    let counter = Counter::new("bytes")
+        .increment_by(1024);
+
+    assert_eq!(counter.value, 1024, "Value should be 1024");
+}
+
+#[test]
+fn test_counter_with_tag() {
+    let mut counter = Counter::new("api_calls")
+        .with_tag("method", "GET")
+        .with_tag("endpoint", "/users");
+
+    assert_eq!(counter.tags.len(), 2, "Should have 2 tags");
+}
+
+#[test]
+fn test_counter_get_value() {
+    let counter = Counter::new("total")
+        .increment_by(100);
+
+    assert_eq!(counter.get_value(), 100, "Get value should return 100");
+}
+
+#[test]
+fn test_counter_reset() {
+    let counter = Counter::new("test")
+        .increment_by(50)
+        .reset();
+
+    assert_eq!(counter.value, 0, "Value should be reset to 0");
+}
+
+// ============================================================================
+// Gauge Tests
+// ============================================================================
+
+#[test]
+fn test_gauge_creation() {
+    let gauge = Gauge::new("temperature");
+
+    assert_eq!(gauge.name, "temperature", "Name should match");
+    assert_eq!(gauge.value, 0.0, "Initial value should be 0");
+}
+
+#[test]
+fn test_gauge_set() {
+    let gauge = Gauge::new("cpu_usage")
+        .set(75.5);
+
+    assert_eq!(gauge.value, 75.5, "Value should be 75.5");
+}
+
+#[test]
+fn test_gauge_increment() {
+    let gauge = Gauge::new("connections")
+        .set(10.0)
+        .increment();
+
+    assert_eq!(gauge.value, 11.0, "Value should be 11");
+}
+
+#[test]
+fn test_gauge_decrement() {
+    let gauge = Gauge::new("connections")
+        .set(10.0)
+        .decrement();
+
+    assert_eq!(gauge.value, 9.0, "Value should be 9");
+}
+
+#[test]
+fn test_gauge_increment_by() {
+    let gauge = Gauge::new("queue_size")
+        .increment_by(25.5);
+
+    assert_eq!(gauge.value, 25.5, "Value should be 25.5");
+}
+
+#[test]
+fn test_gauge_decrement_by() {
+    let gauge = Gauge::new("memory")
+        .set(100.0)
+        .decrement_by(30.0);
+
+    assert_eq!(gauge.value, 70.0, "Value should be 70");
+}
+
+#[test]
+fn test_gauge_with_tag() {
+    let mut gauge = Gauge::new("latency")
+        .with_tag("service", "api");
+
+    assert_eq!(gauge.tags.len(), 1, "Should have 1 tag");
+}
+
+#[test]
+fn test_gauge_get_value() {
+    let gauge = Gauge::new("test")
+        .set(42.5);
+
+    assert_eq!(gauge.get_value(), 42.5, "Get value should return 42.5");
+}
+
+// ============================================================================
+// Histogram Tests
+// ============================================================================
+
+#[test]
+fn test_histogram_creation() {
+    let hist = Histogram::new("response_time");
+
+    assert_eq!(hist.name, "response_time", "Name should match");
+    assert_eq!(hist.values.len(), 0, "Should have no values");
+}
+
+#[test]
+fn test_histogram_observe() {
+    let hist = Histogram::new("latency")
+        .observe(0.5)
+        .observe(1.2)
+        .observe(0.8);
+
+    assert_eq!(hist.count(), 3, "Should have 3 observations");
+}
+
+#[test]
+fn test_histogram_sum() {
+    let hist = Histogram::new("duration")
+        .observe(1.0)
+        .observe(2.0)
+        .observe(3.0);
+
+    let sum = hist.sum();
+    assert!(sum > 5.9 && sum < 6.1, "Sum should be 6");
+}
+
+#[test]
+fn test_histogram_mean() {
+    let hist = Histogram::new("values")
+        .observe(10.0)
+        .observe(20.0)
+        .observe(30.0);
+
+    let mean = hist.mean();
+    assert!(mean > 19.9 && mean < 20.1, "Mean should be 20");
+}
+
+#[test]
+fn test_histogram_min() {
+    let hist = Histogram::new("temps")
+        .observe(10.5)
+        .observe(5.2)
+        .observe(15.8);
+
+    let min = hist.min();
+    assert!(min > 5.1 && min < 5.3, "Min should be 5.2");
+}
+
+#[test]
+fn test_histogram_max() {
+    let hist = Histogram::new("temps")
+        .observe(10.5)
+        .observe(5.2)
+        .observe(15.8);
+
+    let max = hist.max();
+    assert!(max > 15.7 && max < 15.9, "Max should be 15.8");
+}
+
+#[test]
+fn test_histogram_with_buckets() {
+    let mut buckets = Array::new();
+    buckets.push(1.0);
+    buckets.push(5.0);
+    buckets.push(10.0);
+
+    let hist = Histogram::new("custom")
+        .with_buckets(buckets);
+
+    assert_eq!(hist.buckets.len(), 3, "Should have 3 buckets");
+}
+
+#[test]
+fn test_histogram_with_tag() {
+    let mut hist = Histogram::new("request_size")
+        .with_tag("route", "/api/users");
+
+    assert_eq!(hist.tags.len(), 1, "Should have 1 tag");
+}
+
+// ============================================================================
+// Timer Tests
+// ============================================================================
+
+#[test]
+fn test_timer_creation() {
+    let timer = Timer::new("operation");
+
+    assert_eq!(timer.name, "operation", "Name should match");
+    assert!(!timer.running, "Should not be running");
+}
+
+#[test]
+fn test_timer_start() {
+    let timer = Timer::new("task")
+        .start();
+
+    assert!(timer.running, "Should be running after start");
+}
+
+#[test]
+fn test_timer_stop() {
+    let timer = Timer::new("task")
+        .start()
+        .stop();
+
+    assert!(!timer.running, "Should not be running after stop");
+    assert_eq!(timer.durations.len(), 1, "Should have 1 duration recorded");
+}
+
+#[test]
+fn test_timer_multiple_runs() {
+    let timer = Timer::new("task")
+        .start()
+        .stop()
+        .start()
+        .stop();
+
+    assert_eq!(timer.durations.len(), 2, "Should have 2 durations");
+}
+
+#[test]
+fn test_timer_with_tag() {
+    let mut timer = Timer::new("query")
+        .with_tag("database", "postgres");
+
+    assert_eq!(timer.tags.len(), 1, "Should have 1 tag");
+}
+
+// ============================================================================
+// Summary Tests
+// ============================================================================
+
+#[test]
+fn test_summary_creation() {
+    let summary = Summary::new("metrics");
+
+    assert_eq!(summary.name, "metrics", "Name should match");
+    assert_eq!(summary.values.len(), 0, "Should have no values");
+}
+
+#[test]
+fn test_summary_observe() {
+    let summary = Summary::new("data")
+        .observe(1.5)
+        .observe(2.5)
+        .observe(3.5);
+
+    assert_eq!(summary.count(), 3, "Should have 3 values");
+}
+
+#[test]
+fn test_summary_sum() {
+    let summary = Summary::new("totals")
+        .observe(10.0)
+        .observe(20.0)
+        .observe(30.0);
+
+    let sum = summary.sum();
+    assert!(sum > 59.9 && sum < 60.1, "Sum should be 60");
+}
+
+#[test]
+fn test_summary_mean() {
+    let summary = Summary::new("averages")
+        .observe(5.0)
+        .observe(15.0)
+        .observe(10.0);
+
+    let mean = summary.mean();
+    assert!(mean > 9.9 && mean < 10.1, "Mean should be 10");
+}
+
+#[test]
+fn test_summary_min() {
+    let summary = Summary::new("values")
+        .observe(8.0)
+        .observe(3.0)
+        .observe(12.0);
+
+    let min = summary.min();
+    assert!(min > 2.9 && min < 3.1, "Min should be 3");
+}
+
+#[test]
+fn test_summary_max() {
+    let summary = Summary::new("values")
+        .observe(8.0)
+        .observe(3.0)
+        .observe(12.0);
+
+    let max = summary.max();
+    assert!(max > 11.9 && max < 12.1, "Max should be 12");
+}
+
+#[test]
+fn test_summary_with_max_size() {
+    let summary = Summary::new("limited")
+        .with_max_size(5);
+
+    assert_eq!(summary.max_size, 5, "Max size should be 5");
+}
+
+#[test]
+fn test_summary_with_tag() {
+    let mut summary = Summary::new("response_time")
+        .with_tag("service", "web");
+
+    assert_eq!(summary.tags.len(), 1, "Should have 1 tag");
+}

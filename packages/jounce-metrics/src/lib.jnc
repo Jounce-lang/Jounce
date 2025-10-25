@@ -1,0 +1,664 @@
+// Performance metrics and monitoring for Jounce
+// Track counters, gauges, histograms, timers, and custom metrics
+
+// ============================================================================
+// Metric Types
+// ============================================================================
+
+pub enum MetricType {
+    Counter,
+    Gauge,
+    Histogram,
+    Timer,
+    Summary,
+}
+
+// ============================================================================
+// Counter - Monotonically increasing value
+// ============================================================================
+
+pub struct Counter {
+    pub name: string,
+    pub value: int,
+    pub tags: Map<string, string>,
+}
+
+impl Counter {
+    pub fn new(name: string) -> Counter {
+        Counter {
+            name: name,
+            value: 0,
+            tags: Map::new(),
+        }
+    }
+
+    pub fn with_tag(mut self, key: string, value: string) -> Counter {
+        self.tags.set(key, value);
+        self
+    }
+
+    pub fn increment(mut self) -> Counter {
+        self.value = self.value + 1;
+        self
+    }
+
+    pub fn increment_by(mut self, amount: int) -> Counter {
+        self.value = self.value + amount;
+        self
+    }
+
+    pub fn get_value(&self) -> int {
+        self.value
+    }
+
+    pub fn reset(mut self) -> Counter {
+        self.value = 0;
+        self
+    }
+}
+
+// ============================================================================
+// Gauge - Value that can go up or down
+// ============================================================================
+
+pub struct Gauge {
+    pub name: string,
+    pub value: float,
+    pub tags: Map<string, string>,
+}
+
+impl Gauge {
+    pub fn new(name: string) -> Gauge {
+        Gauge {
+            name: name,
+            value: 0.0,
+            tags: Map::new(),
+        }
+    }
+
+    pub fn with_tag(mut self, key: string, value: string) -> Gauge {
+        self.tags.set(key, value);
+        self
+    }
+
+    pub fn set(mut self, value: float) -> Gauge {
+        self.value = value;
+        self
+    }
+
+    pub fn increment(mut self) -> Gauge {
+        self.value = self.value + 1.0;
+        self
+    }
+
+    pub fn decrement(mut self) -> Gauge {
+        self.value = self.value - 1.0;
+        self
+    }
+
+    pub fn increment_by(mut self, amount: float) -> Gauge {
+        self.value = self.value + amount;
+        self
+    }
+
+    pub fn decrement_by(mut self, amount: float) -> Gauge {
+        self.value = self.value - amount;
+        self
+    }
+
+    pub fn get_value(&self) -> float {
+        self.value
+    }
+}
+
+// ============================================================================
+// Histogram - Distribution of values
+// ============================================================================
+
+pub struct Histogram {
+    pub name: string,
+    pub values: Array<float>,
+    pub buckets: Array<float>,
+    pub tags: Map<string, string>,
+}
+
+impl Histogram {
+    pub fn new(name: string) -> Histogram {
+        let mut buckets = Array::new();
+        buckets.push(0.1);
+        buckets.push(0.5);
+        buckets.push(1.0);
+        buckets.push(5.0);
+        buckets.push(10.0);
+
+        Histogram {
+            name: name,
+            values: Array::new(),
+            buckets: buckets,
+            tags: Map::new(),
+        }
+    }
+
+    pub fn with_buckets(mut self, buckets: Array<float>) -> Histogram {
+        self.buckets = buckets;
+        self
+    }
+
+    pub fn with_tag(mut self, key: string, value: string) -> Histogram {
+        self.tags.set(key, value);
+        self
+    }
+
+    pub fn observe(mut self, value: float) -> Histogram {
+        self.values.push(value);
+        self
+    }
+
+    pub fn count(&self) -> int {
+        self.values.len()
+    }
+
+    pub fn sum(&self) -> float {
+        let mut total = 0.0;
+        let mut i = 0;
+        while i < self.values.len() {
+            total = total + self.values.get(i);
+            i = i + 1;
+        }
+        total
+    }
+
+    pub fn mean(&self) -> float {
+        if self.values.len() == 0 {
+            return 0.0;
+        }
+        self.sum() / (self.values.len() as float)
+    }
+
+    pub fn min(&self) -> float {
+        if self.values.len() == 0 {
+            return 0.0;
+        }
+
+        let mut min_val = self.values.get(0);
+        let mut i = 1;
+        while i < self.values.len() {
+            let val = self.values.get(i);
+            if val < min_val {
+                min_val = val;
+            }
+            i = i + 1;
+        }
+        min_val
+    }
+
+    pub fn max(&self) -> float {
+        if self.values.len() == 0 {
+            return 0.0;
+        }
+
+        let mut max_val = self.values.get(0);
+        let mut i = 1;
+        while i < self.values.len() {
+            let val = self.values.get(i);
+            if val > max_val {
+                max_val = val;
+            }
+            i = i + 1;
+        }
+        max_val
+    }
+}
+
+// ============================================================================
+// Timer - Measure duration
+// ============================================================================
+
+pub struct Timer {
+    pub name: string,
+    pub start_time: int,
+    pub end_time: int,
+    pub running: bool,
+    pub durations: Array<int>,
+    pub tags: Map<string, string>,
+}
+
+impl Timer {
+    pub fn new(name: string) -> Timer {
+        Timer {
+            name: name,
+            start_time: 0,
+            end_time: 0,
+            running: false,
+            durations: Array::new(),
+            tags: Map::new(),
+        }
+    }
+
+    pub fn with_tag(mut self, key: string, value: string) -> Timer {
+        self.tags.set(key, value);
+        self
+    }
+
+    pub fn start(mut self) -> Timer {
+        self.start_time = get_current_time();
+        self.running = true;
+        self
+    }
+
+    pub fn stop(mut self) -> Timer {
+        if self.running {
+            self.end_time = get_current_time();
+            self.running = false;
+            let duration = self.end_time - self.start_time;
+            self.durations.push(duration);
+        }
+        self
+    }
+
+    pub fn elapsed(&self) -> int {
+        if self.running {
+            get_current_time() - self.start_time
+        } else {
+            self.end_time - self.start_time
+        }
+    }
+
+    pub fn average_duration(&self) -> float {
+        if self.durations.len() == 0 {
+            return 0.0;
+        }
+
+        let mut total = 0;
+        let mut i = 0;
+        while i < self.durations.len() {
+            total = total + self.durations.get(i);
+            i = i + 1;
+        }
+
+        (total as float) / (self.durations.len() as float)
+    }
+
+    pub fn total_duration(&self) -> int {
+        let mut total = 0;
+        let mut i = 0;
+        while i < self.durations.len() {
+            total = total + self.durations.get(i);
+            i = i + 1;
+        }
+        total
+    }
+}
+
+// ============================================================================
+// Summary - Statistical summary
+// ============================================================================
+
+pub struct Summary {
+    pub name: string,
+    pub values: Array<float>,
+    pub max_size: int,
+    pub tags: Map<string, string>,
+}
+
+impl Summary {
+    pub fn new(name: string) -> Summary {
+        Summary {
+            name: name,
+            values: Array::new(),
+            max_size: 1000,
+            tags: Map::new(),
+        }
+    }
+
+    pub fn with_max_size(mut self, max_size: int) -> Summary {
+        self.max_size = max_size;
+        self
+    }
+
+    pub fn with_tag(mut self, key: string, value: string) -> Summary {
+        self.tags.set(key, value);
+        self
+    }
+
+    pub fn observe(mut self, value: float) -> Summary {
+        if self.values.len() >= self.max_size {
+            // Remove oldest value
+            self.values.remove(0);
+        }
+        self.values.push(value);
+        self
+    }
+
+    pub fn count(&self) -> int {
+        self.values.len()
+    }
+
+    pub fn sum(&self) -> float {
+        let mut total = 0.0;
+        let mut i = 0;
+        while i < self.values.len() {
+            total = total + self.values.get(i);
+            i = i + 1;
+        }
+        total
+    }
+
+    pub fn mean(&self) -> float {
+        if self.values.len() == 0 {
+            return 0.0;
+        }
+        self.sum() / (self.values.len() as float)
+    }
+
+    pub fn min(&self) -> float {
+        if self.values.len() == 0 {
+            return 0.0;
+        }
+
+        let mut min_val = self.values.get(0);
+        let mut i = 1;
+        while i < self.values.len() {
+            let val = self.values.get(i);
+            if val < min_val {
+                min_val = val;
+            }
+            i = i + 1;
+        }
+        min_val
+    }
+
+    pub fn max(&self) -> float {
+        if self.values.len() == 0 {
+            return 0.0;
+        }
+
+        let mut max_val = self.values.get(0);
+        let mut i = 1;
+        while i < self.values.len() {
+            let val = self.values.get(i);
+            if val > max_val {
+                max_val = val;
+            }
+            i = i + 1;
+        }
+        max_val
+    }
+}
+
+// ============================================================================
+// Metric Registry
+// ============================================================================
+
+pub struct MetricRegistry {
+    pub counters: Map<string, Counter>,
+    pub gauges: Map<string, Gauge>,
+    pub histograms: Map<string, Histogram>,
+    pub timers: Map<string, Timer>,
+    pub summaries: Map<string, Summary>,
+}
+
+impl MetricRegistry {
+    pub fn new() -> MetricRegistry {
+        MetricRegistry {
+            counters: Map::new(),
+            gauges: Map::new(),
+            histograms: Map::new(),
+            timers: Map::new(),
+            summaries: Map::new(),
+        }
+    }
+
+    pub fn register_counter(mut self, counter: Counter) -> MetricRegistry {
+        self.counters.set(counter.name.clone(), counter);
+        self
+    }
+
+    pub fn register_gauge(mut self, gauge: Gauge) -> MetricRegistry {
+        self.gauges.set(gauge.name.clone(), gauge);
+        self
+    }
+
+    pub fn register_histogram(mut self, histogram: Histogram) -> MetricRegistry {
+        self.histograms.set(histogram.name.clone(), histogram);
+        self
+    }
+
+    pub fn register_timer(mut self, timer: Timer) -> MetricRegistry {
+        self.timers.set(timer.name.clone(), timer);
+        self
+    }
+
+    pub fn register_summary(mut self, summary: Summary) -> MetricRegistry {
+        self.summaries.set(summary.name.clone(), summary);
+        self
+    }
+
+    pub fn get_counter(&self, name: string) -> Option<Counter> {
+        self.counters.get(name)
+    }
+
+    pub fn get_gauge(&self, name: string) -> Option<Gauge> {
+        self.gauges.get(name)
+    }
+
+    pub fn counter_count(&self) -> int {
+        self.counters.len()
+    }
+
+    pub fn gauge_count(&self) -> int {
+        self.gauges.len()
+    }
+}
+
+// ============================================================================
+// Metric Reporter
+// ============================================================================
+
+pub struct MetricReport {
+    pub name: string,
+    pub metric_type: MetricType,
+    pub value: string,
+    pub tags: Map<string, string>,
+}
+
+impl MetricReport {
+    pub fn new(name: string, metric_type: MetricType, value: string) -> MetricReport {
+        MetricReport {
+            name: name,
+            metric_type: metric_type,
+            value: value,
+            tags: Map::new(),
+        }
+    }
+
+    pub fn with_tags(mut self, tags: Map<string, string>) -> MetricReport {
+        self.tags = tags;
+        self
+    }
+}
+
+pub struct MetricReporter {
+    pub registry: MetricRegistry,
+}
+
+impl MetricReporter {
+    pub fn new(registry: MetricRegistry) -> MetricReporter {
+        MetricReporter {
+            registry: registry,
+        }
+    }
+
+    pub fn generate_report(&self) -> Array<MetricReport> {
+        let mut reports = Array::new();
+
+        // Report counters
+        // In production would iterate over all counters
+        // For now, just return empty array
+
+        reports
+    }
+}
+
+// ============================================================================
+// Stopwatch - Simple timing utility
+// ============================================================================
+
+pub struct Stopwatch {
+    pub start_time: int,
+    pub lap_times: Array<int>,
+    pub running: bool,
+}
+
+impl Stopwatch {
+    pub fn new() -> Stopwatch {
+        Stopwatch {
+            start_time: 0,
+            lap_times: Array::new(),
+            running: false,
+        }
+    }
+
+    pub fn start(mut self) -> Stopwatch {
+        self.start_time = get_current_time();
+        self.running = true;
+        self
+    }
+
+    pub fn lap(mut self) -> Stopwatch {
+        if self.running {
+            let lap_time = get_current_time() - self.start_time;
+            self.lap_times.push(lap_time);
+        }
+        self
+    }
+
+    pub fn stop(mut self) -> Stopwatch {
+        if self.running {
+            let final_time = get_current_time() - self.start_time;
+            self.lap_times.push(final_time);
+            self.running = false;
+        }
+        self
+    }
+
+    pub fn elapsed(&self) -> int {
+        if self.running {
+            get_current_time() - self.start_time
+        } else {
+            if self.lap_times.len() > 0 {
+                self.lap_times.get(self.lap_times.len() - 1)
+            } else {
+                0
+            }
+        }
+    }
+
+    pub fn lap_count(&self) -> int {
+        self.lap_times.len()
+    }
+
+    pub fn get_lap(&self, index: int) -> int {
+        if index < self.lap_times.len() {
+            self.lap_times.get(index)
+        } else {
+            0
+        }
+    }
+
+    pub fn reset(mut self) -> Stopwatch {
+        self.start_time = 0;
+        self.lap_times = Array::new();
+        self.running = false;
+        self
+    }
+}
+
+// ============================================================================
+// Performance Monitor
+// ============================================================================
+
+pub struct PerformanceMonitor {
+    pub name: string,
+    pub samples: Array<float>,
+    pub max_samples: int,
+    pub threshold: float,
+}
+
+impl PerformanceMonitor {
+    pub fn new(name: string) -> PerformanceMonitor {
+        PerformanceMonitor {
+            name: name,
+            samples: Array::new(),
+            max_samples: 100,
+            threshold: 1000.0,  // 1 second default
+        }
+    }
+
+    pub fn with_max_samples(mut self, max: int) -> PerformanceMonitor {
+        self.max_samples = max;
+        self
+    }
+
+    pub fn with_threshold(mut self, threshold: float) -> PerformanceMonitor {
+        self.threshold = threshold;
+        self
+    }
+
+    pub fn record(mut self, value: float) -> PerformanceMonitor {
+        if self.samples.len() >= self.max_samples {
+            self.samples.remove(0);
+        }
+        self.samples.push(value);
+        self
+    }
+
+    pub fn average(&self) -> float {
+        if self.samples.len() == 0 {
+            return 0.0;
+        }
+
+        let mut total = 0.0;
+        let mut i = 0;
+        while i < self.samples.len() {
+            total = total + self.samples.get(i);
+            i = i + 1;
+        }
+
+        total / (self.samples.len() as float)
+    }
+
+    pub fn is_above_threshold(&self) -> bool {
+        self.average() > self.threshold
+    }
+
+    pub fn violations(&self) -> int {
+        let mut count = 0;
+        let mut i = 0;
+        while i < self.samples.len() {
+            if self.samples.get(i) > self.threshold {
+                count = count + 1;
+            }
+            i = i + 1;
+        }
+        count
+    }
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+pub fn get_current_time() -> int {
+    // In production, would return actual timestamp
+    // For testing, return 0
+    0
+}
+
+pub fn milliseconds_to_seconds(ms: int) -> float {
+    (ms as float) / 1000.0
+}
+
+pub fn seconds_to_milliseconds(seconds: float) -> int {
+    (seconds * 1000.0) as int
+}

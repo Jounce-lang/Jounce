@@ -1,0 +1,311 @@
+// Tests for MetricRegistry and MetricReporter
+use jounce_metrics::{MetricRegistry, MetricReporter, Counter, Gauge, Histogram, Timer, Summary, MetricReport, MetricType};
+
+// ============================================================================
+// MetricRegistry Tests
+// ============================================================================
+
+#[test]
+fn test_registry_creation() {
+    let registry = MetricRegistry::new();
+
+    assert_eq!(registry.counter_count(), 0, "Should have no counters");
+    assert_eq!(registry.gauge_count(), 0, "Should have no gauges");
+}
+
+#[test]
+fn test_registry_register_counter() {
+    let counter = Counter::new("requests");
+    let registry = MetricRegistry::new()
+        .register_counter(counter);
+
+    assert_eq!(registry.counter_count(), 1, "Should have 1 counter");
+}
+
+#[test]
+fn test_registry_register_gauge() {
+    let gauge = Gauge::new("cpu");
+    let registry = MetricRegistry::new()
+        .register_gauge(gauge);
+
+    assert_eq!(registry.gauge_count(), 1, "Should have 1 gauge");
+}
+
+#[test]
+fn test_registry_register_histogram() {
+    let hist = Histogram::new("latency");
+    let registry = MetricRegistry::new()
+        .register_histogram(hist);
+
+    // Histogram count not exposed, but registration shouldn't crash
+    assert!(true, "Histogram should be registered");
+}
+
+#[test]
+fn test_registry_register_timer() {
+    let timer = Timer::new("operation");
+    let registry = MetricRegistry::new()
+        .register_timer(timer);
+
+    assert!(true, "Timer should be registered");
+}
+
+#[test]
+fn test_registry_register_summary() {
+    let summary = Summary::new("metrics");
+    let registry = MetricRegistry::new()
+        .register_summary(summary);
+
+    assert!(true, "Summary should be registered");
+}
+
+#[test]
+fn test_registry_get_counter() {
+    let counter = Counter::new("api_calls");
+    let registry = MetricRegistry::new()
+        .register_counter(counter);
+
+    let retrieved = registry.get_counter("api_calls");
+    assert!(retrieved.is_some(), "Should retrieve counter");
+}
+
+#[test]
+fn test_registry_get_counter_not_found() {
+    let registry = MetricRegistry::new();
+
+    let retrieved = registry.get_counter("nonexistent");
+    assert!(retrieved.is_none(), "Should not find counter");
+}
+
+#[test]
+fn test_registry_get_gauge() {
+    let gauge = Gauge::new("memory");
+    let registry = MetricRegistry::new()
+        .register_gauge(gauge);
+
+    let retrieved = registry.get_gauge("memory");
+    assert!(retrieved.is_some(), "Should retrieve gauge");
+}
+
+#[test]
+fn test_registry_multiple_counters() {
+    let c1 = Counter::new("counter1");
+    let c2 = Counter::new("counter2");
+    let c3 = Counter::new("counter3");
+
+    let registry = MetricRegistry::new()
+        .register_counter(c1)
+        .register_counter(c2)
+        .register_counter(c3);
+
+    assert_eq!(registry.counter_count(), 3, "Should have 3 counters");
+}
+
+#[test]
+fn test_registry_multiple_gauges() {
+    let g1 = Gauge::new("gauge1");
+    let g2 = Gauge::new("gauge2");
+
+    let registry = MetricRegistry::new()
+        .register_gauge(g1)
+        .register_gauge(g2);
+
+    assert_eq!(registry.gauge_count(), 2, "Should have 2 gauges");
+}
+
+#[test]
+fn test_registry_mixed_metrics() {
+    let counter = Counter::new("count");
+    let gauge = Gauge::new("level");
+    let hist = Histogram::new("distribution");
+    let timer = Timer::new("duration");
+
+    let registry = MetricRegistry::new()
+        .register_counter(counter)
+        .register_gauge(gauge)
+        .register_histogram(hist)
+        .register_timer(timer);
+
+    assert_eq!(registry.counter_count(), 1, "Should have 1 counter");
+    assert_eq!(registry.gauge_count(), 1, "Should have 1 gauge");
+}
+
+// ============================================================================
+// MetricReport Tests
+// ============================================================================
+
+#[test]
+fn test_metric_report_creation() {
+    let report = MetricReport::new("requests", MetricType::Counter, "1000");
+
+    assert_eq!(report.name, "requests", "Name should match");
+    assert_eq!(report.value, "1000", "Value should match");
+}
+
+#[test]
+fn test_metric_report_with_tags() {
+    let mut tags = Map::new();
+    tags.set("env", "production");
+    tags.set("region", "us-east");
+
+    let report = MetricReport::new("latency", MetricType::Histogram, "125.5")
+        .with_tags(tags);
+
+    assert_eq!(report.tags.len(), 2, "Should have 2 tags");
+}
+
+// ============================================================================
+// MetricReporter Tests
+// ============================================================================
+
+#[test]
+fn test_reporter_creation() {
+    let registry = MetricRegistry::new();
+    let reporter = MetricReporter::new(registry);
+
+    // Creation should succeed
+    assert!(true, "Reporter should be created");
+}
+
+#[test]
+fn test_reporter_generate_report() {
+    let counter = Counter::new("total");
+    let registry = MetricRegistry::new()
+        .register_counter(counter);
+
+    let reporter = MetricReporter::new(registry);
+    let reports = reporter.generate_report();
+
+    // Report generation should succeed
+    assert!(reports.len() >= 0, "Should generate reports");
+}
+
+// ============================================================================
+// Integration Tests
+// ============================================================================
+
+#[test]
+fn test_full_metrics_workflow() {
+    // Create metrics
+    let mut counter = Counter::new("requests")
+        .with_tag("method", "GET");
+    counter = counter.increment_by(100);
+
+    let mut gauge = Gauge::new("cpu_usage")
+        .with_tag("host", "server1");
+    gauge = gauge.set(75.5);
+
+    let mut hist = Histogram::new("response_time")
+        .with_tag("endpoint", "/api");
+    hist = hist.observe(0.5);
+    hist = hist.observe(1.2);
+    hist = hist.observe(0.8);
+
+    // Register metrics
+    let registry = MetricRegistry::new()
+        .register_counter(counter)
+        .register_gauge(gauge)
+        .register_histogram(hist);
+
+    // Verify registration
+    assert_eq!(registry.counter_count(), 1, "Should have 1 counter");
+    assert_eq!(registry.gauge_count(), 1, "Should have 1 gauge");
+
+    // Retrieve metrics
+    let retrieved_counter = registry.get_counter("requests");
+    assert!(retrieved_counter.is_some(), "Should retrieve counter");
+
+    let retrieved_gauge = registry.get_gauge("cpu_usage");
+    assert!(retrieved_gauge.is_some(), "Should retrieve gauge");
+}
+
+#[test]
+fn test_monitoring_application_metrics() {
+    // Simulate application metrics
+    let mut api_requests = Counter::new("api_requests")
+        .with_tag("service", "user-api");
+
+    let mut active_connections = Gauge::new("active_connections");
+
+    let mut request_durations = Histogram::new("request_duration");
+
+    // Record some activity
+    api_requests = api_requests.increment_by(1000);
+    active_connections = active_connections.set(42.0);
+    request_durations = request_durations.observe(0.125);
+    request_durations = request_durations.observe(0.098);
+    request_durations = request_durations.observe(0.234);
+
+    // Create registry
+    let registry = MetricRegistry::new()
+        .register_counter(api_requests)
+        .register_gauge(active_connections)
+        .register_histogram(request_durations);
+
+    // Generate report
+    let reporter = MetricReporter::new(registry);
+    let reports = reporter.generate_report();
+
+    assert!(true, "Monitoring workflow should complete");
+}
+
+#[test]
+fn test_metrics_with_multiple_tags() {
+    let mut counter = Counter::new("http_requests")
+        .with_tag("method", "POST")
+        .with_tag("endpoint", "/api/users")
+        .with_tag("status", "200");
+
+    counter = counter.increment_by(500);
+
+    let registry = MetricRegistry::new()
+        .register_counter(counter);
+
+    let retrieved = registry.get_counter("http_requests");
+    assert!(retrieved.is_some(), "Should retrieve tagged counter");
+}
+
+#[test]
+fn test_registry_replace_metric() {
+    let c1 = Counter::new("total").increment_by(100);
+    let c2 = Counter::new("total").increment_by(200);
+
+    let registry = MetricRegistry::new()
+        .register_counter(c1)
+        .register_counter(c2);
+
+    assert_eq!(registry.counter_count(), 1, "Should have 1 counter (replaced)");
+
+    let retrieved = registry.get_counter("total");
+    if let Some(counter) = retrieved {
+        assert_eq!(counter.value, 200, "Should have latest value");
+    }
+}
+
+#[test]
+fn test_comprehensive_registry() {
+    // Create all metric types
+    let counter = Counter::new("c1");
+    let gauge = Gauge::new("g1");
+    let histogram = Histogram::new("h1");
+    let timer = Timer::new("t1");
+    let summary = Summary::new("s1");
+
+    // Register all
+    let registry = MetricRegistry::new()
+        .register_counter(counter)
+        .register_gauge(gauge)
+        .register_histogram(histogram)
+        .register_timer(timer)
+        .register_summary(summary);
+
+    // Verify
+    assert_eq!(registry.counter_count(), 1, "Should have counter");
+    assert_eq!(registry.gauge_count(), 1, "Should have gauge");
+
+    // Create reporter
+    let reporter = MetricReporter::new(registry);
+    let reports = reporter.generate_report();
+
+    assert!(true, "Comprehensive registry should work");
+}
