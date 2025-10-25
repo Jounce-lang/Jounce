@@ -1,199 +1,179 @@
-// Tests for Logger in jounce-logger
-use jounce_logger::{
-    Logger, LoggerConfig, LogLevel, OutputFormat, OutputTarget,
-    get_logger, register_logger, default_logger
-};
+// Tests for Logger, LogLevel, LogEntry
+use jounce_logger::{Logger, LogLevel, LogEntry};
+
+#[test]
+fn test_log_level_to_string() {
+    assert_eq!(LogLevel::Info.to_string(), "INFO", "Should be INFO");
+    assert_eq!(LogLevel::Error.to_string(), "ERROR", "Should be ERROR");
+}
+
+#[test]
+fn test_log_level_to_number() {
+    assert_eq!(LogLevel::Trace.to_number(), 0, "Trace should be 0");
+    assert_eq!(LogLevel::Fatal.to_number(), 5, "Fatal should be 5");
+}
+
+#[test]
+fn test_log_level_from_string() {
+    let level = LogLevel::from_string("WARN");
+    assert_eq!(level.to_string(), "WARN", "Should parse WARN");
+}
+
+#[test]
+fn test_log_entry_creation() {
+    let entry = LogEntry::new(LogLevel::Info, "Test message");
+    assert_eq!(entry.message, "Test message", "Message should match");
+}
+
+#[test]
+fn test_log_entry_with_context() {
+    let entry = LogEntry::new(LogLevel::Info, "Test")
+        .with_context("user_id", "123");
+    assert_eq!(entry.context.len(), 1, "Should have 1 context item");
+}
+
+#[test]
+fn test_log_entry_with_logger_name() {
+    let entry = LogEntry::new(LogLevel::Info, "Test")
+        .with_logger_name("MyLogger");
+    assert_eq!(entry.logger_name, "MyLogger", "Logger name should match");
+}
 
 #[test]
 fn test_logger_creation() {
-    let config = LoggerConfig {
-        name: "test",
-        min_level: LogLevel::INFO,
-        format: OutputFormat::Text,
-        target: OutputTarget::Console,
-        file_path: "",
-        max_file_size: 0,
-        max_files: 0,
-    };
-
-    let logger = Logger::new(config);
-
-    assert_eq!(logger.config.name, "test", "Logger should have correct name");
-    assert_eq!(logger.context_fields.len(), 0, "Should have no context fields initially");
+    let logger = Logger::new("test");
+    assert_eq!(logger.name, "test", "Name should match");
+    assert!(logger.enabled, "Should be enabled by default");
 }
 
 #[test]
-fn test_logger_with_field() {
-    let config = LoggerConfig {
-        name: "test",
-        min_level: LogLevel::INFO,
-        format: OutputFormat::Text,
-        target: OutputTarget::Console,
-        file_path: "",
-        max_file_size: 0,
-        max_files: 0,
-    };
-
-    let logger = Logger::new(config)
-        .with_field("service", "api")
-        .with_field("version", "1.0");
-
-    assert_eq!(logger.context_fields.len(), 2, "Should have 2 context fields");
-    assert!(logger.context_fields.contains_key(&"service"), "Should have service field");
-    assert!(logger.context_fields.contains_key(&"version"), "Should have version field");
+fn test_logger_with_level() {
+    let logger = Logger::new("test").with_level(LogLevel::Debug);
+    assert_eq!(logger.level.to_number(), 1, "Level should be Debug");
 }
 
 #[test]
-fn test_get_logger() {
-    let logger1 = get_logger("app");
-    let logger2 = get_logger("app");
-
-    assert_eq!(logger1.config.name, "app", "Logger should be named app");
-    assert_eq!(logger2.config.name, "app", "Should get same logger");
+fn test_logger_with_max_entries() {
+    let logger = Logger::new("test").with_max_entries(100);
+    assert_eq!(logger.max_entries, 100, "Max entries should be 100");
 }
 
 #[test]
-fn test_get_different_loggers() {
-    let logger1 = get_logger("api");
-    let logger2 = get_logger("database");
-
-    assert_eq!(logger1.config.name, "api", "First logger should be api");
-    assert_eq!(logger2.config.name, "database", "Second logger should be database");
+fn test_logger_disable() {
+    let logger = Logger::new("test").disable();
+    assert!(!logger.enabled, "Should be disabled");
 }
 
 #[test]
-fn test_default_logger() {
-    let logger = default_logger();
-
-    assert_eq!(logger.config.name, "default", "Default logger should be named default");
+fn test_logger_enable() {
+    let logger = Logger::new("test").disable().enable();
+    assert!(logger.enabled, "Should be enabled");
 }
 
 #[test]
-fn test_register_custom_logger() {
-    let config = LoggerConfig {
-        name: "custom",
-        min_level: LogLevel::DEBUG,
-        format: OutputFormat::JSON,
-        target: OutputTarget::File,
-        file_path: "/var/log/custom.log",
-        max_file_size: 1024 * 1024,
-        max_files: 3,
-    };
-
-    let logger = Logger::new(config);
-    register_logger(logger);
-
-    let retrieved = get_logger("custom");
-    assert_eq!(retrieved.config.name, "custom", "Should retrieve custom logger");
-    assert_eq!(retrieved.config.min_level.to_int(), LogLevel::DEBUG.to_int(), "Should have DEBUG level");
+fn test_logger_should_log_enabled() {
+    let logger = Logger::new("test").with_level(LogLevel::Info);
+    assert!(logger.should_log(LogLevel::Warn), "Should log WARN");
+    assert!(!logger.should_log(LogLevel::Debug), "Should not log DEBUG");
 }
 
 #[test]
-fn test_logger_json_format() {
-    let config = LoggerConfig {
-        name: "json-logger",
-        min_level: LogLevel::INFO,
-        format: OutputFormat::JSON,
-        target: OutputTarget::Console,
-        file_path: "",
-        max_file_size: 0,
-        max_files: 0,
-    };
-
-    let logger = Logger::new(config);
-
-    match logger.config.format {
-        OutputFormat::JSON => assert!(true, "Should be JSON format"),
-        _ => assert!(false, "Should be JSON format"),
-    }
+fn test_logger_should_log_disabled() {
+    let logger = Logger::new("test").disable();
+    assert!(!logger.should_log(LogLevel::Error), "Should not log when disabled");
 }
 
 #[test]
-fn test_logger_text_format() {
-    let config = LoggerConfig {
-        name: "text-logger",
-        min_level: LogLevel::INFO,
-        format: OutputFormat::Text,
-        target: OutputTarget::Console,
-        file_path: "",
-        max_file_size: 0,
-        max_files: 0,
-    };
-
-    let logger = Logger::new(config);
-
-    match logger.config.format {
-        OutputFormat::Text => assert!(true, "Should be Text format"),
-        _ => assert!(false, "Should be Text format"),
-    }
+fn test_logger_info() {
+    let logger = Logger::new("test").info("Info message");
+    assert_eq!(logger.entry_count(), 1, "Should have 1 entry");
 }
 
 #[test]
-fn test_logger_output_targets() {
-    let config1 = LoggerConfig {
-        name: "console",
-        min_level: LogLevel::INFO,
-        format: OutputFormat::Text,
-        target: OutputTarget::Console,
-        file_path: "",
-        max_file_size: 0,
-        max_files: 0,
-    };
-
-    let logger1 = Logger::new(config1);
-    match logger1.config.target {
-        OutputTarget::Console => assert!(true, "Should be Console target"),
-        _ => assert!(false, "Should be Console target"),
-    }
-
-    let config2 = LoggerConfig {
-        name: "file",
-        min_level: LogLevel::INFO,
-        format: OutputFormat::Text,
-        target: OutputTarget::File,
-        file_path: "/var/log/app.log",
-        max_file_size: 0,
-        max_files: 0,
-    };
-
-    let logger2 = Logger::new(config2);
-    match logger2.config.target {
-        OutputTarget::File => assert!(true, "Should be File target"),
-        _ => assert!(false, "Should be File target"),
-    }
+fn test_logger_warn() {
+    let logger = Logger::new("test").warn("Warning message");
+    assert_eq!(logger.entry_count(), 1, "Should have 1 entry");
 }
 
 #[test]
-fn test_logger_file_rotation_config() {
-    let config = LoggerConfig {
-        name: "rotating",
-        min_level: LogLevel::INFO,
-        format: OutputFormat::Text,
-        target: OutputTarget::File,
-        file_path: "/var/log/app.log",
-        max_file_size: 10 * 1024 * 1024, // 10MB
-        max_files: 5,
-    };
-
-    let logger = Logger::new(config);
-
-    assert_eq!(logger.config.max_file_size, 10 * 1024 * 1024, "Should have correct max size");
-    assert_eq!(logger.config.max_files, 5, "Should keep 5 rotated files");
+fn test_logger_error() {
+    let logger = Logger::new("test").error("Error message");
+    assert_eq!(logger.entry_count(), 1, "Should have 1 entry");
 }
 
 #[test]
-fn test_logger_level_filtering() {
-    let config = LoggerConfig {
-        name: "filtered",
-        min_level: LogLevel::WARN,
-        format: OutputFormat::Text,
-        target: OutputTarget::Console,
-        file_path: "",
-        max_file_size: 0,
-        max_files: 0,
-    };
+fn test_logger_debug() {
+    let logger = Logger::new("test")
+        .with_level(LogLevel::Debug)
+        .debug("Debug message");
+    assert_eq!(logger.entry_count(), 1, "Should have 1 entry");
+}
 
-    let logger = Logger::new(config);
+#[test]
+fn test_logger_trace() {
+    let logger = Logger::new("test")
+        .with_level(LogLevel::Trace)
+        .trace("Trace message");
+    assert_eq!(logger.entry_count(), 1, "Should have 1 entry");
+}
 
-    assert_eq!(logger.config.min_level.to_int(), LogLevel::WARN.to_int(), "Min level should be WARN");
+#[test]
+fn test_logger_fatal() {
+    let logger = Logger::new("test").fatal("Fatal message");
+    assert_eq!(logger.entry_count(), 1, "Should have 1 entry");
+}
+
+#[test]
+fn test_logger_multiple_entries() {
+    let logger = Logger::new("test")
+        .info("Message 1")
+        .info("Message 2")
+        .warn("Message 3");
+    assert_eq!(logger.entry_count(), 3, "Should have 3 entries");
+}
+
+#[test]
+fn test_logger_max_entries_limit() {
+    let mut logger = Logger::new("test").with_max_entries(2);
+    logger = logger.info("1").info("2").info("3");
+    assert_eq!(logger.entry_count(), 2, "Should only keep 2 entries");
+}
+
+#[test]
+fn test_logger_get_entries() {
+    let logger = Logger::new("test")
+        .info("Info 1")
+        .warn("Warning 1")
+        .info("Info 2");
+    let info_entries = logger.get_entries(LogLevel::Info);
+    assert_eq!(info_entries.len(), 2, "Should have 2 info entries");
+}
+
+#[test]
+fn test_logger_clear() {
+    let logger = Logger::new("test")
+        .info("Message 1")
+        .info("Message 2")
+        .clear();
+    assert_eq!(logger.entry_count(), 0, "Should have no entries");
+}
+
+#[test]
+fn test_logger_respects_level() {
+    let logger = Logger::new("test")
+        .with_level(LogLevel::Warn)
+        .debug("Should not log")
+        .info("Should not log")
+        .warn("Should log");
+    assert_eq!(logger.entry_count(), 1, "Should only log WARN and above");
+}
+
+#[test]
+fn test_logger_chaining() {
+    let logger = Logger::new("app")
+        .with_level(LogLevel::Debug)
+        .with_max_entries(500)
+        .info("Test");
+    assert_eq!(logger.max_entries, 500, "Should set max entries");
+    assert_eq!(logger.entry_count(), 1, "Should have logged");
 }

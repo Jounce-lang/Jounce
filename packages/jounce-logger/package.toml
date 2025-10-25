@@ -24,6 +24,10 @@ path = "tests/logger_tests.jnc"
 name = "format_tests"
 path = "tests/format_tests.jnc"
 
+[[test]]
+name = "features_tests"
+path = "tests/features_tests.jnc"
+
 [features]
 default = ["json", "rotation"]
 json = []

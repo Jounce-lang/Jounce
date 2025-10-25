@@ -1,50 +1,58 @@
-// jounce-logger - Structured Logging Package
-// Version: 0.1.0
-//
-// Provides structured logging with log levels, JSON output,
-// file rotation, and filtering for Jounce applications.
-
-use jounce_utils::{format_date, now};
+// Logging and debugging utilities for Jounce
+// Structured logging with levels, formatters, and transports
 
 // ============================================================================
 // Log Levels
 // ============================================================================
 
-/// Log level enum
 pub enum LogLevel {
-    DEBUG,
-    INFO,
-    WARN,
-    ERROR,
-    FATAL,
+    Trace,
+    Debug,
+    Info,
+    Warn,
+    Error,
+    Fatal,
 }
 
 impl LogLevel {
-    /// Convert to string
-    pub fn to_string(self) -> string {
+    pub fn to_string(&self) -> string {
         match self {
-            LogLevel::DEBUG => "DEBUG",
-            LogLevel::INFO => "INFO",
-            LogLevel::WARN => "WARN",
-            LogLevel::ERROR => "ERROR",
-            LogLevel::FATAL => "FATAL",
+            LogLevel::Trace => "TRACE",
+            LogLevel::Debug => "DEBUG",
+            LogLevel::Info => "INFO",
+            LogLevel::Warn => "WARN",
+            LogLevel::Error => "ERROR",
+            LogLevel::Fatal => "FATAL",
         }
     }
 
-    /// Convert to numeric value for comparison
-    pub fn to_int(self) -> int {
+    pub fn to_number(&self) -> int {
         match self {
-            LogLevel::DEBUG => 0,
-            LogLevel::INFO => 1,
-            LogLevel::WARN => 2,
-            LogLevel::ERROR => 3,
-            LogLevel::FATAL => 4,
+            LogLevel::Trace => 0,
+            LogLevel::Debug => 1,
+            LogLevel::Info => 2,
+            LogLevel::Warn => 3,
+            LogLevel::Error => 4,
+            LogLevel::Fatal => 5,
         }
     }
 
-    /// Compare levels
-    pub fn gte(self, other: LogLevel) -> bool {
-        return self.to_int() >= other.to_int();
+    pub fn from_string(level: string) -> LogLevel {
+        if level == "TRACE" {
+            LogLevel::Trace
+        } else if level == "DEBUG" {
+            LogLevel::Debug
+        } else if level == "INFO" {
+            LogLevel::Info
+        } else if level == "WARN" {
+            LogLevel::Warn
+        } else if level == "ERROR" {
+            LogLevel::Error
+        } else if level == "FATAL" {
+            LogLevel::Fatal
+        } else {
+            LogLevel::Info
+        }
     }
 }
 
@@ -52,365 +60,411 @@ impl LogLevel {
 // Log Entry
 // ============================================================================
 
-/// Log entry with metadata
 pub struct LogEntry {
-    timestamp: string,
-    level: LogLevel,
-    message: string,
-    logger_name: string,
-    fields: Map<string, string>,
+    pub level: LogLevel,
+    pub message: string,
+    pub timestamp: int,
+    pub context: Map<string, string>,
+    pub logger_name: string,
 }
 
 impl LogEntry {
-    /// Format as JSON
-    pub fn to_json(self) -> string {
-        let mut json = "{";
-        json = json + "\"timestamp\":\"" + self.timestamp + "\",";
-        json = json + "\"level\":\"" + self.level.to_string() + "\",";
-        json = json + "\"logger\":\"" + self.logger_name + "\",";
-        json = json + "\"message\":\"" + self.message + "\"";
-
-        if self.fields.len() > 0 {
-            json = json + ",\"fields\":{";
-            let mut first = true;
-            for (key, value) in self.fields {
-                if !first {
-                    json = json + ",";
-                }
-                json = json + "\"" + key + "\":\"" + value + "\"";
-                first = false;
-            }
-            json = json + "}";
+    pub fn new(level: LogLevel, message: string) -> LogEntry {
+        LogEntry {
+            level: level,
+            message: message,
+            timestamp: get_timestamp(),
+            context: Map::new(),
+            logger_name: "default",
         }
-
-        json = json + "}";
-        return json;
     }
 
-    /// Format as human-readable text
-    pub fn to_text(self) -> string {
-        let level_str = self.level.to_string();
-        let mut text = "[" + self.timestamp + "] " + level_str + " [" + self.logger_name + "] " + self.message;
-
-        if self.fields.len() > 0 {
-            text = text + " {";
-            let mut first = true;
-            for (key, value) in self.fields {
-                if !first {
-                    text = text + ", ";
-                }
-                text = text + key + "=" + value;
-                first = false;
-            }
-            text = text + "}";
-        }
-
-        return text;
+    pub fn with_context(mut self, key: string, value: string) -> LogEntry {
+        self.context.set(key, value);
+        self
     }
-}
 
-// ============================================================================
-// Logger Configuration
-// ============================================================================
-
-/// Output format
-pub enum OutputFormat {
-    JSON,
-    Text,
-}
-
-/// Output target
-pub enum OutputTarget {
-    Console,
-    File,
-    Both,
-}
-
-/// Logger configuration
-pub struct LoggerConfig {
-    name: string,
-    min_level: LogLevel,
-    format: OutputFormat,
-    target: OutputTarget,
-    file_path: string,
-    max_file_size: int, // in bytes
-    max_files: int,      // number of rotated files to keep
+    pub fn with_logger_name(mut self, name: string) -> LogEntry {
+        self.logger_name = name;
+        self
+    }
 }
 
 // ============================================================================
 // Logger
 // ============================================================================
 
-/// Logger instance
 pub struct Logger {
-    config: LoggerConfig,
-    context_fields: Map<string, string>,
+    pub name: string,
+    pub level: LogLevel,
+    pub enabled: bool,
+    pub entries: Array<LogEntry>,
+    pub max_entries: int,
 }
 
 impl Logger {
-    /// Create new logger
-    pub fn new(config: LoggerConfig) -> Logger {
-        return Logger {
-            config: config,
-            context_fields: Map::new(),
-        };
+    pub fn new(name: string) -> Logger {
+        Logger {
+            name: name,
+            level: LogLevel::Info,
+            enabled: true,
+            entries: Array::new(),
+            max_entries: 1000,
+        }
     }
 
-    /// Add context field (appears in all logs from this logger)
-    pub fn with_field(mut self, key: string, value: string) -> Logger {
-        self.context_fields.insert(key, value);
-        return self;
+    pub fn with_level(mut self, level: LogLevel) -> Logger {
+        self.level = level;
+        self
     }
 
-    /// Log at DEBUG level
-    pub fn debug(self, message: string) {
-        self.log(LogLevel::DEBUG, message, Map::new());
+    pub fn with_max_entries(mut self, max: int) -> Logger {
+        self.max_entries = max;
+        self
     }
 
-    /// Log at DEBUG level with fields
-    pub fn debug_with_fields(self, message: string, fields: Map<string, string>) {
-        self.log(LogLevel::DEBUG, message, fields);
+    pub fn disable(mut self) -> Logger {
+        self.enabled = false;
+        self
     }
 
-    /// Log at INFO level
-    pub fn info(self, message: string) {
-        self.log(LogLevel::INFO, message, Map::new());
+    pub fn enable(mut self) -> Logger {
+        self.enabled = true;
+        self
     }
 
-    /// Log at INFO level with fields
-    pub fn info_with_fields(self, message: string, fields: Map<string, string>) {
-        self.log(LogLevel::INFO, message, fields);
+    pub fn should_log(&self, level: LogLevel) -> bool {
+        if !self.enabled {
+            return false;
+        }
+        level.to_number() >= self.level.to_number()
     }
 
-    /// Log at WARN level
-    pub fn warn(self, message: string) {
-        self.log(LogLevel::WARN, message, Map::new());
-    }
-
-    /// Log at WARN level with fields
-    pub fn warn_with_fields(self, message: string, fields: Map<string, string>) {
-        self.log(LogLevel::WARN, message, fields);
-    }
-
-    /// Log at ERROR level
-    pub fn error(self, message: string) {
-        self.log(LogLevel::ERROR, message, Map::new());
-    }
-
-    /// Log at ERROR level with fields
-    pub fn error_with_fields(self, message: string, fields: Map<string, string>) {
-        self.log(LogLevel::ERROR, message, fields);
-    }
-
-    /// Log at FATAL level
-    pub fn fatal(self, message: string) {
-        self.log(LogLevel::FATAL, message, Map::new());
-    }
-
-    /// Log at FATAL level with fields
-    pub fn fatal_with_fields(self, message: string, fields: Map<string, string>) {
-        self.log(LogLevel::FATAL, message, fields);
-    }
-
-    /// Core logging function
-    fn log(self, level: LogLevel, message: string, fields: Map<string, string>) {
-        // Check if level passes filter
-        if !level.gte(self.config.min_level) {
-            return;
+    pub fn log(mut self, level: LogLevel, message: string) -> Logger {
+        if !self.should_log(level) {
+            return self;
         }
 
-        // Merge context fields with log fields
-        let mut all_fields = self.context_fields.clone();
-        for (key, value) in fields {
-            all_fields.insert(key, value);
+        let mut entry = LogEntry::new(level, message);
+        entry = entry.with_logger_name(self.name.clone());
+
+        if self.entries.len() >= self.max_entries {
+            self.entries.remove(0);
         }
 
-        // Create log entry
-        let entry = LogEntry {
-            timestamp: get_timestamp(),
-            level: level,
-            message: message,
-            logger_name: self.config.name.clone(),
-            fields: all_fields,
-        };
+        self.entries.push(entry);
+        self
+    }
 
-        // Format output
-        let output = match self.config.format {
-            OutputFormat::JSON => entry.to_json(),
-            OutputFormat::Text => entry.to_text(),
-        };
+    pub fn trace(mut self, message: string) -> Logger {
+        self.log(LogLevel::Trace, message)
+    }
 
-        // Write to targets
-        match self.config.target {
-            OutputTarget::Console => {
-                write_to_console(output);
+    pub fn debug(mut self, message: string) -> Logger {
+        self.log(LogLevel::Debug, message)
+    }
+
+    pub fn info(mut self, message: string) -> Logger {
+        self.log(LogLevel::Info, message)
+    }
+
+    pub fn warn(mut self, message: string) -> Logger {
+        self.log(LogLevel::Warn, message)
+    }
+
+    pub fn error(mut self, message: string) -> Logger {
+        self.log(LogLevel::Error, message)
+    }
+
+    pub fn fatal(mut self, message: string) -> Logger {
+        self.log(LogLevel::Fatal, message)
+    }
+
+    pub fn entry_count(&self) -> int {
+        self.entries.len()
+    }
+
+    pub fn get_entries(&self, level: LogLevel) -> Array<LogEntry> {
+        let mut filtered = Array::new();
+        let mut i = 0;
+        while i < self.entries.len() {
+            let entry = self.entries.get(i);
+            if entry.level.to_number() == level.to_number() {
+                filtered.push(entry);
+            }
+            i = i + 1;
+        }
+        filtered
+    }
+
+    pub fn clear(mut self) -> Logger {
+        self.entries = Array::new();
+        self
+    }
+}
+
+// ============================================================================
+// Formatter
+// ============================================================================
+
+pub enum LogFormat {
+    Simple,
+    JSON,
+    Pretty,
+    Timestamp,
+}
+
+pub struct Formatter {
+    pub format: LogFormat,
+    pub include_timestamp: bool,
+    pub include_level: bool,
+    pub include_logger_name: bool,
+}
+
+impl Formatter {
+    pub fn simple() -> Formatter {
+        Formatter {
+            format: LogFormat::Simple,
+            include_timestamp: false,
+            include_level: true,
+            include_logger_name: false,
+        }
+    }
+
+    pub fn json() -> Formatter {
+        Formatter {
+            format: LogFormat::JSON,
+            include_timestamp: true,
+            include_level: true,
+            include_logger_name: true,
+        }
+    }
+
+    pub fn pretty() -> Formatter {
+        Formatter {
+            format: LogFormat::Pretty,
+            include_timestamp: true,
+            include_level: true,
+            include_logger_name: true,
+        }
+    }
+
+    pub fn format_entry(&self, entry: LogEntry) -> string {
+        match self.format {
+            LogFormat::Simple => {
+                let level_str = if self.include_level {
+                    "[" + entry.level.to_string() + "] "
+                } else {
+                    ""
+                };
+                level_str + entry.message
             },
-            OutputTarget::File => {
-                write_to_file(self.config.file_path.clone(), output, self.config.max_file_size, self.config.max_files);
+            LogFormat::JSON => {
+                "{\"level\":\"" + entry.level.to_string() + 
+                "\",\"message\":\"" + entry.message + "\"}"
             },
-            OutputTarget::Both => {
-                write_to_console(output.clone());
-                write_to_file(self.config.file_path.clone(), output, self.config.max_file_size, self.config.max_files);
+            LogFormat::Pretty => {
+                let timestamp_str = if self.include_timestamp {
+                    entry.timestamp.to_string() + " "
+                } else {
+                    ""
+                };
+                timestamp_str + "[" + entry.level.to_string() + "] " + entry.message
+            },
+            LogFormat::Timestamp => {
+                entry.timestamp.to_string() + " " + entry.message
             },
         }
     }
 }
 
 // ============================================================================
-// Global Logger Registry
+// Transport (output destination)
 // ============================================================================
 
-/// Global logger registry
-static mut LOGGERS: Map<string, Logger> = Map::new();
+pub enum TransportType {
+    Console,
+    File,
+    Memory,
+}
 
-/// Get or create logger
-pub fn get_logger(name: string) -> Logger {
-    unsafe {
-        if LOGGERS.contains_key(&name) {
-            return LOGGERS.get(&name).clone();
+pub struct Transport {
+    pub transport_type: TransportType,
+    pub min_level: LogLevel,
+    pub formatter: Formatter,
+    pub enabled: bool,
+}
+
+impl Transport {
+    pub fn console() -> Transport {
+        Transport {
+            transport_type: TransportType::Console,
+            min_level: LogLevel::Info,
+            formatter: Formatter::simple(),
+            enabled: true,
+        }
+    }
+
+    pub fn file(path: string) -> Transport {
+        Transport {
+            transport_type: TransportType::File,
+            min_level: LogLevel::Debug,
+            formatter: Formatter::json(),
+            enabled: true,
+        }
+    }
+
+    pub fn with_min_level(mut self, level: LogLevel) -> Transport {
+        self.min_level = level;
+        self
+    }
+
+    pub fn with_formatter(mut self, formatter: Formatter) -> Transport {
+        self.formatter = formatter;
+        self
+    }
+
+    pub fn should_transport(&self, level: LogLevel) -> bool {
+        if !self.enabled {
+            return false;
+        }
+        level.to_number() >= self.min_level.to_number()
+    }
+}
+
+// ============================================================================
+// LoggerConfig
+// ============================================================================
+
+pub struct LoggerConfig {
+    pub default_level: LogLevel,
+    pub enable_console: bool,
+    pub enable_file: bool,
+    pub file_path: string,
+    pub format: LogFormat,
+}
+
+impl LoggerConfig {
+    pub fn development() -> LoggerConfig {
+        LoggerConfig {
+            default_level: LogLevel::Debug,
+            enable_console: true,
+            enable_file: false,
+            file_path: "",
+            format: LogFormat::Pretty,
+        }
+    }
+
+    pub fn production() -> LoggerConfig {
+        LoggerConfig {
+            default_level: LogLevel::Warn,
+            enable_console: true,
+            enable_file: true,
+            file_path: "logs/app.log",
+            format: LogFormat::JSON,
+        }
+    }
+
+    pub fn silent() -> LoggerConfig {
+        LoggerConfig {
+            default_level: LogLevel::Fatal,
+            enable_console: false,
+            enable_file: false,
+            file_path: "",
+            format: LogFormat::Simple,
+        }
+    }
+}
+
+// ============================================================================
+// Timer for performance logging
+// ============================================================================
+
+pub struct LogTimer {
+    pub name: string,
+    pub start_time: int,
+    pub running: bool,
+}
+
+impl LogTimer {
+    pub fn new(name: string) -> LogTimer {
+        LogTimer {
+            name: name,
+            start_time: get_timestamp(),
+            running: true,
+        }
+    }
+
+    pub fn elapsed(&self) -> int {
+        if self.running {
+            get_timestamp() - self.start_time
         } else {
-            // Create default logger
-            let config = LoggerConfig {
-                name: name.clone(),
-                min_level: LogLevel::INFO,
-                format: OutputFormat::Text,
-                target: OutputTarget::Console,
-                file_path: "",
-                max_file_size: 10 * 1024 * 1024, // 10MB
-                max_files: 5,
-            };
-
-            let logger = Logger::new(config);
-            LOGGERS.insert(name.clone(), logger.clone());
-            return logger;
-        }
-    }
-}
-
-/// Register custom logger
-pub fn register_logger(logger: Logger) {
-    unsafe {
-        LOGGERS.insert(logger.config.name.clone(), logger);
-    }
-}
-
-// ============================================================================
-// Default Logger Functions
-// ============================================================================
-
-/// Get default logger
-pub fn default_logger() -> Logger {
-    return get_logger("default");
-}
-
-/// Log DEBUG to default logger
-pub fn debug(message: string) {
-    default_logger().debug(message);
-}
-
-/// Log INFO to default logger
-pub fn info(message: string) {
-    default_logger().info(message);
-}
-
-/// Log WARN to default logger
-pub fn warn(message: string) {
-    default_logger().warn(message);
-}
-
-/// Log ERROR to default logger
-pub fn error(message: string) {
-    default_logger().error(message);
-}
-
-/// Log FATAL to default logger
-pub fn fatal(message: string) {
-    default_logger().fatal(message);
-}
-
-// ============================================================================
-// File Rotation
-// ============================================================================
-
-/// Check if file needs rotation
-fn should_rotate(file_path: string, max_size: int) -> bool {
-    let size = get_file_size(file_path);
-    return size >= max_size;
-}
-
-/// Rotate log files
-fn rotate_files(file_path: string, max_files: int) {
-    // Rotate existing files: file.log.1 -> file.log.2, etc.
-    for i in (max_files - 1)..0 {
-        let old_file = file_path + "." + i.to_string();
-        let new_file = file_path + "." + (i + 1).to_string();
-
-        if file_exists(old_file) {
-            rename_file(old_file, new_file);
+            0
         }
     }
 
-    // Rename current file to .1
-    if file_exists(file_path) {
-        rename_file(file_path, file_path + ".1");
+    pub fn stop(mut self) -> LogTimer {
+        self.running = false;
+        self
+    }
+
+    pub fn format_elapsed(&self) -> string {
+        self.elapsed().to_string() + "ms"
     }
 }
 
 // ============================================================================
-// Helper Functions
+// Global Logger
 // ============================================================================
 
-fn get_timestamp() -> string {
-    let dt = now();
-    return format_date(dt, "YYYY-MM-DD HH:mm:ss");
+pub struct GlobalLogger {
+    pub loggers: Map<string, Logger>,
+    pub default_level: LogLevel,
 }
 
-fn write_to_console(message: string) {
-    println!("{}", message);
-}
-
-fn write_to_file(file_path: string, message: string, max_size: int, max_files: int) {
-    // Check for rotation
-    if should_rotate(file_path.clone(), max_size) {
-        rotate_files(file_path.clone(), max_files);
+impl GlobalLogger {
+    pub fn new() -> GlobalLogger {
+        GlobalLogger {
+            loggers: Map::new(),
+            default_level: LogLevel::Info,
+        }
     }
 
-    // Append to file
-    append_to_file(file_path, message + "\n");
+    pub fn get_logger(mut self, name: string) -> Logger {
+        if let Some(logger) = self.loggers.get(name.clone()) {
+            logger
+        } else {
+            let logger = Logger::new(name.clone()).with_level(self.default_level.clone());
+            self.loggers.set(name, logger.clone());
+            logger
+        }
+    }
+
+    pub fn set_default_level(mut self, level: LogLevel) -> GlobalLogger {
+        self.default_level = level;
+        self
+    }
+
+    pub fn logger_count(&self) -> int {
+        self.loggers.len()
+    }
 }
 
-fn get_file_size(path: string) -> int {
-    // Platform-specific file size check
-    return 0; // Placeholder
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+pub fn get_timestamp() -> int {
+    // In production, would return actual timestamp
+    1729800000
 }
 
-fn file_exists(path: string) -> bool {
-    // Platform-specific file existence check
-    return false; // Placeholder
+pub fn log_memory_usage() -> string {
+    // In production, would return actual memory usage
+    "Memory: 42MB"
 }
 
-fn rename_file(old_path: string, new_path: string) {
-    // Platform-specific file rename
+pub fn log_system_info() -> string {
+    // In production, would return system info
+    "System: Jounce v0.1.0"
 }
-
-fn append_to_file(path: string, content: string) {
-    // Platform-specific file append
-}
-
-// Export main types and functions
-pub use LogLevel;
-pub use LogEntry;
-pub use OutputFormat;
-pub use OutputTarget;
-pub use LoggerConfig;
-pub use Logger;
-
-pub use get_logger;
-pub use register_logger;
-pub use default_logger;
-
-pub use debug;
-pub use info;
-pub use warn;
-pub use error;
-pub use fatal;
