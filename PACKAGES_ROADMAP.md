@@ -1,7 +1,7 @@
 # Jounce 100-Package Ecosystem Roadmap
 
 **Goal**: Build a world-class 100-package ecosystem for Jounce
-**Current**: 16/100 packages (16%)
+**Current**: 18/100 packages (18%)
 **Target**: 100 packages by v1.0.0
 **Last Updated**: October 24, 2025
 
@@ -9,17 +9,17 @@
 
 ## Progress Overview
 
-- ✅ **Complete**: 16 packages
-- 🚧 **In Progress**: 1 package (jounce-validation just completed, counting as 17)
-- ⏸️ **Planned**: 83 packages
+- ✅ **Complete**: 18 packages
+- 🚧 **In Progress**: 0 packages
+- ⏸️ **Planned**: 82 packages
 
 **Breakdown by Category**:
-- Core & DX: 3/12 (25%)
+- Core & DX: 4/12 (33%) ⬆️
 - UI & Styling: 5/13 (38%)
-- Routing, SSR & Edge: 0/9 (0%)
-- State & Data Fetching: 3/8 (38%)
+- Routing, SSR & Edge: 1/9 (11%)
+- State & Data Fetching: 4/8 (50%) ⬆️
 - Server, DB & Jobs: 4/12 (33%)
-- Networking, RPC & Realtime: 2/9 (22%)
+- Networking, RPC & Realtime: 3/9 (33%) ⬆️
 - Auth, Security & Payments: 1/12 (8%)
 - Files, Media & CDN: 0/7 (0%)
 - Analytics, Email & Comms: 0/8 (0%)
@@ -42,7 +42,7 @@
 | 8 | **jounce-bench** | ⏸️ Planned | Micro-benchmarks + perf HUD |
 | 9 | **jounce-profiler** | ⏸️ Planned | Compile/runtime profiles |
 | 10 | **jounce-logger** | ✅ **v0.1.0** | **Phase 14 Package 6** - Structured logging, JSON/text (35 tests) |
-| 11 | **jounce-config** | ⏸️ Planned | Env & typed config loader |
+| 11 | **jounce-config** | ✅ **v0.1.0** | **Package 12** - Config management, env vars (58 tests) |
 | 12 | **jounce-metrics** | ⏸️ Planned | App metrics counters/gauges |
 
 ---
@@ -91,7 +91,7 @@
 | 36 | **jounce-query** | ⏸️ Planned | Fetch/cache/retry/invalidate |
 | 37 | **jounce-persist** | ⏸️ Planned | localStorage/IndexedDB |
 | 38 | **jounce-cache** | ✅ **v0.1.0** | **Phase 14 Package 7** - LRU/LFU/FIFO, Redis, TTL (63 tests) |
-| 39 | **jounce-forms** | 🔄 **Partial** | **Original 5** + jounce-validation covers validation |
+| 39 | **jounce-forms** | ✅ **v0.1.0** | **Original 5** + **jounce-validation v0.1.0** (60 tests) |
 | 40 | **jounce-forms-advanced** | ⏸️ Planned | Wizards, arrays |
 | 41 | **jounce-a11y** | ⏸️ Planned | Accessibility utilities |
 | 42 | **jounce-i18n** | ✅ **v0.1.0** | **Original 5** - Translation & formats |

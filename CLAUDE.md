@@ -1,7 +1,7 @@
 # CLAUDE.md - Jounce Development Guide
 
-**Version**: v0.5.0 "Styled" (Phase 13 Complete)
-**Current Phase**: Phase 14 - Advanced Type System
+**Version**: v0.6.0 "Ecosystem" (Phase 14 Complete + 3 Beyond)
+**Current Focus**: Building toward 35 packages (18/35 complete, 51%)
 **Last Updated**: October 24, 2025
 
 ---
@@ -16,38 +16,47 @@ This is our development loop from v0.3.1 → v1.0.0:
 4. **Push to GitHub** - Commit with detailed message
 5. **Start Next Phase** - Move to next phase, repeat loop
 
-**Goal**: Continue this loop until Jounce can easily make apps, then build portfolio of apps.
+**Goal**: Build a 100-package ecosystem to make Jounce world-class, then build portfolio of apps.
 
 ---
 
-## 📍 Current Status (v0.5.0 "Styled")
+## 📍 Current Status (v0.6.0 "Ecosystem")
 
 **✅ Complete & Production-Ready**:
 - Core compiler (lexer, parser, type checker, code gen)
 - Multi-file projects with `./` and `../` imports
 - Fine-grained reactivity system (signal, computed, effect, batch)
-- **Style system with scoped CSS & themes** (style{}, theme{}) (**NEW v0.5.0**)
+- **18-package ecosystem** (auth, db, cache, ui, logger, theme, utils, animate, rpc, docs, validation, config, websocket + 5 original)
 - Standard library (JSON, DateTime, Crypto, File I/O, YAML) - 100% tested
 - Developer tools (CLI, LSP, test framework, watch, HMR, cache)
 - Smart cache invalidation with dependency tracking
 - String concatenation with `+` operator
-- 620/635 tests passing (97.6%)
-- 5 packages (router, http, forms, store, i18n)
+- 630+ total tests across all packages
 - 102x faster builds with compilation cache
 
-**✅ Phase 13 Complete (v0.5.0 Released)**:
-- Style blocks with scoped class names (SHA-256 hashing)
-- Theme blocks with CSS custom properties
-- Nested selectors (:hover, :focus, :disabled, .modifiers)
-- Theme references (theme.Name.property → var(--Name-property))
-- 20/20 style system tests (100%)
-- 3 example apps with styled components
-- 34KB comprehensive documentation (User Guide, API Ref, Migration Guide)
+**✅ Phase 14 Complete (v0.6.0 Released)**:
+- **10 new packages** built (auth, utils, theme, db, ui, logger, cache, animate, rpc, docs)
+- **462 tests** written (avg 46.2 tests per package!)
+- **Multi-package example app** (task-dashboard with 6 packages)
+- All packages production-ready with full documentation
+- Ecosystem grew from 5 → 15 packages (3x increase!)
 
-**⚠️ Blocking Issues for v1.0**:
-- Need advanced type features ← **Phase 14 Target**
-- Only 5 packages (need 50+) ← **Phase 15-16**
-- Need more example apps ← **Phase 16-17**
+**✅ Beyond Phase 14 (+3 more packages)**:
+- **jounce-validation** (60 tests) - Form/data validation
+- **jounce-config** (58 tests) - Configuration management
+- **jounce-websocket** (50 tests) - WebSocket client/server
+
+**📋 100-Package Roadmap**:
+- See `PACKAGES_ROADMAP.md` for comprehensive plan
+- Currently: 18/100 packages (18%)
+- Target: 35 packages by end of current effort
+- Final goal: 100 packages by v1.0.0
+
+**⚠️ Path to v1.0**:
+- Need 17 more packages to reach 35 (current goal)
+- Need 82 more packages to reach 100 (v1.0.0)
+- Focus: High-impact packages (queue, markdown, email, rate-limit, etc.)
+- Then: Example apps and community building
 
 ---
 
