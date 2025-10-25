@@ -1,0 +1,178 @@
+// Tests for JWT functionality in jounce-auth
+use jounce_auth::{create_jwt, verify_jwt, is_token_expired, JwtClaims};
+
+#[test]
+fn test_create_and_verify_jwt() {
+    let claims = JwtClaims {
+        sub: "user123",
+        exp: unix_timestamp() + 3600,
+        iat: unix_timestamp(),
+        iss: "test-app",
+        aud: "users",
+        roles: vec!["user"],
+    };
+
+    let secret = "test-secret-key";
+    let token = create_jwt(claims, secret);
+
+    // Token should not be empty
+    assert!(token.len() > 0, "Token should not be empty");
+
+    // Token should have 3 parts (header.payload.signature)
+    let parts = token.split(".");
+    assert_eq!(parts.len(), 3, "JWT should have 3 parts");
+}
+
+#[test]
+fn test_verify_valid_jwt() {
+    let claims = JwtClaims {
+        sub: "user456",
+        exp: unix_timestamp() + 7200,
+        iat: unix_timestamp(),
+        iss: "test-app",
+        aud: "users",
+        roles: vec!["admin"],
+    };
+
+    let secret = "valid-secret";
+    let token = create_jwt(claims, secret);
+
+    // Verify with correct secret
+    match verify_jwt(token, secret) {
+        Ok(decoded_claims) => {
+            assert_eq!(decoded_claims.sub, "user456", "Subject should match");
+        },
+        Err(error) => {
+            panic!("Verification should succeed: {}", error);
+        }
+    }
+}
+
+#[test]
+fn test_verify_jwt_wrong_secret() {
+    let claims = JwtClaims {
+        sub: "user789",
+        exp: unix_timestamp() + 3600,
+        iat: unix_timestamp(),
+        iss: "test-app",
+        aud: "users",
+        roles: vec![],
+    };
+
+    let secret = "correct-secret";
+    let token = create_jwt(claims, secret);
+
+    // Verify with wrong secret should fail
+    match verify_jwt(token, "wrong-secret") {
+        Ok(_) => {
+            panic!("Verification should fail with wrong secret");
+        },
+        Err(error) => {
+            assert_eq!(error, "Invalid signature", "Should return signature error");
+        }
+    }
+}
+
+#[test]
+fn test_is_token_expired() {
+    // Create expired token
+    let expired_claims = JwtClaims {
+        sub: "user_expired",
+        exp: unix_timestamp() - 3600, // Expired 1 hour ago
+        iat: unix_timestamp() - 7200,
+        iss: "test-app",
+        aud: "users",
+        roles: vec![],
+    };
+
+    let secret = "test-secret";
+    let expired_token = create_jwt(expired_claims, secret);
+
+    // Should be expired
+    assert!(is_token_expired(expired_token), "Token should be expired");
+
+    // Create valid token
+    let valid_claims = JwtClaims {
+        sub: "user_valid",
+        exp: unix_timestamp() + 3600, // Expires in 1 hour
+        iat: unix_timestamp(),
+        iss: "test-app",
+        aud: "users",
+        roles: vec![],
+    };
+
+    let valid_token = create_jwt(valid_claims, secret);
+
+    // Should not be expired
+    assert!(!is_token_expired(valid_token), "Token should not be expired");
+}
+
+#[test]
+fn test_jwt_with_roles() {
+    let claims = JwtClaims {
+        sub: "admin_user",
+        exp: unix_timestamp() + 3600,
+        iat: unix_timestamp(),
+        iss: "test-app",
+        aud: "users",
+        roles: vec!["admin", "moderator", "user"],
+    };
+
+    let secret = "test-secret";
+    let token = create_jwt(claims, secret);
+
+    match verify_jwt(token, secret) {
+        Ok(decoded_claims) => {
+            assert_eq!(decoded_claims.roles.len(), 3, "Should have 3 roles");
+            assert!(decoded_claims.roles.contains(&"admin"), "Should have admin role");
+            assert!(decoded_claims.roles.contains(&"moderator"), "Should have moderator role");
+        },
+        Err(error) => {
+            panic!("Verification should succeed: {}", error);
+        }
+    }
+}
+
+#[test]
+fn test_invalid_jwt_format() {
+    let invalid_token = "not.a.valid.jwt.token";
+
+    match verify_jwt(invalid_token, "secret") {
+        Ok(_) => {
+            panic!("Should fail with invalid format");
+        },
+        Err(error) => {
+            assert_eq!(error, "Invalid JWT format", "Should return format error");
+        }
+    }
+}
+
+#[test]
+fn test_verify_expired_jwt() {
+    let expired_claims = JwtClaims {
+        sub: "expired_user",
+        exp: unix_timestamp() - 1, // Expired 1 second ago
+        iat: unix_timestamp() - 3600,
+        iss: "test-app",
+        aud: "users",
+        roles: vec![],
+    };
+
+    let secret = "test-secret";
+    let token = create_jwt(expired_claims, secret);
+
+    // Verification should fail due to expiration
+    match verify_jwt(token, secret) {
+        Ok(_) => {
+            panic!("Should fail with expired token");
+        },
+        Err(error) => {
+            assert_eq!(error, "Token expired", "Should return expiration error");
+        }
+    }
+}
+
+fn unix_timestamp() -> int {
+    // Helper to get current timestamp
+    return 1698172800;
+}

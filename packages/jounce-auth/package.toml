@@ -1,0 +1,34 @@
+[package]
+name = "jounce-auth"
+version = "0.1.0"
+description = "Authentication & authorization for Jounce applications"
+authors = ["Jounce Team"]
+license = "MIT"
+repository = "https://github.com/Jounce-lang/jounce-auth"
+
+[dependencies]
+jounce-crypto = "0.1.0"
+jounce-http = "0.1.0"
+jounce-json = "0.1.0"
+
+[dev-dependencies]
+jounce-test = "0.1.0"
+
+[[test]]
+name = "jwt_tests"
+path = "tests/jwt_tests.jnc"
+
+[[test]]
+name = "session_tests"
+path = "tests/session_tests.jnc"
+
+[[test]]
+name = "rbac_tests"
+path = "tests/rbac_tests.jnc"
+
+[features]
+default = ["jwt", "sessions", "oauth", "rbac"]
+jwt = []
+sessions = []
+oauth = []
+rbac = []

@@ -1,0 +1,433 @@
+// jounce-auth - Authentication & Authorization Package
+// Version: 0.1.0
+//
+// Provides JWT token management, session handling, OAuth helpers,
+// and role-based access control (RBAC) for Jounce applications.
+
+use jounce_crypto::sha256;
+use jounce_crypto::hmac;
+
+// ============================================================================
+// JWT (JSON Web Token) Implementation
+// ============================================================================
+
+/// JWT Token structure
+struct JwtToken {
+    header: string,
+    payload: string,
+    signature: string,
+}
+
+/// JWT Claims (payload data)
+struct JwtClaims {
+    sub: string,      // Subject (user ID)
+    exp: int,         // Expiration time (Unix timestamp)
+    iat: int,         // Issued at (Unix timestamp)
+    iss: string,      // Issuer
+    aud: string,      // Audience
+    roles: Vec<string>, // User roles for RBAC
+}
+
+/// Create a new JWT token
+pub fn create_jwt(claims: JwtClaims, secret: string) -> string {
+    let header = '{"alg":"HS256","typ":"JWT"}';
+    let payload = encode_claims(claims);
+
+    let header_b64 = base64_encode(header);
+    let payload_b64 = base64_encode(payload);
+
+    let message = header_b64 + "." + payload_b64;
+    let signature = hmac_sha256(message, secret);
+    let signature_b64 = base64_encode(signature);
+
+    return header_b64 + "." + payload_b64 + "." + signature_b64;
+}
+
+/// Verify and decode a JWT token
+pub fn verify_jwt(token: string, secret: string) -> Result<JwtClaims, string> {
+    let parts = token.split(".");
+
+    if parts.len() != 3 {
+        return Err("Invalid JWT format");
+    }
+
+    let header_b64 = parts[0];
+    let payload_b64 = parts[1];
+    let signature_b64 = parts[2];
+
+    // Verify signature
+    let message = header_b64 + "." + payload_b64;
+    let expected_signature = hmac_sha256(message, secret);
+    let expected_b64 = base64_encode(expected_signature);
+
+    if signature_b64 != expected_b64 {
+        return Err("Invalid signature");
+    }
+
+    // Decode payload
+    let payload_json = base64_decode(payload_b64);
+    let claims = decode_claims(payload_json);
+
+    // Check expiration
+    let now = unix_timestamp();
+    if claims.exp < now {
+        return Err("Token expired");
+    }
+
+    return Ok(claims);
+}
+
+/// Check if JWT token is expired
+pub fn is_token_expired(token: string) -> bool {
+    let parts = token.split(".");
+    if parts.len() != 3 {
+        return true;
+    }
+
+    let payload_json = base64_decode(parts[1]);
+    let claims = decode_claims(payload_json);
+    let now = unix_timestamp();
+
+    return claims.exp < now;
+}
+
+// ============================================================================
+// Session Management
+// ============================================================================
+
+/// Session data structure
+struct Session {
+    id: string,
+    user_id: string,
+    data: Map<string, string>,
+    created_at: int,
+    expires_at: int,
+}
+
+/// In-memory session store (replace with Redis/DB in production)
+static mut SESSIONS: Map<string, Session> = Map::new();
+
+/// Create a new session
+pub fn create_session(user_id: string, ttl_seconds: int) -> Session {
+    let session_id = generate_session_id();
+    let now = unix_timestamp();
+
+    let session = Session {
+        id: session_id,
+        user_id: user_id,
+        data: Map::new(),
+        created_at: now,
+        expires_at: now + ttl_seconds,
+    };
+
+    unsafe {
+        SESSIONS.insert(session_id.clone(), session.clone());
+    }
+
+    return session;
+}
+
+/// Get session by ID
+pub fn get_session(session_id: string) -> Option<Session> {
+    unsafe {
+        if let Some(session) = SESSIONS.get(&session_id) {
+            let now = unix_timestamp();
+            if session.expires_at > now {
+                return Some(session.clone());
+            } else {
+                // Session expired, remove it
+                SESSIONS.remove(&session_id);
+                return None;
+            }
+        }
+        return None;
+    }
+}
+
+/// Update session data
+pub fn update_session(session_id: string, key: string, value: string) -> bool {
+    unsafe {
+        if let Some(mut session) = SESSIONS.get_mut(&session_id) {
+            session.data.insert(key, value);
+            return true;
+        }
+        return false;
+    }
+}
+
+/// Destroy session
+pub fn destroy_session(session_id: string) -> bool {
+    unsafe {
+        return SESSIONS.remove(&session_id).is_some();
+    }
+}
+
+/// Generate random session ID
+fn generate_session_id() -> string {
+    let random_bytes = random_bytes(32);
+    return hex_encode(random_bytes);
+}
+
+// ============================================================================
+// OAuth 2.0 Helpers
+// ============================================================================
+
+/// OAuth provider configuration
+struct OAuthProvider {
+    name: string,
+    client_id: string,
+    client_secret: string,
+    auth_url: string,
+    token_url: string,
+    redirect_uri: string,
+}
+
+/// OAuth token response
+struct OAuthToken {
+    access_token: string,
+    refresh_token: string,
+    expires_in: int,
+    token_type: string,
+}
+
+/// Generate OAuth authorization URL
+pub fn oauth_auth_url(provider: OAuthProvider, state: string, scopes: Vec<string>) -> string {
+    let scope_str = scopes.join(" ");
+
+    return provider.auth_url +
+           "?client_id=" + provider.client_id +
+           "&redirect_uri=" + url_encode(provider.redirect_uri) +
+           "&response_type=code" +
+           "&scope=" + url_encode(scope_str) +
+           "&state=" + state;
+}
+
+/// Exchange authorization code for access token
+pub fn oauth_exchange_code(provider: OAuthProvider, code: string) -> Result<OAuthToken, string> {
+    let body = "grant_type=authorization_code" +
+               "&code=" + code +
+               "&redirect_uri=" + url_encode(provider.redirect_uri) +
+               "&client_id=" + provider.client_id +
+               "&client_secret=" + provider.client_secret;
+
+    // Make HTTP POST request (using jounce-http)
+    let response = http_post(provider.token_url, body);
+
+    if response.status != 200 {
+        return Err("OAuth token exchange failed");
+    }
+
+    let token = parse_oauth_token(response.body);
+    return Ok(token);
+}
+
+/// Refresh OAuth access token
+pub fn oauth_refresh_token(provider: OAuthProvider, refresh_token: string) -> Result<OAuthToken, string> {
+    let body = "grant_type=refresh_token" +
+               "&refresh_token=" + refresh_token +
+               "&client_id=" + provider.client_id +
+               "&client_secret=" + provider.client_secret;
+
+    let response = http_post(provider.token_url, body);
+
+    if response.status != 200 {
+        return Err("OAuth token refresh failed");
+    }
+
+    let token = parse_oauth_token(response.body);
+    return Ok(token);
+}
+
+// ============================================================================
+// Role-Based Access Control (RBAC)
+// ============================================================================
+
+/// User with roles
+struct User {
+    id: string,
+    email: string,
+    roles: Vec<string>,
+}
+
+/// Permission definition
+struct Permission {
+    resource: string,
+    action: string,
+}
+
+/// Role definition
+struct Role {
+    name: string,
+    permissions: Vec<Permission>,
+}
+
+/// Check if user has a specific role
+pub fn has_role(user: User, role_name: string) -> bool {
+    return user.roles.contains(&role_name);
+}
+
+/// Check if user has permission
+pub fn has_permission(user: User, resource: string, action: string) -> bool {
+    // Get all roles for user
+    let user_roles = get_roles_for_user(user);
+
+    // Check if any role has the required permission
+    for role in user_roles {
+        for perm in role.permissions {
+            if perm.resource == resource && perm.action == action {
+                return true;
+            }
+            // Wildcard support
+            if perm.resource == "*" || perm.action == "*" {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+/// Check if user can perform action on resource
+pub fn authorize(user: User, resource: string, action: string) -> Result<(), string> {
+    if has_permission(user, resource, action) {
+        return Ok(());
+    } else {
+        return Err("Unauthorized: insufficient permissions");
+    }
+}
+
+/// Predefined roles
+pub fn admin_role() -> Role {
+    return Role {
+        name: "admin",
+        permissions: vec![
+            Permission { resource: "*", action: "*" }
+        ],
+    };
+}
+
+pub fn user_role() -> Role {
+    return Role {
+        name: "user",
+        permissions: vec![
+            Permission { resource: "profile", action: "read" },
+            Permission { resource: "profile", action: "update" },
+        ],
+    };
+}
+
+pub fn guest_role() -> Role {
+    return Role {
+        name: "guest",
+        permissions: vec![
+            Permission { resource: "public", action: "read" },
+        ],
+    };
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+fn encode_claims(claims: JwtClaims) -> string {
+    return '{"sub":"' + claims.sub +
+           '","exp":' + claims.exp.to_string() +
+           ',"iat":' + claims.iat.to_string() +
+           ',"iss":"' + claims.iss +
+           '","aud":"' + claims.aud + '"}';
+}
+
+fn decode_claims(json: string) -> JwtClaims {
+    // Parse JSON (simplified - use jounce_json in real impl)
+    return JwtClaims {
+        sub: "",
+        exp: 0,
+        iat: 0,
+        iss: "",
+        aud: "",
+        roles: vec![],
+    };
+}
+
+fn base64_encode(data: string) -> string {
+    // Base64 encoding implementation
+    return data; // Placeholder
+}
+
+fn base64_decode(data: string) -> string {
+    // Base64 decoding implementation
+    return data; // Placeholder
+}
+
+fn hmac_sha256(message: string, secret: string) -> string {
+    // HMAC-SHA256 implementation
+    return hmac(message, secret);
+}
+
+fn unix_timestamp() -> int {
+    // Get current Unix timestamp
+    return 1698172800; // Placeholder
+}
+
+fn random_bytes(n: int) -> Vec<u8> {
+    // Generate n random bytes
+    return vec![]; // Placeholder
+}
+
+fn hex_encode(bytes: Vec<u8>) -> string {
+    // Hex encoding
+    return ""; // Placeholder
+}
+
+fn url_encode(s: string) -> string {
+    // URL encoding
+    return s; // Placeholder
+}
+
+fn http_post(url: string, body: string) -> HttpResponse {
+    // HTTP POST request (use jounce-http)
+    return HttpResponse {
+        status: 200,
+        body: "{}",
+    };
+}
+
+fn parse_oauth_token(json: string) -> OAuthToken {
+    // Parse OAuth token from JSON
+    return OAuthToken {
+        access_token: "",
+        refresh_token: "",
+        expires_in: 3600,
+        token_type: "Bearer",
+    };
+}
+
+fn get_roles_for_user(user: User) -> Vec<Role> {
+    // Get role definitions for user's role names
+    let mut roles = vec![];
+    for role_name in user.roles {
+        if role_name == "admin" {
+            roles.push(admin_role());
+        } else if role_name == "user" {
+            roles.push(user_role());
+        } else if role_name == "guest" {
+            roles.push(guest_role());
+        }
+    }
+    return roles;
+}
+
+struct HttpResponse {
+    status: int,
+    body: string,
+}
+
+// Export main types and functions
+pub use JwtToken;
+pub use JwtClaims;
+pub use Session;
+pub use OAuthProvider;
+pub use OAuthToken;
+pub use User;
+pub use Role;
+pub use Permission;
