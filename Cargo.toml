@@ -62,7 +62,7 @@ ctrlc = "3.4"
 
 # LSP Server (Session 28)
 tower-lsp = "0.20"
-lsp-types = "0.94"  # Must match tower-lsp's dependency version
+lsp-types = "0.97"  # Must match tower-lsp's dependency version
 
 # Performance Optimization (Phase 9 Sprint 1)
 xxhash-rust = { version = "0.8", features = ["xxh64"] }  # Fast hashing for cache keys
