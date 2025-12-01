@@ -72,4 +72,4 @@ num_cpus = "1.16"                                        # CPU detection
 dashmap = "5.5"                                          # Concurrent HashMap
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = "0.8"
